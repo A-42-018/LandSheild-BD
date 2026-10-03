@@ -1,0 +1,1965 @@
+{
+  "seed": 2025,
+  "documents": [
+    {
+      "file": "eval01.png",
+      "marker": "Eval01",
+      "fields": {
+        "deed_no": "D-2023-0277",
+        "deed_date": "2024-01-12",
+        "district": "Tangail",
+        "upazila": "Mirzapur",
+        "mouza": "Warshi",
+        "khatian_no": "869",
+        "dag_no": "683",
+        "land_area": "8",
+        "area_unit": "decimal",
+        "seller": "Rubina Khatun",
+        "father_name": "Shamsul Alam",
+        "buyer": "Karim Mia"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          89,
+          27
+        ],
+        "upazila": [
+          330,
+          411,
+          107,
+          26
+        ],
+        "mouza": [
+          330,
+          489,
+          84,
+          21
+        ],
+        "khatian_no": [
+          330,
+          568,
+          47,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          16,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          179,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          175,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          124,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "en",
+        "skew": 1.2,
+        "noise": 0.001
+      }
+    },
+    {
+      "file": "eval02.png",
+      "marker": "Eval02",
+      "fields": {
+        "deed_no": "D-2022-0144",
+        "deed_date": "2022-04-13",
+        "district": "Narayanganj",
+        "upazila": "Rupganj",
+        "mouza": "Bhulta",
+        "khatian_no": "303",
+        "dag_no": "521",
+        "land_area": "5",
+        "area_unit": "decimal",
+        "seller": "Karim Mia",
+        "father_name": "Nur Mohammad",
+        "buyer": "Salma Begum"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          154,
+          27
+        ],
+        "upazila": [
+          330,
+          411,
+          101,
+          27
+        ],
+        "mouza": [
+          330,
+          489,
+          77,
+          21
+        ],
+        "khatian_no": [
+          330,
+          568,
+          47,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          16,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          124,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          195,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          171,
+          27
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "bn",
+        "skew": -1.8,
+        "noise": 0.003
+      }
+    },
+    {
+      "file": "eval03.png",
+      "marker": "Eval03",
+      "fields": {
+        "deed_no": "D-2024-0168",
+        "deed_date": "2022-04-01",
+        "district": "Dhaka",
+        "upazila": "Dohar",
+        "mouza": "Nayabari",
+        "khatian_no": "1550",
+        "dag_no": "333",
+        "land_area": "20",
+        "area_unit": "decimal",
+        "seller": "Mahbub Alam",
+        "father_name": "Abdur Razzak",
+        "buyer": "Rahim Uddin"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          145,
+          23
+        ],
+        "deed_date": [
+          330,
+          260,
+          122,
+          18
+        ],
+        "district": [
+          330,
+          333,
+          79,
+          21
+        ],
+        "upazila": [
+          330,
+          411,
+          74,
+          21
+        ],
+        "mouza": [
+          330,
+          489,
+          110,
+          27
+        ],
+        "khatian_no": [
+          330,
+          572,
+          51,
+          16
+        ],
+        "dag_no": [
+          330,
+          652,
+          45,
+          14
+        ],
+        "land_area": [
+          330,
+          728,
+          27,
+          18
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          169,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          173,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          158,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": true,
+        "label_mode": "both",
+        "skew": 2.5,
+        "noise": 0.0
+      }
+    },
+    {
+      "file": "eval04.png",
+      "marker": "Eval04",
+      "fields": {
+        "deed_no": "D-2024-0131",
+        "deed_date": "2024-02-18",
+        "district": "Dhaka",
+        "upazila": "Savar",
+        "mouza": "Ashulia",
+        "khatian_no": "505",
+        "dag_no": "313",
+        "land_area": "5",
+        "area_unit": "decimal",
+        "seller": "Salma Begum",
+        "father_name": "Mizanur Rahman",
+        "buyer": "Tarek Aziz"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          79,
+          21
+        ],
+        "upazila": [
+          330,
+          411,
+          72,
+          21
+        ],
+        "mouza": [
+          330,
+          489,
+          88,
+          21
+        ],
+        "khatian_no": [
+          330,
+          568,
+          47,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          16,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          171,
+          27
+        ],
+        "father_name": [
+          330,
+          957,
+          206,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          129,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "en",
+        "skew": 0.0,
+        "noise": 0.001
+      }
+    },
+    {
+      "file": "eval05.png",
+      "marker": "Eval05",
+      "fields": {
+        "deed_no": "D-2022-0665",
+        "deed_date": "2023-02-19",
+        "district": "Gazipur",
+        "upazila": "Sreepur",
+        "mouza": "Barmi",
+        "khatian_no": "1043",
+        "dag_no": "883",
+        "land_area": "10",
+        "area_unit": "decimal",
+        "seller": "Jamal Hossain",
+        "father_name": "Sirajul Islam",
+        "buyer": "Rahim Uddin"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          96,
+          26
+        ],
+        "upazila": [
+          330,
+          411,
+          97,
+          26
+        ],
+        "mouza": [
+          330,
+          489,
+          71,
+          21
+        ],
+        "khatian_no": [
+          330,
+          568,
+          62,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          31,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          178,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          147,
+          27
+        ],
+        "buyer": [
+          330,
+          1035,
+          158,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "bn",
+        "skew": 1.2,
+        "noise": 0.003
+      }
+    },
+    {
+      "file": "eval06.png",
+      "marker": "Eval06",
+      "fields": {
+        "deed_no": "D-2023-0640",
+        "deed_date": "2023-09-26",
+        "district": "Tangail",
+        "upazila": "Mirzapur",
+        "mouza": "Warshi",
+        "khatian_no": "1732",
+        "dag_no": "567",
+        "land_area": "12",
+        "area_unit": "decimal",
+        "seller": "Tarek Aziz",
+        "father_name": "Abdul Latif",
+        "buyer": "Hasan Ali"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          146,
+          23
+        ],
+        "deed_date": [
+          330,
+          259,
+          129,
+          19
+        ],
+        "district": [
+          330,
+          333,
+          89,
+          27
+        ],
+        "upazila": [
+          330,
+          411,
+          107,
+          26
+        ],
+        "mouza": [
+          330,
+          489,
+          84,
+          21
+        ],
+        "khatian_no": [
+          330,
+          572,
+          53,
+          18
+        ],
+        "dag_no": [
+          330,
+          650,
+          41,
+          16
+        ],
+        "land_area": [
+          330,
+          728,
+          25,
+          18
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          129,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          129,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          116,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": true,
+        "label_mode": "both",
+        "skew": -1.8,
+        "noise": 0.0
+      }
+    },
+    {
+      "file": "eval07.png",
+      "marker": "Eval07",
+      "fields": {
+        "deed_no": "D-2024-0129",
+        "deed_date": "2023-10-27",
+        "district": "Tangail",
+        "upazila": "Mirzapur",
+        "mouza": "Warshi",
+        "khatian_no": "601",
+        "dag_no": "452",
+        "land_area": "8",
+        "area_unit": "decimal",
+        "seller": "Karim Mia",
+        "father_name": "Nur Mohammad",
+        "buyer": "Salma Begum"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          89,
+          27
+        ],
+        "upazila": [
+          330,
+          411,
+          107,
+          26
+        ],
+        "mouza": [
+          330,
+          489,
+          84,
+          21
+        ],
+        "khatian_no": [
+          330,
+          568,
+          47,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          16,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          124,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          195,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          171,
+          27
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "en",
+        "skew": 2.5,
+        "noise": 0.001
+      }
+    },
+    {
+      "file": "eval08.png",
+      "marker": "Eval08",
+      "fields": {
+        "deed_no": "D-2023-0264",
+        "deed_date": "2023-06-10",
+        "district": "Dhaka",
+        "upazila": "Dohar",
+        "mouza": "Nayabari",
+        "khatian_no": "839",
+        "dag_no": "177",
+        "land_area": "15",
+        "area_unit": "decimal",
+        "seller": "Rubina Khatun",
+        "father_name": "Shamsul Alam",
+        "buyer": "Mahbub Alam"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          79,
+          21
+        ],
+        "upazila": [
+          330,
+          411,
+          74,
+          21
+        ],
+        "mouza": [
+          330,
+          489,
+          110,
+          27
+        ],
+        "khatian_no": [
+          330,
+          568,
+          47,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          31,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          179,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          175,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          169,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "bn",
+        "skew": 0.0,
+        "noise": 0.003
+      }
+    },
+    {
+      "file": "eval09.png",
+      "marker": "Eval09",
+      "fields": {
+        "deed_no": "D-2023-0677",
+        "deed_date": "2024-03-01",
+        "district": "Dhaka",
+        "upazila": "Dohar",
+        "mouza": "Nayabari",
+        "khatian_no": "818",
+        "dag_no": "847",
+        "land_area": "15",
+        "area_unit": "decimal",
+        "seller": "Hasan Ali",
+        "father_name": "Md. Idris",
+        "buyer": "Shirin Akter"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          146,
+          23
+        ],
+        "deed_date": [
+          330,
+          260,
+          123,
+          18
+        ],
+        "district": [
+          330,
+          333,
+          79,
+          21
+        ],
+        "upazila": [
+          330,
+          411,
+          74,
+          21
+        ],
+        "mouza": [
+          330,
+          489,
+          110,
+          27
+        ],
+        "khatian_no": [
+          330,
+          572,
+          42,
+          16
+        ],
+        "dag_no": [
+          330,
+          650,
+          41,
+          16
+        ],
+        "land_area": [
+          330,
+          728,
+          25,
+          16
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          116,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          105,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          142,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": true,
+        "label_mode": "both",
+        "skew": 1.2,
+        "noise": 0.0
+      }
+    },
+    {
+      "file": "eval10.png",
+      "marker": "Eval10",
+      "fields": {
+        "deed_no": "D-2024-0257",
+        "deed_date": "2024-07-27",
+        "district": "Dhaka",
+        "upazila": "Dohar",
+        "mouza": "Nayabari",
+        "khatian_no": "803",
+        "dag_no": "626",
+        "land_area": "8",
+        "area_unit": "decimal",
+        "seller": "Rubina Khatun",
+        "father_name": "Shamsul Alam",
+        "buyer": "Mahbub Alam"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          79,
+          21
+        ],
+        "upazila": [
+          330,
+          411,
+          74,
+          21
+        ],
+        "mouza": [
+          330,
+          489,
+          110,
+          27
+        ],
+        "khatian_no": [
+          330,
+          568,
+          47,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          16,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          179,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          175,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          169,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "en",
+        "skew": -1.8,
+        "noise": 0.001
+      }
+    },
+    {
+      "file": "eval11.png",
+      "marker": "Eval11",
+      "fields": {
+        "deed_no": "D-2024-0517",
+        "deed_date": "2024-01-07",
+        "district": "Dhaka",
+        "upazila": "Dohar",
+        "mouza": "Nayabari",
+        "khatian_no": "523",
+        "dag_no": "309",
+        "land_area": "8",
+        "area_unit": "decimal",
+        "seller": "Shirin Akter",
+        "father_name": "Abul Kalam",
+        "buyer": "Rahim Uddin"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          79,
+          21
+        ],
+        "upazila": [
+          330,
+          411,
+          74,
+          21
+        ],
+        "mouza": [
+          330,
+          489,
+          110,
+          27
+        ],
+        "khatian_no": [
+          330,
+          568,
+          47,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          16,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          142,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          139,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          158,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "bn",
+        "skew": 2.5,
+        "noise": 0.003
+      }
+    },
+    {
+      "file": "eval12.png",
+      "marker": "Eval12",
+      "fields": {
+        "deed_no": "D-2022-0364",
+        "deed_date": "2024-01-04",
+        "district": "Dhaka",
+        "upazila": "Dohar",
+        "mouza": "Nayabari",
+        "khatian_no": "1292",
+        "dag_no": "544",
+        "land_area": "8",
+        "area_unit": "decimal",
+        "seller": "Hasan Ali",
+        "father_name": "Md. Idris",
+        "buyer": "Tarek Aziz"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          147,
+          23
+        ],
+        "deed_date": [
+          330,
+          260,
+          121,
+          18
+        ],
+        "district": [
+          330,
+          333,
+          79,
+          21
+        ],
+        "upazila": [
+          330,
+          411,
+          74,
+          21
+        ],
+        "mouza": [
+          330,
+          489,
+          110,
+          27
+        ],
+        "khatian_no": [
+          330,
+          571,
+          53,
+          19
+        ],
+        "dag_no": [
+          330,
+          650,
+          39,
+          16
+        ],
+        "land_area": [
+          330,
+          728,
+          15,
+          16
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          116,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          105,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          129,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": true,
+        "label_mode": "both",
+        "skew": 0.0,
+        "noise": 0.0
+      }
+    },
+    {
+      "file": "eval13.png",
+      "marker": "Eval13",
+      "fields": {
+        "deed_no": "D-2022-0848",
+        "deed_date": "2023-05-22",
+        "district": "Tangail",
+        "upazila": "Mirzapur",
+        "mouza": "Warshi",
+        "khatian_no": "1958",
+        "dag_no": "239",
+        "land_area": "20",
+        "area_unit": "decimal",
+        "seller": "Hasan Ali",
+        "father_name": "Md. Idris",
+        "buyer": "Mahbub Alam"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          89,
+          27
+        ],
+        "upazila": [
+          330,
+          411,
+          107,
+          26
+        ],
+        "mouza": [
+          330,
+          489,
+          84,
+          21
+        ],
+        "khatian_no": [
+          330,
+          568,
+          62,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          31,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          116,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          105,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          169,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "en",
+        "skew": 1.2,
+        "noise": 0.001
+      }
+    },
+    {
+      "file": "eval14.png",
+      "marker": "Eval14",
+      "fields": {
+        "deed_no": "D-2023-0334",
+        "deed_date": "2024-08-26",
+        "district": "Gazipur",
+        "upazila": "Kaliakair",
+        "mouza": "Mouchak",
+        "khatian_no": "477",
+        "dag_no": "179",
+        "land_area": "15",
+        "area_unit": "decimal",
+        "seller": "Nasir Ahmed",
+        "father_name": "Fazlul Haque",
+        "buyer": "Mahbub Alam"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          96,
+          26
+        ],
+        "upazila": [
+          330,
+          411,
+          105,
+          21
+        ],
+        "mouza": [
+          330,
+          489,
+          112,
+          21
+        ],
+        "khatian_no": [
+          330,
+          568,
+          47,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          31,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          158,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          159,
+          26
+        ],
+        "buyer": [
+          330,
+          1035,
+          169,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "bn",
+        "skew": -1.8,
+        "noise": 0.003
+      }
+    },
+    {
+      "file": "eval15.png",
+      "marker": "Eval15",
+      "fields": {
+        "deed_no": "D-2023-0422",
+        "deed_date": "2024-11-21",
+        "district": "Tangail",
+        "upazila": "Mirzapur",
+        "mouza": "Warshi",
+        "khatian_no": "1305",
+        "dag_no": "670",
+        "land_area": "8",
+        "area_unit": "decimal",
+        "seller": "Hasan Ali",
+        "father_name": "Md. Idris",
+        "buyer": "Jamal Hossain"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          147,
+          23
+        ],
+        "deed_date": [
+          330,
+          260,
+          119,
+          18
+        ],
+        "district": [
+          330,
+          333,
+          89,
+          27
+        ],
+        "upazila": [
+          330,
+          411,
+          107,
+          26
+        ],
+        "mouza": [
+          330,
+          489,
+          84,
+          21
+        ],
+        "khatian_no": [
+          330,
+          572,
+          52,
+          16
+        ],
+        "dag_no": [
+          330,
+          651,
+          40,
+          15
+        ],
+        "land_area": [
+          330,
+          728,
+          15,
+          16
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          116,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          105,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          178,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": true,
+        "label_mode": "both",
+        "skew": 2.5,
+        "noise": 0.0
+      }
+    },
+    {
+      "file": "eval16.png",
+      "marker": "Eval16",
+      "fields": {
+        "deed_no": "D-2024-0628",
+        "deed_date": "2023-06-17",
+        "district": "Tangail",
+        "upazila": "Mirzapur",
+        "mouza": "Warshi",
+        "khatian_no": "1073",
+        "dag_no": "433",
+        "land_area": "10",
+        "area_unit": "decimal",
+        "seller": "Rahim Uddin",
+        "father_name": "Abdul Jabbar",
+        "buyer": "Nasir Ahmed"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          89,
+          27
+        ],
+        "upazila": [
+          330,
+          411,
+          107,
+          26
+        ],
+        "mouza": [
+          330,
+          489,
+          84,
+          21
+        ],
+        "khatian_no": [
+          330,
+          568,
+          62,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          31,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          158,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          163,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          158,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "en",
+        "skew": 0.0,
+        "noise": 0.001
+      }
+    },
+    {
+      "file": "eval17.png",
+      "marker": "Eval17",
+      "fields": {
+        "deed_no": "D-2024-0619",
+        "deed_date": "2023-10-14",
+        "district": "Dhaka",
+        "upazila": "Savar",
+        "mouza": "Ashulia",
+        "khatian_no": "1370",
+        "dag_no": "732",
+        "land_area": "12",
+        "area_unit": "decimal",
+        "seller": "Karim Mia",
+        "father_name": "Nur Mohammad",
+        "buyer": "Hasan Ali"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          79,
+          21
+        ],
+        "upazila": [
+          330,
+          411,
+          72,
+          21
+        ],
+        "mouza": [
+          330,
+          489,
+          88,
+          21
+        ],
+        "khatian_no": [
+          330,
+          568,
+          62,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          31,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          124,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          195,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          116,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "bn",
+        "skew": 1.2,
+        "noise": 0.003
+      }
+    },
+    {
+      "file": "eval18.png",
+      "marker": "Eval18",
+      "fields": {
+        "deed_no": "D-2024-0354",
+        "deed_date": "2024-03-09",
+        "district": "Gazipur",
+        "upazila": "Sreepur",
+        "mouza": "Barmi",
+        "khatian_no": "1864",
+        "dag_no": "216",
+        "land_area": "10",
+        "area_unit": "decimal",
+        "seller": "Nasir Ahmed",
+        "father_name": "Fazlul Haque",
+        "buyer": "Mahbub Alam"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          145,
+          23
+        ],
+        "deed_date": [
+          330,
+          259,
+          126,
+          19
+        ],
+        "district": [
+          330,
+          333,
+          96,
+          26
+        ],
+        "upazila": [
+          330,
+          411,
+          97,
+          26
+        ],
+        "mouza": [
+          330,
+          489,
+          71,
+          21
+        ],
+        "khatian_no": [
+          330,
+          572,
+          54,
+          16
+        ],
+        "dag_no": [
+          330,
+          650,
+          40,
+          18
+        ],
+        "land_area": [
+          330,
+          728,
+          24,
+          16
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          158,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          159,
+          26
+        ],
+        "buyer": [
+          330,
+          1035,
+          169,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": true,
+        "label_mode": "both",
+        "skew": -1.8,
+        "noise": 0.0
+      }
+    },
+    {
+      "file": "eval19.png",
+      "marker": "Eval19",
+      "fields": {
+        "deed_no": "D-2024-0287",
+        "deed_date": "2024-09-21",
+        "district": "Narayanganj",
+        "upazila": "Rupganj",
+        "mouza": "Bhulta",
+        "khatian_no": "249",
+        "dag_no": "204",
+        "land_area": "8",
+        "area_unit": "decimal",
+        "seller": "Jamal Hossain",
+        "father_name": "Sirajul Islam",
+        "buyer": "Hasan Ali"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          154,
+          27
+        ],
+        "upazila": [
+          330,
+          411,
+          101,
+          27
+        ],
+        "mouza": [
+          330,
+          489,
+          77,
+          21
+        ],
+        "khatian_no": [
+          330,
+          568,
+          47,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          16,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          178,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          147,
+          27
+        ],
+        "buyer": [
+          330,
+          1035,
+          116,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "en",
+        "skew": 2.5,
+        "noise": 0.001
+      }
+    },
+    {
+      "file": "eval20.png",
+      "marker": "Eval20",
+      "fields": {
+        "deed_no": "D-2022-0974",
+        "deed_date": "2022-10-04",
+        "district": "Dhaka",
+        "upazila": "Dohar",
+        "mouza": "Nayabari",
+        "khatian_no": "1757",
+        "dag_no": "803",
+        "land_area": "15",
+        "area_unit": "decimal",
+        "seller": "Shirin Akter",
+        "father_name": "Abul Kalam",
+        "buyer": "Nasir Ahmed"
+      },
+      "bboxes": {
+        "deed_no": [
+          330,
+          177,
+          163,
+          21
+        ],
+        "deed_date": [
+          330,
+          256,
+          143,
+          20
+        ],
+        "district": [
+          330,
+          333,
+          79,
+          21
+        ],
+        "upazila": [
+          330,
+          411,
+          74,
+          21
+        ],
+        "mouza": [
+          330,
+          489,
+          110,
+          27
+        ],
+        "khatian_no": [
+          330,
+          568,
+          62,
+          20
+        ],
+        "dag_no": [
+          330,
+          646,
+          47,
+          20
+        ],
+        "land_area": [
+          330,
+          724,
+          31,
+          20
+        ],
+        "area_unit": [
+          330,
+          801,
+          94,
+          21
+        ],
+        "seller": [
+          330,
+          879,
+          142,
+          21
+        ],
+        "father_name": [
+          330,
+          957,
+          139,
+          21
+        ],
+        "buyer": [
+          330,
+          1035,
+          158,
+          21
+        ]
+      },
+      "variant": {
+        "bn_digits": false,
+        "label_mode": "bn",
+        "skew": 0.0,
+        "noise": 0.003
+      }
+    }
+  ]
+}

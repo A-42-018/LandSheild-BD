@@ -1,0 +1,106 @@
+"""Review decisions (P29): approve / reject / reprocess. Approve also posts (P30), atomically."""
+from sqlalchemy.orm import Session
+
+from app.core.errors import AppError
+from app.models.document import Document
+from app.models.enums import DocumentStatus
+from app.models.user import User
+from app.schemas.document import DocumentOut
+from app.schemas.extraction import Extraction
+from app.services import audit, posting
+from app.services.documents import _to_out
+from app.services.extraction import EDITABLE_STATUSES, validate_fields
+
+REPROCESSABLE_STATUSES = (*EDITABLE_STATUSES, DocumentStatus.FAILED.value)
+
+
+def _get(db: Session, document_id: str) -> Document:
+    doc = db.get(Document, document_id)
+    if doc is None:
+        raise AppError("DOCUMENT_NOT_FOUND", "Document not found", 404)
+    return doc
+
+
+def _require_status(doc: Document, allowed: tuple[str, ...], code: str, msg: str) -> None:
+    if doc.processing_status not in allowed:
+        raise AppError(code, msg, 409, {"status": doc.processing_status})
+
+
+def approve_document(db: Session, user: User, document_id: str, ip: str | None) -> DocumentOut:
+    doc = _get(db, document_id)
+    _require_status(
+        doc, EDITABLE_STATUSES, "DOCUMENT_NOT_REVIEWABLE", "Document is not awaiting review"
+    )
+    if doc.extraction_json is None:
+        raise AppError(
+            "EXTRACTION_NOT_READY", "No extraction available for this document", 409,
+            {"status": doc.processing_status},
+        )  # fmt: skip
+    extraction = Extraction.model_validate(doc.extraction_json)
+    errors = validate_fields(extraction.fields)
+    if errors:  # backend-enforced: invalid data can never be approved
+        raise AppError(
+            "EXTRACTION_INVALID", "Extraction has validation errors", 422,
+            [e.model_dump(exclude_none=True) for e in errors],
+        )  # fmt: skip
+    old = doc.processing_status
+    try:  # one transaction: posting + status + audit commit together or not at all
+        result = posting.post_document(db, user, doc, extraction, ip)
+        doc.processing_status = DocumentStatus.APPROVED.value
+        audit.log(
+            db, user, "DOCUMENT_APPROVE", "document", doc.id,
+            old={"status": old},
+            new={
+                "status": DocumentStatus.APPROVED.value,
+                "transaction_id": result.transaction_id,
+                "transaction_status": result.transaction_status,
+            },
+            ip=ip,
+        )  # fmt: skip
+        db.commit()
+    except AppError:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        raise AppError("POSTING_FAILED", "Could not post the approved document", 500) from exc
+    return _to_out(db, doc)
+
+
+def reject_document(
+    db: Session, user: User, document_id: str, reason: str, ip: str | None
+) -> DocumentOut:
+    doc = _get(db, document_id)
+    _require_status(
+        doc, EDITABLE_STATUSES, "DOCUMENT_NOT_REVIEWABLE", "Document is not awaiting review"
+    )
+    old = doc.processing_status
+    doc.processing_status = DocumentStatus.REJECTED.value
+    audit.log(
+        db, user, "DOCUMENT_REJECT", "document", doc.id,
+        old={"status": old}, new={"status": DocumentStatus.REJECTED.value, "reason": reason},
+        ip=ip,
+    )  # fmt: skip
+    db.commit()
+    return _to_out(db, doc)
+
+
+def request_reprocess(db: Session, user: User, document_id: str, ip: str | None) -> DocumentOut:
+    """REVIEW_REQUIRED|EXTRACTED|FAILED -> PROCESSING; the caller queues run_processing."""
+    doc = _get(db, document_id)
+    _require_status(
+        doc, REPROCESSABLE_STATUSES, "DOCUMENT_NOT_REPROCESSABLE",
+        "Only documents awaiting review or failed can be reprocessed",
+    )  # fmt: skip
+    old = {
+        "status": doc.processing_status,
+        "edited_by_human": bool((doc.extraction_json or {}).get("edited_by_human")),
+    }
+    doc.processing_status = DocumentStatus.PROCESSING.value
+    doc.extraction_json = None  # machine output is regenerated; human edits are discarded
+    audit.log(
+        db, user, "DOCUMENT_REPROCESS_REQUEST", "document", doc.id,
+        old=old, new={"status": DocumentStatus.PROCESSING.value}, ip=ip,
+    )  # fmt: skip
+    db.commit()
+    return _to_out(db, doc)

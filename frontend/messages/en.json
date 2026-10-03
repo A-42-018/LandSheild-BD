@@ -1,0 +1,821 @@
+{
+  "common": {
+    "appName": "LandShield BD",
+    "tagline": "Digital Land Verification & Risk Intelligence",
+    "demoLabel": "Not an official government land record.",
+    "language": "Language",
+    "loading": "Processing…",
+    "empty": "No records found.",
+    "skipToContent": "Skip to main content",
+    "placeholderNote": "This page is a placeholder. Real features arrive in later phases.",
+    "close": "Close",
+    "retry": "Try again"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "main": "Main navigation",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "signedInAs": "Signed in as {name}",
+    "verify": "Verify land",
+    "upload": "Upload document",
+    "dashboard": "Dashboard",
+    "map": "Parcel map",
+    "menu": "Menu",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu",
+    "account": "Account menu"
+  },
+  "errors": {
+    "generic": "We couldn't process this document. Please check the file and try again.",
+    "permission": "You don't have permission to perform this action.",
+    "lowConfidence": "Low-confidence extraction. Human review required.",
+    "notFound": "Page not found."
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "REVIEW_REQUIRED": "Review Required",
+    "PENDING": "Pending",
+    "COMPLETED": "Completed",
+    "FAILED": "Failed",
+    "UPLOADED": "Uploaded",
+    "PROCESSING": "Processing",
+    "EXTRACTED": "Extracted",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected",
+    "RECORDED": "Recorded",
+    "FLAGGED": "Flagged",
+    "OPEN": "Open",
+    "UNDER_REVIEW": "Under Review",
+    "DISMISSED": "Dismissed",
+    "ESCALATED": "Escalated"
+  },
+  "risk": {
+    "level": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High"
+    },
+    "disclaimer": "AI assists human reviewers. This is not a legal determination.",
+    "score": "Risk score",
+    "evidenceTitle": "Evidence",
+    "noEvidence": "No risk indicators found for this parcel.",
+    "assessedOn": "Assessed on {date}",
+    "loadError": "We couldn't load the risk assessment.",
+    "ml": {
+      "line": "Anomaly model: {percent}% unusual compared with synthetic training data. A review hint only; it never sets a risk level on its own.",
+      "points": "{points, plural, =0 {No points added to the score.} one {Adds # point to the score.} other {Adds # points to the score.}}"
+    },
+    "severity": {
+      "HIGH": "High",
+      "MEDIUM": "Medium",
+      "INFO": "Info"
+    },
+    "evidence": {
+      "POSSIBLE_DUPLICATE_TRANSACTION": "Possible duplicate transaction: {count} transactions by the same seller convey {total} {unit}, against {recorded} {unit} recorded. Review required.",
+      "SELLER_MISMATCH": "Potential inconsistency: the seller on {date} does not match the recorded owner at that date. Review required.",
+      "POSSIBLE_NAME_VARIANT": "Possible name variant: the seller on {date} resembles a recorded owner but the names are not identical. Review required.",
+      "DUPLICATE_DEED": "Possible duplicate transaction: deed number {deedNo} is used by {count} transactions. Review required.",
+      "INCONSISTENT_OWNERSHIP": "{kind, select, GAP {Potential inconsistency: gap in ownership records between {firstEnd} and {secondStart}. Review required.} other {Ownership conflict detected: overlapping ownership periods ({firstStart} – {firstEnd} and {secondStart} – {secondEnd}). Review required.}}",
+      "AREA_MISMATCH": "Potential inconsistency: document area {documentArea} {unit} differs from the previously recorded {previousArea} {unit}. Review required.",
+      "REPEATED_SUSPICIOUS_TRANSACTIONS": "Potential inconsistency: {count} transfers of this parcel within {windowDays} days ({firstDate} – {lastDate}). Review required.",
+      "UNIT_MISMATCH": "Area units differ ({units}); no conversion was applied. Informational only.",
+      "LOW_EXTRACTION_CONFIDENCE": "Low-confidence extraction. Human review required.",
+      "ML_ANOMALY": "Statistical anomaly signal. Informational only; review required.",
+      "UNKNOWN": "Review required for indicator"
+    }
+  },
+  "home": {
+    "title": "Verify land records with evidence",
+    "intro": "Check ownership history and potential inconsistencies before a transaction. Every score shows its evidence."
+  },
+  "about": {
+    "title": "About LandShield BD",
+    "intro": "A civic-tech prototype built on synthetic data. It supports human reviewers and never makes a legal determination.",
+    "purpose": {
+      "title": "Purpose",
+      "body": "LandShield BD shows how digital record organisation, consistency checks and transparent risk indicators could help people and reviewers examine land records before a transaction."
+    },
+    "limits": {
+      "title": "Limitations",
+      "l1": "It is a prototype and has not been tested on real records.",
+      "l2": "Text extraction can be wrong; every document needs human review.",
+      "l3": "Risk indicators point to potential inconsistencies and can be false alarms.",
+      "l4": "It does not cover every kind of land record or every legal situation."
+    },
+    "demo": {
+      "title": "Sample data",
+      "body": "Every parcel, owner and document in this site is synthetic. Any resemblance to real records is accidental."
+    },
+    "notice": {
+      "title": "Not legal advice",
+      "body": "LandShield does not establish legal ownership, certify title or replace official government or legal verification. Consult the relevant authority or a qualified lawyer before acting on any land transaction."
+    }
+  },
+  "table": {
+    "pagination": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}"
+  },
+  "roles": {
+    "CITIZEN": "Citizen",
+    "REVIEWER": "Reviewer",
+    "OFFICER": "Officer",
+    "ADMIN": "Administrator"
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "loginIntro": "Use your account to verify land records.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "invalidCredentials": "Incorrect email or password.",
+    "rateLimited": "Too many attempts. Please wait a minute and try again.",
+    "network": "Cannot reach the server. Please try again.",
+    "emailRequired": "Enter your email.",
+    "passwordRequired": "Enter your password.",
+    "checkingSession": "Checking your session…",
+    "loginRequired": "Please sign in to continue."
+  },
+  "verify": {
+    "title": "Verify Land",
+    "intro": "Enter the land details exactly as printed on the record. Bangla digits are accepted.",
+    "district": "District",
+    "upazila": "Upazila",
+    "mouza": "Mouza",
+    "khatian": "Khatian No.",
+    "dag": "Dag No.",
+    "selectDistrict": "Select district",
+    "selectUpazila": "Select upazila",
+    "numericHint": "Digits only, e.g. 1245 or ১২৪৫",
+    "submit": "Verify",
+    "searching": "Processing…",
+    "demoNote": "Not an official government land record.",
+    "errors": {
+      "required": "This field is required.",
+      "tooLong": "This value is too long.",
+      "numeric": "Enter digits only (e.g. 1245).",
+      "notFound": "No records found.",
+      "permission": "You don't have permission to perform this action.",
+      "network": "Cannot reach the server. Please try again.",
+      "generic": "We couldn't process this request. Please try again."
+    }
+  },
+  "result": {
+    "title": "Verification result",
+    "landInfo": "Land information",
+    "landId": "Land ID",
+    "district": "District",
+    "upazila": "Upazila",
+    "mouza": "Mouza",
+    "khatian": "Khatian no.",
+    "dag": "Dag no.",
+    "area": "Area",
+    "status": "Status",
+    "currentOwners": "Current owner(s)",
+    "noOwners": "No current owner recorded.",
+    "fatherName": "Father's name",
+    "ownership": "Ownership history",
+    "noOwnership": "No ownership history recorded.",
+    "current": "Current",
+    "present": "Present",
+    "unknownDate": "Date not recorded",
+    "confidence": "Confidence",
+    "sourceDocument": "Source document",
+    "transactions": "Transaction history",
+    "noTransactions": "No transactions recorded.",
+    "date": "Date",
+    "type": "Type",
+    "seller": "Seller",
+    "buyer": "Buyer",
+    "riskTitle": "Risk analysis",
+    "loadError": "We couldn't load this information. Please try again.",
+    "newSearch": "Verify another land",
+    "units": {
+      "decimal": "decimal",
+      "acre": "acre",
+      "bigha": "bigha",
+      "katha": "katha",
+      "sqft": "sq ft"
+    },
+    "txType": {
+      "SALE": "Sale",
+      "GIFT": "Gift",
+      "INHERITANCE": "Inheritance",
+      "OTHER": "Other"
+    }
+  },
+  "report": {
+    "title": "Land verification report",
+    "summary": "Summary",
+    "overallStatus": "Overall status",
+    "verificationStatus": "Verification status",
+    "verificationId": "Verification ID",
+    "verifiedAt": "Verified on",
+    "docConsistency": "Document consistency",
+    "docStatus": {
+      "NO_ISSUES": "No inconsistencies found",
+      "INCONSISTENCIES_FOUND": "Potential inconsistencies found — review required"
+    },
+    "totalDocuments": "Documents on record",
+    "documentsByStatus": "Documents by status",
+    "noIndicators": "No document inconsistency indicators.",
+    "disclaimerTitle": "Disclaimer",
+    "disclaimer": {
+      "DEMO_DECISION_SUPPORT": "LandShield provides digital record organization, consistency checks, and risk indicators. It does not establish legal ownership, certify title, or replace official government/legal verification."
+    },
+    "generate": "Generate verification report",
+    "generating": "Generating report…",
+    "generateError": "We couldn't generate the report. Please try again.",
+    "print": "Download PDF",
+    "backToResult": "Back to result",
+    "notFound": "Report not found.",
+    "notReady": "This report is not ready yet.",
+    "loadError": "We couldn't load the report. Please try again."
+  },
+  "upload": {
+    "title": "Upload land document",
+    "intro": "Upload a scanned deed, khatian or mutation record (JPG, PNG or PDF, up to 10 MB).",
+    "choose": "Choose a file",
+    "dropHint": "or drag and drop it here — JPG, PNG or PDF, max 10 MB",
+    "type": "Document type",
+    "landId": "Land ID (optional)",
+    "landIdHint": "Format: LP-10100",
+    "types": {
+      "DEED": "Deed",
+      "KHATIAN": "Khatian",
+      "MUTATION": "Mutation",
+      "OTHER": "Other"
+    },
+    "submit": "Upload",
+    "clear": "Remove file",
+    "another": "Upload another document",
+    "progress": "Upload progress",
+    "uploading": "Uploading…",
+    "uploaded": "Document uploaded.",
+    "duplicate": "This exact file was already uploaded. The existing record is shown; nothing was stored again.",
+    "statusLabel": "Status",
+    "hash": "File fingerprint",
+    "startProcessing": "Start processing",
+    "processError": "We couldn't start processing. Please try again.",
+    "polling": "Checking processing status…",
+    "statusError": "We couldn't refresh the document status. Please try again later.",
+    "errors": {
+      "EMPTY_FILE": "The file is empty. Please choose a valid file.",
+      "UNSUPPORTED_FILE_TYPE": "This file type is not supported. Please upload a JPG, PNG or PDF file.",
+      "FILE_TYPE_MISMATCH": "The file contents do not match its extension. Please upload a genuine JPG, PNG or PDF.",
+      "FILE_TOO_LARGE": "The file is larger than 10 MB. Please choose a smaller file.",
+      "IMAGE_TOO_LARGE": "The image resolution is too high. Please upload a smaller image.",
+      "PDF_TOO_MANY_PAGES": "The PDF has too many pages (maximum 20).",
+      "LAND_NOT_FOUND": "No land parcel with this ID exists. Check the ID, or leave it empty and it will be matched from the document.",
+      "PERMISSION": "You don't have permission to perform this action.",
+      "NETWORK": "Cannot reach the server. Please try again.",
+      "GENERIC": "We couldn't process this document. Please check the file and try again.",
+      "LAND_ID": "Enter a land ID like LP-10100."
+    }
+  },
+  "review": {
+    "title": "Review extraction",
+    "docType": "Type",
+    "processing": "Processing…",
+    "notFound": "Document not found.",
+    "openReview": "Open for review",
+    "fieldsTitle": "Extracted fields",
+    "lowConfidenceFields": "Fields needing attention",
+    "edited": "Edited",
+    "confidence": "Extraction confidence",
+    "band": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "disclaimer": "AI-assisted extraction. A human reviewer must verify every value against the document.",
+    "preview": {
+      "title": "Document preview",
+      "zoom": "Zoom",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "reset": "Reset",
+      "alt": "Uploaded document",
+      "error": "We couldn't load the document preview.",
+      "note": "Preview of the uploaded original (first page for PDFs)."
+    },
+    "fields": {
+      "owner_name": "Owner name",
+      "father_name": "Father's name",
+      "khatian_no": "Khatian no.",
+      "dag_no": "Dag no.",
+      "mouza": "Mouza",
+      "district": "District",
+      "upazila": "Upazila",
+      "land_area": "Land area",
+      "area_unit": "Area unit",
+      "deed_no": "Deed no.",
+      "deed_date": "Deed date",
+      "seller": "Seller",
+      "buyer": "Buyer"
+    },
+    "valueNotFound": "Not found",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "errors": {
+      "REQUIRED": "This field is required.",
+      "NOT_A_NUMBER": "Enter a number.",
+      "NOT_POSITIVE": "Enter a number greater than zero.",
+      "INVALID_DATE": "Enter a valid date (YYYY-MM-DD or DD/MM/YYYY).",
+      "DATE_IN_FUTURE": "The date cannot be in the future.",
+      "INVALID_UNIT": "Use one of: {allowed}.",
+      "UNKNOWN_FIELD": "Unknown field.",
+      "DUPLICATE_FIELD": "Duplicate field.",
+      "TOO_LONG": "Maximum {max} characters.",
+      "UNKNOWN": "This value is not valid."
+    },
+    "actions": {
+      "title": "Review decision",
+      "approve": "Approve",
+      "reject": "Reject",
+      "reprocess": "Request reprocessing",
+      "approveBlocked": "Fix the highlighted fields before approving.",
+      "reprocessHint": "Reprocessing re-runs extraction and discards manual edits.",
+      "approveFailed": "We couldn't approve this document. Please try again.",
+      "reprocessFailed": "We couldn't request reprocessing. Please try again.",
+      "rejectFailed": "We couldn't reject this document. Please try again.",
+      "saveFailed": "We couldn't save this change. Please try again.",
+      "notReviewable": "This document is no longer awaiting review. Reload the page."
+    },
+    "decision": {
+      "APPROVED": "This document has been approved.",
+      "REJECTED": "This document has been rejected."
+    },
+    "reject": {
+      "title": "Reject document",
+      "reasonLabel": "Reason for rejection",
+      "reasonRequired": "A reason is required.",
+      "confirm": "Reject document"
+    }
+  },
+  "landing": {
+    "ctaVerify": "Verify Land",
+    "ctaLogin": "Officer Login",
+    "disclaimerTitle": "Disclaimer",
+    "disclaimer": "LandShield provides digital record organization, consistency checks, and risk indicators. It does not establish legal ownership, certify title, or replace official government/legal verification.",
+    "footerNav": "Footer navigation",
+    "problem": {
+      "title": "The problem",
+      "body": "Land records are often paper-based, spread across offices, and hard to cross-check. That makes it difficult to spot inconsistencies before a transaction.",
+      "p1": "Ownership history is scattered across separate documents.",
+      "p2": "The same deed or parcel can appear in more than one transaction.",
+      "p3": "Manual cross-checking is slow and easy to get wrong."
+    },
+    "how": {
+      "title": "How it works",
+      "step": "Step {n}",
+      "steps": {
+        "upload": {
+          "title": "Upload",
+          "desc": "An officer uploads a scanned deed or record."
+        },
+        "extract": {
+          "title": "Extract",
+          "desc": "Text and key fields are read from the document, with a confidence for each field."
+        },
+        "review": {
+          "title": "Review",
+          "desc": "A human reviewer checks, corrects and approves every extraction."
+        },
+        "verify": {
+          "title": "Verify",
+          "desc": "Anyone signed in can look up a parcel and see its recorded ownership history."
+        },
+        "analyze": {
+          "title": "Analyze",
+          "desc": "Transparent rules look for potential inconsistencies and show the evidence behind each score."
+        },
+        "report": {
+          "title": "Report",
+          "desc": "Generate a printable verification report with the evidence and a disclaimer."
+        }
+      }
+    },
+    "features": {
+      "title": "Features",
+      "items": {
+        "extraction": {
+          "title": "Bilingual extraction",
+          "desc": "Handles English and Bangla documents, including Bangla digits."
+        },
+        "evidence": {
+          "title": "Evidence-based indicators",
+          "desc": "Every risk score lists the rules and facts that produced it."
+        },
+        "timeline": {
+          "title": "Ownership timeline",
+          "desc": "Recorded owners and transactions in date order."
+        },
+        "review": {
+          "title": "Human review",
+          "desc": "No document is recorded until a person approves it."
+        },
+        "report": {
+          "title": "Printable report",
+          "desc": "A4 report with sections for status, ownership, transactions and evidence."
+        }
+      }
+    },
+    "trust": {
+      "title": "Trust and security",
+      "items": {
+        "human": {
+          "title": "Human review required",
+          "desc": "Low-confidence extractions are flagged and need a reviewer."
+        },
+        "noLegal": {
+          "title": "Not a legal decision",
+          "desc": "Results are risk indicators for review, not a finding about any person."
+        },
+        "audit": {
+          "title": "Audit trail",
+          "desc": "Sensitive actions such as approvals and sign-ins are logged."
+        },
+        "access": {
+          "title": "Role-based access",
+          "desc": "Citizens, reviewers, officers and administrators see only what their role allows."
+        },
+        "demo": {
+          "title": "Sample data only",
+          "desc": "All records are synthetic. This is not a government system."
+        }
+      }
+    },
+    "stats": {
+      "title": "Key facts",
+      "fields": {
+        "value": "13",
+        "label": "fields read from every document"
+      },
+      "languages": {
+        "value": "2",
+        "label": "languages: English and বাংলা"
+      },
+      "steps": {
+        "value": "6",
+        "label": "steps from upload to report"
+      },
+      "parcels": {
+        "value": "7",
+        "label": "synthetic sample parcels"
+      }
+    },
+    "ctaUpload": "Upload Doc"
+  },
+  "officer": {
+    "title": "Officer dashboard",
+    "titleAdmin": "Admin dashboard",
+    "titleReviewer": "Reviewer dashboard",
+    "nav": {
+      "label": "Officer navigation",
+      "dashboard": "Dashboard",
+      "upload": "Upload document",
+      "open": "Open menu",
+      "close": "Close menu",
+      "audit": "Audit log",
+      "admin": "Administration"
+    },
+    "kpi": {
+      "title": "Key figures",
+      "total_records": "Total records",
+      "pending_review": "Pending review",
+      "high_risk": "High-risk parcels",
+      "verified": "Verified parcels"
+    },
+    "queue": {
+      "title": "Verification queue",
+      "openRow": "Open {name} for review",
+      "noLand": "Unassigned",
+      "noConfidence": "—",
+      "lowConfidence": "Low confidence",
+      "empty": "No records found.",
+      "cols": {
+        "land": "Land ID",
+        "type": "Document",
+        "status": "Status",
+        "confidence": "Min. confidence",
+        "risk": "Risk",
+        "created": "Uploaded"
+      },
+      "filter": {
+        "label": "Filter",
+        "all": "All documents",
+        "pending": "Pending review",
+        "low_confidence": "Low confidence",
+        "high_risk": "High risk",
+        "recent": "Last 7 days"
+      },
+      "search": {
+        "label": "Search",
+        "placeholder": "Land ID, mouza, type or status",
+        "submit": "Search"
+      }
+    },
+    "charts": {
+      "statusTitle": "Verification status",
+      "riskTitle": "Risk alerts by severity"
+    },
+    "alerts": {
+      "title": "Risk alerts",
+      "empty": "No risk alerts.",
+      "actionsLabel": "Review actions for {land}",
+      "updateError": "Could not update the alert. Please try again.",
+      "actions": {
+        "reopen": "Reopen",
+        "underReview": "Mark under review",
+        "escalate": "Escalate",
+        "dismiss": "Dismiss"
+      }
+    },
+    "activity": {
+      "title": "Recent activity",
+      "empty": "No recent activity.",
+      "system": "System",
+      "actions": {
+        "LOGIN": "Signed in",
+        "FAILED_LOGIN": "Failed sign-in attempt",
+        "LOGOUT": "Signed out",
+        "DOCUMENT_UPLOAD": "Document uploaded",
+        "DOCUMENT_UPLOAD_DUPLICATE": "Duplicate upload detected",
+        "DOCUMENT_PROCESS_FAILED": "Document processing failed",
+        "DOCUMENT_EXTRACTED": "Fields extracted",
+        "DOCUMENT_EXTRACTION_EDIT": "Extracted field edited",
+        "DOCUMENT_REPROCESS_REQUEST": "Reprocessing requested",
+        "DOCUMENT_APPROVE": "Document approved",
+        "DOCUMENT_REJECT": "Document rejected",
+        "TRANSACTION_RECORDED": "Transaction recorded",
+        "TRANSACTION_FLAGGED": "Transaction flagged for review",
+        "RISK_ALERT_UPDATE": "Risk alert updated",
+        "VERIFICATION_CREATE": "Verification requested",
+        "USER_CREATE": "User created",
+        "USER_UPDATE": "User updated"
+      }
+    }
+  },
+  "admin": {
+    "audit": {
+      "title": "Audit log",
+      "hint": "Read-only record of system actions. IP addresses are shown only as a shortened hash.",
+      "filters": "Audit log filters",
+      "actor": "Actor name",
+      "action": "Action",
+      "entity": "Record type",
+      "all": "All",
+      "from": "From date",
+      "to": "To date",
+      "rangeInvalid": "The start date must not be after the end date.",
+      "apply": "Apply filters",
+      "reset": "Reset",
+      "empty": "No audit entries match these filters.",
+      "system": "System",
+      "cols": {
+        "time": "Time (UTC)",
+        "actor": "Actor",
+        "action": "Action",
+        "entity": "Record type",
+        "ip": "IP hash"
+      },
+      "entities": {
+        "user": "User",
+        "document": "Document",
+        "transaction": "Transaction",
+        "fraud_alert": "Risk alert",
+        "verification_request": "Verification request"
+      }
+    },
+    "console": {
+      "title": "Administration",
+      "tabsLabel": "Administration sections",
+      "tabs": {
+        "users": "Users",
+        "records": "Land records",
+        "documents": "Documents"
+      },
+      "search": "Search",
+      "all": "All",
+      "status": "Status",
+      "apply": "Apply filters",
+      "reset": "Reset",
+      "cancel": "Cancel",
+      "save": "Save",
+      "errors": {
+        "emailTaken": "This email is already registered.",
+        "self": "You cannot change your own role or deactivate yourself.",
+        "permission": "You don't have permission to perform this action.",
+        "invalid": "Please check the entered values.",
+        "generic": "Something went wrong. Please try again."
+      },
+      "users": {
+        "title": "Users",
+        "hint": "Create accounts and change roles or access. Every change is written to the audit log.",
+        "filters": "User filters",
+        "add": "Add user",
+        "addTitle": "Add user",
+        "create": "Create user",
+        "edit": "Edit",
+        "editTitle": "Edit {name}",
+        "editUser": "Edit {name}",
+        "deactivate": "Deactivate",
+        "activate": "Activate",
+        "deactivateUser": "Deactivate {name}",
+        "activateUser": "Activate {name}",
+        "you": "you",
+        "password": "Initial password",
+        "passwordHint": "At least 8 characters.",
+        "language": "Preferred language",
+        "activeLabel": "Account is active",
+        "selfHint": "You cannot change your own role or deactivate yourself.",
+        "active": "Active",
+        "inactive": "Inactive",
+        "empty": "No users match these filters.",
+        "cols": {
+          "name": "Name",
+          "email": "Email",
+          "role": "Role",
+          "status": "Status",
+          "created": "Created (UTC)",
+          "actions": "Actions"
+        }
+      },
+      "records": {
+        "title": "Land records",
+        "hint": "Read-only list of land parcels. Owner details are not shown here.",
+        "filters": "Land record filters",
+        "empty": "No land records match these filters.",
+        "cols": {
+          "landId": "Land ID",
+          "district": "District",
+          "upazila": "Upazila",
+          "mouza": "Mouza",
+          "khatian": "Khatian",
+          "dag": "Dag",
+          "area": "Area",
+          "status": "Status",
+          "updated": "Updated (UTC)"
+        }
+      },
+      "documents": {
+        "title": "Documents",
+        "hint": "Read-only list of uploaded documents and their processing state.",
+        "filters": "Document filters",
+        "empty": "No documents match these filters.",
+        "unassigned": "Unassigned",
+        "cols": {
+          "landId": "Land ID",
+          "type": "Type",
+          "status": "Status",
+          "confidence": "OCR confidence",
+          "uploader": "Uploaded by",
+          "created": "Uploaded (UTC)"
+        }
+      }
+    }
+  },
+  "graph": {
+    "title": "Ownership graph",
+    "canvasLabel": "Ownership graph canvas",
+    "legendTitle": "Legend",
+    "flagged": "Flagged for review",
+    "flaggedEdge": "Flagged link (needs review)",
+    "normalEdge": "Normal link",
+    "nodeType": {
+      "Person": "Person",
+      "Transaction": "Transaction",
+      "Deed": "Deed",
+      "Land": "Land parcel"
+    },
+    "edgeType": {
+      "OWNS": "Owns",
+      "SOLD": "Sold",
+      "BOUGHT": "Bought",
+      "REFERS_TO": "Refers to",
+      "TRANSFERRED": "Transferred"
+    },
+    "viewSwitch": "Graph view mode",
+    "viewGraph": "Graph",
+    "viewList": "List",
+    "listLabel": "{type} nodes",
+    "panHint": "Drag to pan, use the controls to zoom. Select a node for details, or switch to List view.",
+    "detailTitle": "Details",
+    "detailEmpty": "Select a node to see details.",
+    "connections": "Connections",
+    "loadError": "We couldn't load the ownership graph. Please try again.",
+    "emptyGraph": "No ownership connections recorded for this land.",
+    "flaggedNote": "Flagged means the records need human review. It is not a final finding.",
+    "backToResult": "Back to verification result",
+    "viewLink": "View ownership graph"
+  },
+  "qr": {
+    "title": "Share this verification",
+    "alt": "QR code linking to the public verification page for {landId}",
+    "caption": "Scan to open a public summary of this parcel. It shows no owner names or personal details.",
+    "urlLabel": "Public page"
+  },
+  "publicVerify": {
+    "title": "Public land verification summary",
+    "district": "District",
+    "upazila": "Upazila",
+    "mouza": "Mouza",
+    "status": "Parcel status",
+    "risk": "Risk level",
+    "lastVerified": "Last verified",
+    "neverVerified": "Not verified yet",
+    "countsTitle": "Record counts",
+    "ownershipRecords": "Ownership records",
+    "transactions": "Transactions",
+    "flaggedTransactions": "Flagged for review",
+    "openAlerts": "Open alerts",
+    "privacyNote": "This public page shows a summary only. Owner names, document details and evidence are available to signed-in users with permission.",
+    "signIn": "Sign in to view the full record",
+    "notFound": "No land record found for this code.",
+    "rateLimited": "Too many requests. Please wait a minute and try again.",
+    "loadError": "We couldn't load this summary. Please try again."
+  },
+  "map": {
+    "title": "Bangladesh map",
+    "intro": "Explore Bangladesh from division down to upazila on a street map. Land records and mouza maps are sample data only; coloured parcel outlines are synthetic and illustrative.",
+    "canvasLabel": "Parcel map",
+    "filterLabel": "Risk level",
+    "filterAll": "All levels",
+    "count": "{count, plural, one {# parcel shown} other {# parcels shown}}",
+    "noMatch": "No parcels match this risk level.",
+    "loadError": "We couldn't load the parcel map. Please try again.",
+    "mapHint": "Drag to pan, use the zoom buttons or scroll to zoom, and click a boundary to drill down. Every place is also available in the search menu.",
+    "legendTitle": "Map legend",
+    "legendNote": "Outline colour shows the indicator level; each parcel also states its level in text. Review required means a human reviewer should check the records.",
+    "listTitle": "Parcels",
+    "showOnMap": "Show on map",
+    "showOnMapFor": "Show {landId} on map",
+    "viewDetailsFor": "View details for {landId}",
+    "popup": {
+      "landId": "Land ID",
+      "dag": "Dag",
+      "khatian": "Khatian",
+      "area": "Area",
+      "status": "Status",
+      "risk": "Risk",
+      "view": "View details"
+    },
+    "gis": {
+      "menuTitle": "Search menu",
+      "hideMenu": "Hide search menu",
+      "showMenu": "Show search menu",
+      "division": "Division",
+      "district": "District",
+      "upazila": "Upazila / Thana",
+      "mouza": "Mouza",
+      "sheet": "Sheet no.",
+      "plot": "Plot",
+      "choose": "Select…",
+      "searchLabel": "Search a place",
+      "searchPlaceholder": "Division, district, upazila or mouza (English or বাংলা)",
+      "searchButton": "Search",
+      "searching": "Searching…",
+      "searchError": "Search failed. Please try again.",
+      "searchNone": "No matching place found. Mouza search covers the sample area only.",
+      "searchScopeNote": "Mouza search covers the sample area only.",
+      "level": {
+        "division": "Division",
+        "district": "District",
+        "upazila": "Upazila",
+        "mouza": "Mouza"
+      },
+      "mouzaOutOfScope": "Mouza maps are available for the sample area only ({division}). Other divisions show boundaries down to upazila.",
+      "mouzaNone": "No mouza maps have been loaded for this upazila yet.",
+      "advanced": "Mouza, sheet & plot",
+      "sheetPlotNote": "Sheet and plot lookup becomes available once mouza maps are loaded.",
+      "reset": "Show all of Bangladesh",
+      "layers": "Layers",
+      "layerBasemap": "Street basemap (OpenStreetMap)",
+      "layerBoundaries": "Administrative boundaries",
+      "layerParcels": "Land parcels (risk colours)",
+      "shownNow": "shown now",
+      "zoom": "Zoom",
+      "loadError": "We couldn't load the boundary data. Please try again.",
+      "boundaryNote": "Boundaries are third-party open data (geoBoundaries, via ifahimreza/bangladesh-geojson), simplified for this prototype. They are not official survey or cadastral boundaries.",
+      "fullscreen": "Fullscreen",
+      "exitFullscreen": "Exit fullscreen"
+    }
+  },
+  "theme": {
+    "label": "Colour theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "footer": {
+    "tagline": "Digital Land Verification & Risk Intelligence",
+    "explore": "Explore",
+    "account": "Account",
+    "notice": "Notice"
+  }
+}

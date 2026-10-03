@@ -1,0 +1,87 @@
+"use client";
+import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { cn } from "./cn";
+
+export interface TabItem {
+  id: string;
+  label: string;
+  content: ReactNode;
+  disabled?: boolean;
+}
+
+export interface TabsProps {
+  tabs: TabItem[];
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (id: string) => void;
+  label?: string;
+  className?: string;
+}
+
+export default function Tabs({ tabs, value, defaultValue, onValueChange, label, className }: TabsProps) {
+  const base = useId();
+  const [inner, setInner] = useState(defaultValue ?? tabs.find((x) => !x.disabled)?.id ?? "");
+  const current = value ?? inner;
+  const refs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const select = (id: string) => {
+    if (value === undefined) setInner(id);
+    onValueChange?.(id);
+  };
+
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const enabled = tabs.filter((x) => !x.disabled);
+    const idx = enabled.findIndex((x) => x.id === current);
+    let next = -1;
+    if (e.key === "ArrowRight") next = (idx + 1) % enabled.length;
+    else if (e.key === "ArrowLeft") next = (idx - 1 + enabled.length) % enabled.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = enabled.length - 1;
+    if (next < 0) return;
+    e.preventDefault();
+    const target = enabled[next];
+    select(target.id);
+    refs.current[target.id]?.focus();
+  };
+
+  const active = tabs.find((x) => x.id === current);
+
+  return (
+    <div className={className}>
+      <div role="tablist" aria-label={label} onKeyDown={onKeyDown} className="flex gap-1 border-b border-line">
+        {tabs.map((tab) => {
+          const selected = tab.id === current;
+          return (
+            <button
+              key={tab.id}
+              ref={(el) => {
+                refs.current[tab.id] = el;
+              }}
+              type="button"
+              role="tab"
+              id={`${base}-tab-${tab.id}`}
+              aria-selected={selected}
+              aria-controls={`${base}-panel-${tab.id}`}
+              tabIndex={selected ? 0 : -1}
+              disabled={tab.disabled}
+              onClick={() => select(tab.id)}
+              className={cn(
+                "-mb-px min-h-11 rounded-t-md border-b-2 px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50",
+                selected
+                  ? "border-primary bg-primary-soft text-primary"
+                  : "border-transparent text-ink-muted hover:bg-primary-soft/50 hover:text-ink",
+              )}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+      {active && (
+        <div role="tabpanel" id={`${base}-panel-${active.id}`} aria-labelledby={`${base}-tab-${active.id}`} tabIndex={0} className="pt-4">
+          {active.content}
+        </div>
+      )}
+    </div>
+  );
+}

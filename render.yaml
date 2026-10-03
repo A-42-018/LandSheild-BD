@@ -1,0 +1,31 @@
+# Backend on Render (free web service). NOT tested from this sandbox.
+# SQLite on Render's free disk is wiped on each redeploy/restart: the demo data is re-seeded on every start.
+services:
+  - type: web
+    name: landshield-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free           # without this line Render defaults to Starter ($7/month)
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: ML_SCORING
+        value: "off"        # scikit-learn is too heavy for the free 512 MB instance; rules still run
+      - key: APP_ENV
+        value: prod
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: COOKIE_SAMESITE
+        value: none
+      - key: DATABASE_URL
+        value: sqlite:///./landshield.db
+      - key: STORAGE_PATH
+        value: ./storage
+      - key: JWT_SECRET
+        generateValue: true
+      - key: HASH_SALT
+        generateValue: true
+      - key: DEMO_PASSWORD
+        sync: false          # you type it in the Render dashboard
+      - key: CORS_ORIGINS
+        sync: false          # https://<your-site>.netlify.app (no trailing slash)

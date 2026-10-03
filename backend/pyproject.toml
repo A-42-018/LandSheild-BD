@@ -1,0 +1,67 @@
+[project]
+name = "landshield-backend"
+version = "0.1.0"
+description = "LandShield BD backend (demo dataset, not an official government system)"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.29",
+  "pydantic>=2.6",
+  "pydantic-settings>=2.2",
+  "sqlalchemy>=2.0",
+  "alembic>=1.13",
+  "pyjwt>=2.15",
+  "filetype>=1.2",
+  "python-multipart>=0.0.9",
+  "rapidfuzz>=3.6",  # P43 fuzzy owner-name matching
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "httpx>=0.27",
+  "ruff>=0.4",
+  "pillow>=12.3",  # P26 synthetic document generator (needs libraqm for Bangla shaping)
+]
+
+ai = [
+  "opencv-python-headless>=4.9",  # P38 preprocessing (PREPROCESS=on)
+  "numpy>=1.26",
+  "pymupdf>=1.24",  # P38 PDF -> image
+  "scikit-learn>=1.4",  # P48 Isolation Forest (also brings joblib)
+  "pytesseract>=0.3.10",  # P39 (also needs the tesseract binary + ben/eng data, docs/ocr-setup.md)
+]
+
+[tool.pytest.ini_options]
+pythonpath = [".", ".."]  # ".." exposes the repo-root `ai` package
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.File", "fastapi.Form", "app.core.rbac.require_roles"]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/versions/*" = ["E501", "I001", "UP"]
+"tests/test_ownership.py" = ["F811"]  # reuses env fixture from test_lands
+"tests/test_risk_api.py" = ["F811"]  # reuses env fixture from test_lands
+"tests/test_verification.py" = ["F811"]  # reuses env fixture from test_lands
+"tests/test_officer.py" = ["F811"]  # reuses env fixture from test_lands
+"tests/integration/*.py" = ["F811"]  # reuses env/jobs fixtures from other test modules
+"tests/test_documents.py" = ["F811"]  # reuses env fixture from test_lands
+"tests/test_processing.py" = ["F811"]  # reuses env/store fixtures
+"tests/test_extraction.py" = ["F811"]  # reuses env/store/jobs fixtures
+"tests/test_review.py" = ["F811"]  # reuses env/jobs fixtures
+"tests/test_admin_audit.py" = ["F811"]  # reuses env fixture from test_lands
+"tests/test_risk_ml.py" = ["F811"]  # reuses env fixture from test_lands
+
+"tests/test_map.py" = ["F811"]  # reuses env fixture from test_lands
+"tests/test_security_a.py" = ["F811"]  # reuses env/store fixtures
+
+[tool.setuptools.packages.find]
+include = ["app*"]

@@ -1,0 +1,61 @@
+{
+  "label": "Demo Dataset — Not an Official Government Land Record.",
+  "users": [
+    {"key": "citizen", "name": "Demo Citizen", "email": "citizen@demo.landshield.test", "role": "CITIZEN", "preferred_language": "en"},
+    {"key": "reviewer", "name": "Demo Reviewer", "email": "reviewer@demo.landshield.test", "role": "REVIEWER", "preferred_language": "en"},
+    {"key": "officer", "name": "Demo Officer", "email": "officer@demo.landshield.test", "role": "OFFICER", "preferred_language": "en"},
+    {"key": "admin", "name": "Demo Admin", "email": "admin@demo.landshield.test", "role": "ADMIN", "preferred_language": "en"}
+  ],
+  "owners": [
+    {"key": "rahim", "name": "Rahim Uddin", "father_name": "Abdul Jabbar", "nid": "SYN-NID-0001", "contact": "SYN-TEL-0001"},
+    {"key": "karim", "name": "Karim Mia", "father_name": "Nur Mohammad", "nid": "SYN-NID-0002", "contact": "SYN-TEL-0002"},
+    {"key": "hasan", "name": "Hasan Ali", "father_name": "Md. Idris", "nid": "SYN-NID-0003", "contact": "SYN-TEL-0003"},
+    {"key": "jamal", "name": "Jamal Hossain", "father_name": "Sirajul Islam", "nid": "SYN-NID-0004", "contact": "SYN-TEL-0004"}
+  ],
+  "lands": [
+    {"key": "LP-10001", "scenario": "CLEAN", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "101", "khatian_no": "501", "area": 15, "area_unit": "decimal"},
+    {"key": "LP-10100", "scenario": "NORMAL_CHAIN", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "210", "khatian_no": "610", "area": 20, "area_unit": "decimal"},
+    {"key": "LP-10234", "scenario": "LIVE_DEMO", "district": "Gazipur", "upazila": "Sreepur", "mouza": "Barmi", "dag_no": "785", "khatian_no": "1245", "area": 10, "area_unit": "decimal"},
+    {"key": "LP-10240", "scenario": "DOUBLE_SALE", "district": "Gazipur", "upazila": "Sreepur", "mouza": "Barmi", "dag_no": "790", "khatian_no": "1250", "area": 10, "area_unit": "decimal"},
+    {"key": "LP-10300", "scenario": "AREA_MISMATCH", "district": "Gazipur", "upazila": "Kaliakair", "mouza": "Mouchak", "dag_no": "310", "khatian_no": "710", "area": 10, "area_unit": "decimal"},
+    {"key": "LP-10400", "scenario": "SELLER_MISMATCH", "district": "Gazipur", "upazila": "Kaliakair", "mouza": "Mouchak", "dag_no": "410", "khatian_no": "810", "area": 12, "area_unit": "decimal"},
+    {"key": "LP-10500", "scenario": "DUPLICATE_DEED", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "510", "khatian_no": "910", "area": 8, "area_unit": "decimal"}
+  ],
+  "deeds": [
+    {"key": "d-10100-a", "land": "LP-10100", "deed_no": "D-2012-0100", "seller": "rahim", "buyer": "karim", "date": "2012-03-15", "area": 20, "area_unit": "decimal"},
+    {"key": "d-10100-b", "land": "LP-10100", "deed_no": "D-2019-0101", "seller": "karim", "buyer": "hasan", "date": "2019-06-20", "area": 20, "area_unit": "decimal"},
+    {"key": "d-10240-a", "land": "LP-10240", "deed_no": "D-2021-0240", "seller": "rahim", "buyer": "karim", "date": "2021-05-10", "area": 10, "area_unit": "decimal"},
+    {"key": "d-10240-b", "land": "LP-10240", "deed_no": "D-2021-0241", "seller": "rahim", "buyer": "hasan", "date": "2021-08-02", "area": 10, "area_unit": "decimal"},
+    {"key": "d-10500-a", "land": "LP-10500", "deed_no": "D-2018-0500", "seller": "hasan", "buyer": "karim", "date": "2018-04-12", "area": 8, "area_unit": "decimal"},
+    {"key": "d-10500-b", "land": "LP-10500", "deed_no": "D-2018-0500", "seller": "karim", "buyer": "rahim", "date": "2020-09-03", "area": 8, "area_unit": "decimal"}
+  ],
+  "transactions": [
+    {"key": "t-10100-a", "land": "LP-10100", "deed": "d-10100-a", "seller": "rahim", "buyer": "karim", "type": "SALE", "date": "2012-03-15", "area": 20, "area_unit": "decimal"},
+    {"key": "t-10100-b", "land": "LP-10100", "deed": "d-10100-b", "seller": "karim", "buyer": "hasan", "type": "SALE", "date": "2019-06-20", "area": 20, "area_unit": "decimal"},
+    {"key": "t-10240-a", "land": "LP-10240", "deed": "d-10240-a", "seller": "rahim", "buyer": "karim", "type": "SALE", "date": "2021-05-10", "area": 10, "area_unit": "decimal"},
+    {"key": "t-10240-b", "land": "LP-10240", "deed": "d-10240-b", "seller": "rahim", "buyer": "hasan", "type": "SALE", "date": "2021-08-02", "area": 10, "area_unit": "decimal"},
+    {"key": "t-10500-a", "land": "LP-10500", "deed": "d-10500-a", "seller": "hasan", "buyer": "karim", "type": "SALE", "date": "2018-04-12", "area": 8, "area_unit": "decimal"},
+    {"key": "t-10500-b", "land": "LP-10500", "deed": "d-10500-b", "seller": "karim", "buyer": "rahim", "type": "SALE", "date": "2020-09-03", "area": 8, "area_unit": "decimal"}
+  ],
+  "ownership": [
+    {"key": "o-10001", "land": "LP-10001", "owner": "jamal", "start": "2008-01-10", "end": null, "tx": null},
+    {"key": "o-10100-1", "land": "LP-10100", "owner": "rahim", "start": "2005-01-01", "end": "2012-03-15", "tx": null},
+    {"key": "o-10100-2", "land": "LP-10100", "owner": "karim", "start": "2012-03-15", "end": "2019-06-20", "tx": "t-10100-a"},
+    {"key": "o-10100-3", "land": "LP-10100", "owner": "hasan", "start": "2019-06-20", "end": null, "tx": "t-10100-b"},
+    {"key": "o-10234", "land": "LP-10234", "owner": "rahim", "start": "2010-01-01", "end": null, "tx": null},
+    {"key": "o-10240-1", "land": "LP-10240", "owner": "rahim", "start": "2015-01-01", "end": "2021-05-10", "tx": null},
+    {"key": "o-10240-2", "land": "LP-10240", "owner": "karim", "start": "2021-05-10", "end": null, "tx": "t-10240-a"},
+    {"key": "o-10300", "land": "LP-10300", "owner": "hasan", "start": "2011-02-01", "end": null, "tx": null},
+    {"key": "o-10400", "land": "LP-10400", "owner": "karim", "start": "2013-07-01", "end": null, "tx": null},
+    {"key": "o-10500-1", "land": "LP-10500", "owner": "hasan", "start": "2010-01-01", "end": "2018-04-12", "tx": null},
+    {"key": "o-10500-2", "land": "LP-10500", "owner": "karim", "start": "2018-04-12", "end": "2020-09-03", "tx": "t-10500-a"},
+    {"key": "o-10500-3", "land": "LP-10500", "owner": "rahim", "start": "2020-09-03", "end": null, "tx": "t-10500-b"}
+  ],
+  "fixtures_not_loaded": {
+    "note": "Incoming documents are upload fixtures (P26). They are NOT loaded as DB rows.",
+    "Doc1": {"land": "LP-10234", "dag_no": "785", "khatian_no": "1245", "area": 10, "area_unit": "decimal", "seller": "rahim", "buyer": "karim", "expected": "LOW"},
+    "Doc2": {"land": "LP-10234", "dag_no": "785", "khatian_no": "1245", "area": 10, "area_unit": "decimal", "seller": "rahim", "buyer": "hasan", "expected": "HIGH (70)"},
+    "LP-10300": {"area": 12, "area_unit": "decimal", "expected": "LOW (15) + AREA_MISMATCH"},
+    "LP-10400": {"seller": "rahim", "expected": "MEDIUM (30)"}
+  }
+}

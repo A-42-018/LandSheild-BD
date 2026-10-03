@@ -1,0 +1,280 @@
+{
+  "_note": "Synthetic ground truth for the mock providers (demo data, not official records). Keyed by marker (LSMOCK:<key> inside the file bytes) or by file sha256. P26 will emit files carrying these markers.",
+  "by_hash": {},
+  "by_marker": {
+    "Doc1": {
+      "ocr_text": "Deed of Sale. Deed No D-2024-0785. Date 2024-02-12. District Gazipur, Upazila Sreepur, Mouza Barmi. Khatian 1245, Dag 785. Area 10 decimal. Seller Rahim Uddin. Buyer Karim Mia.",
+      "ocr_confidence": 0.93,
+      "fields": {
+        "owner_name": [
+          "Rahim Uddin",
+          0.92
+        ],
+        "father_name": [
+          "Abdul Jabbar",
+          0.88
+        ],
+        "khatian_no": [
+          "1245",
+          0.97
+        ],
+        "dag_no": [
+          "785",
+          0.97
+        ],
+        "mouza": [
+          "Barmi",
+          0.95
+        ],
+        "district": [
+          "Gazipur",
+          0.96
+        ],
+        "upazila": [
+          "Sreepur",
+          0.96
+        ],
+        "land_area": [
+          "10",
+          0.94
+        ],
+        "area_unit": [
+          "decimal",
+          0.93
+        ],
+        "deed_no": [
+          "D-2024-0785",
+          0.91
+        ],
+        "deed_date": [
+          "2024-02-12",
+          0.9
+        ],
+        "seller": [
+          "Rahim Uddin",
+          0.92
+        ],
+        "buyer": [
+          "Karim Mia",
+          0.91
+        ]
+      }
+    },
+    "Doc2": {
+      "ocr_text": "Deed of Sale. Deed No D-2024-0786. Date 2024-03-05. District Gazipur, Upazila Sreepur, Mouza Barmi. Khatian 1245, Dag 785. Area 10 decimal. Seller Rahim Uddin. Buyer Hasan Ali.",
+      "ocr_confidence": 0.91,
+      "fields": {
+        "owner_name": [
+          "Rahim Uddin",
+          0.92
+        ],
+        "father_name": [
+          "Abdul Jabbar",
+          0.87
+        ],
+        "khatian_no": [
+          "1245",
+          0.96
+        ],
+        "dag_no": [
+          "785",
+          0.96
+        ],
+        "mouza": [
+          "Barmi",
+          0.95
+        ],
+        "district": [
+          "Gazipur",
+          0.96
+        ],
+        "upazila": [
+          "Sreepur",
+          0.95
+        ],
+        "land_area": [
+          "10",
+          0.93
+        ],
+        "area_unit": [
+          "decimal",
+          0.93
+        ],
+        "deed_no": [
+          "D-2024-0786",
+          0.9
+        ],
+        "deed_date": [
+          "2024-03-05",
+          0.89
+        ],
+        "seller": [
+          "Rahim Uddin",
+          0.91
+        ],
+        "buyer": [
+          "Hasan Ali",
+          0.9
+        ]
+      }
+    },
+    "AreaMismatch": {
+      "ocr_text": "Deed of Sale. Deed No D-2024-0310. Date 2024-04-02. District Gazipur, Upazila Kaliakair, Mouza Mouchak. Khatian 710, Dag 310. Area 12 decimal. Seller Jamal Hossain. Buyer Karim Mia.",
+      "ocr_confidence": 0.9,
+      "fields": {
+        "khatian_no": [
+          "710",
+          0.95
+        ],
+        "dag_no": [
+          "310",
+          0.95
+        ],
+        "mouza": [
+          "Mouchak",
+          0.93
+        ],
+        "district": [
+          "Gazipur",
+          0.95
+        ],
+        "upazila": [
+          "Kaliakair",
+          0.94
+        ],
+        "land_area": [
+          "12",
+          0.88
+        ],
+        "area_unit": [
+          "decimal",
+          0.92
+        ],
+        "deed_no": [
+          "D-2024-0310",
+          0.9
+        ],
+        "deed_date": [
+          "2024-04-02",
+          0.9
+        ],
+        "seller": [
+          "Jamal Hossain",
+          0.9
+        ],
+        "buyer": [
+          "Karim Mia",
+          0.9
+        ]
+      }
+    },
+    "SellerMismatch": {
+      "ocr_text": "Deed of Sale. Deed No D-2024-0410. Date 2024-04-20. District Gazipur, Upazila Kaliakair, Mouza Mouchak. Khatian 810, Dag 410. Area 12 decimal. Seller Rahim Uddin. Buyer Hasan Ali.",
+      "ocr_confidence": 0.9,
+      "fields": {
+        "khatian_no": [
+          "810",
+          0.95
+        ],
+        "dag_no": [
+          "410",
+          0.95
+        ],
+        "mouza": [
+          "Mouchak",
+          0.93
+        ],
+        "district": [
+          "Gazipur",
+          0.95
+        ],
+        "upazila": [
+          "Kaliakair",
+          0.94
+        ],
+        "land_area": [
+          "12",
+          0.93
+        ],
+        "area_unit": [
+          "decimal",
+          0.92
+        ],
+        "deed_no": [
+          "D-2024-0410",
+          0.9
+        ],
+        "deed_date": [
+          "2024-04-20",
+          0.9
+        ],
+        "seller": [
+          "Rahim Uddin",
+          0.9
+        ],
+        "buyer": [
+          "Hasan Ali",
+          0.9
+        ]
+      }
+    },
+    "Clean": {
+      "ocr_text": "Deed of Sale. Deed No D-2024-0101. Date 2024-05-10. District Dhaka, Upazila Savar, Mouza Ashulia. Khatian 501, Dag 101. Area 15 decimal. Seller Jamal Hossain. Buyer Hasan Ali.",
+      "ocr_confidence": 0.94,
+      "fields": {
+        "owner_name": [
+          "Jamal Hossain",
+          0.93
+        ],
+        "father_name": [
+          "Sirajul Islam",
+          0.9
+        ],
+        "khatian_no": [
+          "501",
+          0.97
+        ],
+        "dag_no": [
+          "101",
+          0.97
+        ],
+        "mouza": [
+          "Ashulia",
+          0.95
+        ],
+        "district": [
+          "Dhaka",
+          0.96
+        ],
+        "upazila": [
+          "Savar",
+          0.96
+        ],
+        "land_area": [
+          "15",
+          0.95
+        ],
+        "area_unit": [
+          "decimal",
+          0.94
+        ],
+        "deed_no": [
+          "D-2024-0101",
+          0.92
+        ],
+        "deed_date": [
+          "2024-05-10",
+          0.91
+        ],
+        "seller": [
+          "Jamal Hossain",
+          0.93
+        ],
+        "buyer": [
+          "Hasan Ali",
+          0.92
+        ]
+      }
+    }
+  }
+}
