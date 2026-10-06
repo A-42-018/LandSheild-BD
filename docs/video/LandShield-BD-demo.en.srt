@@ -1,0 +1,83 @@
+1
+00:00:01,015 --> 00:00:09,821
+Bangladesh: ~80% of court cases are land disputes. One plot can be sold twice, and deed and khatian drift apart.
+
+2
+00:00:09,821 --> 00:00:16,095
+LandShield BD: Scan → Verify → Detect → Mutate → Citizen check. All data here is synthetic (demo).
+
+3
+00:00:16,095 --> 00:00:19,672
+An officer uploads a sale deed: Doc1, Rahim sells plot LP-10234 to Karim.
+
+4
+00:00:19,672 --> 00:00:30,794
+OCR + field extraction: each field gets a confidence score; a human reviews before anything is saved.
+
+5
+00:00:30,794 --> 00:00:37,706
+Approve: the deed is hashed, Ed25519-signed and added to a hash-chained ledger. e-Mutation starts automatically.
+
+6
+00:00:37,706 --> 00:00:43,911
+e-Mutation queue: Doc1 passed all six pre-checks → fast track (Under review).
+
+7
+00:00:43,911 --> 00:00:52,164
+Doc2: the same seller sells the same plot again, this time to Hasan.
+
+8
+00:00:52,164 --> 00:01:01,924
+Possible double sale → HIGH 70, with the evidence for every indicator. An indicator for review, not a legal finding.
+
+9
+00:01:01,924 --> 00:01:08,668
+Doc2's mutation failed the pre-checks, so it goes to a hearing instead of the fast track.
+
+10
+00:01:08,668 --> 00:01:18,245
+Ownership graph: one seller linked to two buyers of the same plot.
+
+11
+00:01:18,245 --> 00:01:19,179
+Check Before You Buy: a buyer checks plot LP-10900 before paying.
+
+12
+00:01:19,179 --> 00:01:28,962
+Plain-language checklist: this plot is recorded as khas (government) land → consult the AC Land office.
+
+13
+00:01:28,962 --> 00:01:30,044
+Verify a copy: someone changed the land area on a copy of Doc1.
+
+14
+00:01:30,044 --> 00:01:37,281
+ALTERED: the copy does not match the signed record (land area).
+
+15
+00:01:37,281 --> 00:01:40,460
+Every approved record is chained with SHA-256 in a ledger.
+
+16
+00:01:40,460 --> 00:01:43,078
+Now someone edits the database directly, bypassing the app…
+
+17
+00:01:43,078 --> 00:01:50,187
+…and the hash-chained ledger exposes it: chain BROKEN at the edited entry.
+
+18
+00:01:50,187 --> 00:01:54,867
+Original value restored → INTACT.
+
+19
+00:01:54,867 --> 00:02:02,718
+Full Bangla interface · সম্পূর্ণ বাংলা ইন্টারফেস
+
+20
+00:02:02,718 --> 00:02:09,482
+QR public page: a signed summary with no personal data.
+
+21
+00:02:09,482 --> 00:02:16,719
+Land records should be searchable, connected, verifiable and risk-aware. LandShield BD · Team DEEDGUARD

@@ -10,6 +10,12 @@
 - [ ] Tab 2 (final only): `admin@demo.landshield.test` on `/en/officer/admin` → Ledger integrity
 - [ ] Backup assets saved in `docs/backup/` (git-ignored): screenshots of steps 5, 10, 11, 12, 14, 15 and the exported report PDF (`scripts/export_report_pdf.py`, needs Chromium)
 
+## Automated recording (S2)
+`scripts/record_demo_video.cjs` drives the local app with Playwright through the §A story (live Doc1 → Doc2 uploads on LP-10234, mutation fast track → hearing, HIGH 70 evidence, graph, Check Before You Buy on LP-10900, verify-a-copy ALTERED, real `tamper_demo.py` BROKEN → `--restore` INTACT, Bangla, public QR). Captions are drawn on the page and also written to `docs/video/LandShield-BD-demo.en.srt` (soft subtitle track in the MP4, ±1 s). Output: `docs/video/LandShield-BD-demo.mp4`, 1280×720 H.264, ~2:17, no audio (git-ignored; upload it).
+1. Fresh run: `./scripts/demo_reset.sh` (mock OCR), backend on `:8001`, `NEXT_PUBLIC_API_URL=http://localhost:8001/api/v1 npx next dev -p 3000`; open each page once so dev compiles are warm.
+2. `cd frontend && DATABASE_URL=sqlite:///<absolute path to the backend DB> node ../scripts/record_demo_video.cjs` (needs ffmpeg; `PYTHON=` if the backend venv is elsewhere).
+3. Re-run = reset the DB first (Doc1/Doc2 must not be approved yet). Optional: add a voice-over in any editor, using the captions as the script.
+
 ## A. 3-minute video (Round 1, S2) — P3 Fraud & Double-Selling first
 
 Pre-run Doc1 + Doc2 on LP-10234 before recording, or use LP-10240 (identical outcome). Screen-record at 1080p, EN with one BN switch.

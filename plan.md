@@ -6,12 +6,13 @@
 
 ## STATE
 ```text
-Plan version : 114
+Plan version : 115
 Competition  : LandTech 2026 · P3 Fraud & Double-Selling (P1/P2/P4/P5 supporting) · submit by 15 Oct (deadline 16 Oct)
-Current phase: S1 (2026-10-06) ✅ — concept note written + PDF exported (3 pages A4, readable at 100 %). Q2-b live deploy reported done by user. Files: docs/concept-note.md (source; 8 sections: P3 problem, BD context w/ 3 cited public sources [Daily Observer 8 Nov 2025 ~80 % of cases land-related; HiiL/BRAC 2018 land 29 % of legal problems; TIB NHS 2023: 51 % corruption / 32.3 % bribes in land services], Scan→Verify→Detect→Mutate→Citizen pipeline, architecture SVG + stack, 6 screenshots, AI metrics + limitations, countrywide plan §6, team + AI disclosure), docs/concept-note/ (architecture.svg + 6 JPG screenshots from a local seeded run), docs/concept-note.html (generated), docs/LandShield-BD-Concept-Note.pdf, scripts/export_concept_note.py (md → HTML → headless Chrome PDF; `pip install markdown`). Facts checked against code: 14 scored rules (risk/config.py), 6 e-Mutation pre-checks (services/mutation.py), metrics from docs/ai-pipeline.md.
-S1-b ✅: team DEEDGUARD (Alif Mahmud, Ayesha Hamid Mithila; mentor not assigned), live https://land-sheild-bd.netlify.app/en, repo github.com/A-42-018/LandSheild-BD filled in concept note + README header; PDF re-exported (3 p). Only VIDEO_URL left → fill after S2, then re-run `python scripts/export_concept_note.py`.
+Current phase: S2 (2026-10-06) 🟡 — demo video recorded automatically: docs/video/LandShield-BD-demo.mp4 (2:17, 1280×720 H.264, captions burned in + soft EN subtitle track, no audio) + LandShield-BD-demo.en.srt, by scripts/record_demo_video.cjs (Playwright drives the local app as admin on a fresh seed, mock OCR). Story = card S2: problem → Doc1 upload/OCR/confidence → approve (hash, Ed25519, ledger) → e-Mutation fast track → Doc2 → HIGH 70 evidence → mutation to hearing → ownership graph → Check Before You Buy LP-10900 (khas) → verify-a-copy Doc1_altered ALTERED (land area) → tamper_demo BROKEN #7 → restore INTACT → Bangla evidence → public QR → closing. Every scene checked frame by frame. docs/demo-script.md: "Automated recording" section. Video files git-ignored (6 MB; copy in the parent folder).
+S2-b (user): watch it; optional voice-over; upload (YouTube unlisted or Drive, "anyone with link") → send the link → VIDEO_URL in docs/concept-note.md + re-export PDF + README.
+S1: ✅ (concept note PDF 3 p; only VIDEO_URL left).
 OPEN (carried): EN+BN evidence i18n for ACTIVE_LITIGATION/KHAS_LAND/UNDER_ACQUISITION/ACTIVE_MORTGAGE not done; public QR page does not render encumbrance/mutation counts; real OCR (tesseract) path of verify-document untested; ML scoring skipped in plain dev venv; Docker image never built locally; `next build` not run. Ledger chain is only as strong as DB write access (anchoring head hash off-DB is a T1 idea).
-Next phase   : S2 demo video (user, record locally, follow docs/demo-script.md §A) → S3 submit (tag `round1-submission`)
+Next phase   : S2-b upload + VIDEO_URL (user) → S3 submit Round 1 🔒 (tag `round1-submission`)
 Carried over : reseed for demo password (Q17)
 ```
 
@@ -44,7 +45,7 @@ Carried over : reseed for demo password (Q17)
 | 13 Oct | F6 / F5c | Plausibility rules / archive search | Could | ⬜ |
 | 13 Oct | Q1 | Integration + full regression 🔒 | Must | ✅ |
 | 14 Oct | Q2 | Deploy + live smoke + e2e | Must | ✅ (live deploy done by user) |
-| 14 Oct | S2 | Demo video ≤ 3 min (user) | Must | ⬜ |
+| 14 Oct | S2 | Demo video ≤ 3 min (user) | Must | 🟡 (recorded 2:17; S2-b upload + link) |
 | 15 Oct | S1 | Concept note ≤ 4 p PDF | Must | ✅ (VIDEO_URL after S2) |
 | 15 Oct | S3 | Submit Round 1 🔒 | Must | ⬜ |
 | TBA | T1 | Final build + "Changes since Round 1" + pitch deck | Should | ⬜ |
