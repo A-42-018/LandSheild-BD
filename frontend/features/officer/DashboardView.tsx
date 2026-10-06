@@ -1,5 +1,6 @@
 "use client";
 import { useTranslations } from "next-intl";
+import PageHeader from "@/components/PageHeader";
 import { useAuth } from "@/features/auth/AuthContext";
 import Activity from "./Activity";
 import Alerts from "./Alerts";
@@ -13,7 +14,7 @@ export default function DashboardView() {
   const titleKey = user?.role === "ADMIN" ? "titleAdmin" : user?.role === "REVIEWER" ? "titleReviewer" : "title";
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold text-ink">{t(titleKey)}</h1>
+      <PageHeader title={t(titleKey)} purpose={t("purpose")} />
       <KpiCards />
       <Charts />
       <QueueTable />

@@ -27,6 +27,11 @@ class OfficerStats(BaseModel):
     pending_review: int
     high_risk: int
     verified: int
+    open_alerts: int = 0
+    pending_mutations: int = 0
+    active_encumbrances: int = 0
+    ledger_status: str = "INTACT"  # INTACT | BROKEN (status + entry count only, no detail)
+    ledger_entries: int = 0
 
 
 class QueueItem(BaseModel):

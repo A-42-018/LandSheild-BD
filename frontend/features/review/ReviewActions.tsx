@@ -36,7 +36,11 @@ export default function ReviewActions({
     e && e.status === 409 ? t("actions.notReviewable") : fallback;
 
   return (
-    <section aria-label={t("actions.title")} className="flex flex-col gap-3" data-testid="review-actions">
+    <section
+      aria-label={t("actions.title")}
+      className="sticky bottom-0 z-10 flex flex-col gap-2 rounded-md border border-line bg-surface p-3 shadow-[0_-2px_8px_rgb(0_0_0/0.06)]"
+      data-testid="review-actions"
+    >
       <div className="flex flex-wrap gap-2">
         <Button
           onClick={() => approve.mutate()}

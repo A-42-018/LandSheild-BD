@@ -1,15 +1,17 @@
 "use client";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui";
+import PageHeader from "@/components/PageHeader";
 import UsersPanel from "./UsersPanel";
 import { DocumentsPanel, LandRecordsPanel } from "./RecordsPanels";
 import LedgerCard from "./LedgerCard";
 
 export default function AdminView() {
   const t = useTranslations("admin.console");
+  const tn = useTranslations("errors");
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold text-ink">{t("title")}</h1>
+      <PageHeader title={t("title")} purpose={t("purpose")} crumbs={[{ label: tn("officerCrumb"), href: "/officer" }]} />
       <Tabs
         label={t("tabsLabel")}
         tabs={[

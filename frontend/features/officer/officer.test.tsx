@@ -23,7 +23,10 @@ vi.mock("@/i18n/navigation", () => ({
 }));
 
 const mk = (role: string) => ({ id: "1", name: "U", email: "u@x.co", role, preferred_language: "en" });
-const STATS = { total_records: 7, pending_review: 3, high_risk: 1, verified: 7 };
+const STATS = {
+  total_records: 7, pending_review: 3, high_risk: 1, verified: 7, open_alerts: 4, pending_mutations: 2,
+  active_encumbrances: 3, ledger_status: "INTACT" as const, ledger_entries: 32,
+};
 const item = (over: any = {}) => ({
   id: "doc-1", land_id: "LP-10240", document_type: "DEED", processing_status: "REVIEW_REQUIRED",
   min_confidence: 0.72, low_confidence: true, high_risk: false, created_at: "2026-10-01T08:00:00Z", ...over,
@@ -63,6 +66,11 @@ describe("dashboard", () => {
     wrap(<DashboardView />, api(router()));
     expect(await screen.findByTestId("kpi-pending_review")).toHaveTextContent("3");
     expect(screen.getByTestId("kpi-total_records")).toHaveTextContent("7");
+    expect(screen.getByTestId("kpi-open_alerts")).toHaveTextContent("4");
+    expect(screen.getByTestId("kpi-pending_mutations")).toHaveTextContent("2");
+    expect(screen.getByTestId("kpi-active_encumbrances")).toHaveTextContent("3");
+    expect(screen.getByTestId("kpi-ledger")).toHaveTextContent("Intact");
+    expect(screen.getByTestId("kpi-ledger")).toHaveTextContent("32 entries");
     const link = await screen.findByRole("link", { name: /LP-10240/ });
     expect(link).toHaveAttribute("href", "/officer/review/doc-1");
     expect(screen.getByText("72%")).toBeInTheDocument();

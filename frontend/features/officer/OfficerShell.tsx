@@ -45,10 +45,10 @@ export default function OfficerShell({ children }: { children: ReactNode }) {
       </div>
       <aside
         id="officer-sidebar"
-        className={`${open ? "block" : "hidden"} w-full shrink-0 self-start rounded-xl border border-line bg-primary-soft/50 p-3 shadow-card lg:sticky lg:top-4 lg:block lg:w-60`}
+        className={`${open ? "block" : "hidden"} w-full shrink-0 self-start rounded-md border border-line bg-surface py-2 lg:sticky lg:top-4 lg:block lg:w-60`}
       >
         <nav aria-label={t("officer.nav.label")}>
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col">
             {items.map((i) => {
               const active = i.href === "/officer" ? pathname === "/officer" : pathname.startsWith(i.href);
               const Icon = NAV_ICON[i.href] ?? ClipboardList;
@@ -58,7 +58,7 @@ export default function OfficerShell({ children }: { children: ReactNode }) {
                     href={i.href}
                     aria-current={active ? "page" : undefined}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active ? "bg-primary text-primary-fg shadow-card" : "text-ink hover:bg-surface"}`}
+                    className={`flex min-h-11 items-center gap-2 border-l-4 px-4 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent ${active ? "border-primary bg-primary-soft font-semibold text-primary" : "border-transparent font-medium text-ink hover:bg-surface-muted"}`}
                   >
                     <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
                     {t(i.labelKey)}

@@ -35,7 +35,8 @@
     "generic": "We couldn't process this document. Please check the file and try again.",
     "permission": "You don't have permission to perform this action.",
     "lowConfidence": "Low-confidence extraction. Human review required.",
-    "notFound": "Page not found."
+    "notFound": "Page not found.",
+    "officerCrumb": "Officer"
   },
   "status": {
     "ACTIVE": "Active",
@@ -398,7 +399,8 @@
       "reasonLabel": "Reason for rejection",
       "reasonRequired": "A reason is required.",
       "confirm": "Reject document"
-    }
+    },
+    "purpose": "Check every extracted field against the document. Nothing is saved until a reviewer approves."
   },
   "landing": {
     "disclaimerTitle": "Disclaimer",
@@ -520,7 +522,14 @@
       "total_records": "Total records",
       "pending_review": "Pending review",
       "high_risk": "High-risk parcels",
-      "verified": "Verified parcels"
+      "verified": "Verified parcels",
+      "open_alerts": "Open alerts",
+      "pending_mutations": "Pending mutations",
+      "active_encumbrances": "Active cases and claims",
+      "ledger": "Ledger integrity",
+      "ledgerIntact": "Intact",
+      "ledgerBroken": "Broken",
+      "ledgerEntries": "{count} entries"
     },
     "queue": {
       "title": "Verification queue",
@@ -590,7 +599,8 @@
         "USER_CREATE": "User created",
         "USER_UPDATE": "User updated"
       }
-    }
+    },
+    "purpose": "Queue, alerts and key figures for the demo records."
   },
   "admin": {
     "audit": {
@@ -709,7 +719,8 @@
           "uploader": "Uploaded by",
           "created": "Uploaded (UTC)"
         }
-      }
+      },
+      "purpose": "Users, records, documents and ledger integrity."
     },
     "ledger": {
       "title": "Ledger integrity",
@@ -972,7 +983,8 @@
     "errors": {
       "failed": "The action could not be completed. Please try again.",
       "invalid": "This move is no longer allowed. Reload the page."
-    }
+    },
+    "purpose": "Applications created from approved deeds. Open one to review its pre-checks."
   },
   "check": {
     "title": "Check Before You Buy",

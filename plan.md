@@ -6,8 +6,9 @@
 
 ## STATE
 ```text
-Plan version : 116
+Plan version : 117
 Competition  : LandTech 2026 · P3 Fraud & Double-Selling (P1/P2/P4/P5 supporting) · submit by 15 Oct (deadline 16 Oct)
+U7 (2026-10-06) ✅ — officer/review/map/admin polish: white 1 px sidebar with green active bar; 8 flat KPI tiles (records, pending review, high-risk, verified + open alerts, pending mutations, active cases/claims, ledger Intact/Broken + entry count; /officer/stats extended, ledger status only, no detail); PageHeader (breadcrumb, purpose) on dashboard, review, mutation queue, admin; review = two panes with 1 px divider + sticky Approve/Reject bar; map overlays flat (white, border, 6 px radius, solid primary header bar, glass blur removed). Tests: backend 568 pass, ruff clean; vitest 356, tsc clean, check:i18n OK (873). Checked in browser desktop + mobile. Not touched: upload, audit-log and graph pages keep card titles (no PageHeader).
 F2c (2026-10-06) ✅ — public mutation tracker: GET /public/mutation-status/{no} (status + step dates from MUTATION_TRANSITION audit rows + office + days pending; seeded rows show a skipped hearing; 404 MUTATION_NOT_FOUND; 60/min/IP; no names/land id), page /track (public, 4-step stepper with icon+text, EN+BN, anonymous API call), header nav + landing tile on, QR page now shows open-case and pending-mutation counts. Tests: backend 567 pass (new test_public_mutation.py 14, leak sweep + authz matrix cover the route), ruff clean; vitest 356 pass, tsc clean, check:i18n OK (861). Checked in the browser EN+BN.
 Current phase: S2 (2026-10-06) 🟡 — demo video recorded automatically: docs/video/LandShield-BD-demo.mp4 (2:17, 1280×720 H.264, captions burned in + soft EN subtitle track, no audio) + LandShield-BD-demo.en.srt, by scripts/record_demo_video.cjs (Playwright drives the local app as admin on a fresh seed, mock OCR). Story = card S2: problem → Doc1 upload/OCR/confidence → approve (hash, Ed25519, ledger) → e-Mutation fast track → Doc2 → HIGH 70 evidence → mutation to hearing → ownership graph → Check Before You Buy LP-10900 (khas) → verify-a-copy Doc1_altered ALTERED (land area) → tamper_demo BROKEN #7 → restore INTACT → Bangla evidence → public QR → closing. Every scene checked frame by frame. docs/demo-script.md: "Automated recording" section. Video files git-ignored (6 MB; copy in the parent folder).
 S2-b (user): watch it; optional voice-over; upload (YouTube unlisted or Drive, "anyone with link") → send the link → VIDEO_URL in docs/concept-note.md + re-export PDF + README.
@@ -40,7 +41,7 @@ Carried over : reseed for demo password (Q17)
 | 11 Oct | U5 | Landing page redesign | Must | ✅ |
 | 11 Oct | U6 | Inner pages: login, verify, result, report, QR | Must | ✅ |
 | 12 Oct | F2c | Public mutation tracker | Should | ✅ |
-| 12 Oct | U7 | Officer, review, map, admin polish | Should | ⬜ |
+| 12 Oct | U7 | Officer, review, map, admin polish | Should | ✅ |
 | 12 Oct | F5a | Khatian/Porcha parser + samples | Should | ⬜ |
 | 13 Oct | F5b | Bangla OCR measurement | Should | ⬜ |
 | 13 Oct | F6 / F5c | Plausibility rules / archive search | Could | ⬜ |

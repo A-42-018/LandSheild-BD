@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { FileCheck2, Zap } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
+import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { Badge, Card, ErrorState, LoadingState, Table, Tabs, type Column } from "@/components/ui";
 import { formatArea, formatDate } from "@/features/result/format";
@@ -76,7 +77,9 @@ export default function MutationQueue() {
   }));
 
   return (
-    <Card title={t("title")} icon={<FileCheck2 />} accent="primary">
+    <div className="flex flex-col gap-4">
+    <PageHeader title={t("title")} purpose={t("purpose")} crumbs={[{ label: te("officerCrumb"), href: "/officer" }]} />
+    <Card icon={<FileCheck2 />} accent="primary">
       <Tabs
         tabs={tabs}
         value={status || "ALL"}
@@ -87,5 +90,6 @@ export default function MutationQueue() {
         label={t("tabsLabel")}
       />
     </Card>
+    </div>
   );
 }

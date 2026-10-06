@@ -51,7 +51,12 @@ def _get(env, path, role="REVIEWER", **params):
 
 def test_stats_match_seed(env):
     b = _get(env, "stats").json()
-    assert b == {"total_records": 12, "pending_review": 0, "high_risk": 0, "verified": 12}
+    assert b == {
+        "total_records": 12, "pending_review": 0, "high_risk": 0, "verified": 12, "open_alerts": 0,
+        "pending_mutations": 0, "active_encumbrances": 3, "ledger_status": "INTACT",
+        "ledger_entries": b["ledger_entries"],
+    }
+    assert b["ledger_entries"] > 0
 
 
 def test_stats_reflect_documents_and_alerts(env):
@@ -63,7 +68,10 @@ def test_stats_reflect_documents_and_alerts(env):
     _add_alert(env, "LP-10500", "MEDIUM", "OPEN")
     _add_alert(env, "LP-10100", "HIGH", "DISMISSED")  # dismissed: not risky
     b = _get(env, "stats").json()
-    assert b == {"total_records": 12, "pending_review": 2, "high_risk": 1, "verified": 10}
+    keys = ("total_records", "pending_review", "high_risk", "verified", "open_alerts")
+    assert {k: b[k] for k in keys} == {
+        "total_records": 12, "pending_review": 2, "high_risk": 1, "verified": 10, "open_alerts": 3,
+    }
 
 
 def test_queue_filters(env):

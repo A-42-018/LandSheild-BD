@@ -3,6 +3,11 @@ export interface OfficerStats {
   pending_review: number;
   high_risk: number;
   verified: number;
+  open_alerts: number;
+  pending_mutations: number;
+  active_encumbrances: number;
+  ledger_status: "INTACT" | "BROKEN";
+  ledger_entries: number;
 }
 
 export type QueueFilter = "pending" | "low_confidence" | "high_risk" | "recent";

@@ -35,10 +35,9 @@ import { useParcelMap } from "./useMap";
 // Leaflet only loads when the map is on screen (and only in the browser).
 const MapCanvas = lazy(() => import("./MapCanvas"));
 
-const GLASS =
-  "border border-white/50 bg-white/40 shadow-lg backdrop-blur-xl backdrop-saturate-150 dark:border-white/15 dark:bg-slate-900/45";
+const GLASS = "border border-line bg-surface shadow-card"; // flat overlay panel (roadmap 4.8)
 const GLASS_FIELDS =
-  "[&_input:not([type=checkbox])]:bg-white/55 [&_select]:bg-white/55 dark:[&_input:not([type=checkbox])]:bg-slate-900/55 dark:[&_select]:bg-slate-900/55 [&_label]:text-xs [&_input:not([type=checkbox])]:py-1.5 [&_select]:py-1.5 [&_button]:py-1.5 [&_button]:text-sm";
+  "[&_label]:text-xs [&_input:not([type=checkbox])]:py-1.5 [&_select]:py-1.5 [&_button]:py-1.5 [&_button]:text-sm";
 
 const PAD = "px-4 sm:px-6 lg:px-8";
 
@@ -265,7 +264,7 @@ export default function MapView() {
           type="button"
           variant="secondary"
           size="sm"
-          className={`absolute right-3 top-3 z-[1000] !text-ink hover:!bg-white/60 ${GLASS}`}
+          className={`absolute right-3 top-3 z-[1000] !text-ink hover:!bg-surface-muted ${GLASS}`}
           aria-pressed={fullscreen}
           icon={fullscreen ? <Minimize2 /> : <Maximize2 />}
           onClick={() => setFullscreen((v) => !v)}
@@ -280,7 +279,7 @@ export default function MapView() {
           <Button
             type="button"
             variant="secondary"
-            className={`self-start !text-ink hover:!bg-white/60 ${GLASS}`}
+            className={`self-start !text-ink hover:!bg-surface-muted ${GLASS}`}
             icon={<Layers />}
             aria-expanded={menuOpen}
             aria-controls="gis-menu-panel"
@@ -291,11 +290,11 @@ export default function MapView() {
           {menuOpen && (
             <div
               id="gis-menu-panel"
-              className={`flex flex-col overflow-hidden rounded-xl text-ink ${GLASS}`}
+              className={`flex flex-col overflow-hidden rounded-md text-ink ${GLASS}`}
             >
-              <div className="flex items-center gap-2 bg-primary-800/70 px-3 py-2 text-white backdrop-blur-md">
+              <div className="flex items-center gap-2 bg-primary px-3 py-2 text-primary-fg">
                 <Search aria-hidden="true" className="h-4 w-4 shrink-0" />
-                <h2 className="text-sm font-semibold text-white">{t("map.gis.menuTitle")}</h2>
+                <h2 className="text-sm font-semibold text-primary-fg">{t("map.gis.menuTitle")}</h2>
               </div>
               <div className={`flex flex-col gap-3 overflow-y-auto p-3 text-sm ${GLASS_FIELDS}`}>
               <SearchMenu
@@ -345,7 +344,7 @@ export default function MapView() {
         </aside>
         <section
           aria-label={t("map.legendTitle")}
-          className={`absolute bottom-9 right-2 z-[1000] flex max-w-[15rem] flex-col gap-1 rounded-lg p-2.5 text-xs text-ink ${GLASS}`}
+          className={`absolute bottom-9 right-2 z-[1000] flex max-w-[15rem] flex-col gap-1 rounded-md p-2.5 text-xs text-ink ${GLASS}`}
         >
           <span className="text-sm font-semibold">{t("map.legendTitle")}</span>
           {showBoundaries &&

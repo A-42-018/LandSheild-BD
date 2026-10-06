@@ -7,8 +7,10 @@ from sqlalchemy.orm import Session
 from app.models.alert import FraudAlert
 from app.models.audit import AuditLog
 from app.models.document import Document
+from app.models.encumbrance import LandEncumbrance
 from app.models.enums import AlertStatus, DocumentStatus, LandStatus
 from app.models.land_parcel import LandParcel
+from app.models.mutation import MutationRecord
 from app.models.user import User
 from app.schemas.officer import (
     ActivityActor,
@@ -21,6 +23,7 @@ from app.schemas.officer import (
     QueueSort,
     SortOrder,
 )
+from app.services import ledger
 
 PENDING_STATUSES = (DocumentStatus.REVIEW_REQUIRED.value, DocumentStatus.EXTRACTED.value)
 ACTIVE_ALERT_STATUSES = (
@@ -69,9 +72,37 @@ def get_stats(db: Session) -> OfficerStats:
         )
         or 0
     )
-    return OfficerStats(
-        total_records=total, pending_review=pending, high_risk=high, verified=verified
+    open_alerts = (
+        db.scalar(
+            select(func.count()).select_from(FraudAlert).where(
+                FraudAlert.status.in_(ACTIVE_ALERT_STATUSES)
+            )
+        )
+        or 0
     )
+    pending_mutations = (
+        db.scalar(
+            select(func.count()).select_from(MutationRecord).where(
+                MutationRecord.status.in_(("APPLIED", "UNDER_REVIEW", "HEARING"))
+            )
+        )
+        or 0
+    )
+    encumbrances = (
+        db.scalar(
+            select(func.count()).select_from(LandEncumbrance).where(
+                LandEncumbrance.status == "ACTIVE"
+            )
+        )
+        or 0
+    )
+    chain = ledger.verify(db)
+    return OfficerStats(
+        total_records=total, pending_review=pending, high_risk=high, verified=verified,
+        open_alerts=open_alerts, pending_mutations=pending_mutations,
+        active_encumbrances=encumbrances,
+        ledger_status=chain["status"], ledger_entries=chain["entries"],
+    )  # fmt: skip
 
 
 def _min_conf(doc: Document, threshold: float) -> tuple[float | None, bool]:

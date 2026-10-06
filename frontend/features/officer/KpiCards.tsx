@@ -1,18 +1,35 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
-import { AlertOctagon, BadgeCheck, Database, Hourglass, type LucideIcon } from "lucide-react";
+import {
+  AlertOctagon, BadgeCheck, Bell, Database, FileClock, Gavel, Hourglass, Link2, Link2Off, type LucideIcon,
+} from "lucide-react";
 import { ApiError } from "@/lib/api";
-import { Card, ErrorState, LoadingState } from "@/components/ui";
+import { ErrorState, LoadingState } from "@/components/ui";
 import { useOfficerStats } from "./useOfficerData";
 import type { OfficerStats } from "./types";
 import { intlLocale } from "@/lib/intl-locale";
 
-const KPIS: { key: keyof OfficerStats; tone: string; tile: string; chip: string; Icon: LucideIcon; accent: "primary" | "review" | "critical" | "verified" }[] = [
-  { key: "total_records", tone: "text-primary", tile: "bg-primary-soft/60", chip: "bg-primary/10 text-primary", Icon: Database, accent: "primary" },
-  { key: "pending_review", tone: "text-review", tile: "bg-review-soft/60", chip: "bg-review/15 text-review", Icon: Hourglass, accent: "review" },
-  { key: "high_risk", tone: "text-critical", tile: "bg-critical-soft/60", chip: "bg-critical/15 text-critical", Icon: AlertOctagon, accent: "critical" },
-  { key: "verified", tone: "text-verified", tile: "bg-verified-soft/60", chip: "bg-verified/15 text-verified", Icon: BadgeCheck, accent: "verified" },
+type NumKey = "total_records" | "pending_review" | "high_risk" | "verified" | "open_alerts" | "pending_mutations" | "active_encumbrances";
+
+/** Flat tiles (roadmap 4.8): white, 1 px border; only the small icon chip carries status colour. */
+const KPIS: { key: NumKey; chip: string; Icon: LucideIcon }[] = [
+  { key: "total_records", chip: "bg-primary-soft text-primary", Icon: Database },
+  { key: "pending_review", chip: "bg-review-soft text-review", Icon: Hourglass },
+  { key: "high_risk", chip: "bg-critical-soft text-critical", Icon: AlertOctagon },
+  { key: "verified", chip: "bg-verified-soft text-verified", Icon: BadgeCheck },
+  { key: "open_alerts", chip: "bg-review-soft text-review", Icon: Bell },
+  { key: "pending_mutations", chip: "bg-primary-soft text-primary", Icon: FileClock },
+  { key: "active_encumbrances", chip: "bg-critical-soft text-critical", Icon: Gavel },
 ];
+const TILE = "flex h-full items-center gap-3 rounded-md border border-line bg-surface p-4";
+
+function Chip({ cls, Icon }: { cls: string; Icon: LucideIcon }) {
+  return (
+    <span aria-hidden="true" className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${cls}`}>
+      <Icon className="h-5 w-5" />
+    </span>
+  );
+}
 
 export default function KpiCards() {
   const t = useTranslations("officer.kpi");
@@ -26,23 +43,33 @@ export default function KpiCards() {
     return <ErrorState message={forbidden ? te("permission") : undefined} onRetry={forbidden ? undefined : () => q.refetch()} />;
   }
   const fmt = new Intl.NumberFormat(intlLocale(locale));
+  const s: OfficerStats = q.data;
+  const intact = s.ledger_status === "INTACT";
   return (
-    <ul aria-label={t("title")} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {KPIS.map(({ key, tone, tile, chip, Icon, accent }) => (
+    <ul aria-label={t("title")} className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {KPIS.map(({ key, chip, Icon }) => (
         <li key={key}>
-          <Card as="div" accent={accent} className={tile} data-testid={`kpi-${key}`}>
-            <div className="flex items-center gap-3">
-              <span aria-hidden="true" className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${chip}`}>
-                <Icon className="h-6 w-6" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm text-ink-muted">{t(key)}</p>
-                <p className={`text-3xl font-bold ${tone}`}>{fmt.format(q.data[key])}</p>
-              </div>
+          <div className={TILE} data-testid={`kpi-${key}`}>
+            <Chip cls={chip} Icon={Icon} />
+            <div className="min-w-0">
+              <p className="text-sm text-ink-muted">{t(key)}</p>
+              <p className="text-2xl font-bold text-ink">{fmt.format(s[key] ?? 0)}</p>
             </div>
-          </Card>
+          </div>
         </li>
       ))}
+      <li>
+        <div className={TILE} data-testid="kpi-ledger" data-state={s.ledger_status}>
+          <Chip cls={intact ? "bg-verified-soft text-verified" : "bg-critical-soft text-critical"} Icon={intact ? Link2 : Link2Off} />
+          <div className="min-w-0">
+            <p className="text-sm text-ink-muted">{t("ledger")}</p>
+            <p className={`text-2xl font-bold ${intact ? "text-verified" : "text-critical"}`}>
+              {intact ? t("ledgerIntact") : t("ledgerBroken")}
+            </p>
+            <p className="text-xs text-ink-muted">{t("ledgerEntries", { count: s.ledger_entries })}</p>
+          </div>
+        </div>
+      </li>
     </ul>
   );
 }
