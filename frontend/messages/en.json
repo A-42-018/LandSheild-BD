@@ -510,6 +510,11 @@
         "audit": "Audit log and ledger integrity"
       },
       "signIn": "Officer sign-in"
+    },
+    "tools": {
+      "title": "Citizen tools",
+      "intro": "Free calculators for buying, selling and inheriting land.",
+      "cta": "All tools"
     }
   },
   "officer": {
@@ -1179,6 +1184,132 @@
       "SA": "SA (State Acquisition)",
       "RS": "RS (Revisional)",
       "BS": "BS (Bangladesh)"
+    }
+  },
+  "tools": {
+    "title": "Citizen tools",
+    "hubIntro": "Free calculators for buying, selling and inheriting land. Nothing you type leaves your device.",
+    "disclaimer": "Guidance only. These tools do not give legal advice or official figures; confirm with the Sub-Registry, AC Land office or a lawyer.",
+    "units": {
+      "title": "Land unit converter",
+      "desc": "Shatangsho, katha, bigha, acre, sq ft and more.",
+      "purpose": "Convert a land area between the units used in deeds and khatians.",
+      "value": "Area",
+      "from": "From unit",
+      "region": "Bigha definition",
+      "regionHint": "A bigha is not the same everywhere. Check your deed.",
+      "invalid": "Enter a number, for example 12.5",
+      "results": "Converted areas",
+      "unit": "Unit",
+      "amount": "Equivalent area",
+      "copy": "Copy results",
+      "copied": "Copied",
+      "note": "Katha = 720 sq ft, chhatak = 45 sq ft (16 chhatak = 1 katha). Results show up to six significant digits.",
+      "regions": {
+        "standard": "Standard: 1 bigha = 20 katha (14,400 sq ft)",
+        "decimal33": "Alternate: 1 bigha = 33 shatangsho"
+      },
+      "names": {
+        "decimal": "Shatangsho (decimal)",
+        "katha": "Katha",
+        "bigha": "Bigha",
+        "acre": "Acre",
+        "chhatak": "Chhatak",
+        "ojutangsho": "Ojutangsho",
+        "sqft": "Square foot",
+        "sqyd": "Square yard",
+        "sqm": "Square metre",
+        "hectare": "Hectare"
+      }
+    },
+    "fees": {
+      "title": "Registration and mutation fee calculator",
+      "desc": "Estimate registration, stamp duty, taxes and mutation fees.",
+      "purpose": "See an itemised estimate before you pay anyone.",
+      "disclaimer": "Illustrative demo rates as of {date}, not the official schedule. Confirm the real amounts at the Sub-Registry and AC Land office.",
+      "value": "Deed value",
+      "valueHint": "In taka",
+      "invalid": "Enter a number, for example 2500000",
+      "transfer": "Type of transfer",
+      "location": "Location of the land",
+      "results": "Fee estimate",
+      "item": "Item",
+      "basis": "Basis",
+      "amount": "Amount",
+      "total": "Estimated total",
+      "currency": "BDT",
+      "basisPercent": "{rate}% of deed value",
+      "basisFixed": "Fixed fee",
+      "official": "Pay only through official channels and always ask for a receipt.",
+      "print": "Print",
+      "source": "Rates: demo values, as of {date}. They are kept in one configuration file and are not an official schedule.",
+      "transfers": {
+        "sale": "Sale",
+        "gift": "Gift (heba)",
+        "inheritance": "Inheritance (partition deed)"
+      },
+      "locations": {
+        "city": "City corporation",
+        "pourashava": "Pourashava",
+        "union": "Union (rural)"
+      },
+      "items": {
+        "registration": "Registration fee",
+        "stampDuty": "Stamp duty",
+        "localTax": "Local government tax",
+        "sourceTax": "Source tax",
+        "mutation": "Mutation (namjari) fee"
+      }
+    },
+    "faraid": {
+      "title": "Inheritance share calculator",
+      "desc": "Muslim inheritance shares (faraid) in exact fractions.",
+      "purpose": "See each heir's share of a plot and the area it equals.",
+      "disclaimer": "Guidance only, not a legal ruling. It follows Hanafi rules for common heirs. Other religions' succession laws differ; grandparents, grandchildren, half-siblings, wills and missing persons are not covered. Ask a lawyer.",
+      "heirs": "Heirs",
+      "area": "Plot area (optional)",
+      "areaHint": "Shows each heir's area",
+      "unit": "Unit",
+      "results": "Shares",
+      "each": "each: {share}",
+      "eachArea": "each: {area}",
+      "print": "Print",
+      "heir": {
+        "husband": "Husband",
+        "wives": "Wives (0–4)",
+        "sons": "Sons",
+        "daughters": "Daughters",
+        "brothers": "Full brothers",
+        "sisters": "Full sisters",
+        "father": "Father",
+        "mother": "Mother",
+        "wife": "Wife",
+        "son": "Son",
+        "daughter": "Daughter",
+        "brother": "Full brother",
+        "sister": "Full sister"
+      },
+      "col": {
+        "heir": "Heir",
+        "share": "Share",
+        "percent": "Percent",
+        "area": "Area"
+      },
+      "errors": {
+        "SPOUSE_BOTH": "A husband and wives cannot both be heirs of the same person.",
+        "WIVES_MAX": "At most 4 wives.",
+        "NO_HEIRS": "Choose at least one heir.",
+        "COUNT_RANGE": "Counts must be whole numbers from 0 to 30."
+      },
+      "notes": {
+        "awl": "The fixed shares added up to more than the whole, so every share was reduced in proportion (awl).",
+        "radd": "There was no residuary heir, so the remainder returned to the sharers other than a spouse (radd).",
+        "umar": "Mother takes one third of what remains after the spouse (the two-parents-and-spouse rule).",
+        "excluded": "Siblings are excluded by a son or the father.",
+        "leftover": "Part of the estate is not assigned to any listed heir. Other relatives or the state may be entitled.",
+        "scope": "Not covered: grandparents, grandchildren, half-siblings, wills, missing persons, other religions.",
+        "partition": "Sharing the plot needs a registered partition deed and a mutation."
+      }
     }
   }
 }

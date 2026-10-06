@@ -58,6 +58,7 @@ Work added after the Round 1 snapshot (the concept note, demo video and live lin
 
 - **F5b Bangla OCR measured.** `ai/evaluation/run_eval.py` now also reports Bangla specimen CER, parsed khatian fields and review rate (clean / noisy / skewed, preprocessing off and on). Result with Tesseract `ben+eng`: mean CER ≈ 17 %, parsed fields 77 % (off) / 90 % (on), every Bangla specimen still needs review. Setup: [docs/ocr-setup.md](docs/ocr-setup.md).
 - **F5c Archive search.** `GET /archive/search` + officer page `/officer/archive` (reviewer and above); rule `SURVEY_CHAIN_GAP` (15, MEDIUM) for later-survey owners with no recorded link to earlier-survey holders.
+- **Citizen tools** (`/tools`): land unit converter, registration/mutation fee estimator (illustrative rates), inheritance share calculator (faraid); public, client-side, EN + BN.
 - **F6 Forged-document plausibility rules.** `DEED_NO_FORMAT_INVALID` (15), `IMPOSSIBLE_DATE` (30, HIGH), `RAPID_RESALE` (15); EN + BN evidence text, also added for the four encumbrance codes that had none.
 - Judge feedback and any fixes after selection: _to be added here._
 

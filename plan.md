@@ -6,8 +6,9 @@
 
 ## STATE
 ```text
-Plan version : 119
+Plan version : 120
 Competition  : LandTech 2026 · P3 Fraud & Double-Selling (P1/P2/P4/P5 supporting) · submit by 15 Oct (deadline 16 Oct)
+C1+C2+C5 (2026-10-06) ✅ frontend citizen tools — /tools hub + /tools/units (10 units, bigha standard vs 33-shatangsho variant, katha 720 sqft, chhatak 45 sqft; goncha/kora left out: values disputed), /tools/fees (one config, ILLUSTRATIVE demo rates, sale/gift/inheritance × city/pourashava/union), /tools/inheritance (exact BigInt fractions: fixed, asaba, awl, radd, hajb, umariyyatan; grandchildren/grandparents/half-siblings/wills out of scope, said in UI). EN+BN (1007 keys), landing 'Citizen tools' band + footer link, axe clean. Tests: vitest 393, tsc, i18n OK. C3/C4 (backend + migrations) NOT done.
 T1/T2 (2026-10-06) ✅ drafts — docs/landshield-pitch-deck.pptx (10 slides, native chart; NOT visually rendered here: no LibreOffice, open it once and check fit), README "Changes since Round 1", docs/final-presentation.md (5-min script, ownership split, offline fallback, hardware checklist, 30-question Q&A). Pay the 100 BDT fee + judge-feedback fixes stay with the user.
 F5c (2026-10-06) ✅ — GET /archive/search (REVIEWER+; FTS5 over approved docs, lazy signature-based rebuild, LIKE fallback off SQLite; survey + district filters), officer page /officer/archive (+ nav), rule SURVEY_CHAIN_GAP (15 MEDIUM, counts only, transitive transfer links, name-variant matching), EN+BN. Tests: backend 639 pass (8 skipped), ruff clean; vitest 360, tsc, i18n OK (904); test_archive.py (10), authz matrix updated.
 F6 (2026-10-06) ✅ — rules DEED_NO_FORMAT_INVALID 15, IMPOSSIBLE_DATE 30 HIGH (future / before seller acquired / before record origin), RAPID_RESALE 15 (< 60 d); test_plausibility.py (23); EN+BN evidence incl. the 4 encumbrance codes that had none.
@@ -19,6 +20,7 @@ Current phase: S2 (2026-10-06) 🟡 — demo video recorded automatically: docs/
 S2-b (user): watch it; optional voice-over; upload (YouTube unlisted or Drive, "anyone with link") → send the link → VIDEO_URL in docs/concept-note.md + re-export PDF + README.
 S1: ✅ (concept note PDF 3 p; only VIDEO_URL left).
 OPEN (carried): EN+BN evidence i18n for ACTIVE_LITIGATION/KHAS_LAND/UNDER_ACQUISITION/ACTIVE_MORTGAGE not done; real OCR (tesseract) path of verify-document untested; ML scoring skipped in plain dev venv; Docker image never built locally; `next build` not run. Ledger chain is only as strong as DB write access (anchoring head hash off-DB is a T1 idea).
+Citizen tools: C1 ✅ C2 ✅ C5 ✅; left C3 → C4 (backend) (cards in roadmap.md §5 "C —"); suggested pairing C1+C2 in one window.
 Next phase   : S2-b upload + VIDEO_URL (user) → S3 submit Round 1 🔒 (both skipped by request; user does them). Re-export the concept note PDF (scripts/export_concept_note.py, needs Chromium): its Bangla-OCR sentence changed.
 Carried over : reseed for demo password (Q17)
 ```
@@ -57,6 +59,11 @@ Carried over : reseed for demo password (Q17)
 | 15 Oct | S3 | Submit Round 1 🔒 | Must | ⬜ |
 | TBA | T1 | Final build + "Changes since Round 1" + pitch deck | Should | ✅ (draft; fee + feedback user) |
 | TBA | T2 | Final presentation readiness | Must | ✅ (docs/final-presentation.md) |
+| TBA | C1 | Land unit converter (regional bigha/katha) | Should | ✅ |
+| TBA | C2 | Registration + mutation fee calculator | Should | ✅ |
+| TBA | C3 | Land-tax status row in Check Before You Buy (0008) | Should | ⬜ |
+| TBA | C4 | Watch a plot: in-app change alerts (0009) | Should | ⬜ |
+| TBA | C5 | Inheritance share calculator (ফারায়েজ) | Should | ✅ |
 
 ## KICKOFF PROMPT (paste in a new chat with the latest zip)
 ```text

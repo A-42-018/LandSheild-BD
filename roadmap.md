@@ -324,6 +324,45 @@ Common end of every phase: update `plan.md` STATE + status → zip.
 ### T2 — Final presentation readiness  [Must after selection]
 - 5-min script (1 pitch, 3.5 demo, 0.5 close) + offline fallback (local run + video). Ownership split: Student A backend/risk/mutation/ledger, Student B frontend/OCR/UI/deploy; both can explain everything at a high level (§9.3). Q&A bank ≥ 25 questions. Hardware checklist.
 
+
+### C — Citizen tools (after T2, optional)  [Should · citizen value]
+Common rules for C1–C5: Bangla-first, EN+BN parity (`npm run check:i18n`), Bangla numerals in `bn`, every page carries the demo notice, and any money or legal output says **"illustrative / guidance only, not an official or legal figure"**. No real personal data. All rates and rules go in **one config file per tool** with a `source` + `as_of` note, so they are easy to update and judges can see where the numbers come from. Each tool gets a landing tile + header "Tools" menu entry (`frontend/features/landing/`, header nav) behind a flag until its phase lands.
+
+### C1 — Land unit converter  [Should · S · frontend]
+- **Read:** `backend/app/risk/config.py` (`AREA_TO_SQM`), `frontend/features/result/format.ts` (`formatArea`, numerals), one existing public page for layout (`frontend/app/[locale]/track/page.tsx`).
+- **Do:** `frontend/features/tools/units.ts`: factors to m² for শতাংশ (decimal), কাঠা, বিঘা, একর, গণ্ডা, কড়া, ছটাক, অযুতাংশ, বর্গফুট, বর্গগজ, বর্গমিটার, হেক্টর. **Regional bigha/katha:** a `region` select (Standard 33 decimal bigha · Greater Dhaka katha 720 sqft · Sylhet/Chattogram variants) with the factor table and source comment; default = standard. Page `/tools/units` (public): value + from-unit → table of all units, swap button, copy result, accepts Bangla digits in input. Also link it from the result page area value ("convert").
+- **Files (≤ 5):** `features/tools/units.ts`, `features/tools/UnitConverter.tsx`, `app/[locale]/tools/units/page.tsx`, `messages/{en,bn}.json`, `features/tools/units.test.ts`.
+- **Test:** `npx vitest run features/tools && npx tsc --noEmit && npm run check:i18n`. Unit test: round-trips (1 acre = 100 decimal, 1 standard bigha = 33 decimal, 1 decimal = 435.6 sqft), Bangla-digit input, region switch changes only bigha/katha.
+- **Done when:** any unit → every unit, both languages, values match the table to 4 significant digits.
+
+### C2 — Registration + mutation fee calculator  [Should · S · frontend]
+- **Read:** C1 files (reuse unit parsing), `features/check/CheckForm.tsx` (form pattern).
+- **Do:** `frontend/features/tools/fees.ts` = one config `{ as_of, source, items: [{code, kind: "percent"|"fixed", value, base: "deed_value"|"area"|"none", note}] }` for: registration fee, stamp duty, local government tax, source tax (by area class: city corporation / pourashava / union, simplified), mutation application + notice + DCR fee, e-namjari service fee. Values are **illustrative demo rates** (clearly labelled, `as_of` shown). Page `/tools/fees`: inputs deed value (BDT), area + unit, location class, transfer type (sale / gift / heba / inheritance; gift & inheritance use their reduced rules). Output: itemised table (item · basis · amount), total, "pay only through official channels and ask for a receipt" warning, print button. Amounts formatted with BDT and Bangla numerals.
+- **Files (≤ 5):** `features/tools/fees.ts`, `features/tools/FeeCalculator.tsx`, `app/[locale]/tools/fees/page.tsx`, `messages/{en,bn}.json`, `features/tools/fees.test.ts`.
+- **Test:** as C1 + fee math tests (percent of value, fixed items, inheritance path has no stamp duty row, zero/negative input rejected).
+- **Done when:** a citizen sees every line item with its basis; config change alone updates all numbers.
+
+### C3 — Land development tax status in Check Before You Buy  [Should · S · full-stack]
+- **Read:** `backend/app/services/pre_purchase.py`, `backend/app/schemas/pre_purchase.py`, `database/seed/data.json` + `loader.py` (parcel block), `frontend/features/check/{CheckResult.tsx,types.ts}`.
+- **Do:** migration `0008_land_tax`: nullable `land_parcels.tax_paid_until` (int year) + `tax_arrears_years` (int, default 0). Seed: most parcels paid to the current fiscal year; LP-10600 two years in arrears; one parcel unknown (NULL). Pre-purchase gets a **7th row `LAND_TAX`**: OK (paid to current FY) · WARN (arrears N years: "mutation can be held until arrears are paid") · UNKNOWN (not recorded). Only year + arrears count leave the API (no amounts, no names). Public QR page: unchanged. Not a risk-score rule (information only, 0 points), so seeded risk levels stay identical.
+- **Files (≤ 6):** migration, `models/land_parcel.py`, seed `data.json` + `loader.py`, `services/pre_purchase.py` (+schema enum), `CheckResult.tsx` + messages.
+- **Test:** `pytest -q tests/test_pre_purchase.py tests/test_scenarios.py tests/test_seed.py && ruff check .`; `npx vitest run features/check`. Scenario levels LP-10001…LP-11000 unchanged (RULE 2).
+- **Done when:** checklist shows 7 rows in EN+BN; LP-10600 shows the arrears warning.
+
+### C4 — Watch a plot (change alerts)  [Should · M · full-stack]
+- **Read:** `backend/app/services/ledger.py` (append points), `services/risk.py` (reassessment), `api/v1/lands.py`, `models/alert.py`, `frontend/features/result/` (result header), `features/auth/AuthContext.tsx`.
+- **Do:** model + migration `0009_plot_watches`: `plot_watches(id, user_id, land_id, created_at, last_seen_seq)` unique (user, land), max 20 per user; `watch_events(id, watch_id, kind, created_at, read_at)` with `kind` ∈ `NEW_TRANSACTION | MUTATION_CHANGED | ENCUMBRANCE_CHANGED | RISK_LEVEL_CHANGED | INTEGRITY_FAILED`. Hook: after a ledger append or risk-level change for a parcel, insert one event per watcher (same transaction; no names, no amounts in the event). API (any signed-in): `POST/DELETE /lands/{id}/watch`, `GET /me/watches`, `GET /me/watch-events?unread=`, `POST /me/watch-events/read`. UI: "Watch this plot" toggle on the result page; bell with unread count in the header; `/me/watches` page listing plots + events (icon + text). Delivery = in-app only; email/SMS left as a documented interface (`notify()` stub) for later.
+- **Files (≤ 6 backend + ≤ 4 frontend; split into C4a backend / C4b UI if the budget runs out).**
+- **Test:** new `tests/test_watches.py` (create/limit/unique, Doc2 approval on a watched LP-10234 creates `NEW_TRANSACTION` + `RISK_LEVEL_CHANGED`, other users see nothing, events contain no owner names), authz matrix rows for the 5 routes; vitest for the toggle + bell.
+- **Done when:** watch LP-10234 as citizen → officer approves Doc2 → citizen bell shows 2 unread events.
+
+### C5 — Inheritance share calculator (ফারায়েজ)  [Should · M · frontend (+ optional API)]
+- **Read:** `ai/extraction/khatian.py` (share format "1/2", `Fraction` check), C1 `units.ts`.
+- **Do:** `frontend/features/tools/faraid.ts`: pure function `shares(heirs, estateArea, unit)` using exact fractions (`[num, den]` bigints, no floats until display). Muslim inheritance (Hanafi, as applied in Bangladesh) for the common heirs: husband/wife, sons, daughters (asaba: son = 2 × daughter), father, mother, full brothers/sisters, son's son/daughter (when no son). Rules covered: fixed shares (1/2, 1/4, 1/8, 2/3, 1/3, 1/6), residue (asaba), **awl** (shares > 1 scale down), **radd** (residue returned to non-spouse sharers), exclusion (hajb) by son/father. Out of scope (shown as "consult a lawyer"): grandparents, half-siblings, missing persons, wills (wasiyyat), Hindu/Christian succession (show a note that different laws apply). Page `/tools/inheritance`: heir counts form → table heir · fraction · % · area in the chosen unit (C1) + "each son / each daughter" rows + a stacked bar; print. Big disclaimer: "guidance only, not a legal ruling; partition needs a registered deed (বণ্টননামা) and mutation".
+- **Files (≤ 5):** `features/tools/faraid.ts`, `features/tools/InheritanceCalculator.tsx`, `app/[locale]/tools/inheritance/page.tsx`, `messages/{en,bn}.json`, `features/tools/faraid.test.ts`.
+- **Test:** `npx vitest run features/tools` with ≥ 12 textbook cases: wife + 1 son + 1 daughter (1/8, 7/12, 7/24); husband + 2 daughters + mother (awl 13); wife + father + mother (umariyyatan: mother 1/3 of residue); only daughters (radd); son excludes brothers; sum of shares always = 1 exactly.
+- **Done when:** all textbook cases exact; result sums to the plot area exactly (remainder note if rounding at display).
+
 ---
 
 ## 6. Countrywide implementation plan (for S1)
