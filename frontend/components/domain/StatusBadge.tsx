@@ -16,6 +16,8 @@ export const STATUS_TONE: Record<string, BadgeTone> = {
   FAILED: "critical",
   REJECTED: "critical",
   PENDING: "pending",
+  APPLIED: "pending",
+  HEARING: "review",
   UPLOADED: "pending",
   PROCESSING: "pending",
   EXTRACTED: "pending",

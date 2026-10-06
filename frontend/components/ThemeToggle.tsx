@@ -22,7 +22,7 @@ const ICONS: Record<ThemeMode, JSX.Element> = {
 export default function ThemeToggle({ variant = "default" }: { variant?: "default" | "onBrand" }) {
   const t = useTranslations("theme");
   const onBrand = variant === "onBrand";
-  const [mode, setMode] = useState<ThemeMode>("system");
+  const [mode, setMode] = useState<ThemeMode>("light");
   const [sysDark, setSysDark] = useState(false);
 
   useEffect(() => {

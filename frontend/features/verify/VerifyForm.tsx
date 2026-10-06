@@ -15,7 +15,8 @@ interface LandHit {
   land_id: string;
 }
 
-export default function VerifyForm() {
+/** `compact` (U5): landing-page hero variant — no card, no intro/hints, fields in a responsive grid. */
+export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   const t = useTranslations("verify");
   const locale = useLocale();
   const router = useRouter();
@@ -60,10 +61,15 @@ export default function VerifyForm() {
     return "generic";
   })();
 
-  return (
-    <Card title={t("title")} icon={<SearchCheck />} accent="primary">
-      <form onSubmit={handleSubmit((v) => m.mutate(v))} noValidate className="flex flex-col gap-4">
-        <p className="text-ink-muted">{t("intro")}</p>
+  const hint = compact ? undefined : t("numericHint");
+  const form = (
+      <form
+        onSubmit={handleSubmit((v) => m.mutate(v))}
+        noValidate
+        aria-label={compact ? t("title") : undefined}
+        className={compact ? "grid grid-cols-2 items-start gap-3 lg:grid-cols-6" : "flex flex-col gap-4"}
+      >
+        {!compact && <p className="text-ink-muted">{t("intro")}</p>}
         <Select
           label={t("district")}
           required
@@ -82,13 +88,13 @@ export default function VerifyForm() {
           {...register("upazila")}
         />
         <Input label={t("mouza")} required autoComplete="off" error={err(errors.mouza)} {...register("mouza")} />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className={compact ? "contents" : "grid grid-cols-1 gap-4 sm:grid-cols-2"}>
           <Input
             label={t("khatian")}
             required
             inputMode="numeric"
             autoComplete="off"
-            hint={t("numericHint")}
+            hint={hint}
             error={err(errors.khatian)}
             {...register("khatian")}
           />
@@ -97,21 +103,32 @@ export default function VerifyForm() {
             required
             inputMode="numeric"
             autoComplete="off"
-            hint={t("numericHint")}
+            hint={hint}
             error={err(errors.dag)}
             {...register("dag")}
           />
         </div>
         {apiErr && (
-          <p role="alert" className="text-sm text-critical">
+          <p role="alert" className={compact ? "col-span-full text-sm text-critical" : "text-sm text-critical"}>
             {apiErr === "generic" ? t("errors.generic") : t(`errors.${apiErr}`)}
           </p>
         )}
-        <Button type="submit" loading={m.isPending} icon={<Search />} className="w-full">
+        <Button
+          type="submit"
+          loading={m.isPending}
+          icon={<Search />}
+          className={compact ? "mt-6 w-full" : "w-full"}
+        >
           {m.isPending ? t("searching") : t("submit")}
         </Button>
-        <p className="text-xs text-ink-muted">{t("demoNote")}</p>
+        {!compact && <p className="text-xs text-ink-muted">{t("demoNote")}</p>}
       </form>
+  );
+
+  if (compact) return form;
+  return (
+    <Card title={t("title")} icon={<SearchCheck />} accent="primary">
+      {form}
     </Card>
   );
 }

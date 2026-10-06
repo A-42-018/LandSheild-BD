@@ -1,17 +1,17 @@
 import { setRequestLocale } from "next-intl/server";
 import Hero from "@/features/landing/Hero";
-import Stats from "@/features/landing/Stats";
-import { Features, HowItWorks, Problem, Trust } from "@/features/landing/Sections";
+import { HowItWorks, OfficerBand, ServiceTiles, Trust, WhatWeCheck } from "@/features/landing/Sections";
 
+/** U5 landing (roadmap 4.7): search hero → service tiles → what we check → how it works → officers → trust. */
 export default function HomePage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
   return (
     <>
       <Hero />
-      <Stats />
-      <Problem />
+      <ServiceTiles />
+      <WhatWeCheck />
       <HowItWorks />
-      <Features />
+      <OfficerBand />
       <Trust />
     </>
   );

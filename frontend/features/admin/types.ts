@@ -86,3 +86,12 @@ export interface UserDraft {
 export const LAND_STATUSES = ["ACTIVE", "REVIEW_REQUIRED"];
 export const DOC_STATUSES = ["UPLOADED", "PROCESSING", "EXTRACTED", "REVIEW_REQUIRED", "APPROVED", "REJECTED", "FAILED"];
 export const DOC_TYPES = ["DEED", "KHATIAN", "MUTATION", "OTHER"];
+
+export interface LedgerVerify {
+  status: "INTACT" | "BROKEN";
+  entries: number;
+  broken_seq: number | null;
+  reason: string | null;
+  entity_type: string | null;
+  entity_id: string | null;
+}

@@ -15,8 +15,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import Navbar from "@/features/landing/Navbar";
 import Footer from "@/features/landing/Footer";
 import Hero from "@/features/landing/Hero";
-import Stats from "@/features/landing/Stats";
-import { Features, HowItWorks, Problem, Trust } from "@/features/landing/Sections";
+import { HowItWorks, OfficerBand, ServiceTiles, Trust, WhatWeCheck } from "@/features/landing/Sections";
 import VerifyForm from "@/features/verify/VerifyForm";
 import ResultView from "@/features/result/ResultView";
 import ReportView from "@/features/report/ReportView";
@@ -125,6 +124,7 @@ function get(path: string): Promise<any> {
   if (path.startsWith("/documents/")) return Promise.resolve(DOC);
   if (path.endsWith("/risk")) return Promise.resolve({ land_id: "LP-10240", overall_score: 70, risk_level: "HIGH", rule_score: 70, ml_score: null, evidence: EVIDENCE, assessed_at: "2026-10-01T10:00:00Z" });
   if (path.endsWith("/ownership")) return Promise.resolve({ entries: OWNERSHIP });
+  if (path.endsWith("/mutations")) return Promise.resolve({ land_id: "LP-10240", mutations: [{ mutation_no: "M-1", status: "APPROVED", applied_at: "2026-01-05T04:00:00Z", decided_at: "2026-01-20T04:00:00Z", previous_khatian_no: "501", new_khatian_no: "612", ac_land_office: "Savar AC Land" }] });
   if (path.endsWith("/transactions")) return Promise.resolve({ transactions: TXS });
   if (path.startsWith("/lands/")) return Promise.resolve(land("LP-10240"));
   return Promise.reject(new Error(`unmocked ${path}`));
@@ -165,10 +165,10 @@ const CASES: Case[] = [
         <Navbar />
         <main id="main">
           <Hero />
-          <Stats />
-          <Problem />
+          <ServiceTiles />
+          <WhatWeCheck />
           <HowItWorks />
-          <Features />
+          <OfficerBand />
           <Trust />
         </main>
         <Footer />

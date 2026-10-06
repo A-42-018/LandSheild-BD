@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
@@ -38,12 +38,21 @@ const DATA: Record<string, any> = {
     entries: [own("Rahim Uddin", "2005-01-01", "2012-03-15", false), own("Karim Mia", "2012-03-15", "2019-06-20", false), own("Hasan Ali", "2019-06-20", null, true)],
   },
   "/lands/LP-10100/transactions": { transactions: [tx("Rahim Uddin", "Karim Mia", "2012-03-15"), tx("Karim Mia", "Hasan Ali", "2019-06-20")] },
+  "/lands/LP-10100/mutations": { land_id: "LP-10100", mutations: [] },
+  "/lands/LP-10001/mutations": { land_id: "LP-10001", mutations: [] },
   "/lands/LP-10100/risk": risk("LP-10100", 0, "LOW", []),
   "/lands/LP-10001/risk": risk("LP-10001", 0, "LOW", []),
   "/lands/LP-10001": { ...land("LP-10001", ["Jamal Hossain"]), khatian_no: "501", dag_no: "101", area: 15 },
   "/lands/LP-10001/ownership": { entries: [own("Jamal Hossain", "2008-01-10", null, true)] },
   "/lands/LP-10001/transactions": { transactions: [] },
+  "/lands/LP-10100/encumbrances": {
+    land_id: "LP-10100",
+    encumbrances: [{ type: "COURT_CASE", status: "ACTIVE", started_at: "2025-11-01", resolved_at: null, reference_no: null, authority: null }],
+  },
 };
+
+/** U6: record sections live in tabs; open one by its label. */
+const openTab = async (name: string) => fireEvent.click(await screen.findByRole("tab", { name }));
 
 function client(get: (path: string) => Promise<any>): ApiClient {
   return { refresh: vi.fn().mockResolvedValue({ user }), get } as unknown as ApiClient;
@@ -69,7 +78,13 @@ describe("ResultView", () => {
     expect(await screen.findByText("LP-10100")).toBeInTheDocument();
     expect(screen.getByRole("note")).toHaveTextContent(en.common.demoLabel);
     expect(screen.getByText(en.risk.disclaimer)).toBeInTheDocument();
-    expect(screen.getByTestId("risk-section")).toHaveTextContent(en.risk.noEvidence);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(en.result.title);
+    expect(screen.getByRole("navigation", { name: en.page.breadcrumb })).toBeInTheDocument();
+    expect(screen.getByTestId("page-meta")).toHaveTextContent("LP-10100");
+    expect(screen.getAllByRole("tab").map((x) => x.textContent)).toEqual([
+      en.result.tabOwnership, en.result.tabTransactions, en.result.tabMutation, en.result.tabEncumbrance, en.result.tabEvidence,
+    ]);
+    expect(await screen.findByTestId("record-chip")).toHaveTextContent(en.risk.level.LOW);
 
     const items = within(await screen.findByRole("list", { name: en.result.ownership })).getAllByRole("listitem");
     expect(items).toHaveLength(3);
@@ -79,12 +94,50 @@ describe("ResultView", () => {
     expect(items[2]).toHaveTextContent(en.result.current);
     expect(items[2]).toHaveTextContent(en.result.present);
 
+    await openTab(en.result.tabTransactions);
     const rows = within(await screen.findByRole("table")).getAllByRole("row");
     expect(rows).toHaveLength(3); // header + 2
     expect(rows[1]).toHaveTextContent("Rahim Uddin");
     expect(rows[1]).toHaveTextContent("Karim Mia");
     expect(rows[1]).toHaveTextContent(en.result.txType.SALE);
     expect(rows[2]).toHaveTextContent("Hasan Ali");
+
+    await openTab(en.result.tabEvidence);
+    expect(screen.getByTestId("risk-section")).toHaveTextContent(en.risk.noEvidence);
+  });
+
+  it("shows cases / encumbrances in their tab", async () => {
+    wrap(client(okGet), "LP-10100");
+    await openTab(en.result.tabEncumbrance);
+    const row = within(await screen.findByRole("table", { name: en.result.encumbrances })).getAllByRole("row")[1];
+    expect(row).toHaveTextContent(en.result.encType.COURT_CASE);
+    expect(row).toHaveTextContent(en.status.ACTIVE);
+    expect(row).toHaveTextContent(en.result.notResolved);
+  });
+
+  it("renders the mutation history table with status, dates and khatian change", async () => {
+    const get = (path: string) =>
+      path === "/lands/LP-10100/mutations"
+        ? Promise.resolve({
+            land_id: "LP-10100",
+            mutations: [{ mutation_no: "M-77", status: "APPLIED", applied_at: "2026-02-01T04:00:00Z", decided_at: null, previous_khatian_no: "501", new_khatian_no: "612", ac_land_office: "Savar AC Land" }],
+          })
+        : okGet(path);
+    wrap(client(get), "LP-10100");
+    await openTab(en.result.tabMutation);
+    const tables = await screen.findAllByRole("table", { name: en.result.mutations });
+    const row = within(tables[0]).getAllByRole("row")[1];
+    expect(row).toHaveTextContent("M-77");
+    expect(row).toHaveTextContent(en.status.APPLIED);
+    expect(row).toHaveTextContent("501 → 612");
+    expect(row).toHaveTextContent(en.result.notDecided);
+    expect(row).toHaveTextContent("Savar AC Land");
+  });
+
+  it("shows empty mutation state", async () => {
+    wrap(client(okGet), "LP-10100");
+    await openTab(en.result.tabMutation);
+    expect(await screen.findByText(en.result.noMutations)).toBeInTheDocument();
   });
 
   it("offers a generate-report action on the result page", async () => {
@@ -98,6 +151,7 @@ describe("ResultView", () => {
     const items = within(await screen.findByRole("list", { name: en.result.ownership })).getAllByRole("listitem");
     expect(items).toHaveLength(1);
     expect(items[0]).toHaveTextContent("Jamal Hossain");
+    await openTab(en.result.tabTransactions);
     expect(await screen.findByText(en.result.noTransactions)).toBeInTheDocument();
     expect(screen.queryByRole("table")).toBeNull();
   });
@@ -129,6 +183,7 @@ describe("ResultView", () => {
     wrap(client(okGet), "LP-10100", bn, "bn");
     await waitFor(() => expect(screen.getByText(bn.result.landInfo)).toBeInTheDocument());
     expect(screen.getByText(bn.risk.disclaimer)).toBeInTheDocument();
+    await openTab(bn.result.tabTransactions);
     expect(await screen.findByRole("table")).toBeInTheDocument();
     expect((await screen.findAllByText("Rahim Uddin")).length).toBeGreaterThan(0);
   });

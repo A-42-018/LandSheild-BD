@@ -3,11 +3,14 @@ import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, LogIn, ShieldCheck } from "lucide-react";
+import { AlertCircle, Info, LogIn, ShieldCheck } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { Button, Card, Input } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "./AuthContext";
+
+/** Seeded demo users (README "Demo accounts"); the password is never shown in the UI. */
+export const DEMO_ACCOUNTS = ["citizen", "reviewer", "officer", "admin"].map((r) => `${r}@demo.landshield.test`);
 
 export function safeNext(next: string | null): string {
   return next && next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : "/";
@@ -46,7 +49,7 @@ export default function LoginForm() {
   }
 
   return (
-    <Card title={t("loginTitle")} icon={<ShieldCheck />} accent="primary" className="shadow-raised">
+    <Card title={<h1 className="text-base font-semibold">{t("loginTitle")}</h1>} icon={<ShieldCheck />} variant="record">
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         <p className="text-ink-muted">{t("loginIntro")}</p>
         <Input
@@ -77,6 +80,23 @@ export default function LoginForm() {
           {t("submit")}
         </Button>
       </form>
+      <aside aria-labelledby="demo-accounts" className="mt-5 rounded-md border border-line bg-surface-muted p-3 text-sm" data-testid="demo-accounts">
+        <p id="demo-accounts" className="flex items-center gap-2 font-semibold text-ink">
+          <Info aria-hidden="true" className="h-4 w-4 text-ink-muted" />
+          {t("demoTitle")}
+        </p>
+        <p className="mt-1 text-ink-muted">{t("demoHint")}</p>
+        <ul className="mt-2 flex flex-col gap-1 font-mono text-xs text-ink">
+          {DEMO_ACCOUNTS.map((e) => (
+            <li key={e}>
+              <button type="button" onClick={() => setEmail(e)} className="rounded py-1 text-left text-link underline-offset-2 hover:underline">
+                {e}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </aside>
+      <p className="mt-4 text-xs text-ink-muted">{t("notice")}</p>
     </Card>
   );
 }

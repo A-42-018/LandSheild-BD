@@ -17,6 +17,8 @@ AUDIT = {
     ("POST", f"{P}/auth/login"): "LOGIN",
     ("POST", f"{P}/auth/logout"): "LOGOUT",
     ("POST", f"{P}/auth/refresh"): None,  # session plumbing: runs on every page load, would drown the log
+    ("POST", f"{P}/public/verify-document"): None,  # F4b: anonymous read-only comparison, nothing written
+    ("POST", f"{P}/public/verify-document/fields"): None,  # F4b: same, JSON mode
     ("POST", f"{P}/verification"): "VERIFICATION_CREATE",
     ("POST", f"{P}/documents/upload"): "DOCUMENT_UPLOAD",
     ("POST", f"{P}/documents/{{document_id}}/process"): "DOCUMENT_PROCESS",
@@ -25,6 +27,7 @@ AUDIT = {
     ("POST", f"{P}/documents/{{document_id}}/reject"): "DOCUMENT_REJECT",
     ("POST", f"{P}/documents/{{document_id}}/reprocess"): "DOCUMENT_REPROCESS_REQUEST",
     ("PATCH", f"{P}/risk-alerts/{{alert_id}}"): "RISK_ALERT_UPDATE",
+    ("POST", f"{P}/mutations/{{mutation_id}}/transition"): "MUTATION_TRANSITION",
     ("POST", f"{P}/admin/users"): "USER_CREATE",
     ("PATCH", f"{P}/admin/users/{{user_id}}"): "USER_UPDATE",
 }
@@ -71,6 +74,13 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     mark("POST", f"{P}/auth/login")
     assert env.post(f"{P}/auth/refresh").status_code == 200  # cookie from the login above
     mark("POST", f"{P}/auth/refresh")
+    before = _ids(env)
+    assert env.post(f"{P}/public/verify-document/fields", json={"deed_no": "D-1", "fields": {}}).status_code == 200
+    mark("POST", f"{P}/public/verify-document/fields")
+    r = env.post(f"{P}/public/verify-document", files={"file": ("a.png", b"\x89PNG\r\n\x1a\n", "image/png")})
+    assert r.status_code in (200, 400, 415, 422)  # route reached; nothing here may write an audit row
+    mark("POST", f"{P}/public/verify-document")
+    assert _ids(env) == before, "public verify-document must not write audit rows"
     _audited(env, "LOGOUT", lambda: env.post(f"{P}/auth/logout"))
     mark("POST", f"{P}/auth/logout")
 
@@ -98,6 +108,11 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     _audited(env, "DOCUMENT_REJECT", lambda: env.post(
         f"{P}/documents/{doc2}/reject", json={"reason": "blurry"}, headers=rev))  # fmt: skip
     mark("POST", f"{P}/documents/{{document_id}}/reject")
+
+    mid = env.get(f"{P}/mutations", headers=off).json()["items"][0]["id"]
+    _audited(env, "MUTATION_TRANSITION", lambda: env.post(
+        f"{P}/mutations/{mid}/transition", json={"to": "REJECTED", "reason": "audit"}, headers=off))  # fmt: skip
+    mark("POST", f"{P}/mutations/{{mutation_id}}/transition")
 
     assert env.get(f"{P}/lands/LP-10240/risk", headers=rev).status_code == 200
     alerts = env.get(f"{P}/risk-alerts", headers=rev).json()["items"]

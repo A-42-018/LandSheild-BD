@@ -1,6 +1,7 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "./cn";
 
+export type CardVariant = "default" | "record";
 export type CardAccent = "none" | "primary" | "verified" | "review" | "critical";
 
 export interface CardProps extends Omit<HTMLAttributes<HTMLElement>, "title"> {
@@ -10,36 +11,39 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLElement>, "title"> {
   icon?: ReactNode;
   /** Coloured strip on the top edge. */
   accent?: CardAccent;
+  /** "record": page-level record card with a 3 px primary top rule. */
+  variant?: CardVariant;
   as?: "section" | "div" | "article";
 }
 
 const accents: Record<CardAccent, string> = {
   none: "",
-  primary: "border-t-4 border-t-primary",
-  verified: "border-t-4 border-t-verified",
-  review: "border-t-4 border-t-review",
-  critical: "border-t-4 border-t-critical",
+  primary: "border-t-[3px] border-t-primary",
+  verified: "border-t-[3px] border-t-verified",
+  review: "border-t-[3px] border-t-review",
+  critical: "border-t-[3px] border-t-critical",
 };
 
 export default function Card({
-  title, footer, icon, accent = "none", as: Tag = "section", className, children, ...rest
+  title, footer, icon, accent = "none", variant = "default", as: Tag = "section", className, children, ...rest
 }: CardProps) {
   return (
     <Tag
       data-accent={accent === "none" ? undefined : accent}
-      className={cn("rounded-xl border border-line bg-surface shadow-card", accents[accent], className)}
+      data-variant={variant === "record" ? "record" : undefined}
+      className={cn("rounded-lg border border-line bg-surface", variant === "record" && accent === "none" ? accents.primary : accents[accent], className)}
       {...rest}
     >
       {title && (
-        <div className="flex items-center gap-2 rounded-t-xl border-b border-line bg-primary-soft/60 px-4 py-3 text-base font-semibold text-ink">
+        <div className="flex items-center gap-2 rounded-t-lg border-b border-line bg-surface-muted px-4 py-3 text-base font-semibold text-ink">
           {icon && (
             <span aria-hidden="true" className="inline-flex shrink-0 text-primary [&>svg]:h-5 [&>svg]:w-5">{icon}</span>
           )}
-          <span>{title}</span>
+          <div>{title}</div>
         </div>
       )}
       <div className="p-4">{children}</div>
-      {footer && <div className="rounded-b-xl border-t border-line bg-surface-muted/60 px-4 py-3 text-sm text-ink-muted">{footer}</div>}
+      {footer && <div className="rounded-b-lg border-t border-line bg-surface-muted px-4 py-3 text-sm text-ink-muted">{footer}</div>}
     </Tag>
   );
 }

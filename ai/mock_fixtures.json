@@ -275,6 +275,64 @@
           0.92
         ]
       }
+    },
+    "Doc1Altered": {
+      "ocr_text": "Deed of Sale. Deed No D-2024-0785. Date 2024-02-12. District Gazipur, Upazila Sreepur, Mouza Barmi. Khatian 1245, Dag 785. Area 15 decimal. Seller Rahim Uddin. Buyer Karim Mia.",
+      "ocr_confidence": 0.93,
+      "fields": {
+        "owner_name": [
+          "Rahim Uddin",
+          0.92
+        ],
+        "father_name": [
+          "Abdul Jabbar",
+          0.88
+        ],
+        "khatian_no": [
+          "1245",
+          0.97
+        ],
+        "dag_no": [
+          "785",
+          0.97
+        ],
+        "mouza": [
+          "Barmi",
+          0.95
+        ],
+        "district": [
+          "Gazipur",
+          0.96
+        ],
+        "upazila": [
+          "Sreepur",
+          0.96
+        ],
+        "land_area": [
+          "15",
+          0.94
+        ],
+        "area_unit": [
+          "decimal",
+          0.93
+        ],
+        "deed_no": [
+          "D-2024-0785",
+          0.91
+        ],
+        "deed_date": [
+          "2024-02-12",
+          0.9
+        ],
+        "seller": [
+          "Rahim Uddin",
+          0.92
+        ],
+        "buyer": [
+          "Karim Mia",
+          0.91
+        ]
+      }
     }
   }
 }

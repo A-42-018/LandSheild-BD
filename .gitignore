@@ -21,3 +21,4 @@ landshield.db-journal
 
 e2e.db
 e2e-storage/
+scripts/.tamper_demo.json

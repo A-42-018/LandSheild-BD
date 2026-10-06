@@ -2,7 +2,7 @@
 # LandShield BD — reset demo state: wipe DB rows, re-seed, clear uploads. Offline. Run with servers stopped or running.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-export DEMO_PASSWORD="${DEMO_PASSWORD:-demo1234}"
+export DEMO_PASSWORD="${DEMO_PASSWORD:-LandShield2026!}"
 
 cd "$ROOT/backend"
 [ -d .venv ] && source .venv/bin/activate

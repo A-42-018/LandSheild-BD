@@ -10,8 +10,9 @@ import { useAuth } from "@/features/auth/AuthContext";
 import LandInfoCard from "@/features/result/LandInfoCard";
 import OwnershipTimeline from "@/features/result/OwnershipTimeline";
 import TransactionsTable from "@/features/result/TransactionsTable";
-import { formatDateTime } from "@/features/result/format";
-import QrCard from "@/features/qr/QrCard";
+import { formatDate, formatDateTime } from "@/features/result/format";
+import QrCard, { SealQr } from "@/features/qr/QrCard";
+import { Breadcrumb } from "@/components/PageHeader";
 import RiskCard from "@/features/risk/RiskCard";
 import DocumentConsistencyCard from "./DocumentConsistencyCard";
 import type { VerificationReport } from "./types";
@@ -27,11 +28,12 @@ export default function ReportView({ id }: { id: string }) {
   });
 
   const back = (
-    <Link href="/verify" className="text-sm font-medium text-primary underline">
+    <Link href="/verify" className="text-sm font-medium text-link underline">
       {t("result.newSearch")}
     </Link>
   );
 
+  const r0 = q.data;
   let body: React.ReactNode;
   if (q.isPending) {
     body = <LoadingState />;
@@ -53,7 +55,7 @@ export default function ReportView({ id }: { id: string }) {
     const r = q.data;
     const code = `report.disclaimer.${r.disclaimer_code}`;
     body = (
-      <>
+      <div className="report-sections flex flex-col gap-4">
         <Card title={t("report.summary")} icon={<ClipboardCheck />} accent="primary" data-testid="report-summary">
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             <div>
@@ -99,20 +101,49 @@ export default function ReportView({ id }: { id: string }) {
           <p className="text-sm text-ink">{t.has(code) ? t(code) : t("report.disclaimer.DEMO_DECISION_SUPPORT")}</p>
           <p className="mt-2 text-sm text-ink-muted">{t("risk.disclaimer")}</p>
         </Card>
+        <p className="border-t border-line pt-3 text-xs text-ink-muted" data-testid="report-footer">{t("report.generatedFooter")}</p>
         <div className="flex flex-wrap items-center gap-4 print:hidden">
           <Button icon={<Download />} onClick={() => window.print()}>{t("report.print")}</Button>
-          <Link href={`/verify/result?land_id=${encodeURIComponent(r.land_id)}`} className="text-sm font-medium text-primary underline">
+          <Link href={`/verify/result?land_id=${encodeURIComponent(r.land_id)}`} className="text-sm font-medium text-link underline">
             {t("report.backToResult")}
           </Link>
           {back}
         </div>
-      </>
+      </div>
     );
   }
 
   return (
     <div className="report flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold text-ink">{t("report.title")}</h1>
+      <Breadcrumb crumbs={[{ label: t("nav.verify"), href: "/verify" }]} />
+      {/* Letter-style header (roadmap 4.8): mark, title, ref no, date, signed QR. */}
+      <header data-testid="report-letterhead" className="flex items-start justify-between gap-4 border-b-[3px] border-primary pb-4">
+        <div className="flex items-start gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo-mark.svg" alt="" width={48} height={48} className="h-12 w-12 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-ink-muted">{t("common.appName")}</p>
+            <h1 className="text-[1.875rem] font-bold leading-tight text-ink sm:text-[2rem]">{t("report.title")}</h1>
+            {r0 && (
+              <dl className="mt-1 flex flex-wrap gap-x-4 text-sm text-ink-muted">
+                <div className="flex gap-1">
+                  <dt>{t("report.ref")}:</dt>
+                  <dd className="break-all font-mono text-ink">{r0.verification_id}</dd>
+                </div>
+                <div className="flex gap-1">
+                  <dt>{t("report.verifiedAt")}:</dt>
+                  <dd className="text-ink">{formatDate(r0.verified_at, locale, t("result.unknownDate"))}</dd>
+                </div>
+              </dl>
+            )}
+          </div>
+        </div>
+        {r0 && (
+          <div className="hidden shrink-0 rounded border border-line bg-white p-1.5 sm:block print:block">
+            <SealQr landId={r0.land_id} />
+          </div>
+        )}
+      </header>
       <p role="note" className="flex items-center gap-2 rounded-lg border border-review/30 bg-review-soft px-4 py-2 text-sm font-medium text-ink">
         <Info aria-hidden="true" className="h-4 w-4 shrink-0 text-review" />
         {t("common.demoLabel")}

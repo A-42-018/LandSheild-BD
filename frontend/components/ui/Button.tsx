@@ -16,11 +16,11 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-primary-fg shadow-card hover:bg-primary/90 hover:shadow-raised active:bg-primary/80",
+  primary: "bg-primary text-primary-fg hover:bg-primary-hover active:bg-primary-hover",
   secondary:
-    "border border-line bg-surface text-ink shadow-card hover:border-primary/50 hover:bg-primary-soft active:bg-primary-soft/70",
-  danger: "bg-critical text-critical-fg shadow-card hover:bg-critical/90 hover:shadow-raised active:bg-critical/80",
-  ghost: "text-primary hover:bg-primary-soft active:bg-primary-soft/70",
+    "border border-primary bg-surface text-primary hover:bg-primary-soft active:bg-primary-soft",
+  danger: "bg-critical text-critical-fg hover:bg-critical/90 active:bg-critical/80",
+  ghost: "text-primary hover:bg-primary-soft active:bg-primary-soft",
 };
 const sizes: Record<ButtonSize, string> = {
   sm: "px-3 py-1.5 text-sm",
@@ -41,7 +41,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       className={cn(
         "inline-flex min-h-11 items-center justify-center gap-2 rounded-md font-medium transition-colors",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
-        "disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none",
+        "disabled:cursor-not-allowed disabled:opacity-50",
         variants[variant],
         sizes[size],
         className,

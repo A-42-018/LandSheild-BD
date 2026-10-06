@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-// Design tokens (UD1). Every colour is a CSS variable holding "R G B" channels (see globals.css),
+// Design tokens (UD1, flattened to "Formal Green" in U1). Every colour is a CSS variable holding "R G B" channels (see globals.css),
 // so light/dark switch without per-component dark: classes and opacity modifiers (bg-primary/90) still work.
 // Old token names (primary, surface, line, ink, verified, review, critical, pending) are unchanged.
 const c = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
@@ -19,17 +19,21 @@ const config: Config = {
           DEFAULT: c("primary"),
           fg: c("primary-fg"),
           soft: c("primary-soft"),
-          50: "#EFF5FC",
-          100: "#DCE9F8",
-          200: "#BCD3F0",
-          300: "#8FB4E3",
-          400: "#5C8FD1",
-          500: "#2F6BB5",
-          600: "#1A4F94",
-          700: "#0F3D7A",
-          800: "#0A2F61",
-          900: "#002850", // logo navy
+          hover: c("primary-hover"),
+          50: "#E6F2ED",
+          100: "#C7E3D8",
+          200: "#94C8B5",
+          300: "#5FAA90",
+          400: "#2F8C6F",
+          500: "#0F7F61",
+          600: "#006A4E", // brand green
+          700: "#00563F",
+          800: "#004232",
+          900: "#002E23",
         },
+        link: c("link"),
+        strip: c("strip"),
+        accent: c("accent"),
         surface: { DEFAULT: c("surface"), muted: c("surface-muted") },
         line: c("line"),
         ink: { DEFAULT: c("ink"), muted: c("ink-muted") },
@@ -42,10 +46,10 @@ const config: Config = {
         "brand-gradient": "linear-gradient(135deg, rgb(var(--grad-from)) 0%, rgb(var(--grad-to)) 100%)",
         "brand-gradient-soft": "linear-gradient(180deg, rgb(var(--grad-soft-from)) 0%, rgb(var(--grad-soft-to)) 100%)",
       },
-      borderRadius: { md: "8px", lg: "12px", xl: "16px", "2xl": "20px" },
+      borderRadius: { md: "4px", lg: "6px", xl: "8px", "2xl": "8px" },
       boxShadow: {
-        card: "0 1px 2px rgb(var(--shadow) / 0.08)",
-        raised: "0 4px 14px rgb(var(--shadow) / 0.12)",
+        card: "none", // border-based cards (U1)
+        raised: "0 2px 8px rgb(var(--ink) / 0.08)",
       },
       fontSize: {
         "heading-1": ["2.25rem", { lineHeight: "2.5rem", fontWeight: "700" }],

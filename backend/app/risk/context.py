@@ -10,13 +10,17 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.models.deed import Deed
 from app.models.document import Document
+from app.models.encumbrance import LandEncumbrance
 from app.models.enums import DocumentStatus, TransactionStatus
 from app.models.land_parcel import LandParcel
+from app.models.mutation import MutationRecord
 from app.models.owner import Owner
 from app.models.ownership import OwnershipHistory
 from app.models.transaction import Transaction
 from app.schemas.extraction import REQUIRED_FIELDS
+from app.services import ledger
 
 
 @dataclass(frozen=True)
@@ -36,6 +40,36 @@ class TxRecord:
     area_unit: str
     status: str = TransactionStatus.RECORDED.value
     deed_no: str | None = None
+    from_document: bool = (
+        False  # posted from an uploaded document (F2a will auto-create its mutation)
+    )
+
+
+@dataclass(frozen=True)
+class MutRecord:
+    """A mutation (namjari) with the deed area it should not exceed (resolved by the loader)."""
+
+    id: str
+    transaction_id: str | None
+    deed_id: str | None
+    applicant_owner_id: str
+    status: str
+    area: float
+    area_unit: str
+    deed_area: float | None = None
+    deed_area_unit: str | None = None
+    applied_on: date | None = None  # F2a: a pending mutation inside the grace window is in progress
+
+
+@dataclass(frozen=True)
+class EncRecord:
+    """An encumbrance on the parcel (F3a). Only ACTIVE ones matter to the rules."""
+
+    id: str
+    type: str
+    reference_no: str
+    status: str
+    authority: str | None = None
 
 
 @dataclass(frozen=True)
@@ -63,6 +97,11 @@ class LandContext:
     transactions: tuple[TxRecord, ...] = field(default_factory=tuple)  # chronological
     owners: dict[str, OwnerRef] = field(default_factory=dict)  # owner_id -> names (P43)
     low_confidence_docs: tuple[DocConfidence, ...] = field(default_factory=tuple)  # P49
+    mutations: tuple[MutRecord, ...] = field(default_factory=tuple)  # F1b
+    encumbrances: tuple[EncRecord, ...] = field(default_factory=tuple)  # F3a
+    as_of: date | None = None  # reference "today" for time-based rules; None = date.today()
+    # F4c: (entity_type, entity_id) of records whose live row differs from the ledger
+    integrity_failures: tuple[tuple[str, str], ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -112,6 +151,41 @@ def _low_confidence_docs(
     return tuple(out)
 
 
+def _mutations(db: Session, land: LandParcel) -> tuple[MutRecord, ...]:
+    rows = db.execute(
+        select(MutationRecord, Deed)
+        .outerjoin(Deed, Deed.id == MutationRecord.deed_id)
+        .where(MutationRecord.land_id == land.id)
+        .order_by(MutationRecord.applied_at, MutationRecord.id)
+    ).all()
+    return tuple(
+        MutRecord(
+            id=m.id,
+            transaction_id=m.transaction_id,
+            deed_id=m.deed_id,
+            applicant_owner_id=m.applicant_owner_id,
+            status=m.status,
+            area=m.area,
+            area_unit=m.area_unit,
+            deed_area=d.area if d is not None else None,
+            deed_area_unit=d.area_unit if d is not None else None,
+            applied_on=m.applied_at.date() if m.applied_at is not None else None,
+        )
+        for m, d in rows
+    )
+
+
+def _encumbrances(db: Session, land: LandParcel) -> tuple[EncRecord, ...]:
+    rows = db.scalars(
+        select(LandEncumbrance)
+        .where(LandEncumbrance.land_id == land.id)
+        .order_by(
+            LandEncumbrance.started_at.is_(None), LandEncumbrance.started_at, LandEncumbrance.id
+        )
+    ).all()
+    return tuple(EncRecord(e.id, e.type, e.reference_no, e.status, e.authority) for e in rows)
+
+
 def load_land_context(
     db: Session, land: LandParcel, review_threshold: float | None = None
 ) -> LandContext:
@@ -132,7 +206,12 @@ def load_land_context(
             Transaction.id,
         )
     ).all()
-    owner_ids = {p.owner_id for p in periods} | {s for t in txs for s in (t.seller_id, t.buyer_id)}
+    muts = _mutations(db, land)
+    owner_ids = (
+        {p.owner_id for p in periods}
+        | {s for t in txs for s in (t.seller_id, t.buyer_id)}
+        | {m.applicant_owner_id for m in muts}
+    )
     owners: dict[str, OwnerRef] = {}
     if owner_ids:
         for o in db.scalars(select(Owner).where(Owner.id.in_(owner_ids))):
@@ -152,9 +231,13 @@ def load_land_context(
                 area_unit=t.area_unit,
                 status=t.status,
                 deed_no=t.deed.deed_no if t.deed is not None else None,
+                from_document=t.source_document_id is not None,
             )
             for t in txs
         ),
         owners=owners,
         low_confidence_docs=_low_confidence_docs(db, land, review_threshold),
+        mutations=muts,
+        encumbrances=_encumbrances(db, land),
+        integrity_failures=ledger.integrity_failures(db, land),
     )

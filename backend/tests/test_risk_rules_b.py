@@ -53,7 +53,8 @@ def test_lp_10500_evidence_and_no_names(db):
 
 
 def _ctx(txs=(), owners=(), area_=10.0, unit_="decimal"):
-    return LandContext("LP-X", area_, unit_, tuple(owners), tuple(txs))
+    # fixed as_of: time-based mutation rule (F1b) is exercised in test_mutation_rules.py
+    return LandContext("LP-X", area_, unit_, tuple(owners), tuple(txs), as_of=date(2000, 1, 1))
 
 
 def _tx(i, d=None, a=10.0, u="decimal", deed=None, status="RECORDED", s="a", b="b"):
@@ -214,6 +215,15 @@ def test_config_covers_all_rule_codes():
         "POSSIBLE_NAME_VARIANT",  # P43
         "LOW_EXTRACTION_CONFIDENCE",  # P49
         "ML_ANOMALY",  # P49
+        "REGISTERED_NOT_MUTATED",  # F1b
+        "MUTATION_PARTY_MISMATCH",
+        "MUTATION_WITHOUT_DEED",
+        "MUTATION_AREA_EXCEEDS_DEED",
+        "ACTIVE_LITIGATION",  # F3a
+        "KHAS_LAND",
+        "UNDER_ACQUISITION",
+        "ACTIVE_MORTGAGE",
+        "RECORD_INTEGRITY_FAILED",  # F4c
     }
     assert codes == set(RULE_POINTS) == set(RULE_SEVERITY)
     assert RULE_POINTS["UNIT_MISMATCH"] == 0 and RULE_SEVERITY["UNIT_MISMATCH"] == "INFO"

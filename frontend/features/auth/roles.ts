@@ -20,7 +20,9 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", labelKey: "nav.home", primary: true },
   { href: "/about", labelKey: "nav.about" },
-  { href: "/verify", labelKey: "nav.verify", roles: ROLES },
+  { href: "/verify", labelKey: "nav.verify", roles: ROLES, primary: true },
+  { href: "/check", labelKey: "nav.check", roles: ROLES, primary: true },
+  { href: "/verify-document", labelKey: "nav.verifyDoc" },
   { href: "/map", labelKey: "nav.map", roles: ROLES, primary: true },
   { href: "/officer", labelKey: "nav.dashboard", roles: REVIEW_UP },
   { href: "/officer/upload", labelKey: "nav.upload", roles: OFFICER_UP },

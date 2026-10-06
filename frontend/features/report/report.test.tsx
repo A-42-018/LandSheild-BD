@@ -87,6 +87,10 @@ describe("ReportView", () => {
     expect(within(screen.getByRole("table")).getAllByRole("row")).toHaveLength(2);
     expect(screen.getByTestId("report-disclaimer")).toHaveTextContent(en.report.disclaimer.DEMO_DECISION_SUPPORT);
     expect(screen.getByTestId("qr-card")).toBeTruthy();
+    const head = screen.getByTestId("report-letterhead");
+    expect(head).toHaveTextContent("v-clean");
+    expect(within(head).getByRole("img", { name: /LP-10100/ })).toBeTruthy();
+    expect(screen.getByTestId("report-footer")).toHaveTextContent(en.report.generatedFooter);
     expect(screen.getByRole("button", { name: en.report.print })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: en.report.backToResult })).toHaveAttribute("href", "/verify/result?land_id=LP-10100");
   });

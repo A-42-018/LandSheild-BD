@@ -3,8 +3,8 @@
 
 Reads the numbered sections of a Saf-Kabala (1 purchaser, 2 seller, 3 schedule of property)
 and the header line (deed no, English date, sub-registry office). A field that is not found is
-None: nothing is guessed. Tuned on one real-layout sample; other layouts fall back to the
-generic label rules in rules.py.
+None: nothing is guessed. Tuned on one fictional sample deed in the standard layout; other layouts fall back to
+the generic label rules in rules.py.
 """
 from __future__ import annotations
 

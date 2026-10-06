@@ -15,6 +15,19 @@ LandShield BD is a demo of a land-record verification workflow for Bangladesh. O
 
 All data is **synthetic**. Nothing here is an official record or a government system.
 
+## Problem statement (LandTech 2026 · P3)
+
+**Track:** Digital Land Records, Verification & Digitization · **Chosen problem: P3 — Fraud & Double-Selling**, with P1, P2, P4 and P5 as supporting modules.
+
+| P3 scenario | Where it lives |
+|---|---|
+| Same plot sold twice | Double-sale rule (Doc1 → Doc2 = HIGH 70) |
+| Rapid transfers | Rapid-transfer indicator in the risk engine |
+| Registration ↔ mutation mismatch | Planned (roadmap F1a–F1c) |
+| Forged / copied documents | Duplicate-deed + anomaly hint; hash/signature planned (F4a–F4c) |
+
+Phase status: `plan.md`. Requirement audit and phase cards: `roadmap.md`.
+
 ## Problem
 
 Land fraud (one parcel sold twice, a seller who is not the recorded owner, copied deeds, altered areas) is hard to spot when records are paper, scattered, and checked by hand.
@@ -75,7 +88,7 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"            # add ,ai extras for OCR/ML: pip install -e ".[dev,ai]"
 cp ../.env.example .env            # set JWT_SECRET (any 32+ chars) and DEMO_PASSWORD
 alembic upgrade head
-DEMO_PASSWORD=demo1234 PYTHONPATH=.. python ../scripts/seed.py     # add --reset to rebuild
+DEMO_PASSWORD=LandShield2026! PYTHONPATH=.. python ../scripts/seed.py     # add --reset to rebuild
 PYTHONPATH=.. uvicorn app.main:app --reload --port 8001
 
 # frontend (second terminal)
@@ -116,7 +129,7 @@ Defined in `.env.example` (copy to `backend/.env`).
 
 ## Demo accounts
 
-Password is the value of `DEMO_PASSWORD` (`start.sh` uses `demo1234`).
+Password is the value of `DEMO_PASSWORD` (`start.sh` uses `LandShield2026!`).
 
 | Role | E-mail | Can do |
 |---|---|---|
@@ -127,26 +140,34 @@ Password is the value of `DEMO_PASSWORD` (`start.sh` uses `demo1234`).
 
 ## Demo dataset
 
-| Parcel | Scenario | Expected |
-|---|---|---|
-| LP-10001 | CLEAN | LOW |
-| LP-10100 | NORMAL_CHAIN | LOW |
-| LP-10234 | LIVE_DEMO (upload target) | LOW until Doc2 is approved |
-| LP-10240 | DOUBLE_SALE | HIGH (70) |
-| LP-10300 | AREA_MISMATCH | MEDIUM |
-| LP-10400 | SELLER_MISMATCH | HIGH |
-| LP-10500 | DUPLICATE_DEED | MEDIUM |
+Levels below are what a fresh seed returns from `GET /lands/{id}/risk` (rules only; the optional ML score adds 0–15 and never changes these levels). Re-checked in phase Q1.
+
+| Parcel | Scenario | Expected level (score) | Evidence |
+|---|---|---|---|
+| LP-10001 | CLEAN | LOW (0) | — |
+| LP-10100 | NORMAL_CHAIN | LOW (0) | — |
+| LP-10234 | LIVE_DEMO (upload target) | LOW (0) → HIGH (70) after Doc1 + Doc2 are approved | SELLER_MISMATCH, POSSIBLE_DUPLICATE_TRANSACTION |
+| LP-10240 | DOUBLE_SALE | HIGH (70) | POSSIBLE_DUPLICATE_TRANSACTION, SELLER_MISMATCH |
+| LP-10300 | AREA_MISMATCH | LOW (0) until `AreaMismatch.png` is uploaded + approved | — |
+| LP-10400 | SELLER_MISMATCH | LOW (0) until `SellerMismatch.png` is uploaded + approved | — |
+| LP-10500 | DUPLICATE_DEED | MEDIUM (30) | DUPLICATE_DEED |
+| LP-10600 | UNMUTATED_SALE | MEDIUM (30) | REGISTERED_NOT_MUTATED |
+| LP-10700 | MUTATION_OTHER_PERSON | HIGH (60) | MUTATION_PARTY_MISMATCH |
+| LP-10800 | ACTIVE_CASE | MEDIUM (30) | ACTIVE_LITIGATION |
+| LP-10900 | KHAS_LAND | HIGH (60) | KHAS_LAND |
+| LP-11000 | ACQUISITION | HIGH (60) | UNDER_ACQUISITION |
 
 Sample documents: `database/sample_data/` (Doc1, Doc2, Clean, AreaMismatch, SellerMismatch). Regenerate with `python ai/evaluation/make_synthetic.py`.
 
 ## Testing
 
 ```bash
-cd backend && pytest -q && ruff check .      # last full run: 470 passed
-cd frontend && npm test && npx tsc --noEmit && npm run check:i18n   # 183 passed, 480 i18n keys
+cd backend && pytest -q && ruff check .      # last full run (Q1): 558 passed, 13 skipped, ruff clean
+cd frontend && npm test && npx tsc --noEmit && npm run check:i18n   # 350 passed, 827 i18n keys
+cd frontend && npm run e2e:install && npm run e2e   # Playwright (Q2): 20 passed — starts its own seeded backend on :8001
 ```
 
-Not covered by automated runs: `next build`, a live browser walk, Postgres, Chromium PDF export. See [Limitations](#limitations).
+Not covered by automated runs: `next build`, a live deploy walk, Postgres, Chromium PDF export. See [Limitations](#limitations).
 
 ## Security
 
@@ -155,6 +176,33 @@ Short list: JWT (access in memory, refresh in an HttpOnly cookie), role read fro
 ### Bangladesh map
 `/map` shows all of Bangladesh (street basemap + division/district/upazila boundaries) with a search menu; mouza/sheet/plot are demo-scope only and empty until mouza maps are added. Data sources, licences, API and how to add mouzas: [docs/gis.md](docs/gis.md).
 
+## Data sources
+
+- **All land, deed and person records are synthetic.** Seed data: `database/seed/`, `scripts/seed.py`; evaluation documents: `ai/evaluation/make_synthetic.py`. Names, deed numbers and plots are invented.
+- **No scraping and no government portal access.** Nothing was downloaded from any land-record system.
+- Boundaries: geoBoundaries gbOpen ADM3 (CC BY 4.0) via `ifahimreza/bangladesh-geojson` (ODbL), simplified and **not official**. Details: [docs/gis.md](docs/gis.md).
+- Basemap tiles: © OpenStreetMap contributors (ODbL), demo traffic only.
+- Font for generated PDFs and synthetic documents: GNU FreeSans (FreeFont, GPL-3.0 with font exception), see `ai/fonts/LICENSE-FreeFont.txt`.
+
+## AI tool disclosure
+
+| Tool | Used for | Human review |
+|---|---|---|
+| Claude (Anthropic) | Code generation, tests, docs, roadmap and requirement audit, phase by phase | Team reviewed and ran the code and tests, and edited the output |
+| Tesseract OCR (runtime) | Text extraction from deed images (optional, `OCR_PROVIDER`) | Every extraction goes through human review before approval |
+| scikit-learn Isolation Forest (runtime) | Anomaly hint trained on synthetic data | Hint only; never creates a HIGH risk alone |
+
+The risk rules are deterministic and explainable; no generative AI is used at runtime.
+
+## Credits
+
+Open-source libraries: Next.js, React, Tailwind CSS, next-intl, TanStack Query, React Hook Form, Leaflet, React Flow, Recharts, qrcode.react, Zod (MIT, Leaflet BSD-2); FastAPI, Uvicorn, Pydantic, PyJWT, rapidfuzz (MIT); SQLAlchemy, Alembic (MIT); Pillow (HPND); OpenCV (Apache-2.0); PyMuPDF (AGPL-3.0, optional); scikit-learn (BSD-3); pytesseract and Tesseract (Apache-2.0); Vitest, Playwright (MIT/Apache-2.0).
+Data: geoBoundaries (CC BY 4.0), ifahimreza/bangladesh-geojson (ODbL), OpenStreetMap contributors (ODbL).
+
+## Licence
+
+Source code: [MIT](LICENSE). Third-party data and fonts keep their own licences (see Data sources).
+
 ## Limitations
 
 - **Synthetic data only.** Not a government system; no integration with any real land registry.
@@ -162,7 +210,9 @@ Short list: JWT (access in memory, refresh in an HttpOnly cookie), role read fro
 - OCR/extraction accuracy was measured on 20 synthetic documents only; **Bangla OCR is not measured** (no `ben` data in the eval run). Noisy documents score poorly. See the ai-pipeline doc.
 - The anomaly model is trained on synthetic data; its score is not a probability and never creates HIGH alone.
 - Rate limits and refresh-token revocation are in-memory per process.
-- SQLite only; no Docker or Postgres yet (P57).
+- SQLite only (no Postgres). The Docker image for Render is written but its build/deploy was not run from this repo's sessions.
+- Live deploy (Render + Netlify) is a manual step: see docs/deploy-netlify.md §3 for the smoke checklist. The free Render instance sleeps (cold start ~30–60 s; ping `/health` before a demo) and wipes its SQLite on restart (demo data is reseeded, uploaded documents are lost).
+- On Render the OCR is real Tesseract; the sample PNGs were only tested end-to-end with the mock provider. "Verify a copy" returns NOT_FOUND until Doc1 has been approved in that instance.
 - Known dependency advisories: `next` 14.2.15 and `next-intl` (breaking upgrades needed); see docs/security.md.
 - Not verified: PDF export with correct Bangla shaping (needs Chromium), `next build`, QR scan on a real device, real-browser rendering of charts, map and graph.
 - Parcel polygons are a fictional layout, not boundaries.

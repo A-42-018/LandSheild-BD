@@ -55,6 +55,16 @@ describe("LoginForm", () => {
     expect(c.login).not.toHaveBeenCalled();
   });
 
+  it("shows the demo-accounts hint (no password) and fills the e-mail on click", () => {
+    wrap(<LoginForm />, fakeClient());
+    const hint = screen.getByTestId("demo-accounts");
+    expect(hint).toHaveTextContent(en.auth.demoTitle);
+    expect(hint).not.toHaveTextContent("LandShield2026");
+    fireEvent.click(screen.getByRole("button", { name: "reviewer@demo.landshield.test" }));
+    expect(screen.getByLabelText(/Email/)).toHaveValue("reviewer@demo.landshield.test");
+    expect(screen.getByText(en.auth.notice)).toBeInTheDocument();
+  });
+
   it("logs in the demo officer and redirects to safe next", async () => {
     search = "next=/dashboard";
     const c = fakeClient();

@@ -1,7 +1,7 @@
-import { expect, type BrowserContext, type Page } from "@playwright/test";
+import { expect, type APIRequestContext, type BrowserContext, type Page } from "@playwright/test";
 
 export const API = "http://localhost:8001/api/v1";
-export const PASSWORD = process.env.DEMO_PASSWORD ?? "demo1234";
+export const PASSWORD = process.env.DEMO_PASSWORD ?? "LandShield2026!";
 export type DemoRole = "citizen" | "reviewer" | "officer" | "admin";
 export const emailOf = (role: DemoRole) => `${role}@demo.landshield.test`;
 
@@ -10,6 +10,18 @@ export async function apiLogin(context: BrowserContext, role: DemoRole): Promise
   const res = await context.request.post(`${API}/auth/login`, { data: { email: emailOf(role), password: PASSWORD } });
   expect(res.ok(), `API login as ${role} failed (${res.status()})`).toBeTruthy();
   return (await res.json()).access_token as string;
+}
+
+/** Bearer token from an isolated request context: does NOT touch the browser's refresh cookie (the page stays signed in as before). */
+export async function apiToken(request: APIRequestContext, role: DemoRole): Promise<string> {
+  const res = await request.post(`${API}/auth/login`, { data: { email: emailOf(role), password: PASSWORD } });
+  expect(res.ok(), `API login as ${role} failed (${res.status()})`).toBeTruthy();
+  return (await res.json()).access_token as string;
+}
+
+/** U6: the risk card lives in the last record tab ("Evidence" / BN equivalent). */
+export async function openEvidenceTab(page: Page): Promise<void> {
+  await page.getByRole("tab").last().click();
 }
 
 export async function signIn(page: Page, role: DemoRole): Promise<void> {

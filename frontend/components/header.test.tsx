@@ -6,6 +6,7 @@ import bn from "@/messages/bn.json";
 import { activeNavHref, NAV_ITEMS } from "@/features/auth/roles";
 import Footer from "@/features/landing/Footer";
 import Navbar from "@/features/landing/Navbar";
+import { readTheme } from "@/lib/theme";
 
 let pathname = "/";
 let auth: { status: string; user: unknown; logout: () => Promise<void> };
@@ -43,12 +44,35 @@ describe("activeNavHref", () => {
 });
 
 describe("Navbar (UD3)", () => {
-  it("has brand link, main nav, theme group and language switch", () => {
+  it("has brand link, main nav, top strip with text size + language switch (no theme toggle for anonymous)", () => {
     render(wrap(<Navbar />));
     expect(screen.getByRole("link", { name: en.common.appName })).toHaveAttribute("href", "/");
     expect(screen.getByRole("navigation", { name: en.nav.main })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: en.theme.label })).toBeInTheDocument();
+    expect(screen.getByTestId("top-strip")).toHaveTextContent(en.strip.notice);
+    expect(screen.getByRole("group", { name: en.strip.textSize })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: en.theme.label })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("aria-current", "true");
+  });
+
+  it("strip language switch lists বাংলা first, then English", () => {
+    render(wrap(<Navbar />));
+    const lang = screen.getByRole("navigation", { name: en.common.language });
+    expect(within(lang).getAllByRole("link").map((a) => a.textContent)).toEqual(["বাংলা", "English"]);
+  });
+
+  it("text size A+ / A- / A set <html> font-size and store it; A resets", () => {
+    document.documentElement.style.fontSize = "";
+    render(wrap(<Navbar />));
+    fireEvent.click(screen.getByRole("button", { name: en.strip.larger }));
+    expect(document.documentElement.style.fontSize).toBe("112.5%");
+    expect(window.localStorage.getItem("ls-text-size")).toBe("112.5");
+    fireEvent.click(screen.getByRole("button", { name: en.strip.larger }));
+    expect(document.documentElement.style.fontSize).toBe("125%");
+    expect(screen.getByRole("button", { name: en.strip.larger })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: en.strip.smaller }));
+    expect(document.documentElement.style.fontSize).toBe("112.5%");
+    fireEvent.click(screen.getByRole("button", { name: en.strip.normal }));
+    expect(document.documentElement.style.fontSize).toBe("");
   });
 
   it("marks only the current page link", () => {
@@ -59,7 +83,7 @@ describe("Navbar (UD3)", () => {
     expect(screen.getByRole("link", { name: en.nav.home })).not.toHaveAttribute("aria-current");
   });
 
-  it("sketch: bar nav is only Home (+ Parcel map when signed in); other pages are not in the bar", () => {
+  it("service nav: Home for anonymous; Home, Verify land, Check before you buy, Parcel map when signed in", () => {
     render(wrap(<Navbar />));
     const nav = screen.getByRole("navigation", { name: en.nav.main });
     expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home]);
@@ -67,19 +91,27 @@ describe("Navbar (UD3)", () => {
     cleanup();
     render(wrap(<Navbar />));
     const nav2 = screen.getByRole("navigation", { name: en.nav.main });
-    expect(within(nav2).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.map]);
+    expect(within(nav2).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.verify, en.nav.check, en.nav.map]);
   });
 
-  it("theme toggle in the header is sun | moon only", () => {
+  it("theme toggle lives in the account menu (signed in), light | dark | system", () => {
+    auth = { status: "authenticated", user: { name: "C", role: "CITIZEN" }, logout };
     render(wrap(<Navbar />));
+    fireEvent.click(screen.getByRole("button", { name: en.nav.account }));
     const group = screen.getByRole("group", { name: en.theme.label });
-    expect(within(group).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual([en.theme.light, en.theme.dark]);
+    expect(within(group).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual([en.theme.light, en.theme.dark, en.theme.system]);
+    expect(within(group).getByRole("button", { name: en.theme.light })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("language switch in the header shows EN | BN and keeps full accessible names", () => {
+  it("theme default is light when nothing is stored (dark only by explicit choice)", () => {
+    expect(readTheme()).toBe("light");
+    window.localStorage.setItem("ls-theme", "dark");
+    expect(readTheme()).toBe("dark");
+  });
+
+  it("header shows the Bangla sub-line", () => {
     render(wrap(<Navbar />));
-    expect(screen.getByRole("link", { name: "English" })).toHaveTextContent("EN");
-    expect(screen.getByRole("link", { name: "বাংলা" })).toHaveTextContent("BN");
+    expect(screen.getByText(en.common.subLine)).toBeInTheDocument();
   });
 
   it("anonymous: user icon links to sign in, no sign out", () => {
@@ -146,16 +178,16 @@ describe("Navbar (UD3)", () => {
 });
 
 describe("Footer (UD3)", () => {
-  it.each(["en", "bn"] as const)("has one labelled nav with explore + account columns (%s)", (loc) => {
+  it.each(["en", "bn"] as const)("has one labelled nav with 4 columns: services, about, help, legal (%s)", (loc) => {
     const m = loc === "en" ? en : bn;
     render(wrap(<Footer />, loc));
     const nav = screen.getByRole("navigation", { name: m.landing.footerNav });
     expect(nav).toBeInTheDocument();
-    expect(screen.getByText(m.footer.explore)).toBeInTheDocument();
-    expect(screen.getByText(m.footer.account)).toBeInTheDocument();
+    for (const h of [m.footer.services, m.footer.aboutTitle, m.footer.help, m.footer.legal]) expect(screen.getByText(h)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp("support@landshield.demo"))).toBeInTheDocument();
     expect(screen.getByRole("link", { name: m.nav.map })).toHaveAttribute("href", "/map");
     expect(screen.getByRole("link", { name: m.nav.login })).toHaveAttribute("href", "/login");
     expect(screen.getByText(m.landing.disclaimer)).toBeInTheDocument();
-    expect(screen.getByText(m.common.demoLabel)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(m.common.demoLabel.replace(/[.]/g, "\\.")))).toBeInTheDocument();
   });
 });

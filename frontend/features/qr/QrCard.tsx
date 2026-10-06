@@ -4,11 +4,23 @@ import { QrCode } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Card } from "@/components/ui";
 import { publicUrl } from "./publicUrl";
+import { usePublicSeal } from "./usePublicVerify";
+
+function useSealUrl(landId: string) {
+  const locale = useLocale();
+  const seal = usePublicSeal(landId).data;
+  return publicUrl(locale, landId, undefined, seal ? { deedId: seal.deed_id, hash12: seal.hash12 } : null);
+}
+
+/** Bare signed-QR image (report letterhead). Same URL as QrCard. */
+export function SealQr({ landId, size = 88 }: { landId: string; size?: number }) {
+  const t = useTranslations("qr");
+  return <QRCodeSVG value={useSealUrl(landId)} size={size} level="M" role="img" aria-label={t("alt", { landId })} />;
+}
 
 export default function QrCard({ landId }: { landId: string }) {
   const t = useTranslations("qr");
-  const locale = useLocale();
-  const url = publicUrl(locale, landId);
+  const url = useSealUrl(landId);
   return (
     <Card title={t("title")} icon={<QrCode />} data-testid="qr-card" className="break-inside-avoid">
       <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">

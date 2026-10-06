@@ -3,14 +3,13 @@ import { setRequestLocale } from "next-intl/server";
 import LoginForm from "@/features/auth/LoginForm";
 import { LoadingState } from "@/components/ui";
 
+/** U6: plain centred form card with a small flat mark above (no logo card wrapper). */
 export default function LoginPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
   return (
-    <div className="mx-auto max-w-md rounded-2xl bg-brand-gradient-soft p-4 sm:p-6">
-      <div className="mb-4 flex justify-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/logo-mark.png" alt="" width={820} height={608} className="h-24 w-auto drop-shadow-lg" />
-      </div>
+    <div className="mx-auto flex max-w-md flex-col gap-4">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/logo-mark.svg" alt="" width={48} height={48} className="mx-auto h-12 w-12" />
       <Suspense fallback={<LoadingState />}>
         <LoginForm />
       </Suspense>

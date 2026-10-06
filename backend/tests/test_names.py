@@ -70,6 +70,7 @@ def _ctx(seller_ref, recorded_ref, owners=None):
         (OwnerPeriod("a", date(2000, 1, 1), None),),
         (TxRecord("t1", "s", "b", date(2020, 1, 1), 10.0, "decimal"),),
         owners,
+        as_of=date(2000, 1, 1),
     )  # fmt: skip
 
 

@@ -16,7 +16,9 @@ from app.schemas.admin import (
     AdminUserPatch,
     RoleCode,
 )
+from app.schemas.ledger import LedgerVerify
 from app.services import admin as svc
+from app.services import ledger as ledger_svc
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 Order = Literal["asc", "desc"]
@@ -85,3 +87,8 @@ def documents(
     db: Session = Depends(get_db),
 ) -> AdminDocumentList:
     return svc.list_documents(db, q, status, sort, order, limit, offset)
+
+
+@router.get("/ledger/verify", response_model=LedgerVerify)
+def verify_ledger(_: User = Admin, db: Session = Depends(get_db)) -> LedgerVerify:
+    return LedgerVerify(**ledger_svc.verify(db))

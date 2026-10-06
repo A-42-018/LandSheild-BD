@@ -25,7 +25,7 @@ P51 and P52 suites have been run: backend 470 passed, ruff clean; frontend 183 p
 - **Refresh cookie:** `HttpOnly`, `SameSite=Lax`, path-scoped to `/api/v1/auth`, `Secure` follows `COOKIE_SECURE`. The access token lives in browser memory only.
 - **JWT:** HS256, secret required outside dev, access/refresh tokens are typed (type confusion rejected), role is read from the database, not the token.
 - **Upload limits:** 10 MB, 40 MP images, 20 PDF pages, extension and magic bytes must agree, stored names are random UUIDs, path traversal and symlink escapes are rejected (constants are pinned by a test).
-- **Secrets grep:** no private-key blocks, cloud or API tokens in the repository text files. `tests/test_security_a.py` repeats the scan. Passwords in `start.sh` (`demo1234`) and `run_eval.py` are demo-only defaults overridable by `DEMO_PASSWORD`.
+- **Secrets grep:** no private-key blocks, cloud or API tokens in the repository text files. `tests/test_security_a.py` repeats the scan. Passwords in `start.sh` (`LandShield2026!`) and `run_eval.py` are demo-only defaults overridable by `DEMO_PASSWORD`.
 - **Public and map endpoints:** `/public/verify/{id}` (60/min/IP) and `/lands/map` expose no names, hashes, ids or file paths; both compute risk read-only.
 
 ## Still open (not fixed in P51)
@@ -54,6 +54,13 @@ P51 and P52 suites have been run: backend 470 passed, ruff clean; frontend 183 p
 
 **Deliberately not audited:** `POST /auth/refresh` (runs on every page load).
 
+## F4a — record hash + Ed25519 signature
+- Each deed stores `record_hash` (SHA-256 of canonical JSON: sorted keys, NFC/whitespace-normalised land code, khatian, dag, deed no, seller, buyer, date, area, unit + document file hash) and `signature` (Ed25519 over the ASCII hash). Signed at approval (`posting.post_document`) and for seeded deeds.
+- Key: `SIGNING_KEY` (base64url seed) or PEM at `SIGNING_KEY_PATH` (default `<STORAGE_PATH>/signing/ed25519.pem`; gitignored via `storage/` and `*.pem`). Never commit it. On Render set `SIGNING_KEY`; a lost key makes old signatures INVALID.
+- Public, rate-limited, `no-store`: `GET /public/keys` (public key + key_id), `GET /public/seal/{land_id}` (latest signed deed id + 12-char hash prefix), `GET /public/signature?d=&h=` → `VALID | INVALID | UNSIGNED | NOT_FOUND` (recomputes the hash from live data, so a changed record turns INVALID). No names or full hashes are returned.
+- Public document check (F4b): `POST /public/verify-document` (multipart file; extension + magic-byte + size validated, compared and discarded, never stored) and `POST /public/verify-document/fields` (JSON `{deed_no, fields}`) → `AUTHENTIC | ALTERED | NOT_FOUND | UNREADABLE`. Exact file-hash match, else extracted fields compared with recorded deeds of that deed_no; `ALTERED` lists differing field NAMES only (no recorded values). Rate limit `VERIFY_DOC_RATE_LIMIT_PER_MIN` (default 10/min/IP); not audited (read-only).
+- Signed QR URL: `/{locale}/v/{land}?d=<deed_id>&h=<hash12>`; the public page shows the signature chip.
+
 ## Deployment checklist (P58)
 
 - Set `APP_ENV=prod`, a `JWT_SECRET` of 32+ random characters, a real `HASH_SALT` (16+), `COOKIE_SECURE=true`, https-only `CORS_ORIGINS`; the app refuses to start otherwise.
@@ -61,7 +68,7 @@ P51 and P52 suites have been run: backend 470 passed, ruff clean; frontend 183 p
 - Disable `/docs`, `/redoc`, `/openapi.json`.
 - Replace in-memory rate limits and refresh revocation with a shared store before running more than one worker.
 - Raise `pyjwt>=2.15` and `pillow>=12.3` (already in `pyproject.toml`; reinstall in a clean venv) and plan the Next / next-intl major upgrade.
-- Never commit `.env`, `storage/` or `*.db`; demo passwords (`demo1234`) are for local demos only.
+- Never commit `.env`, `storage/` or `*.db`; demo passwords (`LandShield2026!`) are for local demos only.
 
 ## Reporting
 

@@ -3,6 +3,8 @@ export interface PublicCounts {
   transactions: number;
   flagged_transactions: number;
   open_alerts: number;
+  active_encumbrances?: number;
+  pending_mutations?: number;
 }
 export interface PublicVerifyDto {
   land_id: string;
@@ -13,4 +15,13 @@ export interface PublicVerifyDto {
   risk_level: string;
   counts: PublicCounts;
   last_verified_at: string | null;
+}
+
+export interface PublicSealDto {
+  deed_id: string;
+  hash12: string;
+}
+export type SignatureState = "VALID" | "INVALID" | "UNSIGNED" | "NOT_FOUND";
+export interface PublicSignatureDto {
+  state: SignatureState;
 }

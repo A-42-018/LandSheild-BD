@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Badge } from "@/components/ui";
+import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "@/features/auth/AuthContext";
 import { activeNavHref, navItemsFor } from "@/features/auth/roles";
 
@@ -67,7 +68,7 @@ export default function UserMenu() {
       <div
         id="account-menu"
         hidden={!open}
-        className="absolute inset-x-4 top-full z-50 mt-2 md:inset-x-auto md:right-0 md:w-64 rounded-xl border border-line bg-surface p-2 text-ink shadow-raised"
+        className="absolute inset-x-4 top-full z-50 mt-2 md:inset-x-auto md:right-0 md:w-64 rounded-lg border border-line bg-surface p-2 text-ink shadow-raised"
       >
         <div className="flex items-center justify-between gap-2 border-b border-line px-2 pb-2 pt-1">
           <span className="truncate text-sm font-semibold">{user.name}</span>
@@ -90,10 +91,14 @@ export default function UserMenu() {
             ))}
           </ul>
         )}
+        <div className="flex items-center justify-between gap-2 border-t border-line px-2 py-2">
+          <span className="text-sm text-ink-muted">{t("theme.label")}</span>
+          <ThemeToggle />
+        </div>
         <button
           type="button"
           onClick={() => void logout()}
-          className="mt-1 flex min-h-11 w-full items-center gap-2 rounded-md border-t border-line px-2 pb-1.5 pt-2 text-left text-sm font-medium text-critical hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          className="flex min-h-11 w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium text-critical hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
         >
           <LogOut aria-hidden="true" className="h-4 w-4" />
           {t("nav.logout")}

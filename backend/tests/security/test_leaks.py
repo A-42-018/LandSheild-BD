@@ -60,7 +60,7 @@ def _sweep(env, store, jobs):
             f"{P}/lands/search?district=Dhaka&upazila=Savar&mouza=Ashulia&khatian=610&dag=210",
             f"{P}/documents/{doc_id}", f"{P}/documents/{doc_id}/extraction"]  # fmt: skip
     for land in LANDS:
-        urls += [f"{P}/lands/{land}{x}" for x in ("", "/ownership", "/transactions", "/risk", "/graph")]
+        urls += [f"{P}/lands/{land}{x}" for x in ("", "/ownership", "/transactions", "/risk", "/graph", "/pre-purchase-check")]
         urls.append(f"{P}/public/verify/{land}")
     for v in verifications.values():
         urls += [f"{P}/verification/{v}", f"{P}/verification/{v}/report"]
@@ -137,3 +137,12 @@ def test_error_bodies_do_not_leak_internals(env):
         text = r.text.lower()
         for needle in ("traceback", "sqlalchemy", "sqlite", "/home/", ".py", "select "):
             assert needle not in text, (url, needle)
+
+
+def test_verify_document_leaks_nothing(env):
+    """F4b: public result carries a state + field names only — no names, hashes, paths, values."""
+    r = env.post(f"{P}/public/verify-document/fields", json={"deed_no": "D-2024-0785", "fields": {}})
+    assert r.status_code == 200
+    assert set(r.json()) == {"state", "match", "differing"}
+    text = json.dumps(r.json()).lower()
+    assert not any(w in text for w in ("hash", "file_path", "rahim", "karim", "father", "nid"))

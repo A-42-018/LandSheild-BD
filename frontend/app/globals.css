@@ -2,19 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Palette = "R G B" channels (Tailwind adds alpha). Blue sampled from the logo (navy #002850, green, red).
+/* Palette = "R G B" channels (Tailwind adds alpha). "Formal Green" (U1): primary #006A4E, navy ink/link.
    Contrast table for both themes: docs/ui.md. */
 @layer base {
   :root {
     color-scheme: light;
     --surface: 255 255 255;
-    --surface-muted: 243 247 252;
-    --line: 211 222 236;
+    --surface-muted: 244 247 245;
+    --line: 213 222 217;
     --ink: 14 31 54;
     --ink-muted: 74 93 120;
-    --primary: 15 61 122;
+    --primary: 0 106 78;
     --primary-fg: 255 255 255;
-    --primary-soft: 228 238 250;
+    --primary-soft: 230 242 237;
+    --primary-hover: 0 86 63;
+    --link: 15 61 122;
+    --strip: 14 31 54;
+    --accent: 176 132 20;
     --verified: 11 110 52;
     --verified-soft: 225 244 232;
     --review: 143 84 0;
@@ -24,29 +28,33 @@
     --critical-fg: 255 255 255;
     --pending: 79 95 117;
     --pending-soft: 234 239 245;
-    --shadow: 11 37 69;
-    --grad-from: 15 61 122;
-    --grad-to: 220 233 248;
-    --grad-soft-from: 228 238 250;
-    --grad-soft-to: 255 255 255;
-    --header-from: 12 50 102;
-    --header-to: 30 96 170;
-    --glass-from: 12 50 102;
-    --glass-to: 14 58 122;
-    --glass-a: 0.78;
+    --shadow: 14 31 54;
+    /* Flat: gradients / glass kept only so old classes keep working (all solid values). */
+    --grad-from: 0 106 78;
+    --grad-to: 0 106 78;
+    --grad-soft-from: 244 247 245;
+    --grad-soft-to: 244 247 245;
+    --header-from: 0 106 78;
+    --header-to: 0 106 78;
+    --glass-from: 0 106 78;
+    --glass-to: 0 106 78;
+    --glass-a: 1;
   }
   :root.dark {
     color-scheme: dark;
-    /* Neutral ink-navy surfaces (less saturated than the old deep blue), sky-blue primary,
-       emerald / amber / coral status colours taken from the new logo family. */
+    /* Opt-in only (default theme is light). Header stays solid #00563F. */
     --surface: 18 26 43;
     --surface-muted: 9 14 26;
     --line: 44 57 82;
     --ink: 232 238 247;
     --ink-muted: 156 171 194;
-    --primary: 110 168 254;
-    --primary-fg: 8 17 33;
-    --primary-soft: 25 40 70;
+    --primary: 76 195 138;
+    --primary-fg: 6 32 22;
+    --primary-soft: 14 48 40;
+    --primary-hover: 110 214 165;
+    --link: 141 184 245;
+    --strip: 9 14 26;
+    --accent: 214 168 48;
     --verified: 52 211 153;
     --verified-soft: 10 44 34;
     --review: 251 191 36;
@@ -57,15 +65,15 @@
     --pending: 148 163 184;
     --pending-soft: 28 38 56;
     --shadow: 0 0 0;
-    --grad-from: 20 52 108;
-    --grad-to: 9 14 26;
-    --grad-soft-from: 18 26 43;
+    --grad-from: 0 86 63;
+    --grad-to: 0 86 63;
+    --grad-soft-from: 9 14 26;
     --grad-soft-to: 9 14 26;
-    --header-from: 9 38 80;
-    --header-to: 10 20 36;
-    --glass-from: 9 30 64;
-    --glass-to: 12 22 40;
-    --glass-a: 0.62;
+    --header-from: 0 86 63;
+    --header-to: 0 86 63;
+    --glass-from: 0 86 63;
+    --glass-to: 0 86 63;
+    --glass-a: 1;
   }
   body { @apply bg-surface-muted text-ink antialiased; }
   h1 { @apply text-heading-1; }
@@ -75,21 +83,15 @@
 }
 
 @layer components {
-  /* Glassmorphic sticky header (translucent tinted blur). White text stays readable on any page colour
-     beneath it: alpha is tuned so the worst case (white page) still gives >= 4.5 (docs/ui.md). */
+  /* Solid primary header (U1): no glass, no gradient, no blur. White text on --primary >= 4.5 (docs/ui.md). */
   .header-glass {
-    background-image: linear-gradient(100deg, rgb(var(--glass-from) / var(--glass-a)) 0%, rgb(var(--glass-to) / var(--glass-a)) 100%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-    backdrop-filter: blur(16px) saturate(160%);
-    border-bottom: 1px solid rgb(255 255 255 / 0.22);
-    box-shadow: 0 6px 24px rgb(var(--shadow) / 0.18);
+    background-image: none;
+    background-color: rgb(var(--glass-from));
+    border-bottom: 2px solid rgb(var(--accent));
   }
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .header-glass { background-image: linear-gradient(100deg, rgb(var(--glass-from)) 0%, rgb(var(--glass-to)) 100%); }
-  }
-  /* Site header: fixed blue gradient in both themes, so text on it is always white (docs/ui.md). */
   .header-gradient {
-    background-image: linear-gradient(100deg, rgb(var(--header-from)) 0%, rgb(var(--header-to)) 100%);
+    background-image: none;
+    background-color: rgb(var(--header-from));
   }
 }
 
@@ -103,12 +105,16 @@
     color-scheme: light;
     --surface: 255 255 255;
     --surface-muted: 255 255 255;
-    --line: 211 222 236;
+    --line: 213 222 217;
     --ink: 14 31 54;
     --ink-muted: 74 93 120;
-    --primary: 15 61 122;
+    --primary: 0 106 78;
     --primary-fg: 255 255 255;
-    --primary-soft: 228 238 250;
+    --primary-soft: 230 242 237;
+    --primary-hover: 0 86 63;
+    --link: 15 61 122;
+    --strip: 14 31 54;
+    --accent: 176 132 20;
     --verified: 11 110 52;
     --verified-soft: 225 244 232;
     --review: 143 84 0;
@@ -131,11 +137,11 @@
 .leaflet-container .leaflet-popup-tip {
   background: rgb(var(--surface));
   color: rgb(var(--ink));
-  box-shadow: 0 4px 14px rgb(var(--shadow) / 0.2);
+  box-shadow: 0 2px 8px rgb(var(--ink) / 0.08);
 }
-.leaflet-container .leaflet-popup-content-wrapper { border-radius: 12px; border: 1px solid rgb(var(--line)); }
+.leaflet-container .leaflet-popup-content-wrapper { border-radius: 6px; border: 1px solid rgb(var(--line)); }
 .leaflet-container .leaflet-popup-content { margin: 0; min-width: 12rem; }
-.ls-popup strong { display: block; padding: 0.5rem 0.75rem; color: #fff; background: linear-gradient(100deg, rgb(var(--header-from)), rgb(var(--header-to))); border-radius: 11px 11px 0 0; }
+.ls-popup strong { display: block; padding: 0.5rem 0.75rem; color: #fff; background: rgb(var(--header-from)); border-radius: 5px 5px 0 0; }
 .ls-popup dl { display: grid; grid-template-columns: auto 1fr; gap: 0.15rem 0.75rem; margin: 0; padding: 0.6rem 0.75rem; font-size: 0.8125rem; }
 .ls-popup dt { color: rgb(var(--ink-muted)); }
 .ls-popup dd { margin: 0; font-weight: 500; }
@@ -174,3 +180,17 @@ body { overflow-wrap: break-word; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* U4 — Bangla typography: taller lines, no tracking (roadmap §4.4). */
+:lang(bn) { letter-spacing: 0 !important; }
+:lang(bn) body, body:lang(bn) { line-height: 1.7; }
+:lang(bn) h1, :lang(bn) h2, :lang(bn) h3, :lang(bn) h4 { line-height: 1.35; }
+:lang(bn) h1 { font-size: 1.875rem; }
+
+/* U6: numbered report sections (1. Summary, 2. …); Bangla numerals in bn. */
+.report-sections { counter-reset: sec; }
+.report-sections > section > div:first-child > span:last-child::before {
+  counter-increment: sec;
+  content: counter(sec) ". ";
+}
+:lang(bn) .report-sections > section > div:first-child > span:last-child::before { content: counter(sec, bengali) ". "; }

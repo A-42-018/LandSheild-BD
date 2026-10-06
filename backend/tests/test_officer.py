@@ -51,7 +51,7 @@ def _get(env, path, role="REVIEWER", **params):
 
 def test_stats_match_seed(env):
     b = _get(env, "stats").json()
-    assert b == {"total_records": 7, "pending_review": 0, "high_risk": 0, "verified": 7}
+    assert b == {"total_records": 12, "pending_review": 0, "high_risk": 0, "verified": 12}
 
 
 def test_stats_reflect_documents_and_alerts(env):
@@ -63,7 +63,7 @@ def test_stats_reflect_documents_and_alerts(env):
     _add_alert(env, "LP-10500", "MEDIUM", "OPEN")
     _add_alert(env, "LP-10100", "HIGH", "DISMISSED")  # dismissed: not risky
     b = _get(env, "stats").json()
-    assert b == {"total_records": 7, "pending_review": 2, "high_risk": 1, "verified": 5}
+    assert b == {"total_records": 12, "pending_review": 2, "high_risk": 1, "verified": 10}
 
 
 def test_queue_filters(env):

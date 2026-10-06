@@ -2,12 +2,13 @@ export type ThemeMode = "light" | "dark" | "system";
 export const THEME_KEY = "ls-theme";
 export const THEME_MODES: ThemeMode[] = ["light", "dark", "system"];
 
+/** Default is light (U3): dark only after an explicit choice. */
 export function readTheme(): ThemeMode {
   try {
     const v = window.localStorage.getItem(THEME_KEY);
-    return v === "light" || v === "dark" || v === "system" ? v : "system";
+    return v === "light" || v === "dark" || v === "system" ? v : "light";
   } catch {
-    return "system";
+    return "light";
   }
 }
 
@@ -28,4 +29,30 @@ export function applyTheme(mode: ThemeMode): boolean {
   const dark = mode === "dark" || (mode === "system" && prefersDark());
   document.documentElement.classList.toggle("dark", dark);
   return dark;
+}
+
+/* ---- Text size (U3): A- / A / A+, stored like the theme (try/catch), applied as <html> font-size ---- */
+export const TEXT_SIZE_KEY = "ls-text-size";
+export const TEXT_SIZES = [100, 112.5, 125] as const;
+export type TextSize = (typeof TEXT_SIZES)[number];
+
+export function readTextSize(): TextSize {
+  try {
+    const v = Number(window.localStorage.getItem(TEXT_SIZE_KEY));
+    return (TEXT_SIZES as readonly number[]).includes(v) ? (v as TextSize) : 100;
+  } catch {
+    return 100;
+  }
+}
+
+export function saveTextSize(size: TextSize): void {
+  try {
+    window.localStorage.setItem(TEXT_SIZE_KEY, String(size));
+  } catch {
+    /* storage blocked: lasts for this page view only */
+  }
+}
+
+export function applyTextSize(size: TextSize): void {
+  document.documentElement.style.fontSize = size === 100 ? "" : `${size}%`;
 }

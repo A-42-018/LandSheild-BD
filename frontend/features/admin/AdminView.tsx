@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui";
 import UsersPanel from "./UsersPanel";
 import { DocumentsPanel, LandRecordsPanel } from "./RecordsPanels";
+import LedgerCard from "./LedgerCard";
 
 export default function AdminView() {
   const t = useTranslations("admin.console");
@@ -15,6 +16,7 @@ export default function AdminView() {
           { id: "users", label: t("tabs.users"), content: <UsersPanel /> },
           { id: "records", label: t("tabs.records"), content: <LandRecordsPanel /> },
           { id: "documents", label: t("tabs.documents"), content: <DocumentsPanel /> },
+          { id: "ledger", label: t("tabs.ledger"), content: <LedgerCard /> },
         ]}
       />
     </div>

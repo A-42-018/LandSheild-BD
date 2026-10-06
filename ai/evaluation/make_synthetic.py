@@ -164,6 +164,15 @@ def generate(sample_dir: Path, eval_dir: Path) -> list[Path]:
         p.write_bytes(png)
         written.append(p)
 
+    # F4b: Doc1 with the area edited 10 -> 15 (tamper demo for "Verify a document copy")
+    alt = _from_fixture("Doc1Altered")
+    if not alt.get("father_name"):
+        alt.pop("father_name", None)
+    png, _ = render("Doc1Altered", alt, seed=SEED)
+    p = sample_dir / "Doc1_altered.png"
+    p.write_bytes(png)
+    written.append(p)
+
     rng = random.Random(SEED)
     truth = []
     for spec in _eval_specs(rng):

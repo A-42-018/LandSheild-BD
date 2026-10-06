@@ -11,12 +11,13 @@ export function useUnitLabel() {
   return (u: string) => (t.has(u) ? t(u) : u);
 }
 
-export default function LandInfoCard({ land }: { land: LandInfo }) {
+/** Record card (roadmap 4.5 item 4): 3 px primary top rule, label muted / value ink, land ID in mono, optional chip top-right. */
+export default function LandInfoCard({ land, chip }: { land: LandInfo; chip?: React.ReactNode }) {
   const t = useTranslations("result");
   const locale = useLocale();
   const unit = useUnitLabel();
   const rows: [string, React.ReactNode, LucideIcon][] = [
-    [t("landId"), land.land_id, Hash],
+    [t("landId"), <span key="id" className="font-mono">{land.land_id}</span>, Hash],
     [t("district"), land.district, MapPin],
     [t("upazila"), land.upazila, MapPin],
     [t("mouza"), land.mouza, MapIcon],
@@ -26,20 +27,21 @@ export default function LandInfoCard({ land }: { land: LandInfo }) {
     [t("status"), <StatusBadge key="s" code={land.status} />, ShieldCheck],
   ];
   return (
-    <Card title={t("landInfo")} icon={<Landmark />} accent="primary">
+    <Card title={t("landInfo")} icon={<Landmark />} variant="record">
+      {chip && <div className="mb-3 flex justify-end" data-testid="record-chip">{chip}</div>}
       <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
         {rows.map(([k, v, Icon]) => (
-          <div key={k} className="rounded-lg bg-surface-muted/60 px-3 py-2">
+          <div key={k} className="border-b border-line pb-2">
             <dt className="flex items-center gap-1.5 text-xs text-ink-muted">
-              <Icon aria-hidden="true" className="h-3.5 w-3.5 text-primary" />
+              <Icon aria-hidden="true" className="h-3.5 w-3.5" />
               {k}
             </dt>
             <dd className="font-medium text-ink">{v}</dd>
           </div>
         ))}
-        <div className="rounded-lg bg-surface-muted/60 px-3 py-2 sm:col-span-2">
+        <div className="sm:col-span-2">
           <dt className="flex items-center gap-1.5 text-xs text-ink-muted">
-            <Users aria-hidden="true" className="h-3.5 w-3.5 text-primary" />
+            <Users aria-hidden="true" className="h-3.5 w-3.5" />
             {t("currentOwners")}
           </dt>
           <dd className="font-medium text-ink">

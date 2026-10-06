@@ -1,4 +1,4 @@
-"""Bangla Saf-Kabala layout parser (OCR text of a real-layout sale deed, tests/data)."""
+"""Bangla Saf-Kabala layout parser (fictional sample deed in tests/data, invented content)."""
 from pathlib import Path
 
 from ai.extraction import saf_kabala
@@ -16,18 +16,18 @@ def test_detects_saf_kabala_and_not_plain_text():
 def test_parses_all_thirteen_fields():
     got = {k: v[0] for k, v in saf_kabala.parse(TEXT).items()}
     assert got == {
-        "deed_no": "4528/1978",
-        "deed_date": "1978-10-27",
-        "seller": "শ্রী রমেশ চন্দ্র সরকার",
-        "owner_name": "শ্রী রমেশ চন্দ্র সরকার",
-        "father_name": "গোপাল চন্দ্র সরকার",
-        "buyer": "মোঃ আব্দুর রহমান",
+        "deed_no": "1234/2001",
+        "deed_date": "2001-03-15",
+        "seller": "শ্রী অনিল কুমার দাস",
+        "owner_name": "শ্রী অনিল কুমার দাস",
+        "father_name": "নিতাই চন্দ্র দাস",
+        "buyer": "মোঃ কামাল উদ্দিন",
         "upazila": "সাভার",
         "district": "ঢাকা",
-        "khatian_no": "87",
-        "dag_no": "452",
-        "mouza": "বিরুলিয়া",
-        "land_area": "25",
+        "khatian_no": "501",
+        "dag_no": "1201",
+        "mouza": "নীলপুর",
+        "land_area": "20",
         "area_unit": "decimal",
     }
 
@@ -36,9 +36,9 @@ def test_provider_uses_the_parser_and_scales_confidence():
     ocr = OCRResult(text=TEXT, confidence=0.8, provider="t")
     r = RuleBasedDocumentAIProvider().extract(b"", ocr)
     by = {f.field: f for f in r.fields}
-    assert by["khatian_no"].value == "87" and 0 < by["khatian_no"].confidence <= 0.8
+    assert by["khatian_no"].value == "501" and 0 < by["khatian_no"].confidence <= 0.8
 
 
 def test_unknown_field_stays_empty_not_guessed():
-    text = TEXT.replace("দলিল নম্বরঃ ৪৫২৮/১৯৭৮", "")
+    text = TEXT.replace("দলিল নম্বরঃ ১২৩৪/২০০১", "")
     assert "deed_no" not in saf_kabala.parse(text)

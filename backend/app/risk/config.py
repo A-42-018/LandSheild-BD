@@ -6,7 +6,16 @@ RULE_POINTS: dict[str, int] = {
     "DUPLICATE_DEED": 30,
     "INCONSISTENT_OWNERSHIP": 20,
     "AREA_MISMATCH": 15,
+    "REGISTERED_NOT_MUTATED": 30,
+    "MUTATION_PARTY_MISMATCH": 60,
+    "MUTATION_WITHOUT_DEED": 60,
+    "MUTATION_AREA_EXCEEDS_DEED": 15,
     "REPEATED_SUSPICIOUS_TRANSACTIONS": 20,
+    "ACTIVE_LITIGATION": 30,
+    "KHAS_LAND": 60,
+    "UNDER_ACQUISITION": 60,
+    "ACTIVE_MORTGAGE": 0,  # informational disclosure only
+    "RECORD_INTEGRITY_FAILED": 60,  # F4c: live rows differ from the hash-chained ledger
     "UNIT_MISMATCH": 0,
     "POSSIBLE_NAME_VARIANT": 0,
     "LOW_EXTRACTION_CONFIDENCE": 0,  # review flag only (R3)
@@ -19,7 +28,16 @@ RULE_SEVERITY: dict[str, str] = {
     "DUPLICATE_DEED": "HIGH",
     "INCONSISTENT_OWNERSHIP": "MEDIUM",
     "AREA_MISMATCH": "MEDIUM",
+    "REGISTERED_NOT_MUTATED": "MEDIUM",
+    "MUTATION_PARTY_MISMATCH": "HIGH",
+    "MUTATION_WITHOUT_DEED": "HIGH",
+    "MUTATION_AREA_EXCEEDS_DEED": "MEDIUM",
     "REPEATED_SUSPICIOUS_TRANSACTIONS": "MEDIUM",
+    "ACTIVE_LITIGATION": "HIGH",
+    "KHAS_LAND": "HIGH",
+    "UNDER_ACQUISITION": "HIGH",
+    "ACTIVE_MORTGAGE": "INFO",
+    "RECORD_INTEGRITY_FAILED": "HIGH",
     "UNIT_MISMATCH": "INFO",
     "POSSIBLE_NAME_VARIANT": "INFO",
     "LOW_EXTRACTION_CONFIDENCE": "INFO",
@@ -32,6 +50,19 @@ AREA_EPS = 1e-6
 # REPEATED_SUSPICIOUS_TRANSACTIONS: >= MIN_COUNT dated non-rejected transfers inside WINDOW_DAYS.
 REPEATED_TX_WINDOW_DAYS = 90
 REPEATED_TX_MIN_COUNT = 3
+
+# REGISTERED_NOT_MUTATED: a sale older than this many days with no approved mutation is flagged.
+MUTATION_GRACE_DAYS = 180
+
+# Area-unit factors to square metres, used only by MUTATION_AREA_EXCEEDS_DEED.
+AREA_TO_SQM: dict[str, float] = {
+    "sqm": 1.0,
+    "sqft": 0.09290304,
+    "decimal": 40.4686,
+    "katha": 66.89,
+    "bigha": 1337.8,
+    "acre": 4046.86,
+}
 
 # Aggregation (R3): sum of points, capped; level thresholds are inclusive lower bounds.
 SCORE_CAP = 100

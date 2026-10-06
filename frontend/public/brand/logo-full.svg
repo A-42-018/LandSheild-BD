@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" width="280" height="64" role="img" aria-label="LandShield BD">
+  <path d="M32 4 56 12v18c0 15-10 25-24 30C18 55 8 45 8 30V12Z" fill="#FFFFFF" stroke="#006A4E" stroke-width="3" stroke-linejoin="round"/>
+  <g fill="#006A4E">
+    <rect x="19" y="18" width="7" height="7" rx="1"/><rect x="28.5" y="18" width="7" height="7" rx="1"/><rect x="38" y="18" width="7" height="7" rx="1"/>
+    <rect x="19" y="27.5" width="7" height="7" rx="1"/><rect x="38" y="27.5" width="7" height="7" rx="1"/>
+    <rect x="19" y="37" width="7" height="7" rx="1"/><rect x="28.5" y="37" width="7" height="7" rx="1"/><rect x="38" y="37" width="7" height="7" rx="1"/>
+  </g>
+  <rect x="28.5" y="27.5" width="7" height="7" rx="1" fill="#FFFFFF" stroke="#006A4E" stroke-width="1.2"/>
+  <path d="m30 31.2 1.5 1.6 2.7-3.2" fill="none" stroke="#B08414" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="76" y="30" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#0E1F36">LandShield BD</text>
+  <text x="76" y="52" font-family="'Noto Sans Bengali', 'Noto Sans', Arial, sans-serif" font-size="15" fill="#006A4E">ডিজিটাল ভূমি যাচাই</text>
+</svg>

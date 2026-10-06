@@ -66,10 +66,10 @@ export default function Tabs({ tabs, value, defaultValue, onValueChange, label, 
               disabled={tab.disabled}
               onClick={() => select(tab.id)}
               className={cn(
-                "-mb-px min-h-11 rounded-t-md border-b-2 px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50",
+                "-mb-px min-h-11 border-b-2 px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50",
                 selected
-                  ? "border-primary bg-primary-soft text-primary"
-                  : "border-transparent text-ink-muted hover:bg-primary-soft/50 hover:text-ink",
+                  ? "border-primary text-primary"
+                  : "border-transparent text-ink-muted hover:border-line hover:text-ink",
               )}
             >
               {tab.label}

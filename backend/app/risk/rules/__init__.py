@@ -5,7 +5,10 @@ from app.risk.rules import (
     area,
     duplicate_deed,
     duplicate_tx,
+    encumbrance,
     extraction,
+    integrity,
+    mutation,
     ownership,
     repeated,
     seller,
@@ -22,6 +25,9 @@ RULES: tuple[RuleFn, ...] = (
     area.evaluate,
     repeated.evaluate,
     unit.evaluate,
+    mutation.evaluate,
+    encumbrance.evaluate,
+    integrity.evaluate,
     extraction.evaluate,
 )
 

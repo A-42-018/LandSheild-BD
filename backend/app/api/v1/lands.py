@@ -4,12 +4,16 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.core.rbac import ANY_AUTH, require_roles
 from app.models.user import User
+from app.schemas.encumbrance import EncumbrancesResponse
 from app.schemas.graph import LandGraph
 from app.schemas.land import LandPublic
+from app.schemas.mutation import MutationsResponse
 from app.schemas.ownership import OwnershipResponse, TransactionsResponse
+from app.schemas.pre_purchase import PrePurchaseCheck
 from app.services import graph as graph_svc
 from app.services import land as svc
 from app.services import ownership as own_svc
+from app.services import pre_purchase as pp_svc
 
 router = APIRouter(prefix="/lands", tags=["lands"])
 
@@ -63,3 +67,31 @@ def get_graph(
     db: Session = Depends(get_db),
 ) -> LandGraph:
     return graph_svc.get_graph(db, land_id, user)
+
+
+@router.get("/{land_id}/encumbrances", response_model=EncumbrancesResponse)
+def get_land_encumbrances(
+    land_id: str,
+    user: User = Depends(require_roles(*ANY_AUTH)),
+    db: Session = Depends(get_db),
+):
+    return own_svc.get_encumbrances(db, land_id, user)
+
+
+@router.get("/{land_id}/mutations", response_model=MutationsResponse)
+def get_mutations(
+    land_id: str,
+    user: User = Depends(require_roles(*ANY_AUTH)),
+    db: Session = Depends(get_db),
+) -> MutationsResponse:
+    return own_svc.get_mutations(db, land_id, user)
+
+
+@router.get("/{land_id}/pre-purchase-check", response_model=PrePurchaseCheck)
+def get_pre_purchase_check(
+    land_id: str,
+    seller: str | None = Query(default=None, max_length=120),
+    user: User = Depends(require_roles(*ANY_AUTH)),
+    db: Session = Depends(get_db),
+) -> PrePurchaseCheck:
+    return pp_svc.get_pre_purchase_check(db, land_id, seller)

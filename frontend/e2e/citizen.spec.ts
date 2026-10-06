@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { CLEAN_LAND, fillVerifyForm, signIn } from "./fixtures";
+import { CLEAN_LAND, fillVerifyForm, openEvidenceTab, signIn } from "./fixtures";
 
 test.describe("citizen verifies a clean parcel", () => {
   test("form → result (LOW risk) → report", async ({ page }) => {
@@ -11,9 +11,10 @@ test.describe("citizen verifies a clean parcel", () => {
     await expect(page.getByRole("heading", { name: "Verification result" })).toBeVisible();
     await expect(page.getByText(CLEAN_LAND.id).first()).toBeVisible();
 
+    await openEvidenceTab(page);
     const risk = page.getByTestId("risk-section");
     await expect(risk).toBeVisible();
-    await expect(page.getByTestId("risk-score")).toHaveText("0");
+    await expect(page.getByTestId("risk-score")).toHaveText(/^0\b/);
     await expect(risk.getByText("Low", { exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: "Generate verification report" }).click();
@@ -26,6 +27,6 @@ test.describe("citizen verifies a clean parcel", () => {
     await signIn(page, "citizen");
     await page.goto("/en/verify");
     await fillVerifyForm(page, { ...CLEAN_LAND, khatian: "999999", dag: "888888" });
-    await expect(page.getByRole("alert")).toContainText("No records found.");
+    await expect(page.getByRole("alert").filter({ hasText: /\S/ })).toContainText("No records found.");
   });
 });

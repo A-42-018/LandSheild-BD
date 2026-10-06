@@ -23,7 +23,13 @@ cd backend && PYTHONPATH=.. python -c "import json; from app.main import app; pr
 | health | `GET /health` | none |
 | auth | `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`; `GET /auth/me` | public / signed-in |
 | public | `GET /public/verify/{land_id}` (no names, 60/min/IP) | none |
+| public (F4a) | `GET /public/keys` (Ed25519 public key), `GET /public/seal/{land_id}` (signed QR payload), `GET /public/signature` (check a seal: VALID · INVALID · UNKNOWN) | none, 60/min/IP |
+| public (F4b) | `POST /public/verify-document` (multipart copy, compared then discarded, never stored), `POST /public/verify-document/fields` (typed fields) | none, stricter verify-doc limit |
+| gis | `GET /gis/capabilities`, `/gis/divisions`, `/gis/districts`, `/gis/upazilas`, `/gis/mouzas`, `/gis/search` | any signed-in |
 | lands | `GET /lands/search`, `/lands/{id}`, `/lands/{id}/ownership`, `/lands/{id}/transactions`, `/lands/{id}/graph`, `/lands/map`; `GET /lands/{id}/risk` | any signed-in |
+| lands (F1/F3) | `GET /lands/{id}/mutations` (mutation history + registration↔mutation mismatches), `/lands/{id}/encumbrances` (court case · khas · acquisition · mortgage), `/lands/{id}/pre-purchase-check?seller=` (six-row "Check Before You Buy", no owner names in payload; seller ≤ 120 chars) | any signed-in |
+| mutations (F2) | `GET /mutations` (officer queue), `GET /mutations/{id}` (detail + pre-checks) | REVIEWER and above |
+| mutations (F2) | `POST /mutations/{id}/transition` (`to`, `reason`; HEARING/REJECTED need a reason; illegal move → 409) | OFFICER, ADMIN |
 | verification | `POST /verification`, `GET /verification/{id}`, `GET /verification/{id}/report` | any signed-in |
 | documents | `POST /documents/upload`, `POST /documents/{id}/process` | OFFICER, ADMIN |
 | documents | `GET /documents/{id}`, `/file`, `/extraction`; `PATCH /extraction`; `POST /approve`, `/reject`, `/reprocess` | REVIEWER and above |
@@ -35,19 +41,20 @@ cd backend && PYTHONPATH=.. python -c "import json; from app.main import app; pr
 | admin | `PATCH /admin/users/{user_id}` (name, role, is_active, preferred_language) → audit `USER_UPDATE`; changing own role or deactivating self → 409 `CANNOT_CHANGE_OWN_ACCESS`; no-op writes no audit row | ADMIN |
 | admin | `GET /admin/land-records` (q, status, sort, order, limit, offset; no owner data) | ADMIN |
 | admin | `GET /admin/documents` (q, status, sort, order, limit, offset; no file path) | ADMIN |
+| admin (F4c) | `GET /admin/ledger/verify` → `INTACT` or `BROKEN` + first broken `seq` + reason | ADMIN |
 
 The authoritative role table is the hand-written matrix in `backend/tests/security/test_authz_matrix.py`; it must match the OpenAPI schema exactly.
 
 ## curl examples
 
-Demo password is `demo1234` when started with `start.sh`. Needs `jq`.
+Demo password is `LandShield2026!` when started with `start.sh`. Needs `jq`.
 
 **1. Log in and keep the token**
 
 ```bash
 API=http://127.0.0.1:8001/api/v1
 TOKEN=$(curl -s -X POST $API/auth/login -H 'Content-Type: application/json' \
-  -d '{"email":"officer@demo.landshield.test","password":"demo1234"}' | jq -r .access_token)
+  -d '{"email":"officer@demo.landshield.test","password":"LandShield2026!"}' | jq -r .access_token)
 ```
 
 **2. Public QR check (no login, no personal data)**
@@ -75,6 +82,18 @@ curl -s -H "Authorization: Bearer $TOKEN" $API/lands/LP-10240/risk | jq
 VID=$(curl -s -X POST $API/verification -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' -d '{"land_id":"LP-10240"}' | jq -r .id)
 curl -s -H "Authorization: Bearer $TOKEN" $API/verification/$VID/report | jq
+```
+
+**6. Check Before You Buy (F3b)**
+
+```bash
+curl -s -H "Authorization: Bearer $TOKEN" "$API/lands/LP-10240/pre-purchase-check?seller=Karim" | jq '.verdict, .rows[] | {code, status}'
+```
+
+**7. Verify the ledger chain (ADMIN token)**
+
+```bash
+curl -s -H "Authorization: Bearer $ADMIN_TOKEN" $API/admin/ledger/verify | jq
 ```
 
 **Bonus: upload a document (OFFICER/ADMIN)**

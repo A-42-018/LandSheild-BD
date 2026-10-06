@@ -20,6 +20,11 @@ export const EVIDENCE_CODES = [
   "UNIT_MISMATCH",
   "LOW_EXTRACTION_CONFIDENCE",
   "ML_ANOMALY",
+  "REGISTERED_NOT_MUTATED",
+  "MUTATION_PARTY_MISMATCH",
+  "MUTATION_WITHOUT_DEED",
+  "MUTATION_AREA_EXCEEDS_DEED",
+  "RECORD_INTEGRITY_FAILED",
 ] as const;
 
 export function evidenceKey(code: string): string {
@@ -49,6 +54,11 @@ export function evidenceValues(e: Evidence, t: T, locale: string): Record<string
     windowDays: str(p.window_days),
     firstDate: d(p.first_date),
     lastDate: d(p.last_date),
+    graceDays: str(p.grace_days),
+    mutationArea: str(p.mutation_area),
+    mutationUnit: unit(p.mutation_unit),
+    deedArea: str(p.deed_area),
+    deedUnit: unit(p.deed_unit),
     units: Array.isArray(p.units) ? (p.units as unknown[]).map(unit).join(", ") : "",
   };
 }

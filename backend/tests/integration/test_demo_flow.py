@@ -122,13 +122,15 @@ def test_clean_record_is_recorded_and_hands_over_ownership(env, jobs):
 def test_unknown_parcel_is_created_and_buyer_becomes_owner(env, jobs):
     _approve(env, b"Doc1", {"khatian_no": "9999"})
     with _db(env) as s:
-        land = _land(s, "LP-10501")
-        assert land is not None and land.khatian_no == "9999" and land.status == "ACTIVE"
+        # new code = max seeded LP number + 1 (seed grew past LP-10700 in F3a)
+        land = s.scalar(select(LandParcel).where(LandParcel.khatian_no == "9999"))
+        assert land is not None and land.status == "ACTIVE"
         assert (land.area, land.area_unit, land.district) == (10.0, "decimal", "Gazipur")
-        (t,) = _txs(s, "LP-10501")
+        code = land.land_id
+        (t,) = _txs(s, code)
         assert t.status == "RECORDED"
         # no recorded predecessor: only the buyer's period is opened
-        assert _periods(s, "LP-10501") == {("Karim Mia", date(2024, 2, 12), None)}
+        assert _periods(s, code) == {("Karim Mia", date(2024, 2, 12), None)}
         assert _land(s, "LP-10234") is not None and not _txs(s, "LP-10234")
 
 

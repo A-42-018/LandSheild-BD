@@ -1,17 +1,22 @@
 import {
+  ArrowRight,
+  BadgeCheck,
   ClipboardCheck,
-  Clock,
+  ClipboardList,
   Copy,
+  FileCheck2,
+  FileClock,
   FileText,
   FlaskConical,
-  History,
-  KeyRound,
-  Languages,
-  Layers,
+  Gavel,
+  Landmark,
   ListChecks,
+  QrCode,
+  Route,
   Scale,
+  ScanLine,
   ScrollText,
-  Search,
+  SearchCheck,
   ShieldAlert,
   ShieldCheck,
   Upload,
@@ -19,132 +24,179 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
+import { Link } from "@/i18n/navigation";
+import OfficerActions from "./OfficerActions";
 
-const STEPS = ["upload", "extract", "review", "verify", "analyze", "report"] as const;
-const FEATURES = ["extraction", "evidence", "timeline", "review", "report"] as const;
-const TRUST = ["human", "noLegal", "audit", "access", "demo"] as const;
-const PROBLEMS = ["p1", "p2", "p3"] as const;
+/** Services whose route is not built yet stay hidden until their F-phase lands (track = F2c). */
+export const FLAGS = { track: false } as const;
 
-const STEP_ICON: Record<(typeof STEPS)[number], LucideIcon> = {
-  upload: Upload,
-  extract: FileText,
-  review: UserCheck,
-  verify: Search,
-  analyze: ShieldAlert,
-  report: ScrollText,
+const SERVICES = [
+  { key: "verify", href: "/verify", icon: SearchCheck },
+  { key: "check", href: "/check", icon: ListChecks },
+  { key: "track", href: "/track", icon: Route },
+  { key: "verifyDoc", href: "/verify-document", icon: FileCheck2 },
+] as const;
+const CHECKS: [string, LucideIcon][] = [
+  ["doubleSale", Copy],
+  ["owner", UserCheck],
+  ["mutation", FileClock],
+  ["cases", Gavel],
+  ["khas", Landmark],
+  ["document", BadgeCheck],
+];
+const STEPS: [string, LucideIcon][] = [
+  ["scan", ScanLine],
+  ["extract", FileText],
+  ["review", UserCheck],
+  ["risk", ShieldAlert],
+  ["report", QrCode],
+];
+const OFFICER: [string, LucideIcon][] = [
+  ["upload", Upload],
+  ["queue", ClipboardList],
+  ["mutation", ClipboardCheck],
+  ["audit", ScrollText],
+];
+const TRUST: [string, LucideIcon][] = [
+  ["human", UserCheck],
+  ["evidence", ListChecks],
+  ["audit", ShieldCheck],
+  ["demo", FlaskConical],
+  ["noLegal", Scale],
+];
+
+const h2 = "text-2xl font-bold text-ink";
+const icon = "h-5 w-5 shrink-0 text-ink-muted";
+const TONE = {
+  surface: "bg-surface shadow-[0_0_0_100vmax_rgb(var(--surface))]",
+  muted: "",
+  soft: "bg-primary-soft shadow-[0_0_0_100vmax_rgb(var(--primary-soft))]",
 };
-const FEATURE_ICON: Record<(typeof FEATURES)[number], LucideIcon> = {
-  extraction: Languages,
-  evidence: ListChecks,
-  timeline: History,
-  review: ClipboardCheck,
-  report: ScrollText,
-};
-const TRUST_ICON: Record<(typeof TRUST)[number], LucideIcon> = {
-  human: UserCheck,
-  noLegal: Scale,
-  audit: ShieldCheck,
-  access: KeyRound,
-  demo: FlaskConical,
-};
-const PROBLEM_ICON: Record<(typeof PROBLEMS)[number], LucideIcon> = { p1: Layers, p2: Copy, p3: Clock };
 
-const card = "rounded-xl border border-line bg-surface p-5 shadow-card";
-const h2 = "text-2xl font-bold text-primary";
-const chip = "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary";
-
-function Icon({ icon: I }: { icon: LucideIcon }) {
+/** Full-bleed section band inside the centred <main>: background extends to the viewport edges without horizontal scroll. */
+function Band({ id, tone, children }: { id: string; tone: keyof typeof TONE; children: ReactNode }) {
   return (
-    <span className={chip}>
-      <I aria-hidden="true" className="h-5 w-5" />
-    </span>
+    <section aria-labelledby={id} className={`py-8 [clip-path:inset(0_-100vmax)] sm:py-12 ${TONE[tone]}`}>
+      {children}
+    </section>
   );
 }
 
-export function Problem() {
-  const t = useTranslations("landing.problem");
+export function ServiceTiles() {
+  const t = useTranslations("landing.services");
   return (
-    <section aria-labelledby="problem-title" className="mt-12">
-      <h2 id="problem-title" className={h2}>
-        {t("title")}
-      </h2>
-      <p className="mt-2 max-w-3xl text-ink-muted">{t("body")}</p>
-      <ul className="mt-4 grid gap-3 sm:grid-cols-3">
-        {PROBLEMS.map((k) => (
-          <li key={k} className={`${card} flex items-start gap-3 text-sm text-ink`}>
-            <Icon icon={PROBLEM_ICON[k]} />
-            <span>{t(k)}</span>
+    <Band id="services-title" tone="surface">
+      <h2 id="services-title" className={h2}>{t("title")}</h2>
+      <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {SERVICES.filter((s) => s.key !== "track" || FLAGS.track).map(({ key, href, icon: I }) => (
+          <li key={key}>
+            <Link
+              href={href}
+              data-testid="service-tile"
+              className="flex h-full min-h-11 items-start gap-3 rounded-md border border-line bg-surface p-4 transition-colors hover:border-primary hover:bg-primary-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              <I aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
+              <span className="flex-1">
+                <span className="block font-semibold text-ink">{t(`${key}.title`)}</span>
+                <span className="mt-1 block text-sm text-ink-muted">{t(`${key}.desc`)}</span>
+              </span>
+              <ArrowRight aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            </Link>
           </li>
         ))}
       </ul>
-    </section>
+    </Band>
+  );
+}
+
+export function WhatWeCheck() {
+  const t = useTranslations("landing.checks");
+  return (
+    <Band id="checks-title" tone="muted">
+      <h2 id="checks-title" className={h2}>{t("title")}</h2>
+      <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
+      <ul className="mt-5 grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+        {CHECKS.map(([k, I]) => (
+          <li key={k} data-testid="check-item" className="flex items-start gap-3 border-b border-line pb-3 text-ink">
+            <I aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <span>{t(`items.${k}`)}</span>
+          </li>
+        ))}
+      </ul>
+    </Band>
   );
 }
 
 export function HowItWorks() {
   const t = useTranslations("landing.how");
   return (
-    <section aria-labelledby="how-title" className="mt-12">
-      <h2 id="how-title" className={h2}>
-        {t("title")}
-      </h2>
-      <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {STEPS.map((k, i) => (
-          <li key={k} className={`${card} border-t-4 border-t-primary`} data-testid="how-step">
-            <div className="flex items-center gap-3">
-              <Icon icon={STEP_ICON[k]} />
-              <span className="text-sm font-semibold text-primary">{t("step", { n: i + 1 })}</span>
-            </div>
-            <h3 className="mt-3 text-lg font-semibold text-ink">{t(`steps.${k}.title`)}</h3>
-            <p className="mt-1 text-sm text-ink-muted">{t(`steps.${k}.desc`)}</p>
+    <Band id="how-title" tone="surface">
+      <h2 id="how-title" className={h2}>{t("title")}</h2>
+      <ol className="mt-6 grid gap-5 lg:grid-cols-5 lg:gap-4">
+        {STEPS.map(([k, I], i) => (
+          <li
+            key={k}
+            data-testid="how-step"
+            className="relative flex gap-3 lg:flex-col lg:before:absolute lg:before:left-12 lg:before:right-0 lg:before:top-5 lg:before:h-px lg:before:bg-line lg:last:before:hidden"
+          >
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-fg">
+              <span className="sr-only">{t("step", { n: i + 1 })}: </span>
+              <span aria-hidden="true">{i + 1}</span>
+            </span>
+            <span>
+              <span className="flex items-center gap-2 font-semibold text-ink">
+                <I aria-hidden="true" className={icon} />
+                {t(`steps.${k}.title`)}
+              </span>
+              <span className="mt-1 block text-sm text-ink-muted">{t(`steps.${k}.desc`)}</span>
+            </span>
           </li>
         ))}
       </ol>
-    </section>
+    </Band>
   );
 }
 
-export function Features() {
-  const t = useTranslations("landing.features");
+export function OfficerBand() {
+  const t = useTranslations("landing.officer");
   return (
-    <section aria-labelledby="features-title" className="mt-12">
-      <h2 id="features-title" className={h2}>
-        {t("title")}
-      </h2>
-      <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map((k) => (
-          <li key={k} className={card} data-testid="feature">
-            <Icon icon={FEATURE_ICON[k]} />
-            <h3 className="mt-3 text-lg font-semibold text-ink">{t(`items.${k}.title`)}</h3>
-            <p className="mt-1 text-sm text-ink-muted">{t(`items.${k}.desc`)}</p>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <Band id="officer-title" tone="soft">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h2 id="officer-title" className={h2}>{t("title")}</h2>
+          <p className="mt-2 text-ink-muted">{t("body")}</p>
+          <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+            {OFFICER.map(([k, I]) => (
+              <li key={k} data-testid="officer-item" className="flex items-center gap-2 text-ink">
+                <I aria-hidden="true" className={icon} />
+                {t(`items.${k}`)}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <OfficerActions />
+      </div>
+    </Band>
   );
 }
 
 export function Trust() {
   const t = useTranslations("landing.trust");
   return (
-    <section
-      aria-labelledby="trust-title"
-      className="mt-12 rounded-2xl border border-line bg-brand-gradient-soft p-5 sm:p-8"
-    >
-      <h2 id="trust-title" className={h2}>
-        {t("title")}
-      </h2>
-      <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-        {TRUST.map((k) => (
-          <li key={k} className={`${card} flex items-start gap-3`} data-testid="trust-item">
-            <Icon icon={TRUST_ICON[k]} />
+    <Band id="trust-title" tone="muted">
+      <h2 id="trust-title" className={h2}>{t("title")}</h2>
+      <ul className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-5">
+        {TRUST.map(([k, I]) => (
+          <li key={k} data-testid="trust-item" className="flex items-start gap-3 lg:flex-col lg:gap-2">
+            <I aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
-              <h3 className="text-base font-semibold text-ink">{t(`items.${k}.title`)}</h3>
+              <h3 className="font-semibold text-ink">{t(`items.${k}.title`)}</h3>
               <p className="mt-1 text-sm text-ink-muted">{t(`items.${k}.desc`)}</p>
             </div>
           </li>
         ))}
       </ul>
-    </section>
+    </Band>
   );
 }

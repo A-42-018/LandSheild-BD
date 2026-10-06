@@ -12,6 +12,7 @@ from app.models import (
     Deed,
     Document,
     LandParcel,
+    MutationRecord,
     Owner,
     OwnershipHistory,
     Transaction,
@@ -99,6 +100,7 @@ def test_all_scenario_lands_exist(db):
     ids = {ln.land_id for ln in db.scalars(select(LandParcel))}
     assert ids == {
         "LP-10001", "LP-10100", "LP-10234", "LP-10240", "LP-10300", "LP-10400", "LP-10500",
+        "LP-10600", "LP-10700", "LP-10800", "LP-10900", "LP-11000",
     }
 
 
@@ -168,3 +170,20 @@ def test_duplicate_deed_lp10500(db):
     deeds = [db.get(Deed, t.deed_id) for t in txs]
     assert deeds[0].deed_no == deeds[1].deed_no
     assert deeds[0].id != deeds[1].id
+
+
+def test_mutations_seeded(db):
+    loader.seed(db, PW)
+    muts = db.scalars(select(MutationRecord)).all()
+    assert len(muts) == 7 and {m.status for m in muts} == {"APPROVED"}
+    assert len({m.mutation_no for m in muts}) == 7
+    by_land = {}
+    for m in muts:
+        by_land.setdefault(db.get(LandParcel, m.land_id).land_id, []).append(m)
+    # every seeded sale (except LP-10600) has an approved mutation
+    sales = {t.id for t in db.scalars(select(Transaction))}
+    assert {m.transaction_id for m in muts} == sales - {_txs(db, "LP-10600")[0].id}
+    assert "LP-10600" not in by_land
+    # LP-10700: mutation in favour of a third person (not the buyer)
+    tx = _txs(db, "LP-10700")[0]
+    assert by_land["LP-10700"][0].applicant_owner_id not in (tx.buyer_id, tx.seller_id)

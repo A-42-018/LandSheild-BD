@@ -50,10 +50,10 @@ export default function Table<T>({
 
   return (
     <div>
-      <div className={cn("overflow-x-auto rounded-xl border border-line bg-surface shadow-card", stickyHeader && "max-h-[70vh] overflow-y-auto")}>
+      <div className={cn("overflow-x-auto rounded-lg border border-line bg-surface", stickyHeader && "max-h-[70vh] overflow-y-auto")}>
         <table className="w-full min-w-[32rem] border-collapse text-left text-sm">
           {caption && <caption className="sr-only">{caption}</caption>}
-          <thead className={cn("bg-primary-soft text-ink", stickyHeader && "sticky top-0 z-10")}>
+          <thead className={cn("bg-surface-muted text-ink", stickyHeader && "sticky top-0 z-10")}>
             <tr>
               {columns.map((c) => {
                 const active = sort?.key === c.key;
@@ -85,7 +85,7 @@ export default function Table<T>({
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={rowKey(row)} className="border-t border-line even:bg-surface-muted/60 hover:bg-primary-soft/50">
+              <tr key={rowKey(row)} className="border-t border-line hover:bg-surface-muted">
                 {columns.map((c) => (
                   <td key={c.key} className={cn("px-3 py-2 text-ink", c.className)}>
                     {c.render ? c.render(row) : String((row as Record<string, unknown>)[c.key] ?? "")}

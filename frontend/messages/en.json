@@ -9,7 +9,8 @@
     "skipToContent": "Skip to main content",
     "placeholderNote": "This page is a placeholder. Real features arrive in later phases.",
     "close": "Close",
-    "retry": "Try again"
+    "retry": "Try again",
+    "subLine": "Digital land verification"
   },
   "nav": {
     "home": "Home",
@@ -25,7 +26,9 @@
     "menu": "Menu",
     "menuOpen": "Open menu",
     "menuClose": "Close menu",
-    "account": "Account menu"
+    "account": "Account menu",
+    "check": "Check before you buy",
+    "verifyDoc": "Verify a document copy"
   },
   "errors": {
     "generic": "We couldn't process this document. Please check the file and try again.",
@@ -49,7 +52,10 @@
     "OPEN": "Open",
     "UNDER_REVIEW": "Under Review",
     "DISMISSED": "Dismissed",
-    "ESCALATED": "Escalated"
+    "ESCALATED": "Escalated",
+    "APPLIED": "Applied",
+    "HEARING": "Hearing",
+    "RESOLVED": "Resolved"
   },
   "risk": {
     "level": {
@@ -82,13 +88,18 @@
       "REPEATED_SUSPICIOUS_TRANSACTIONS": "Potential inconsistency: {count} transfers of this parcel within {windowDays} days ({firstDate} – {lastDate}). Review required.",
       "UNIT_MISMATCH": "Area units differ ({units}); no conversion was applied. Informational only.",
       "LOW_EXTRACTION_CONFIDENCE": "Low-confidence extraction. Human review required.",
+      "REGISTERED_NOT_MUTATED": "Possible gap: a sale on {date} has not yet been recorded in the mutation (khatian) register after {graceDays} days. Review required.",
+      "MUTATION_PARTY_MISMATCH": "Potential inconsistency: the mutation applicant is not the buyer named in the registered sale. Review required.",
+      "MUTATION_WITHOUT_DEED": "Potential inconsistency: a mutation application has no deed reference on record. Review required.",
+      "MUTATION_AREA_EXCEEDS_DEED": "Potential inconsistency: mutation area {mutationArea} {mutationUnit} is larger than the deed area {deedArea} {deedUnit}. Review required.",
       "ML_ANOMALY": "Statistical anomaly signal. Informational only; review required.",
-      "UNKNOWN": "Review required for indicator"
+      "UNKNOWN": "Review required for indicator",
+      "RECORD_INTEGRITY_FAILED": "Potential inconsistency: a record of this parcel differs from the ledger entry written when it was approved. Review required."
     }
   },
   "home": {
-    "title": "Verify land records with evidence",
-    "intro": "Check ownership history and potential inconsistencies before a transaction. Every score shows its evidence."
+    "title": "Verify land before you buy",
+    "intro": "Look up a plot by its record details. See the recorded owner, mutation, cases and risk indicators — with the evidence behind every result."
   },
   "about": {
     "title": "About LandShield BD",
@@ -137,7 +148,10 @@
     "emailRequired": "Enter your email.",
     "passwordRequired": "Enter your password.",
     "checkingSession": "Checking your session…",
-    "loginRequired": "Please sign in to continue."
+    "loginRequired": "Please sign in to continue.",
+    "demoTitle": "Demo accounts",
+    "demoHint": "For this demo only. Use one of these e-mails with the demo password from the README.",
+    "notice": "Demo e-governance prototype. Not a government website."
   },
   "verify": {
     "title": "Verify Land",
@@ -184,6 +198,14 @@
     "unknownDate": "Date not recorded",
     "confidence": "Confidence",
     "sourceDocument": "Source document",
+    "mutations": "Mutation history",
+    "noMutations": "No mutation (khatian transfer) applications recorded yet.",
+    "mutationNo": "Mutation no.",
+    "appliedOn": "Applied",
+    "decidedOn": "Decided",
+    "notDecided": "Not yet decided",
+    "khatianChange": "Khatian (old → new)",
+    "acLandOffice": "AC (Land) office",
     "transactions": "Transaction history",
     "noTransactions": "No transactions recorded.",
     "date": "Date",
@@ -205,7 +227,25 @@
       "GIFT": "Gift",
       "INHERITANCE": "Inheritance",
       "OTHER": "Other"
-    }
+    },
+    "tabOwnership": "Ownership",
+    "tabTransactions": "Transactions",
+    "tabMutation": "Mutation",
+    "tabEncumbrance": "Cases / encumbrance",
+    "tabEvidence": "Evidence",
+    "encumbrances": "Cases and encumbrances",
+    "noEncumbrances": "No court cases, khas status, acquisition or mortgage recorded.",
+    "encType": {
+      "COURT_CASE": "Court case",
+      "KHAS": "Khas (government) land",
+      "ACQUISITION": "Under acquisition",
+      "MORTGAGE": "Mortgage"
+    },
+    "startedOn": "From",
+    "resolvedOn": "Resolved",
+    "notResolved": "Not resolved",
+    "reference": "Reference",
+    "authority": "Authority"
   },
   "report": {
     "title": "Land verification report",
@@ -233,7 +273,9 @@
     "backToResult": "Back to result",
     "notFound": "Report not found.",
     "notReady": "This report is not ready yet.",
-    "loadError": "We couldn't load the report. Please try again."
+    "loadError": "We couldn't load the report. Please try again.",
+    "generatedFooter": "Generated by LandShield BD demo — not an official record.",
+    "ref": "Ref. no."
   },
   "upload": {
     "title": "Upload land document",
@@ -358,118 +400,105 @@
     }
   },
   "landing": {
-    "ctaVerify": "Verify Land",
-    "ctaLogin": "Officer Login",
     "disclaimerTitle": "Disclaimer",
     "disclaimer": "LandShield provides digital record organization, consistency checks, and risk indicators. It does not establish legal ownership, certify title, or replace official government/legal verification.",
     "footerNav": "Footer navigation",
-    "problem": {
-      "title": "The problem",
-      "body": "Land records are often paper-based, spread across offices, and hard to cross-check. That makes it difficult to spot inconsistencies before a transaction.",
-      "p1": "Ownership history is scattered across separate documents.",
-      "p2": "The same deed or parcel can appear in more than one transaction.",
-      "p3": "Manual cross-checking is slow and easy to get wrong."
-    },
     "how": {
       "title": "How it works",
       "step": "Step {n}",
       "steps": {
-        "upload": {
-          "title": "Upload",
-          "desc": "An officer uploads a scanned deed or record."
+        "scan": {
+          "title": "Scan",
+          "desc": "An officer uploads a scanned deed."
         },
         "extract": {
           "title": "Extract",
-          "desc": "Text and key fields are read from the document, with a confidence for each field."
-        },
-        "review": {
-          "title": "Review",
-          "desc": "A human reviewer checks, corrects and approves every extraction."
-        },
-        "verify": {
-          "title": "Verify",
-          "desc": "Anyone signed in can look up a parcel and see its recorded ownership history."
-        },
-        "analyze": {
-          "title": "Analyze",
-          "desc": "Transparent rules look for potential inconsistencies and show the evidence behind each score."
-        },
-        "report": {
-          "title": "Report",
-          "desc": "Generate a printable verification report with the evidence and a disclaimer."
-        }
-      }
-    },
-    "features": {
-      "title": "Features",
-      "items": {
-        "extraction": {
-          "title": "Bilingual extraction",
-          "desc": "Handles English and Bangla documents, including Bangla digits."
-        },
-        "evidence": {
-          "title": "Evidence-based indicators",
-          "desc": "Every risk score lists the rules and facts that produced it."
-        },
-        "timeline": {
-          "title": "Ownership timeline",
-          "desc": "Recorded owners and transactions in date order."
+          "desc": "Key fields are read, each with a confidence score."
         },
         "review": {
           "title": "Human review",
-          "desc": "No document is recorded until a person approves it."
+          "desc": "A reviewer checks and approves every field."
+        },
+        "risk": {
+          "title": "Risk check",
+          "desc": "Transparent rules flag inconsistencies, with evidence."
         },
         "report": {
-          "title": "Printable report",
-          "desc": "A4 report with sections for status, ownership, transactions and evidence."
+          "title": "Report + QR",
+          "desc": "A printable report with a signed QR code."
         }
       }
     },
     "trust": {
-      "title": "Trust and security",
+      "title": "Why you can trust the result",
       "items": {
         "human": {
-          "title": "Human review required",
-          "desc": "Low-confidence extractions are flagged and need a reviewer."
+          "title": "Human review",
+          "desc": "No extracted document is recorded until a person approves it."
         },
-        "noLegal": {
-          "title": "Not a legal decision",
-          "desc": "Results are risk indicators for review, not a finding about any person."
+        "evidence": {
+          "title": "Evidence for every score",
+          "desc": "Each risk level lists the rules and facts that produced it."
         },
         "audit": {
           "title": "Audit trail",
-          "desc": "Sensitive actions such as approvals and sign-ins are logged."
-        },
-        "access": {
-          "title": "Role-based access",
-          "desc": "Citizens, reviewers, officers and administrators see only what their role allows."
+          "desc": "Approvals, sign-ins and record changes are logged in a tamper-evident chain."
         },
         "demo": {
-          "title": "Sample data only",
-          "desc": "All records are synthetic. This is not a government system."
+          "title": "Synthetic data",
+          "desc": "All records are fictional. This is not a government system."
+        },
+        "noLegal": {
+          "title": "Not a legal decision",
+          "desc": "Results are risk indicators for review, not proof of title."
         }
       }
     },
-    "stats": {
-      "title": "Key facts",
-      "fields": {
-        "value": "13",
-        "label": "fields read from every document"
+    "ctaUpload": "Upload Doc",
+    "searchLabel": "Quick land search",
+    "trackLink": "Track a mutation application",
+    "services": {
+      "title": "Online services",
+      "verify": {
+        "title": "Verify land record",
+        "desc": "Recorded owner, ownership history and risk level for a plot."
       },
-      "languages": {
-        "value": "2",
-        "label": "languages: English and বাংলা"
+      "check": {
+        "title": "Check before you buy",
+        "desc": "A plain-language checklist of red flags before you pay."
       },
-      "steps": {
-        "value": "6",
-        "label": "steps from upload to report"
+      "track": {
+        "title": "Track mutation",
+        "desc": "See where a mutation (namjari) application stands."
       },
-      "parcels": {
-        "value": "7",
-        "label": "synthetic sample parcels"
+      "verifyDoc": {
+        "title": "Verify a document copy",
+        "desc": "Check that a deed copy or QR code matches the signed record."
       }
     },
-    "ctaUpload": "Upload Doc"
+    "checks": {
+      "title": "What we check",
+      "intro": "Every search runs the same checks against the record. Each finding shows its evidence.",
+      "items": {
+        "doubleSale": "Has the plot already been sold to someone else (double sale)?",
+        "owner": "Is the seller the recorded owner in the khatian?",
+        "mutation": "Was mutation (namjari) completed after the last sale?",
+        "cases": "Are there pending court cases or a mortgage on the plot?",
+        "khas": "Is it khas (government) land or under acquisition?",
+        "document": "Does the document copy match the signed record?"
+      }
+    },
+    "officer": {
+      "title": "For land officers",
+      "body": "Tools for the office side of the process. Sign-in required.",
+      "items": {
+        "upload": "Upload scanned deeds",
+        "queue": "Review queue",
+        "mutation": "e-Mutation processing",
+        "audit": "Audit log and ledger integrity"
+      },
+      "signIn": "Officer sign-in"
+    }
   },
   "officer": {
     "title": "Officer dashboard",
@@ -482,7 +511,8 @@
       "open": "Open menu",
       "close": "Close menu",
       "audit": "Audit log",
-      "admin": "Administration"
+      "admin": "Administration",
+      "mutations": "Mutations"
     },
     "kpi": {
       "title": "Key figures",
@@ -598,7 +628,8 @@
       "tabs": {
         "users": "Users",
         "records": "Land records",
-        "documents": "Documents"
+        "documents": "Documents",
+        "ledger": "Ledger integrity"
       },
       "search": "Search",
       "all": "All",
@@ -678,6 +709,23 @@
           "created": "Uploaded (UTC)"
         }
       }
+    },
+    "ledger": {
+      "title": "Ledger integrity",
+      "intro": "Approved deeds, transactions, mutations and encumbrances are chained with SHA-256. Verify checks the chain and that no record was changed afterwards.",
+      "verify": "Verify ledger",
+      "intact": "Ledger intact",
+      "entries": "{count} entries verified",
+      "broken": "Broken at entry #{seq}",
+      "entity": "Record type: {type}",
+      "reasons": {
+        "SEQ_GAP": "An entry is missing from the sequence.",
+        "PREV_HASH_MISMATCH": "The link to the previous entry does not match.",
+        "ENTRY_HASH_MISMATCH": "An entry was altered after it was written.",
+        "RECORD_MODIFIED": "The live record differs from what the ledger recorded.",
+        "RECORD_MISSING": "A recorded entry no longer exists in the database.",
+        "UNKNOWN": "The ledger does not match the stored records."
+      }
     }
   },
   "graph": {
@@ -721,6 +769,12 @@
     "urlLabel": "Public page"
   },
   "publicVerify": {
+    "sig": {
+      "VALID": "Signature valid — this record matches the signed registry entry.",
+      "INVALID": "Signature invalid — this link or the record does not match the signed entry. Do not rely on it.",
+      "UNSIGNED": "This record has no signature yet.",
+      "NOT_FOUND": "Signed record not found for this link."
+    },
     "title": "Public land verification summary",
     "district": "District",
     "upazila": "Upazila",
@@ -814,8 +868,224 @@
   },
   "footer": {
     "tagline": "Digital Land Verification & Risk Intelligence",
-    "explore": "Explore",
-    "account": "Account",
-    "notice": "Notice"
+    "services": "Services",
+    "aboutTitle": "About",
+    "howItWorks": "How it works",
+    "dataSources": "Data sources: synthetic sample data",
+    "disclaimerShort": "Not a legal determination",
+    "help": "Help",
+    "faq": "FAQ",
+    "accessibility": "Accessibility",
+    "contact": "Contact",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "licence": "MIT licence",
+    "version": "Version 1.0 (demo)",
+    "updated": "Last updated 06 Oct 2026"
+  },
+  "strip": {
+    "notice": "Demo e-governance prototype · Not a government website",
+    "textSize": "Text size",
+    "smaller": "Smaller text",
+    "normal": "Normal text size",
+    "larger": "Larger text",
+    "glyphSmaller": "A−",
+    "glyphNormal": "A",
+    "glyphLarger": "A+"
+  },
+  "mutation": {
+    "title": "e-Mutation applications",
+    "detailTitle": "Mutation",
+    "tabsLabel": "Filter by status",
+    "openRow": "Open mutation {no}",
+    "empty": "No mutation applications in this status.",
+    "fastTrack": "Fast-track",
+    "days": "{count, plural, =0 {today} one {# day} other {# days}}",
+    "cols": {
+      "no": "Mutation no.",
+      "land": "Land ID",
+      "applicant": "Applicant",
+      "status": "Status",
+      "area": "Area",
+      "days": "In status",
+      "applied": "Applied"
+    },
+    "tabs": {
+      "ALL": "All",
+      "APPLIED": "Applied",
+      "UNDER_REVIEW": "Under review",
+      "HEARING": "Hearing",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
+    "khatian": "Khatian (old → new)",
+    "office": "AC Land office",
+    "deed": "Linked deed",
+    "noDeed": "No deed linked",
+    "openLand": "Open land record",
+    "checklist": "Pre-check checklist",
+    "noChecklist": "No pre-checks recorded for this application.",
+    "checks": {
+      "SELLER_IS_RECORDED_OWNER": "Seller is the recorded owner",
+      "NO_OPEN_HIGH_ALERT": "No open high-risk alert",
+      "NO_ACTIVE_CASE": "No active court case",
+      "NOT_KHAS_OR_ACQUIRED": "Not khas or acquired land",
+      "AREA_WITHIN_SELLER_HOLDING": "Area is within the seller's holding",
+      "DOCUMENT_HUMAN_APPROVED": "Deed approved by a human reviewer"
+    },
+    "checkStatus": {
+      "PASS": "Pass",
+      "FAIL": "Fail",
+      "NOT_CHECKED": "Not checked"
+    },
+    "timeline": "Timeline",
+    "events": {
+      "applied": "Applied",
+      "changed": "Last status change",
+      "decided": "Decided"
+    },
+    "actions": {
+      "title": "Decision",
+      "APPROVED": "Approve",
+      "HEARING": "Send to hearing",
+      "REJECTED": "Reject",
+      "UNDER_REVIEW": "Return to review"
+    },
+    "reason": {
+      "label": "Reason",
+      "required": "A reason is required.",
+      "title": {
+        "HEARING": "Send to hearing",
+        "REJECTED": "Reject mutation"
+      },
+      "confirm": {
+        "HEARING": "Send to hearing",
+        "REJECTED": "Reject"
+      }
+    },
+    "cancel": "Cancel",
+    "notFound": "Mutation not found.",
+    "errors": {
+      "failed": "The action could not be completed. Please try again.",
+      "invalid": "This move is no longer allowed. Reload the page."
+    }
+  },
+  "check": {
+    "title": "Check Before You Buy",
+    "intro": "Enter the land details and, if you know it, the seller's name. We compare them with the demo records and list indicators to discuss with a professional.",
+    "seller": "Seller name (optional)",
+    "sellerHint": "As printed on the sale papers. Leave blank to skip this check.",
+    "submit": "Run checklist",
+    "checking": "Checking…",
+    "resultTitle": "Checklist",
+    "verdict": {
+      "clear": "No indicators found in demo records",
+      "flagged": "Indicators found — consult the AC Land office or a lawyer"
+    },
+    "status": {
+      "PASS": "Clear",
+      "WARN": "Review",
+      "FAIL": "Indicator",
+      "UNKNOWN": "Not checked"
+    },
+    "fallback": {
+      "PASS": "No indicator found.",
+      "WARN": "Review required.",
+      "FAIL": "Indicator found. Human review required.",
+      "UNKNOWN": "This item could not be checked yet."
+    },
+    "rows": {
+      "SELLER_MATCHES_OWNER": {
+        "title": "Seller matches the recorded owner",
+        "PASS": "The seller name closely matches a current recorded owner.",
+        "WARN": "The seller name is similar to a recorded owner but not identical. Review required.",
+        "FAIL": "The seller name does not match any current recorded owner.",
+        "UNKNOWN": "No seller name was entered, so this was not checked."
+      },
+      "MUTATION_UP_TO_DATE": {
+        "title": "Mutation is up to date",
+        "PASS": "No pending mutation, and every recorded transfer has an approved mutation.",
+        "WARN": "{pending} pending mutation(s); {unmutated} recorded transfer(s) without an approved mutation. Review required."
+      },
+      "NO_PENDING_CASE": {
+        "title": "No pending court case",
+        "PASS": "No active court case in the demo records.",
+        "FAIL": "{count} active court case(s) recorded. Human review required."
+      },
+      "NOT_KHAS_OR_ACQUIRED": {
+        "title": "Not khas or under acquisition",
+        "PASS": "Not recorded as khas land or under acquisition.",
+        "FAIL": "Recorded as khas land ({khas}) or under acquisition ({acquisition}). Human review required."
+      },
+      "NO_OPEN_RISK_INDICATORS": {
+        "title": "No open risk indicators",
+        "PASS": "No risk indicators in the demo records.",
+        "WARN": "{other} lower-severity indicator(s) found. Review required.",
+        "FAIL": "{high} high-risk indicator(s) found. Human review required."
+      },
+      "DOCUMENT_AUTHENTIC": {
+        "title": "Document copy authenticity",
+        "UNKNOWN": "Check a copy of the deed you were given on the document verification page."
+      }
+    },
+    "disclaimer": "Demo checklist only. It does not establish legal ownership or replace official verification or legal advice.",
+    "errors": {
+      "required": "This field is required.",
+      "tooLong": "This value is too long.",
+      "numeric": "Enter digits only (e.g. 1245).",
+      "notFound": "No records found.",
+      "permission": "You don't have permission to perform this action.",
+      "network": "Cannot reach the server. Please try again.",
+      "generic": "We couldn't process this request. Please try again."
+    },
+    "docLink": "Verify a document copy"
+  },
+  "verifyDoc": {
+    "title": "Verify a document copy",
+    "intro": "Upload the copy of a deed you were given. We compare it with the recorded deed and tell you whether it matches. The file is checked and discarded; it is not stored.",
+    "file": "Deed copy",
+    "fileHint": "JPG, PNG or PDF, up to 10 MB.",
+    "submit": "Verify copy",
+    "checking": "Checking…",
+    "resultTitle": "Result",
+    "state": {
+      "AUTHENTIC": "Matches the recorded deed",
+      "ALTERED": "Differs from the recorded deed",
+      "NOT_FOUND": "No recorded deed found",
+      "UNREADABLE": "Could not read this copy"
+    },
+    "detail": {
+      "AUTHENTIC": "This copy matches a deed recorded in the system.",
+      "ALTERED": "The deed number is recorded, but these details on your copy differ from the record:",
+      "NOT_FOUND": "No deed with this number is recorded. This does not by itself mean the document is false.",
+      "UNREADABLE": "The deed number could not be read. Try a clearer, straight-on scan."
+    },
+    "fields": {
+      "khatian_no": "Khatian number",
+      "dag_no": "Dag number",
+      "land_area": "Land area",
+      "area_unit": "Area unit",
+      "deed_date": "Deed date",
+      "seller": "Seller",
+      "buyer": "Buyer"
+    },
+    "errors": {
+      "file": "This file cannot be used. Choose a JPG, PNG or PDF up to 10 MB.",
+      "rate": "Too many checks. Please wait a minute and try again.",
+      "network": "Network problem. Check your connection and try again.",
+      "generic": "Something went wrong. Please try again."
+    },
+    "disclaimer": "Demo data only. This is an indicator, not a legal finding; confirm with the registry office."
+  },
+  "page": {
+    "breadcrumb": "Breadcrumb",
+    "dataAsOf": "Data as of {date}",
+    "ref": "Ref {ref}",
+    "verifyPurpose": "Find a plot by its district, upazila, mouza, khatian and dag number.",
+    "resultPurpose": "Recorded details, history and risk indicators for this plot.",
+    "publicPurpose": "A limited public summary of this plot, opened from a QR code.",
+    "recordTabs": "Record sections",
+    "riskLevel": "Risk level"
   }
 }

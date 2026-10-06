@@ -7,33 +7,41 @@ as `rgb(var(--x) / <alpha-value>)`, so `bg-primary/90` still works. Dark mode = 
 in components; use `text-primary-fg` / `text-critical-fg`.
 
 ## Theme switching
-- `public/theme-init.js` (loaded in `<head>`, no flash) reads `localStorage["ls-theme"]` = `light | dark | system` (default system).
+- `public/theme-init.js` (loaded in `<head>`, no flash) reads `localStorage["ls-theme"]` = `light | dark | system` (default **light** since U3; dark only by explicit choice).
 - `components/ThemeToggle.tsx` (header) sets the class and saves the choice; storage access is in try/catch (`lib/theme.ts`).
 - Print is always light (`@media print` re-declares the light palette).
 
-## Brand scale (from the logo; navy #002850)
-`primary-50 … 900` = #EFF5FC #DCE9F8 #BCD3F0 #8FB4E3 #5C8FD1 #2F6BB5 #1A4F94 #0F3D7A #0A2F61 #002850.
-`primary` = 700 in light, 300 in dark. Gradients: `bg-brand-gradient` (hero/header), `bg-brand-gradient-soft`.
+## Brand scale — "Formal Green" (U1)
+Flat tokens: `primary` #006A4E (`primary-hover` #00563F), `link` #0F3D7A (navy inline links), `strip` #0E1F36 (top demo strip), `accent` #B08414 (thin gold rule / focus accent, sparingly), page `surface-muted` #F4F7F5, `line` #D5DED9.
+`primary-50 … 900` = #E6F2ED #C7E3D8 #94C8B5 #5FAA90 #2F8C6F #0F7F61 #006A4E #00563F #004232 #002E23 (`primary` = 600 in light; dark primary #4CC38A).
+Header, glass and gradient variables are all solid (`--header-*`, `--glass-*`, `--grad-*` hold one value each); `.header-glass` / `.header-gradient` = solid primary, no blur. Header stays #00563F in dark.
+Shape: radius md 4 px, lg 6 px, xl/2xl 8 px; `shadow-card` none (border-based), `shadow-raised` 0 2px 8px ink/8 % for menus, modals, map overlays only.
 Green = verified, red = critical only, amber = review, grey-blue = pending. Status is never colour-only.
 
-## Contrast (WCAG ratio, text on its background; computed, needs ≥ 4.5)
+## Contrast (WCAG ratio, text on its background; computed from globals.css, needs ≥ 4.5)
 | Pair | Light | Dark |
 |---|---|---|
-| ink / surface | 16.6 | 14.6 |
-| ink / page | 15.4 | 15.8 |
-| ink-muted / surface | 6.7 | 7.9 |
-| ink-muted / page | 6.2 | 8.5 |
-| primary / surface | 10.7 | 8.0 |
-| primary / page | 9.9 | 8.6 |
-| primary-fg / primary | 10.7 | 8.1 |
-| primary / primary-soft | 9.1 | 6.8 |
-| verified / verified-soft | 5.6 | 6.7 |
-| verified / surface | 6.4 | 8.0 |
-| review / review-soft | 5.5 | 7.3 |
-| critical / critical-soft | 5.1 | 7.0 |
-| critical / surface | 6.0 | 7.5 |
-| critical-fg / critical | 6.0 | 8.1 |
-| pending / pending-soft | 5.6 | 7.2 |
+| ink / surface | 16.6 | 14.9 |
+| ink / surface-muted | 15.4 | 16.5 |
+| ink-muted / surface | 6.7 | 7.5 |
+| ink-muted / surface-muted | 6.2 | 8.3 |
+| primary / surface | 6.6 | 7.8 |
+| primary / surface-muted | 6.1 | 8.7 |
+| primary-fg / primary | 6.6 | 7.7 |
+| primary-fg / primary-hover | 8.7 | 9.6 |
+| primary / primary-soft | 5.8 | 6.4 |
+| link / surface | 10.7 | 8.5 |
+| link / surface-muted | 9.9 | 9.5 |
+| verified / verified-soft | 5.6 | 7.8 |
+| verified / surface | 6.4 | 9.0 |
+| review / review-soft | 5.5 | 8.8 |
+| critical / critical-soft | 5.1 | 5.9 |
+| critical / surface | 6.0 | 6.3 |
+| critical-fg / critical | 6.0 | 6.7 |
+| pending / pending-soft | 5.6 | 5.9 |
+| white / header (solid) | 6.6 | 8.7 |
+| white / strip | 16.6 | 19.3 |
+| accent / surface (UI ≥ 3) | 3.4 | 7.9 |
 
 ## Core components (UD2) — `components/ui/`, `components/domain/`
 All use tokens only (both themes). Icons: `lucide-react` (decorative, `aria-hidden`; text carries meaning).
@@ -140,3 +148,13 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 - [ ] Bangla: no horizontal page scroll at 360 px, glyphs not clipped in buttons
 - [ ] Keyboard: Tab order header -> main, visible focus ring in both themes, Esc closes modal/menu
 
+
+## Shell (U3) — top strip, header, footer
+- Top strip (`components/TopStrip.tsx`, `bg-strip`, 13 px): demo notice left; text size A− / A / A+ (100 / 112.5 / 125 % on `<html>`, key `ls-text-size`, try/catch, applied before paint by `theme-init.js`) and language switch (বাংলা first) right.
+- Header (`features/landing/Navbar.tsx`): solid primary, 2 px accent rule, mark + wordmark + Bangla sub-line (`common.subLine`), service nav Home · Verify land · Parcel map (signed in); only routes that exist. Language switch moved to the strip; theme toggle moved into the account menu (signed in) and the footer bar.
+- Footer (`bg-strip`, white text, accent top rule): Services · About · Help · Legal; unbuilt pages are plain text. Contact is the placeholder support@landshield.demo.
+- Theme default = light (`lib/theme.ts`, `theme-init.js`).
+
+## U4 — Brand + Bangla-first (2026-10-06)
+- Logo is now flat SVG: `public/brand/logo-mark.svg`, `logo-full.svg`; `app/icon.png` rendered from the mark; old PNGs in `public/brand/legacy/` (unreferenced). Earlier logo notes above are historical.
+- Default locale `bn`; `:lang(bn)` typography rules at the end of `app/globals.css`.

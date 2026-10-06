@@ -7,7 +7,7 @@ import hashlib
 import hmac
 import json
 import uuid
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -17,7 +17,9 @@ from app.core.db import Base
 from app.core.passwords import hash_password
 from app.models import (
     Deed,
+    LandEncumbrance,
     LandParcel,
+    MutationRecord,
     Owner,
     OwnershipHistory,
     Transaction,
@@ -38,6 +40,10 @@ def load_geometry() -> dict:
     if not path.exists():
         return {}
     return {k: v for k, v in json.loads(path.read_text(encoding="utf-8")).items() if k[:1] != "_"}
+
+
+def _dt(v: str | None) -> datetime | None:
+    return datetime.fromisoformat(v).replace(tzinfo=UTC) if v else None
 
 
 def sid(kind: str, key: str) -> str:
@@ -131,5 +137,33 @@ def seed(db: Session, demo_password: str | None = None, do_reset: bool = False) 
             source_transaction_id=sid("tx", h["tx"]) if h["tx"] else None,
             confidence=1.0,
         )
+    for m in data.get("mutations", []):
+        applied, decided = _dt(m["applied"]), _dt(m.get("decided"))
+        created += _ensure(
+            db, MutationRecord, "mut", m["key"],
+            mutation_no=m["no"], land_id=sid("land", m["land"]),
+            deed_id=sid("deed", m["deed"]) if m.get("deed") else None,
+            transaction_id=sid("tx", m["tx"]) if m.get("tx") else None,
+            applicant_owner_id=sid("owner", m["applicant"]),
+            previous_khatian_no=m.get("prev_khatian"), new_khatian_no=m.get("new_khatian"),
+            area=m["area"], area_unit=m["area_unit"], ac_land_office=m.get("office"),
+            status=m["status"], fast_track=m.get("fast_track", False),
+            applied_at=applied, decided_at=decided,
+            status_changed_at=decided or applied, source=m.get("source", "SEED"),
+        )
+    for e in data.get("encumbrances", []):
+        created += _ensure(
+            db, LandEncumbrance, "enc", e["key"],
+            land_id=sid("land", e["land"]), type=e["type"], reference_no=e["ref"],
+            authority=e.get("authority"), status=e["status"],
+            started_at=_d(e.get("started")), resolved_at=_d(e.get("resolved")),
+            note=e.get("note"),
+        )
+    from app.services import signing  # F4a: sign seeded deeds (idempotent)
+
+    signing.seal_unsigned(db)
+    from app.services import ledger  # F4c: chain every seeded record (idempotent)
+
+    ledger.backfill(db)
     db.commit()
     return {"created": created}

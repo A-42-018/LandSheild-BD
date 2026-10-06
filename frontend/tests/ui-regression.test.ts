@@ -56,7 +56,10 @@ const PAIRS: [string, string][] = [
   ["primary", "surface"],
   ["primary", "surface-muted"],
   ["primary-fg", "primary"],
+  ["primary-fg", "primary-hover"],
   ["primary", "primary-soft"],
+  ["link", "surface"],
+  ["link", "surface-muted"],
   ["verified", "verified-soft"],
   ["verified", "surface"],
   ["review", "review-soft"],
@@ -98,7 +101,25 @@ describe("theme tokens (globals.css)", () => {
     expect(ratio(print[fg], print[bg])).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("white header text clears 4.5 on both gradient ends in both themes", () => {
+  it("U1 flat tokens: Formal Green primary, flat header, accent usable on the surface", () => {
+    expect(light.primary).toEqual([0, 106, 78]);
+    expect(light["primary-hover"]).toEqual([0, 86, 63]);
+    expect(light.link).toEqual([15, 61, 122]);
+    expect(light.strip).toEqual([14, 31, 54]);
+    expect(light.accent).toEqual([176, 132, 20]);
+    expect(dark["header-from"]).toEqual([0, 86, 63]);
+    for (const set of [light, dark]) {
+      expect(set["header-from"]).toEqual(set["header-to"]);
+      expect(set["glass-from"]).toEqual(set["glass-to"]);
+      expect(set["grad-from"]).toEqual(set["grad-to"]);
+      expect(ratio(set.accent, set.surface)).toBeGreaterThanOrEqual(3); // focus accent on page surface (UI >= 3)
+      expect(ratio([255, 255, 255], set.strip)).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(css).not.toMatch(/\.header-glass\s*\{[^}]*backdrop-filter/);
+    expect(css).not.toMatch(/\.header-gradient\s*\{[^}]*linear-gradient/);
+  });
+
+  it("white header text clears 4.5 on both header ends in both themes", () => {
     const white: [number, number, number] = [255, 255, 255];
     for (const set of [light, dark]) {
       expect(ratio(white, set["header-from"])).toBeGreaterThanOrEqual(4.5);
@@ -124,8 +145,8 @@ function walk(dir: string, out: string[] = []): string[] {
 describe("source hygiene (both themes)", () => {
   const files = ["components", "features", "app"].flatMap((d) => walk(resolve(ROOT, d)));
 
-  it("no solid text-white / text-black outside the always-blue header and map overlay", () => {
-    const allowed = /(Navbar|HeaderNav|HeaderMenu|UserMenu|ThemeToggle|LanguageSwitcher|MapView)\.tsx$/;
+  it("no solid text-white / text-black outside the always-dark header, strip, footer and map overlay", () => {
+    const allowed = /(Navbar|TopStrip|Footer|HeaderNav|HeaderMenu|UserMenu|ThemeToggle|LanguageSwitcher|MapView)\.tsx$/;
     const bad = files.filter((f) => !allowed.test(f)).filter((f) => /\btext-(white|black)\b(?!\/)/.test(readFileSync(f, "utf8")));
     expect(bad).toEqual([]);
   });

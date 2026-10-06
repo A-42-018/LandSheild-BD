@@ -48,3 +48,28 @@ class TransactionType(StrEnum):
     GIFT = "GIFT"
     INHERITANCE = "INHERITANCE"
     OTHER = "OTHER"
+
+
+class MutationStatus(StrEnum):
+    APPLIED = "APPLIED"
+    UNDER_REVIEW = "UNDER_REVIEW"
+    HEARING = "HEARING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
+
+class MutationSource(StrEnum):
+    SEED = "SEED"
+    WORKFLOW = "WORKFLOW"
+
+
+class EncumbranceType(StrEnum):
+    COURT_CASE = "COURT_CASE"
+    KHAS = "KHAS"
+    ACQUISITION = "ACQUISITION"
+    MORTGAGE = "MORTGAGE"
+
+
+class EncumbranceStatus(StrEnum):
+    ACTIVE = "ACTIVE"
+    RESOLVED = "RESOLVED"

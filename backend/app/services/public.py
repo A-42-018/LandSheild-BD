@@ -7,8 +7,10 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
 from app.models.alert import FraudAlert
+from app.models.encumbrance import LandEncumbrance
 from app.models.enums import AlertStatus, TransactionStatus, VerificationStatus
 from app.models.land_parcel import LandParcel
+from app.models.mutation import MutationRecord
 from app.models.ownership import OwnershipHistory
 from app.models.transaction import Transaction
 from app.models.verification import VerificationRequest
@@ -28,13 +30,18 @@ def _count(db: Session, col, *where) -> int:
     return db.scalar(select(func.count(col)).where(*where)) or 0
 
 
-def get_public_verify(db: Session, land_id: str) -> PublicVerify:
+def find_land(db: Session, land_id: str) -> LandParcel:
     code = land_id.strip().upper()
     land = None
     if _LAND_ID.match(code):
         land = db.scalar(select(LandParcel).where(LandParcel.land_id == code))
     if land is None:
         raise AppError("LAND_NOT_FOUND", "Land parcel not found", 404)
+    return land
+
+
+def get_public_verify(db: Session, land_id: str) -> PublicVerify:
+    land = find_land(db, land_id)
     level = assess(load_land_context(db, land)).level
     last = db.scalar(
         select(func.max(VerificationRequest.completed_at)).where(
@@ -53,6 +60,18 @@ def get_public_verify(db: Session, land_id: str) -> PublicVerify:
         ),
         open_alerts=_count(
             db, FraudAlert.id, FraudAlert.land_id == land.id, FraudAlert.status.in_(_ACTIVE_ALERTS)
+        ),
+        active_encumbrances=_count(
+            db,
+            LandEncumbrance.id,
+            LandEncumbrance.land_id == land.id,
+            LandEncumbrance.status == "ACTIVE",
+        ),
+        pending_mutations=_count(
+            db,
+            MutationRecord.id,
+            MutationRecord.land_id == land.id,
+            MutationRecord.status.in_(("APPLIED", "UNDER_REVIEW", "HEARING")),
         ),
     )
     return PublicVerify(

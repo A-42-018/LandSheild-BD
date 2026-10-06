@@ -19,7 +19,12 @@
     {"key": "LP-10240", "scenario": "DOUBLE_SALE", "district": "Gazipur", "upazila": "Sreepur", "mouza": "Barmi", "dag_no": "790", "khatian_no": "1250", "area": 10, "area_unit": "decimal"},
     {"key": "LP-10300", "scenario": "AREA_MISMATCH", "district": "Gazipur", "upazila": "Kaliakair", "mouza": "Mouchak", "dag_no": "310", "khatian_no": "710", "area": 10, "area_unit": "decimal"},
     {"key": "LP-10400", "scenario": "SELLER_MISMATCH", "district": "Gazipur", "upazila": "Kaliakair", "mouza": "Mouchak", "dag_no": "410", "khatian_no": "810", "area": 12, "area_unit": "decimal"},
-    {"key": "LP-10500", "scenario": "DUPLICATE_DEED", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "510", "khatian_no": "910", "area": 8, "area_unit": "decimal"}
+    {"key": "LP-10500", "scenario": "DUPLICATE_DEED", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "510", "khatian_no": "910", "area": 8, "area_unit": "decimal"},
+    {"key": "LP-10600", "scenario": "UNMUTATED_SALE", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "610", "khatian_no": "1010", "area": 12, "area_unit": "decimal"},
+    {"key": "LP-10700", "scenario": "MUTATION_OTHER_PERSON", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "710", "khatian_no": "1110", "area": 9, "area_unit": "decimal"},
+    {"key": "LP-10800", "scenario": "ACTIVE_CASE", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "810", "khatian_no": "1210", "area": 10, "area_unit": "decimal"},
+    {"key": "LP-10900", "scenario": "KHAS_LAND", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "910", "khatian_no": "1310", "area": 25, "area_unit": "decimal"},
+    {"key": "LP-11000", "scenario": "ACQUISITION", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "1010", "khatian_no": "1410", "area": 18, "area_unit": "decimal"}
   ],
   "deeds": [
     {"key": "d-10100-a", "land": "LP-10100", "deed_no": "D-2012-0100", "seller": "rahim", "buyer": "karim", "date": "2012-03-15", "area": 20, "area_unit": "decimal"},
@@ -27,7 +32,9 @@
     {"key": "d-10240-a", "land": "LP-10240", "deed_no": "D-2021-0240", "seller": "rahim", "buyer": "karim", "date": "2021-05-10", "area": 10, "area_unit": "decimal"},
     {"key": "d-10240-b", "land": "LP-10240", "deed_no": "D-2021-0241", "seller": "rahim", "buyer": "hasan", "date": "2021-08-02", "area": 10, "area_unit": "decimal"},
     {"key": "d-10500-a", "land": "LP-10500", "deed_no": "D-2018-0500", "seller": "hasan", "buyer": "karim", "date": "2018-04-12", "area": 8, "area_unit": "decimal"},
-    {"key": "d-10500-b", "land": "LP-10500", "deed_no": "D-2018-0500", "seller": "karim", "buyer": "rahim", "date": "2020-09-03", "area": 8, "area_unit": "decimal"}
+    {"key": "d-10500-b", "land": "LP-10500", "deed_no": "D-2018-0500", "seller": "karim", "buyer": "rahim", "date": "2020-09-03", "area": 8, "area_unit": "decimal"},
+    {"key": "d-10600-a", "land": "LP-10600", "deed_no": "D-2024-0600", "seller": "jamal", "buyer": "rahim", "date": "2024-10-01", "area": 12, "area_unit": "decimal"},
+    {"key": "d-10700-a", "land": "LP-10700", "deed_no": "D-2023-0700", "seller": "hasan", "buyer": "karim", "date": "2023-03-14", "area": 9, "area_unit": "decimal"}
   ],
   "transactions": [
     {"key": "t-10100-a", "land": "LP-10100", "deed": "d-10100-a", "seller": "rahim", "buyer": "karim", "type": "SALE", "date": "2012-03-15", "area": 20, "area_unit": "decimal"},
@@ -35,7 +42,9 @@
     {"key": "t-10240-a", "land": "LP-10240", "deed": "d-10240-a", "seller": "rahim", "buyer": "karim", "type": "SALE", "date": "2021-05-10", "area": 10, "area_unit": "decimal"},
     {"key": "t-10240-b", "land": "LP-10240", "deed": "d-10240-b", "seller": "rahim", "buyer": "hasan", "type": "SALE", "date": "2021-08-02", "area": 10, "area_unit": "decimal"},
     {"key": "t-10500-a", "land": "LP-10500", "deed": "d-10500-a", "seller": "hasan", "buyer": "karim", "type": "SALE", "date": "2018-04-12", "area": 8, "area_unit": "decimal"},
-    {"key": "t-10500-b", "land": "LP-10500", "deed": "d-10500-b", "seller": "karim", "buyer": "rahim", "type": "SALE", "date": "2020-09-03", "area": 8, "area_unit": "decimal"}
+    {"key": "t-10500-b", "land": "LP-10500", "deed": "d-10500-b", "seller": "karim", "buyer": "rahim", "type": "SALE", "date": "2020-09-03", "area": 8, "area_unit": "decimal"},
+    {"key": "t-10600-a", "land": "LP-10600", "deed": "d-10600-a", "seller": "jamal", "buyer": "rahim", "type": "SALE", "date": "2024-10-01", "area": 12, "area_unit": "decimal"},
+    {"key": "t-10700-a", "land": "LP-10700", "deed": "d-10700-a", "seller": "hasan", "buyer": "karim", "type": "SALE", "date": "2023-03-14", "area": 9, "area_unit": "decimal"}
   ],
   "ownership": [
     {"key": "o-10001", "land": "LP-10001", "owner": "jamal", "start": "2008-01-10", "end": null, "tx": null},
@@ -49,7 +58,14 @@
     {"key": "o-10400", "land": "LP-10400", "owner": "karim", "start": "2013-07-01", "end": null, "tx": null},
     {"key": "o-10500-1", "land": "LP-10500", "owner": "hasan", "start": "2010-01-01", "end": "2018-04-12", "tx": null},
     {"key": "o-10500-2", "land": "LP-10500", "owner": "karim", "start": "2018-04-12", "end": "2020-09-03", "tx": "t-10500-a"},
-    {"key": "o-10500-3", "land": "LP-10500", "owner": "rahim", "start": "2020-09-03", "end": null, "tx": "t-10500-b"}
+    {"key": "o-10500-3", "land": "LP-10500", "owner": "rahim", "start": "2020-09-03", "end": null, "tx": "t-10500-b"},
+    {"key": "o-10600-1", "land": "LP-10600", "owner": "jamal", "start": "2010-01-01", "end": "2024-10-01", "tx": null},
+    {"key": "o-10600-2", "land": "LP-10600", "owner": "rahim", "start": "2024-10-01", "end": null, "tx": "t-10600-a"},
+    {"key": "o-10700-1", "land": "LP-10700", "owner": "hasan", "start": "2009-01-01", "end": "2023-03-14", "tx": null},
+    {"key": "o-10700-2", "land": "LP-10700", "owner": "karim", "start": "2023-03-14", "end": null, "tx": "t-10700-a"},
+    {"key": "o-10800-1", "land": "LP-10800", "owner": "rahim", "start": "2011-01-01", "end": null, "tx": null},
+    {"key": "o-10900-1", "land": "LP-10900", "owner": "hasan", "start": "2007-01-01", "end": null, "tx": null},
+    {"key": "o-11000-1", "land": "LP-11000", "owner": "jamal", "start": "2013-01-01", "end": null, "tx": null}
   ],
   "fixtures_not_loaded": {
     "note": "Incoming documents are upload fixtures (P26). They are NOT loaded as DB rows.",
@@ -57,5 +73,19 @@
     "Doc2": {"land": "LP-10234", "dag_no": "785", "khatian_no": "1245", "area": 10, "area_unit": "decimal", "seller": "rahim", "buyer": "hasan", "expected": "HIGH (70)"},
     "LP-10300": {"area": 12, "area_unit": "decimal", "expected": "LOW (15) + AREA_MISMATCH"},
     "LP-10400": {"seller": "rahim", "expected": "MEDIUM (30)"}
-  }
+  },
+  "mutations": [
+    {"key": "m-10100-a", "no": "MUT-2012-0001", "land": "LP-10100", "deed": "d-10100-a", "tx": "t-10100-a", "applicant": "karim", "prev_khatian": "610", "new_khatian": "610-M", "area": 20, "area_unit": "decimal", "office": "AC Land Office, Savar", "status": "APPROVED", "fast_track": false, "applied": "2012-03-15", "decided": "2012-03-15", "source": "SEED"},
+    {"key": "m-10100-b", "no": "MUT-2019-0002", "land": "LP-10100", "deed": "d-10100-b", "tx": "t-10100-b", "applicant": "hasan", "prev_khatian": "610", "new_khatian": "610-M", "area": 20, "area_unit": "decimal", "office": "AC Land Office, Savar", "status": "APPROVED", "fast_track": false, "applied": "2019-06-20", "decided": "2019-06-20", "source": "SEED"},
+    {"key": "m-10240-a", "no": "MUT-2021-0003", "land": "LP-10240", "deed": "d-10240-a", "tx": "t-10240-a", "applicant": "karim", "prev_khatian": "1250", "new_khatian": "1250-M", "area": 10, "area_unit": "decimal", "office": "AC Land Office, Sreepur", "status": "APPROVED", "fast_track": false, "applied": "2021-05-10", "decided": "2021-05-10", "source": "SEED"},
+    {"key": "m-10240-b", "no": "MUT-2021-0004", "land": "LP-10240", "deed": "d-10240-b", "tx": "t-10240-b", "applicant": "hasan", "prev_khatian": "1250", "new_khatian": "1250-M", "area": 10, "area_unit": "decimal", "office": "AC Land Office, Sreepur", "status": "APPROVED", "fast_track": false, "applied": "2021-08-02", "decided": "2021-08-02", "source": "SEED"},
+    {"key": "m-10500-a", "no": "MUT-2018-0005", "land": "LP-10500", "deed": "d-10500-a", "tx": "t-10500-a", "applicant": "karim", "prev_khatian": "910", "new_khatian": "910-M", "area": 8, "area_unit": "decimal", "office": "AC Land Office, Rupganj", "status": "APPROVED", "fast_track": false, "applied": "2018-04-12", "decided": "2018-04-12", "source": "SEED"},
+    {"key": "m-10500-b", "no": "MUT-2020-0006", "land": "LP-10500", "deed": "d-10500-b", "tx": "t-10500-b", "applicant": "rahim", "prev_khatian": "910", "new_khatian": "910-M", "area": 8, "area_unit": "decimal", "office": "AC Land Office, Rupganj", "status": "APPROVED", "fast_track": false, "applied": "2020-09-03", "decided": "2020-09-03", "source": "SEED"},
+    {"key": "m-10700-a", "no": "MUT-2023-0007", "land": "LP-10700", "deed": "d-10700-a", "tx": "t-10700-a", "applicant": "jamal", "prev_khatian": "1110", "new_khatian": "1110-M", "area": 9, "area_unit": "decimal", "office": "AC Land Office, Rupganj", "status": "APPROVED", "fast_track": false, "applied": "2023-03-14", "decided": "2023-03-14", "source": "SEED"}
+  ],
+  "encumbrances": [
+    {"key": "e-10800-case", "land": "LP-10800", "type": "COURT_CASE", "ref": "SYN-CASE-2025-0801", "authority": "Synthetic District Judge Court, Dhaka", "status": "ACTIVE", "started": "2025-06-10", "resolved": null, "note": "Synthetic demo record: title suit pending"},
+    {"key": "e-10900-khas", "land": "LP-10900", "type": "KHAS", "ref": "SYN-KHAS-0901", "authority": "Synthetic AC Land Office, Rupganj", "status": "ACTIVE", "started": "2019-02-01", "resolved": null, "note": "Synthetic demo record: recorded as khas land"},
+    {"key": "e-11000-acq", "land": "LP-11000", "type": "ACQUISITION", "ref": "SYN-ACQ-2026-1101", "authority": "Synthetic Deputy Commissioner Office, Dhaka", "status": "ACTIVE", "started": "2026-03-15", "resolved": null, "note": "Synthetic demo record: acquisition notice issued"}
+  ]
 }

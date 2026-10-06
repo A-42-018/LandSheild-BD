@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     cookie_samesite: str = "lax"
     auth_rate_limit_per_min: int = 10
     public_rate_limit_per_min: int = 60
+    verify_doc_rate_limit_per_min: int = 10
     upload_rate_limit_per_hour: int = 20  # per user (R4)
     cors_origins: str = "http://localhost:3000"
     storage_path: str = "./storage"
@@ -39,6 +40,8 @@ class Settings(BaseSettings):
     tesseract_lang: str = "ben+eng"
     mouza_enabled_division_id: str = "4"  # GIS demo scope (P61); 4 = Khulna, '' = off
     gis_data_dir: str = ""  # empty = <repo>/database/gis
+    signing_key: str = ""  # base64 32-byte Ed25519 seed (F4a); wins over the key file
+    signing_key_path: str = ""  # empty = <STORAGE_PATH>/signing/ed25519.pem (auto-created in dev)
     demo_password: str = ""
     hash_salt: str = DEFAULT_HASH_SALT
 

@@ -2,7 +2,7 @@
 # LandShield BD — one-command local start (backend :8001, frontend :3000)
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PORT=8001
-export DEMO_PASSWORD="${DEMO_PASSWORD:-demo1234}"
+export DEMO_PASSWORD="${DEMO_PASSWORD:-LandShield2026!}"
 
 cd "$ROOT/backend" || exit 1
 [ -d .venv ] || python3 -m venv .venv

@@ -20,7 +20,7 @@ from app.models.ownership import OwnershipHistory
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.schemas.extraction import Extraction
-from app.services import audit
+from app.services import audit, ledger, mutation, signing
 from app.services.extraction import _BN_DIGITS, _parse_area, _parse_date
 from app.services.names import can_auto_merge
 from app.services.risk import analyze_land
@@ -165,6 +165,7 @@ def post_document(
     )  # fmt: skip
     db.add(deed)
     db.flush()
+    signing.seal(deed)  # F4a: hash + Ed25519 signature at approval
     tx = Transaction(
         land_id=land.id, seller_id=seller.id, buyer_id=buyer.id, deed_id=deed.id,
         transaction_type=TransactionType.SALE.value, transaction_date=tx_date, area=area,
@@ -173,6 +174,7 @@ def post_document(
     db.add(tx)
     db.flush()
 
+    mut_rec = mutation.create_from_posting(db, user, land, deed, tx, ip)
     assessment = analyze_land(db, land.land_id, commit=False)  # sees the new tx, makes alerts
     tx.risk_score = assessment.overall_score
     evidence = assessment.evidence_json or []
@@ -188,6 +190,9 @@ def post_document(
         _update_ownership(db, land, seller, buyer, tx, tx_date, extraction)
         updated = True
 
+    mutation.route_after_prechecks(db, mut_rec, user, ip)
+    ledger.append(db, "deed", deed.id)  # F4c: tamper-evident record of the approved sale
+    ledger.append(db, "transaction", tx.id)
     result = PostingResult(
         land_id=land.land_id, created_land=created, transaction_id=tx.id, deed_id=deed.id,
         transaction_status=tx.status, ownership_updated=updated,

@@ -1,44 +1,61 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
-const LINK = "rounded hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50";
+const LINK = "rounded text-white/90 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
+const HEAD = "mb-2 font-semibold text-white";
 
+/** Footer (U3, roadmap 4.5 item 5): dark band, 4 columns. Only links to routes that exist; the rest is plain text. */
 export default function Footer() {
   const t = useTranslations();
   return (
-    <footer className="mt-8 border-t-4 border-primary bg-brand-gradient-soft text-sm text-ink-muted print:hidden">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 md:grid-cols-[2fr_1fr_1fr_2fr]">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2.5 text-lg font-bold text-ink">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo-mark.png" alt="" width={820} height={608} className="h-10 w-auto object-contain drop-shadow" />
-            <span>{t("common.appName")}</span>
-          </div>
-          <p>{t("footer.tagline")}</p>
-        </div>
+    <footer className="mt-8 border-t-2 border-accent bg-strip text-sm text-white/90 print:hidden">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:grid-cols-2 lg:grid-cols-4">
         <nav aria-label={t("landing.footerNav")} className="contents">
           <div>
-            <p className="mb-2 font-semibold text-ink">{t("footer.explore")}</p>
+            <p className={HEAD}>{t("footer.services")}</p>
             <ul className="flex flex-col gap-1.5">
-              <li><Link href="/about" className={LINK}>{t("nav.about")}</Link></li>
               <li><Link href="/verify" className={LINK}>{t("nav.verify")}</Link></li>
               <li><Link href="/map" className={LINK}>{t("nav.map")}</Link></li>
-            </ul>
-          </div>
-          <div>
-            <p className="mb-2 font-semibold text-ink">{t("footer.account")}</p>
-            <ul className="flex flex-col gap-1.5">
               <li><Link href="/login" className={LINK}>{t("nav.login")}</Link></li>
             </ul>
           </div>
+          <div>
+            <p className={HEAD}>{t("footer.aboutTitle")}</p>
+            <ul className="flex flex-col gap-1.5">
+              <li><Link href="/about" className={LINK}>{t("footer.howItWorks")}</Link></li>
+              <li>{t("footer.dataSources")}</li>
+              <li>{t("footer.disclaimerShort")}</li>
+            </ul>
+          </div>
+          <div>
+            <p className={HEAD}>{t("footer.help")}</p>
+            <ul className="flex flex-col gap-1.5">
+              <li>{t("footer.faq")}</li>
+              <li>{t("footer.accessibility")}</li>
+              <li>{t("footer.contact")}: support@landshield.demo</li>
+            </ul>
+          </div>
+          <div>
+            <p className={HEAD}>{t("footer.legal")}</p>
+            <ul className="flex flex-col gap-1.5">
+              <li>{t("footer.privacy")}</li>
+              <li>{t("footer.terms")}</li>
+              <li>{t("footer.licence")}</li>
+            </ul>
+          </div>
         </nav>
-        <div>
-          <p className="mb-2 font-semibold text-ink">{t("footer.notice")}</p>
-          <p>{t("landing.disclaimer")}</p>
-        </div>
       </div>
-      <div className="border-t border-line">
-        <p className="mx-auto max-w-6xl px-4 py-3 text-xs">{t("common.demoLabel")}</p>
+      <div className="mx-auto max-w-6xl px-4 pb-4">
+        <p>{t("landing.disclaimer")}</p>
+      </div>
+      <div className="border-t border-white/20">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs">
+          <p>
+            {t("common.demoLabel")} · {t("footer.version")} · {t("footer.updated")}
+          </p>
+          <ThemeToggle variant="onBrand" />
+        </div>
       </div>
     </footer>
   );

@@ -109,3 +109,26 @@ describe("PublicVerifyView", () => {
     expect(screen.getByTestId("public-counts").textContent).toContain(bn.publicVerify.ownershipRecords);
   });
 });
+
+describe("signed QR (F4a)", () => {
+  it("adds only deed id + hash prefix once the seal loads", async () => {
+    const request = vi.fn().mockResolvedValue({ deed_id: "deed-1", hash12: "0123456789ab" });
+    wrap(<QrCard landId="LP-10240" />, { request } as any);
+    await waitFor(() =>
+      expect(screen.getByTestId("qr-code").getAttribute("data-value")).toMatch(/\/en\/v\/LP-10240\?d=deed-1&h=0123456789ab$/),
+    );
+    expect(request).toHaveBeenCalledWith("/public/seal/LP-10240", { anonymous: true });
+  });
+  it("shows the signature chip for ?d=&h= and nothing without them", async () => {
+    window.history.pushState({}, "", "/en/v/LP-10240?d=deed-1&h=0123456789ab");
+    const request = vi.fn((path: string) =>
+      Promise.resolve(path.startsWith("/public/signature") ? { state: "VALID" } : DTO),
+    );
+    wrap(<PublicVerifyView landId="LP-10240" />, { request } as any);
+    const chip = await screen.findByTestId("signature-chip");
+    expect(chip.getAttribute("data-state")).toBe("VALID");
+    expect(chip.textContent).toContain(en.publicVerify.sig.VALID);
+    window.history.pushState({}, "", "/en/v/LP-10240");
+  });
+});
+

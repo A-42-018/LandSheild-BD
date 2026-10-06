@@ -1,21 +1,35 @@
 "use client";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Info, Network, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { EmptyState, ErrorState, LoadingState } from "@/components/ui";
+import type { UseQueryResult } from "@tanstack/react-query";
+import { EmptyState, ErrorState, LoadingState, Tabs } from "@/components/ui";
+import PageHeader from "@/components/PageHeader";
+import RiskBadge from "@/components/domain/RiskBadge";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
 import LandInfoCard from "./LandInfoCard";
 import OwnershipTimeline from "./OwnershipTimeline";
 import TransactionsTable from "./TransactionsTable";
+import MutationTable from "./MutationTable";
+import EncumbranceTable from "./EncumbranceTable";
+import { formatDate } from "./format";
 import RiskCard from "@/features/risk/RiskCard";
 import GenerateReportButton from "@/features/report/GenerateReportButton";
 import type { RiskAssessment } from "@/features/risk/types";
-import type { LandInfo, OwnershipEntry, TransactionEntry } from "./types";
+import type { EncumbranceEntry, LandInfo, MutationEntry, OwnershipEntry, TransactionEntry } from "./types";
+
+/** One tab panel: loading → error with retry → content. */
+function tabPanel(q: Pick<UseQueryResult, "isPending" | "isError" | "refetch">, render: () => React.ReactNode, err: string) {
+  if (q.isPending) return <LoadingState />;
+  if (q.isError) return <ErrorState message={err} onRetry={() => void q.refetch()} />;
+  return render();
+}
 
 export default function ResultView({ landId }: { landId?: string }) {
   const t = useTranslations();
+  const locale = useLocale();
   const { api } = useAuth();
   const enc = landId ? encodeURIComponent(landId) : "";
   const enabled = Boolean(landId);
@@ -34,6 +48,20 @@ export default function ResultView({ landId }: { landId?: string }) {
     queryFn: () => api.get<{ transactions: TransactionEntry[] }>(`/lands/${enc}/transactions`),
   });
 
+  const mut = useQuery({
+    queryKey: ["land", landId, "mutations"],
+    enabled,
+    retry: false,
+    queryFn: () => api.get<{ mutations: MutationEntry[] }>(`/lands/${enc}/mutations`),
+  });
+
+  const encs = useQuery({
+    queryKey: ["land", landId, "encumbrances"],
+    enabled,
+    retry: false,
+    queryFn: () => api.get<{ encumbrances: EncumbranceEntry[] }>(`/lands/${enc}/encumbrances`),
+  });
+
   const risk = useQuery({
     queryKey: ["land", landId, "risk"],
     enabled,
@@ -42,7 +70,7 @@ export default function ResultView({ landId }: { landId?: string }) {
   });
 
   const back = (
-    <Link href="/verify" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary underline">
+    <Link href="/verify" className="inline-flex items-center gap-1.5 text-sm font-medium text-link underline">
       <Search aria-hidden="true" className="h-4 w-4" />
       {t("result.newSearch")}
     </Link>
@@ -72,46 +100,54 @@ export default function ResultView({ landId }: { landId?: string }) {
         />
       );
   } else {
+    const lerr = t("result.loadError");
     body = (
       <>
-        <LandInfoCard land={land.data} />
-        {own.isPending ? (
-          <LoadingState />
-        ) : own.isError ? (
-          <ErrorState message={t("result.loadError")} onRetry={() => void own.refetch()} />
-        ) : (
-          <OwnershipTimeline entries={own.data.entries} />
-        )}
-        {tx.isPending ? (
-          <LoadingState />
-        ) : tx.isError ? (
-          <ErrorState message={t("result.loadError")} onRetry={() => void tx.refetch()} />
-        ) : (
-          <TransactionsTable transactions={tx.data.transactions} />
-        )}
-        {risk.isPending ? (
-          <LoadingState />
-        ) : risk.isError ? (
-          <ErrorState message={t("risk.loadError")} onRetry={() => void risk.refetch()} />
-        ) : (
-          <RiskCard risk={risk.data} />
-        )}
+        <LandInfoCard land={land.data} chip={risk.data ? <RiskBadge level={risk.data.risk_level} /> : undefined} />
+        <Tabs
+          label={t("page.recordTabs")}
+          tabs={[
+            { id: "ownership", label: t("result.tabOwnership"), content: tabPanel(own, () => <OwnershipTimeline entries={own.data?.entries ?? []} />, lerr) },
+            { id: "transactions", label: t("result.tabTransactions"), content: tabPanel(tx, () => <TransactionsTable transactions={tx.data?.transactions ?? []} />, lerr) },
+            { id: "mutation", label: t("result.tabMutation"), content: tabPanel(mut, () => <MutationTable mutations={mut.data?.mutations ?? []} />, lerr) },
+            { id: "encumbrance", label: t("result.tabEncumbrance"), content: tabPanel(encs, () => <EncumbranceTable items={encs.data?.encumbrances ?? []} />, lerr) },
+            {
+              id: "evidence",
+              label: t("result.tabEvidence"),
+              content: (
+                <div className="flex flex-col gap-3">
+                  {tabPanel(risk, () => risk.data && <RiskCard risk={risk.data} />, t("risk.loadError"))}
+                  <Link href={`/verify/graph?land_id=${enc}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-link underline">
+                    <Network aria-hidden="true" className="h-4 w-4" />
+                    {t("graph.viewLink")}
+                  </Link>
+                </div>
+              ),
+            },
+          ]}
+        />
         <p className="text-sm text-ink-muted">{t("risk.disclaimer")}</p>
-        <div>
-          <Link href={`/verify/graph?land_id=${enc}`} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary underline">
-            <Network aria-hidden="true" className="h-4 w-4" />
-            {t("graph.viewLink")}
-          </Link>
-        </div>
         <GenerateReportButton landId={land.data.land_id} />
         <div>{back}</div>
       </>
     );
   }
 
+  const meta = land.data
+    ? [
+        t("page.dataAsOf", { date: formatDate(new Date(land.dataUpdatedAt).toISOString(), locale, "") }),
+        <span key="ref" className="font-mono">{t("page.ref", { ref: land.data.land_id })}</span>,
+      ]
+    : [];
+
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold text-ink">{t("result.title")}</h1>
+      <PageHeader
+        title={t("result.title")}
+        purpose={t("page.resultPurpose")}
+        crumbs={[{ label: t("nav.verify"), href: "/verify" }]}
+        meta={meta}
+      />
       {banner}
       {body}
     </div>

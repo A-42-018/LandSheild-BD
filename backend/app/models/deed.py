@@ -38,6 +38,9 @@ class Deed(IdMixin, CreatedMixin, Base):
         String(20), default=TransactionStatus.RECORDED.value, nullable=False
     )
 
+    record_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # F4a SHA-256 hex
+    signature: Mapped[str | None] = mapped_column(String(128), nullable=True)  # F4a Ed25519, b64url
+
     land = relationship("LandParcel")
     seller = relationship("Owner", foreign_keys=[seller_id])
     buyer = relationship("Owner", foreign_keys=[buyer_id])

@@ -36,3 +36,25 @@ export interface TransactionEntry {
   status: string;
   document: DocRef | null;
 }
+export interface MutationEntry {
+  mutation_no: string;
+  status: string;
+  applied_at: string;
+  decided_at?: string | null;
+  previous_khatian_no?: string | null;
+  new_khatian_no?: string | null;
+  applicant?: Person | null;
+  area?: number | null;
+  area_unit?: string | null;
+  ac_land_office?: string | null;
+  deed_no?: string | null;
+}
+export interface EncumbranceEntry {
+  type: string;
+  status: string;
+  started_at: string | null;
+  resolved_at: string | null;
+  reference_no?: string | null;
+  authority?: string | null;
+  note?: string | null;
+}

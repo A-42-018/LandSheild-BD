@@ -1,11 +1,14 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import PageHeader from "@/components/PageHeader";
 import RequireRole from "@/features/auth/RequireRole";
 import VerifyForm from "@/features/verify/VerifyForm";
 
-export default function VerifyPage({ params: { locale } }: { params: { locale: string } }) {
+export default async function VerifyPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
+  const t = await getTranslations({ locale });
   return (
-    <div className="mx-auto max-w-xl rounded-2xl bg-brand-gradient-soft p-3 sm:p-5">
+    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+      <PageHeader title={t("nav.verify")} purpose={t("page.verifyPurpose")} />
       <RequireRole>
         <VerifyForm />
       </RequireRole>

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { API, apiLogin, signIn } from "./fixtures";
+import { API, apiToken, openEvidenceTab, signIn } from "./fixtures";
 
 // Demo flow (docs/demo-script.md): Doc1 (Rahim → Karim) is recorded, Doc2 (same seller → Hasan)
 // conflicts → transaction FLAGGED, HIGH alert on LP-10234. Both documents map to the seeded parcel LP-10234.
@@ -41,7 +41,7 @@ async function approve(page: Page): Promise<void> {
 test.describe("officer flow (mock providers, seeded database)", () => {
   test.describe.configure({ mode: "serial" });
 
-  test("upload → extraction → edit → approve → conflicting upload → alert → risk report", async ({ page }) => {
+  test("upload → extraction → edit → approve → conflicting upload → alert → risk report", async ({ page, request }) => {
     await signIn(page, "officer");
 
     await test.step("Doc1: upload, extraction is visible", async () => {
@@ -62,8 +62,8 @@ test.describe("officer flow (mock providers, seeded database)", () => {
 
     await test.step("approve Doc1 → recorded, no alert yet", async () => {
       await approve(page);
-      const token = await apiLogin(page.context(), "reviewer");
-      const r = await page.context().request.get(`${API}/risk-alerts?land_id=${LAND}`, {
+      const token = await apiToken(request, "reviewer");
+      const r = await request.get(`${API}/risk-alerts?land_id=${LAND}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       expect(r.ok()).toBeTruthy();
@@ -86,10 +86,11 @@ test.describe("officer flow (mock providers, seeded database)", () => {
 
     await test.step("risk result shows HIGH and the report lists the evidence", async () => {
       await page.goto(`/en/verify/result?land_id=${LAND}`);
+      await openEvidenceTab(page);
       const risk = page.getByTestId("risk-section");
       await expect(risk).toBeVisible();
       await expect(risk.getByText("High", { exact: true }).first()).toBeVisible();
-      const score = Number(await page.getByTestId("risk-score").innerText());
+      const score = parseInt(await page.getByTestId("risk-score").innerText(), 10);
       expect(score).toBeGreaterThanOrEqual(60);
 
       await page.getByRole("button", { name: "Generate verification report" }).click();

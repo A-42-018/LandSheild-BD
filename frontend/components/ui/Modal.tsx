@@ -59,7 +59,7 @@ export default function Modal({ open, onClose, title, children, footer, classNam
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
@@ -69,7 +69,7 @@ export default function Modal({ open, onClose, title, children, footer, classNam
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={onKeyDown}
-        className={cn("w-full max-w-lg rounded-xl border border-line bg-surface p-5 shadow-raised", className)}
+        className={cn("w-full max-w-lg rounded-lg border border-line bg-surface p-5 shadow-raised", className)}
       >
         <div className="mb-4 flex items-start justify-between gap-4 border-b border-line pb-3">
           <h2 id={titleId} className="text-lg font-semibold text-ink">{title}</h2>
