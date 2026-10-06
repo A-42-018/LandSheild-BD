@@ -1,6 +1,6 @@
 export const MAX_BYTES = 10 * 1024 * 1024; // mirrors backend MAX_FILE_BYTES (10 MB)
 export const ALLOWED_EXT = ["jpg", "jpeg", "png", "pdf"] as const;
-export const DOCUMENT_TYPES = ["DEED", "KHATIAN", "MUTATION", "OTHER"] as const;
+export const DOCUMENT_TYPES = ["DEED", "KHATIAN", "PORCHA", "MUTATION", "OTHER"] as const;
 export const LAND_ID_RE = /^LP-\d{5}$/;
 export const ACCEPT = ".jpg,.jpeg,.png,.pdf";
 

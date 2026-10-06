@@ -290,6 +290,7 @@
     "types": {
       "DEED": "Deed",
       "KHATIAN": "Khatian",
+      "PORCHA": "Porcha (record of rights)",
       "MUTATION": "Mutation",
       "OTHER": "Other"
     },

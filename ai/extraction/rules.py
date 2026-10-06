@@ -12,7 +12,7 @@ from datetime import date
 from statistics import fmean
 
 from ai.extraction import patterns as P
-from ai.extraction import saf_kabala
+from ai.extraction import khatian, saf_kabala
 from ai.extraction.base import EXTRACTION_FIELDS, ExtractedField, ExtractionResult
 from ai.ocr.base import OCRResult, OCRWord
 
@@ -133,7 +133,9 @@ class RuleBasedDocumentAIProvider:
     def extract(self, data: bytes, ocr: OCRResult) -> ExtractionResult:
         text = ocr.text or ""
         if saf_kabala.looks_like(text):
-            return self._from_saf_kabala(text, ocr)
+            return self._from_layout(text, ocr, saf_kabala.parse)
+        if khatian.looks_like(text):
+            return self._from_layout(text, ocr, khatian.parse, extras=khatian.extras(text))
         norm = text.translate(P.BN_DIGITS)
         found: dict[str, tuple[str, float]] = {}
         for f in EXTRACTION_FIELDS:
@@ -178,9 +180,9 @@ class RuleBasedDocumentAIProvider:
             )
         return ExtractionResult(provider=self.name, fields=fields)
 
-    def _from_saf_kabala(self, text: str, ocr: OCRResult) -> ExtractionResult:
-        """Bangla sale-deed layout: structured section parse, no generic label guessing."""
-        hits = saf_kabala.parse(text)
+    def _from_layout(self, text: str, ocr: OCRResult, parse, extras: dict | None = None) -> ExtractionResult:
+        """Known Bangla layouts (saf kabala, khatian): structured section parse, no generic label guessing."""
+        hits = parse(text)
         fields: list[ExtractedField] = []
         for f in EXTRACTION_FIELDS:
             if f not in hits:
@@ -192,4 +194,4 @@ class RuleBasedDocumentAIProvider:
             fields.append(
                 ExtractedField(field=f, value=value, confidence=round(min(1.0, base * strength), 4), source_bbox=bbox)
             )
-        return ExtractionResult(provider=self.name, fields=fields)
+        return ExtractionResult(provider=self.name, fields=fields, extras=extras or {})

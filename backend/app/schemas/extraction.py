@@ -29,6 +29,8 @@ class Extraction(BaseModel):
     fields: list[ExtractedField] = Field(default_factory=list)
     edited_by_human: bool = False
     original_fields: list[ExtractedField] | None = None  # snapshot taken before the first edit
+    survey_type: str | None = None  # khatian / porcha: CS | SA | RS | BS (None = not read)
+    extras: dict[str, Any] | None = None  # khatian: jl_no, owners + shares, dags
 
     def dump(self) -> dict[str, Any]:
         return self.model_dump(mode="json")

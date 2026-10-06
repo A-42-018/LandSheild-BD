@@ -45,6 +45,7 @@ Structure the records, cross-check them automatically, and show every risk indic
 - Document upload → OCR → field extraction with per-field confidence → human review → approve / reject → posting to ownership history
 - Possible double-sale detection, ownership graph (React Flow), parcel map (Leaflet, polygons are synthetic)
 - Bilingual report page (A4 print stylesheet), QR public verification page (counts incl. open cases and pending mutations)
+- Khatian / porcha parser (CS, SA, RS, BS survey type, owners with shares, dag list) with two Bangla synthetic specimens; nothing guessed, several owners/dags stay as lists for the reviewer
 - Public mutation tracker (`/track`): enter a mutation number, see Applied → Review → Hearing → Decided with dates and office, no sign-in, no personal data
 - Officer dashboard, review queue, risk alerts, audit log; RBAC with four roles
 - EN + BN UI (next-intl)

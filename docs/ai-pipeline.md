@@ -121,6 +121,19 @@ Reproduce: `python ai/evaluation/run_eval.py --write-docs`
 
 <!-- EVAL:END -->
 
+## Khatian / porcha parser (F5a)
+
+`ai/extraction/khatian.py` reads a record of rights (khatian / porcha) in Bangla or English labels. The rule provider picks it by the text itself (a khatian heading, an owner-share section and a dag line, and no seller/purchaser as in a sale deed), so the uploaded document type does not matter; `PORCHA` was added next to `KHATIAN` for uploads and filters.
+
+| Read | Stored as |
+|---|---|
+| khatian no., district, upazila, mouza | the usual R4 fields |
+| survey type `CS` / `SA` / `RS` / `BS` from the "Survey:" line (None when absent or ambiguous, e.g. "CS/SA") | `extraction_json.survey_type` |
+| JL no., owners with father and share (`1/2`, `0.5` → `1/2`), dags with area and unit, whether the shares add up to 1 | `extraction_json.extras` |
+| owner name + father, dag no. + area + unit | R4 fields **only when there is exactly one owner / one dag**; with several the reviewer picks, the lists stay in `extras` |
+
+Nothing is guessed: a missing, unreadable or ambiguous value is simply absent. Two synthetic specimens with mock ground truth: `database/sample_data/Khatian_RS.png` (2 owners, 2 dags) and `Porcha_BS.png` (1 owner, 1 dag); regenerate with `python ai/evaluation/make_khatian_samples.py` (uses headless Chrome so Bangla is shaped correctly, Pillow without Raqm would garble it). Tests: `backend/tests/test_khatian.py`. **Not measured:** real Tesseract on these pages (see F5b), and the parser is tuned on these synthetic layouts only; real CS/SA/RS/BS pages vary a lot.
+
 ## Fuzzy owner-name matching (P43)
 
 `backend/app/services/names.py` (rapidfuzz). Names are normalised (NFC, Bangla digits to ASCII,

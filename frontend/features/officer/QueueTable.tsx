@@ -43,7 +43,7 @@ export default function QueueTable() {
         </Link>
       ),
     },
-    { key: "document_type", header: t("cols.type"), render: (r) => (["DEED", "KHATIAN", "MUTATION", "OTHER"].includes(r.document_type) ? tt(r.document_type) : r.document_type) },
+    { key: "document_type", header: t("cols.type"), render: (r) => (["DEED", "KHATIAN", "PORCHA", "MUTATION", "OTHER"].includes(r.document_type) ? tt(r.document_type) : r.document_type) },
     { key: "status", header: t("cols.status"), sortable: true, render: (r) => <StatusBadge code={r.processing_status} /> },
     {
       key: "confidence",

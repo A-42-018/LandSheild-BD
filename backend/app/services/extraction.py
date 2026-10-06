@@ -46,7 +46,10 @@ def build_extraction(result: ExtractionResult) -> dict:
         )
         for name in EXTRACTION_FIELDS
     ]
-    return Extraction(provider=result.provider, fields=fields).dump()
+    extras = dict(result.extras) if result.extras else None
+    survey = extras.get("survey_type") if extras else None
+    ex = Extraction(provider=result.provider, fields=fields, survey_type=survey, extras=extras)
+    return ex.dump()
 
 
 def _clean(value: str | None) -> str | None:

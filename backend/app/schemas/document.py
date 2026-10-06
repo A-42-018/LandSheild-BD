@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, field_validator
 
-DOCUMENT_TYPES = ("DEED", "KHATIAN", "MUTATION", "OTHER")
+DOCUMENT_TYPES = ("DEED", "KHATIAN", "PORCHA", "MUTATION", "OTHER")
 
 
 class DocumentOut(BaseModel):

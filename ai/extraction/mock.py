@@ -18,4 +18,4 @@ class MockDocumentAIProvider:
             else ExtractedField(field=name, value=None, confidence=0.0)
             for name in EXTRACTION_FIELDS
         ]
-        return ExtractionResult(provider=self.name, fields=fields)
+        return ExtractionResult(provider=self.name, fields=fields, extras=dict(fx.get("extras") or {}))
