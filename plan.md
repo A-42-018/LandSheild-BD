@@ -52,10 +52,11 @@ Carried over : reseed for demo password (Q17)
 
 ## KICKOFF PROMPT (paste in a new chat with the latest zip)
 ```text
-Unzip the attached project. Read plan.md only, then run `grep -n "^### " roadmap.md` and view ONLY the card for the phase in "Next phase" (plus the roadmap §4 lines it names). Do exactly that card: touch only its files, run only its Test line, no repo exploration. Then update plan.md (STATE + status column) and give me one zip of the whole project.
+Unzip the attached project. Read plan.md only, then run `grep -n "^### " roadmap.md` and view ONLY the card for the phase in "Next phase" (plus the roadmap §4 lines it names). Do exactly that card: touch only its files, run only its Test line, no repo exploration. Then update plan.md (STATE + status column), give me one zip of the whole project, and commit + push the phase to GitHub (RULES 4).
 ```
 
 ## RULES
 1. Budget per phase: ≤ 6 files, ≤ ~200 LOC, ≤ ~25 tool calls. Running out → stop green, mark 🟡, write remaining steps as `<phase>-b` in STATE, zip.
 2. Additive only: LP-10001…LP-10500 levels and Doc1→Doc2 HIGH 70 must stay green; no prop/aria/testid renames without updating tests.
 3. Zip (repo root): `rm -f frontend/.env.local backend/.env && zip -qr ../landshield.zip . -x 'node_modules/*' '*/node_modules/*' '*/.venv/*' '*__pycache__*' '*/.next/*' '.git/*' '*/storage/*' '*.db'`
+4. Commit + push every finished phase (no need to ask): sync the work into the git repo `LandSheild-BD-repo` (exclude node_modules, .venv, .next, storage, *.db, .DS_Store, tsconfig.tsbuildinfo), then `git add -A && git commit` with a real message — first line `<PHASE>: <summary>`, then bullets of the actual changes — and `git push origin main`. A phase is done only when the zip exists and the push succeeded.
