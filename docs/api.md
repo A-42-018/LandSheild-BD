@@ -23,6 +23,7 @@ cd backend && PYTHONPATH=.. python -c "import json; from app.main import app; pr
 | health | `GET /health` | none |
 | auth | `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`; `GET /auth/me` | public / signed-in |
 | public | `GET /public/verify/{land_id}` (no names, 60/min/IP) | none |
+| public (F2c) | `GET /public/mutation-status/{mutation_no}` → status, step dates (applied · review · hearing · decided), AC Land office, days pending. No names, no land id; unknown/malformed number = 404 `MUTATION_NOT_FOUND` | none, 60/min/IP |
 | public (F4a) | `GET /public/keys` (Ed25519 public key), `GET /public/seal/{land_id}` (signed QR payload), `GET /public/signature` (check a seal: VALID · INVALID · UNKNOWN) | none, 60/min/IP |
 | public (F4b) | `POST /public/verify-document` (multipart copy, compared then discarded, never stored), `POST /public/verify-document/fields` (typed fields) | none, stricter verify-doc limit |
 | gis | `GET /gis/capabilities`, `/gis/divisions`, `/gis/districts`, `/gis/upazilas`, `/gis/mouzas`, `/gis/search` | any signed-in |

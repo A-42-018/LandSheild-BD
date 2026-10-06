@@ -48,7 +48,7 @@ describe("landing sections (U5)", () => {
     const m = loc === "en" ? en : bn;
     render(wrap(<><ServiceTiles /><WhatWeCheck /><HowItWorks /><OfficerBand /><Trust /></>, loc, null));
     const tiles = screen.getAllByTestId("service-tile");
-    expect(tiles.map((a) => a.getAttribute("href"))).toEqual(["/verify", "/check", "/verify-document"]);
+    expect(tiles.map((a) => a.getAttribute("href"))).toEqual(["/verify", "/check", "/track", "/verify-document"]);
     expect(screen.getAllByTestId("check-item")).toHaveLength(6);
     expect(screen.getAllByTestId("how-step")).toHaveLength(5);
     expect(screen.getAllByTestId("officer-item")).toHaveLength(4);

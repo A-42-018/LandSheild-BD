@@ -22,6 +22,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/about", labelKey: "nav.about" },
   { href: "/verify", labelKey: "nav.verify", roles: ROLES, primary: true },
   { href: "/check", labelKey: "nav.check", roles: ROLES, primary: true },
+  { href: "/track", labelKey: "nav.track", primary: true },
   { href: "/verify-document", labelKey: "nav.verifyDoc" },
   { href: "/map", labelKey: "nav.map", roles: ROLES, primary: true },
   { href: "/officer", labelKey: "nav.dashboard", roles: REVIEW_UP },

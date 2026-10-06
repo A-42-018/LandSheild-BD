@@ -23,6 +23,7 @@ EXPECTED = {
     ("POST", f"{P}/auth/refresh"): PUBLIC,
     ("POST", f"{P}/auth/logout"): PUBLIC,
     ("GET", f"{P}/public/verify/{{land_id}}"): PUBLIC,
+    ("GET", f"{P}/public/mutation-status/{{mutation_no}}"): PUBLIC,
     ("GET", f"{P}/public/keys"): PUBLIC,
     ("GET", f"{P}/public/seal/{{land_id}}"): PUBLIC,
     ("GET", f"{P}/public/signature"): PUBLIC,

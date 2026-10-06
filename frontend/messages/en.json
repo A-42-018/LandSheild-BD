@@ -28,7 +28,8 @@
     "menuClose": "Close menu",
     "account": "Account menu",
     "check": "Check before you buy",
-    "verifyDoc": "Verify a document copy"
+    "verifyDoc": "Verify a document copy",
+    "track": "Track mutation"
   },
   "errors": {
     "generic": "We couldn't process this document. Please check the file and try again.",
@@ -792,7 +793,9 @@
     "signIn": "Sign in to view the full record",
     "notFound": "No land record found for this code.",
     "rateLimited": "Too many requests. Please wait a minute and try again.",
-    "loadError": "We couldn't load this summary. Please try again."
+    "loadError": "We couldn't load this summary. Please try again.",
+    "activeEncumbrances": "Active cases / encumbrances",
+    "pendingMutations": "Pending mutations"
   },
   "map": {
     "title": "Bangladesh map",
@@ -1087,5 +1090,46 @@
     "publicPurpose": "A limited public summary of this plot, opened from a QR code.",
     "recordTabs": "Record sections",
     "riskLevel": "Risk level"
+  },
+  "track": {
+    "title": "Track a mutation application",
+    "purpose": "See where a mutation (namjari) application stands. No sign-in needed.",
+    "demoNote": "Demo data. This is not an official government service.",
+    "formTitle": "Find your application",
+    "number": "Mutation number",
+    "numberHint": "Format MUT-2026-0001, as shown on your application.",
+    "submit": "Track status",
+    "status": "Status",
+    "office": "AC Land office",
+    "officeUnknown": "Not recorded",
+    "applied": "Applied on",
+    "pending": "Time in process",
+    "decided": "Decided",
+    "stepsLabel": "Mutation progress",
+    "steps": {
+      "APPLIED": "Applied",
+      "REVIEW": "Under review",
+      "HEARING": "Hearing",
+      "DECIDED": "Decision"
+    },
+    "outcome": {
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
+    "state": {
+      "done": "Done",
+      "current": "In progress",
+      "pending": "Not reached yet",
+      "skipped": "Not needed"
+    },
+    "privacyNote": "Only the status, dates and office are shown. Names, plot details and documents are not available here.",
+    "errors": {
+      "format": "Enter the number like MUT-2026-0001.",
+      "notFound": "No application found with this number.",
+      "rateLimited": "Too many requests. Please wait a minute and try again.",
+      "network": "We couldn't reach the server. Check your connection and try again.",
+      "generic": "We couldn't load this status. Please try again."
+    },
+    "example": "MUT-2026-0001"
   }
 }

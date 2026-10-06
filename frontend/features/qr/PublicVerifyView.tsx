@@ -69,6 +69,8 @@ export default function PublicVerifyView({ landId }: { landId: string }) {
       ["transactions", d.counts.transactions],
       ["flaggedTransactions", d.counts.flagged_transactions],
       ["openAlerts", d.counts.open_alerts],
+      ["activeEncumbrances", d.counts.active_encumbrances ?? 0],
+      ["pendingMutations", d.counts.pending_mutations ?? 0],
     ];
     body = (
       <>
@@ -110,7 +112,7 @@ export default function PublicVerifyView({ landId }: { landId: string }) {
           </dl>
         </Card>
         <Card title={t("publicVerify.countsTitle")} data-testid="public-counts">
-          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {counts.map(([k, v]) => (
               <div key={k}>
                 <dt className="text-xs text-ink-muted">{t(`publicVerify.${k}`)}</dt>

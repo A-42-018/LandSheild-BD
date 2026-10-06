@@ -86,12 +86,12 @@ describe("Navbar (UD3)", () => {
   it("service nav: Home for anonymous; Home, Verify land, Check before you buy, Parcel map when signed in", () => {
     render(wrap(<Navbar />));
     const nav = screen.getByRole("navigation", { name: en.nav.main });
-    expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home]);
+    expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.track]);
     auth = { status: "authenticated", user: { name: "O", role: "OFFICER" }, logout };
     cleanup();
     render(wrap(<Navbar />));
     const nav2 = screen.getByRole("navigation", { name: en.nav.main });
-    expect(within(nav2).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.verify, en.nav.check, en.nav.map]);
+    expect(within(nav2).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.verify, en.nav.check, en.nav.track, en.nav.map]);
   });
 
   it("theme toggle lives in the account menu (signed in), light | dark | system", () => {

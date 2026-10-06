@@ -28,8 +28,8 @@ import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import OfficerActions from "./OfficerActions";
 
-/** Services whose route is not built yet stay hidden until their F-phase lands (track = F2c). */
-export const FLAGS = { track: false } as const;
+/** Services whose route is not built yet stay hidden until their F-phase lands (track = F2c, now live). */
+export const FLAGS = { track: true } as const;
 
 const SERVICES = [
   { key: "verify", href: "/verify", icon: SearchCheck },

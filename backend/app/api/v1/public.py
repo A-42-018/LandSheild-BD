@@ -10,6 +10,7 @@ from app.schemas.public import (
     DocumentVerifyBody,
     DocumentVerifyOut,
     PublicKey,
+    PublicMutationStatus,
     PublicSeal,
     PublicSignature,
     PublicVerify,
@@ -39,6 +40,18 @@ def _guard(request: Request, response: Response, settings: Settings) -> None:
     ip = request.client.host if request.client else "unknown"
     check_rate("public", ip, settings.public_rate_limit_per_min)
     response.headers["Cache-Control"] = "no-store"
+
+
+@router.get("/mutation-status/{mutation_no}", response_model=PublicMutationStatus)
+def public_mutation_status(
+    mutation_no: str,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> PublicMutationStatus:
+    _guard(request, response, settings)
+    return svc.get_mutation_status(db, mutation_no)
 
 
 @router.get("/keys", response_model=PublicKey)

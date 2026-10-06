@@ -53,3 +53,21 @@ class DocumentVerifyOut(BaseModel):
     state: str
     match: str | None = None  # FILE (identical bytes) | CONTENT (same fields)
     differing: list[str] = Field(default_factory=list)
+
+
+class PublicMutationStep(BaseModel):
+    step: str  # APPLIED | REVIEW | HEARING | DECIDED
+    state: str  # done | current | pending | skipped
+    at: datetime | None = None
+
+
+class PublicMutationStatus(BaseModel):
+    """Citizen tracker (F2c): status + step dates + office only. No names, land id or documents."""
+
+    mutation_no: str
+    status: str
+    fast_track: bool
+    office: str | None = None
+    applied_at: datetime
+    days_pending: int | None = None  # None once decided
+    steps: list[PublicMutationStep]

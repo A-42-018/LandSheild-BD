@@ -6,12 +6,13 @@
 
 ## STATE
 ```text
-Plan version : 115
+Plan version : 116
 Competition  : LandTech 2026 · P3 Fraud & Double-Selling (P1/P2/P4/P5 supporting) · submit by 15 Oct (deadline 16 Oct)
+F2c (2026-10-06) ✅ — public mutation tracker: GET /public/mutation-status/{no} (status + step dates from MUTATION_TRANSITION audit rows + office + days pending; seeded rows show a skipped hearing; 404 MUTATION_NOT_FOUND; 60/min/IP; no names/land id), page /track (public, 4-step stepper with icon+text, EN+BN, anonymous API call), header nav + landing tile on, QR page now shows open-case and pending-mutation counts. Tests: backend 567 pass (new test_public_mutation.py 14, leak sweep + authz matrix cover the route), ruff clean; vitest 356 pass, tsc clean, check:i18n OK (861). Checked in the browser EN+BN.
 Current phase: S2 (2026-10-06) 🟡 — demo video recorded automatically: docs/video/LandShield-BD-demo.mp4 (2:17, 1280×720 H.264, captions burned in + soft EN subtitle track, no audio) + LandShield-BD-demo.en.srt, by scripts/record_demo_video.cjs (Playwright drives the local app as admin on a fresh seed, mock OCR). Story = card S2: problem → Doc1 upload/OCR/confidence → approve (hash, Ed25519, ledger) → e-Mutation fast track → Doc2 → HIGH 70 evidence → mutation to hearing → ownership graph → Check Before You Buy LP-10900 (khas) → verify-a-copy Doc1_altered ALTERED (land area) → tamper_demo BROKEN #7 → restore INTACT → Bangla evidence → public QR → closing. Every scene checked frame by frame. docs/demo-script.md: "Automated recording" section. Video files git-ignored (6 MB; copy in the parent folder).
 S2-b (user): watch it; optional voice-over; upload (YouTube unlisted or Drive, "anyone with link") → send the link → VIDEO_URL in docs/concept-note.md + re-export PDF + README.
 S1: ✅ (concept note PDF 3 p; only VIDEO_URL left).
-OPEN (carried): EN+BN evidence i18n for ACTIVE_LITIGATION/KHAS_LAND/UNDER_ACQUISITION/ACTIVE_MORTGAGE not done; public QR page does not render encumbrance/mutation counts; real OCR (tesseract) path of verify-document untested; ML scoring skipped in plain dev venv; Docker image never built locally; `next build` not run. Ledger chain is only as strong as DB write access (anchoring head hash off-DB is a T1 idea).
+OPEN (carried): EN+BN evidence i18n for ACTIVE_LITIGATION/KHAS_LAND/UNDER_ACQUISITION/ACTIVE_MORTGAGE not done; real OCR (tesseract) path of verify-document untested; ML scoring skipped in plain dev venv; Docker image never built locally; `next build` not run. Ledger chain is only as strong as DB write access (anchoring head hash off-DB is a T1 idea).
 Next phase   : S2-b upload + VIDEO_URL (user) → S3 submit Round 1 🔒 (tag `round1-submission`)
 Carried over : reseed for demo password (Q17)
 ```
@@ -38,7 +39,7 @@ Carried over : reseed for demo password (Q17)
 | 11 Oct | F4c | Hash-chained ledger + tamper demo (0007) | Must | ✅ (F4c-b run + fixed) |
 | 11 Oct | U5 | Landing page redesign | Must | ✅ |
 | 11 Oct | U6 | Inner pages: login, verify, result, report, QR | Must | ✅ |
-| 12 Oct | F2c | Public mutation tracker | Should | ⬜ |
+| 12 Oct | F2c | Public mutation tracker | Should | ✅ |
 | 12 Oct | U7 | Officer, review, map, admin polish | Should | ⬜ |
 | 12 Oct | F5a | Khatian/Porcha parser + samples | Should | ⬜ |
 | 13 Oct | F5b | Bangla OCR measurement | Should | ⬜ |

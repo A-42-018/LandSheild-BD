@@ -44,7 +44,8 @@ Structure the records, cross-check them automatically, and show every risk indic
 - Risk score 0-100 (LOW / MEDIUM / HIGH) with a per-rule evidence list
 - Document upload → OCR → field extraction with per-field confidence → human review → approve / reject → posting to ownership history
 - Possible double-sale detection, ownership graph (React Flow), parcel map (Leaflet, polygons are synthetic)
-- Bilingual report page (A4 print stylesheet), QR public verification page
+- Bilingual report page (A4 print stylesheet), QR public verification page (counts incl. open cases and pending mutations)
+- Public mutation tracker (`/track`): enter a mutation number, see Applied → Review → Hearing → Decided with dates and office, no sign-in, no personal data
 - Officer dashboard, review queue, risk alerts, audit log; RBAC with four roles
 - EN + BN UI (next-intl)
 
