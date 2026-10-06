@@ -1,0 +1,159 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>LandShield BD — Concept Note</title><style>
+@page { size: A4; margin: 13mm 14mm 12mm; }
+* { box-sizing: border-box; }
+body { font: 9.6pt/1.38 Inter, "Segoe UI", Helvetica, Arial, sans-serif; color: #0f172a; margin: 0; }
+h1 { font-size: 19pt; color: #006a4e; margin: 0 0 2mm; border-bottom: 2.5px solid #006a4e; padding-bottom: 1.5mm; }
+h2 { font-size: 11.5pt; color: #006a4e; margin: 3.6mm 0 1.4mm; break-after: avoid; }
+p { margin: 0 0 1.6mm; }
+ul, ol { margin: 0 0 1.6mm; padding-left: 5mm; }
+li { margin-bottom: 0.8mm; }
+blockquote { margin: 1.5mm 0; padding: 1.4mm 3mm; background: #fef9e7; border-left: 3px solid #d4a017; font-size: 8.8pt; }
+blockquote p { margin: 0; }
+table { border-collapse: collapse; width: 100%; margin: 1mm 0 2mm; font-size: 8.7pt; break-inside: avoid; }
+th, td { border: 1px solid #cbd5e1; padding: 1mm 1.8mm; text-align: left; vertical-align: top; }
+th { background: #e8f2ee; }
+code { font-size: 8.6pt; }
+img { max-width: 100%; }
+p > img[alt="Architecture"] { display: block; width: 100%; margin: 1mm 0; }
+.shots { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin: 1mm 0 2mm; }
+.shots p { margin: 0; break-inside: avoid; }
+.shots img { display: block; width: 100%; height: 46mm; object-fit: cover; object-position: left top; border: 1px solid #cbd5e1; }
+.shots p::after { content: attr(data-cap); display: block; font-size: 8pt; color: #475569; margin-top: 0.8mm; }
+</style></head><body><h1>LandShield BD — Concept Note</h1>
+<p><strong>LandTech 2026 · Track: Digital Land Records, Verification &amp; Digitization · Problem statement P3: Fraud &amp; Double-Selling</strong> (supporting: P1, P2, P4, P5)<br>
+Team: DEEDGUARD · Live demo: https://land-sheild-bd.netlify.app/en · Code: https://github.com/A-42-018/LandSheild-BD · Video: VIDEO_URL</p>
+<blockquote>
+<p>Demo prototype. All land, deed and person records are synthetic. LandShield gives risk <em>indicators</em> for a human to review; it does not establish ownership or replace official verification.</p>
+</blockquote>
+<h2>1. Problem (P3)</h2>
+<p>A plot in Bangladesh can be sold twice, sold by someone who is no longer the recorded owner, or "proved" with a copied or altered deed. These frauds work because the evidence is split: the sale deed is registered at the <strong>Sub-Registry office</strong> (Ministry of Law), while the ownership record (khatian) is updated through <strong>mutation (namjari)</strong> at the <strong>AC Land office</strong> (Ministry of Land). Nobody checks both sides automatically, so a buyer often learns of a second sale, a pending case or khas status only in court. LandShield targets the four P3 scenarios: <strong>same plot sold twice, rapid transfers, registration ↔ mutation mismatch, and forged or altered documents</strong>. It also covers parts of P1 (digitising deeds with OCR), P2 (signed records, hash-chained ledger, QR), P4 (deed → e-Mutation workflow) and P5 (a "check before you buy" for citizens).</p>
+<h2>2. Bangladesh context</h2>
+<ul>
+<li><strong>Land dominates litigation.</strong> The Senior Secretary of the Ministry of Land has said almost <strong>80 % of all court cases</strong> are land disputes [1]. In a nationwide HiiL/BRAC justice-needs survey, land was the most common serious legal problem (<strong>29 %</strong> of problems) [2].</li>
+<li><strong>Land services are trust-poor.</strong> TIB's National Household Survey (May 2023 – Apr 2024) found that <strong>51 %</strong> of households using land services faced corruption and <strong>32.3 %</strong> paid bribes [3].</li>
+<li><strong>Records live in layers.</strong> Plots carry CS, SA, RS and BS (city) survey khatians from different eras. These records are held in different offices and often disagree on owner, area or dag number. Mutation that lags behind registration leaves a buyer's name off the khatian. That gap lets the old owner sell again.</li>
+</ul>
+<h2>3. Solution: one pipeline from deed to citizen</h2>
+<p><strong>Scan → Verify → Detect → Mutate → Citizen check</strong></p>
+<ol>
+<li><strong>Scan.</strong> An officer uploads a deed image. OCR (Tesseract <code>ben+eng</code>, or a mock provider for offline demos) and a rules extractor fill 12 fields (deed no., date, district/upazila/mouza, khatian, dag, area, seller, buyer…), each with a confidence score.</li>
+<li><strong>Verify.</strong> A reviewer corrects any low-confidence field and approves. Nothing reaches the record without human approval. On approval, the deed is hashed (SHA-256), <strong>signed (Ed25519)</strong> and appended to a <strong>hash-chained ledger</strong>.</li>
+<li><strong>Detect.</strong> An explainable rule engine scores each parcel 0–100 (LOW / MEDIUM / HIGH). It has 14 scored rules, including possible duplicate transaction (double sale), seller ≠ recorded owner, duplicate deed number, area mismatch, registered-but-not-mutated, mutation to a different party, active court case, khas land, land under acquisition, and record-integrity failure. Every indicator shows its evidence. An Isolation-Forest anomaly hint can add at most 15 points and can <strong>never create HIGH on its own</strong>.</li>
+<li><strong>Mutate.</strong> Approving a deed opens an <strong>e-Mutation application</strong> by itself. Six pre-checks (seller is the recorded owner, no open HIGH alert, no active case, not khas or acquired, area within the seller's holding, document human-approved) send it to <em>fast track</em> or <em>hearing</em>. Officers work through a queue with a state machine, and a rejection must give a reason.</li>
+<li><strong>Citizen check.</strong> Before paying, a buyer enters the plot (and optionally the seller's name) and gets a six-point plain-language checklist in English or Bangla. They can also upload a copy of a deed to find out which fields were altered, or scan the QR code on a report. The QR page shows a signed public summary with no personal data.</li>
+</ol>
+<h2>4. Architecture and tech stack</h2>
+<p><img alt="Architecture" src="concept-note/architecture.svg" /></p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Stack</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend</td>
+<td>Next.js 14 (App Router), TypeScript, Tailwind, next-intl (EN + BN), TanStack Query, Leaflet map, React Flow ownership graph</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>Python 3.11, FastAPI, SQLAlchemy 2 + Alembic (SQLite demo; Postgres/PostGIS planned), Pydantic 2, JWT + role-based access (citizen / reviewer / officer / admin), rate limits, audit log</td>
+</tr>
+<tr>
+<td>AI / trust</td>
+<td>Tesseract + OpenCV preprocessing, rule extractor, rapidfuzz name matching (Bangla-aware), scikit-learn Isolation Forest; SHA-256, Ed25519 signatures, hash-chained ledger</td>
+</tr>
+<tr>
+<td>Quality / deploy</td>
+<td>pytest, Vitest (350 tests), Playwright e2e (20 specs), ruff, tsc; Docker → Render (API), Netlify (web)</td>
+</tr>
+</tbody>
+</table>
+<h2>5. Key features</h2>
+<div class="shots">
+<p data-cap="Landing page: verify a plot, check before you buy, verify a document"><img alt="Landing page: verify a plot, check before you buy, verify a document" src="concept-note/1-landing.jpg" /></p>
+<p data-cap="Double sale on LP-10240: HIGH 70, every indicator explained"><img alt="Double sale on LP-10240: HIGH 70, every indicator explained" src="concept-note/2-evidence.jpg" /></p>
+<p data-cap="Check Before You Buy on a khas plot: indicators found"><img alt="Check Before You Buy on a khas plot: indicators found" src="concept-note/3-check.jpg" /></p>
+<p data-cap="Officer e-Mutation queue, auto-created from approved deeds"><img alt="Officer e-Mutation queue, auto-created from approved deeds" src="concept-note/4-mutations.jpg" /></p>
+<p data-cap="Public QR page: risk level and counts, no personal data"><img alt="Public QR page: risk level and counts, no personal data" src="concept-note/5-qr.jpg" /></p>
+<p data-cap="Full Bangla UI with Bangla numerals"><img alt="Full Bangla UI with Bangla numerals" src="concept-note/6-bn-result.jpg" /></p>
+</div>
+<p>Other features: ownership graph (one seller → two buyers), parcel map of Bangladesh (simplified open boundaries, not official; synthetic plots), a bilingual A4 report, verify-a-copy (Doc1 vs Doc1_altered → <strong>ALTERED: land_area</strong>), and a ledger tamper demo (edit a row → <strong>BROKEN at seq 7</strong> → restore → <strong>INTACT</strong>).</p>
+<h2>6. AI metrics and limitations</h2>
+<table>
+<thead>
+<tr>
+<th>Measure (synthetic data)</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rule engine, seeded fraud scenarios</td>
+<td>precision <strong>1.00</strong>, recall <strong>1.00</strong> (3/3 codes, 0 false positives)</td>
+</tr>
+<tr>
+<td>Anomaly model, held-out split (2 000 rows)</td>
+<td>precision 0.974 · recall 0.935 · F1 0.954 · ROC AUC 0.998</td>
+</tr>
+<tr>
+<td>OCR + extraction, 20 synthetic deeds (exact / fuzzy)</td>
+<td>30.0 % / 47.9 % of fields overall; 61.9 % / 94.0 % on clean English-label deeds</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Limitations (stated honestly).</strong> Every number comes from synthetic data. Bangla OCR accuracy has <strong>not</strong> been measured yet, and noisy scans currently fail extraction, which is why human review is mandatory. The anomaly score is not a probability. The ledger is only as strong as write access to the database (anchoring the chain head off-database comes next). The demo uses SQLite with no real registry integration. The free hosting tier sleeps, so the first request has a cold start.</p>
+<h2>7. Countrywide implementation plan</h2>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Scope</th>
+<th>Integration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pilot (6 months)</td>
+<td>1 upazila: 1 Sub-Registry + 1 AC Land office</td>
+<td>Read-only registration and mutation feeds; digitise the pilot mouza's khatians</td>
+</tr>
+<tr>
+<td>District (12 months)</td>
+<td>1 district</td>
+<td>Live e-Mutation API, court cause-list feed, DC office khas register</td>
+</tr>
+<tr>
+<td>National (24–36 months)</td>
+<td>64 districts</td>
+<td>Permissioned ledger nodes at Sub-Registry / AC Land / DC offices; national search; mobile + SMS "check before you buy"; bank API for collateral checks</td>
+</tr>
+</tbody>
+</table>
+<p>Cross-cutting work: Postgres/PostGIS and horizontal scaling; Bangla OCR fine-tuned on anonymised archives (with legal approval); data protection by design (no personal data on public pages, hashed identifiers, audit trail); officer training. Expected impact: fewer double sales reaching court, faster mutation, and fewer broker visits for buyers.</p>
+<h2>8. Team, mentors and AI disclosure</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alif Mahmud</td>
+<td>Backend, risk engine, e-Mutation, ledger</td>
+</tr>
+<tr>
+<td>Ayesha Hamid Mithila</td>
+<td>Frontend, OCR pipeline, UI, deployment</td>
+</tr>
+<tr>
+<td>—</td>
+<td>Mentor: not assigned yet</td>
+</tr>
+</tbody>
+</table>
+<p><strong>AI tool disclosure.</strong> Claude (Anthropic) helped write code, tests and documentation, phase by phase. The team reviewed, ran and edited everything. No generative AI runs at runtime, and all risk decisions come from deterministic, explainable rules.</p>
+<p><strong>Sources.</strong> [1] <em>Daily Observer</em>, "Land case backlog weighs on our legal system", 8 Nov 2025 (observerbd.com/news/552680). [2] HiiL &amp; BRAC, <em>Justice Needs and Satisfaction in Bangladesh</em>, 2018 (brac.net). [3] TIB, <em>Corruption in Service Sectors: National Household Survey 2023</em>, 3 Dec 2024 (ti-bangladesh.org/en/articles/press-release/7136).</p></body></html>

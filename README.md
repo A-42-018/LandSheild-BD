@@ -9,6 +9,8 @@ Digital Land Verification & Risk Intelligence · ডিজিটাল ভূম
 >
 > ল্যান্ডশিল্ড ডিজিটাল রেকর্ড সংগঠন, সামঞ্জস্য যাচাই ও ঝুঁকি-নির্দেশক প্রদান করে। এটি আইনগত মালিকানা প্রতিষ্ঠা করে না, স্বত্ব প্রত্যয়ন করে না, এবং সরকারি/আইনগত যাচাইয়ের বিকল্প নয়।
 
+**Live demo:** https://land-sheild-bd.netlify.app/en · **Team:** DEEDGUARD (Alif Mahmud, Ayesha Hamid Mithila) · **Concept note:** [docs/LandShield-BD-Concept-Note.pdf](docs/LandShield-BD-Concept-Note.pdf)
+
 ## Overview
 
 LandShield BD is a demo of a land-record verification workflow for Bangladesh. Officers upload deed images, OCR and field extraction run, a human reviews and approves, and the approved data feeds an explainable rule-based risk engine (double-sale, seller mismatch, duplicate deed, area mismatch, and more). Citizens search a parcel and get a bilingual (EN/BN) report with a QR code whose public page exposes no personal data.
