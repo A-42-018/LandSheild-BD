@@ -1,0 +1,153 @@
+# ruff: noqa: E501, F811
+"""F5c: archive search (FTS5) + SURVEY_CHAIN_GAP rule."""
+
+from datetime import date
+
+import pytest
+from sqlalchemy import select
+
+from app.models.document import Document
+from app.models.land_parcel import LandParcel
+from app.risk.context import LandContext, OwnerRef, SurveyRecord, TxRecord, load_land_context
+from app.risk.rules import run_rules, survey_chain
+from tests.test_documents import _db
+from tests.test_lands import _h, env  # noqa: F401
+
+URL = "/api/v1/archive/search"
+BN_RS = "খতিয়ান জরিপ আর.এস মৌজা বারমী মালিক করিম মিয়া দাগ ৭৮৫"
+BN_CS = "খতিয়ান জরিপ সি.এস মৌজা বারমী মালিক রহিম উদ্দিন দাগ ৭৮৫"
+
+
+def _doc(land_id, text, survey, status="APPROVED", district="Gazipur", h="h1", names=()):
+    return Document(
+        land_id=land_id, document_type="KHATIAN", file_path="x", file_hash=h, ocr_text=text,
+        processing_status=status,
+        extraction_json={
+            "fields": [
+                {"field": "district", "value": district, "confidence": 0.9},
+                {"field": "khatian_no", "value": "1245", "confidence": 0.9},
+            ],
+            "survey_type": survey,
+            "extras": {"owners": [{"name": n, "share": None} for n in names]},
+        },
+    )  # fmt: skip
+
+
+@pytest.fixture
+def seeded(env):
+    with _db(env) as s:
+        land = s.scalar(select(LandParcel).where(LandParcel.land_id == "LP-10100"))
+        s.add_all(
+            [
+                _doc(land.id, BN_RS, "RS", h="a"),
+                _doc(land.id, BN_CS, "CS", h="b", district="Dhaka"),
+                _doc(None, "Pending khatian jorip BS karim", "BS", status="REVIEW_REQUIRED", h="c"),
+            ]
+        )
+        s.commit()
+    return env
+
+
+def test_search_finds_bangla_and_english_and_only_approved(seeded):
+    h = _h(seeded, "REVIEWER")
+    r = seeded.get(URL, params={"q": "বারমী"}, headers=h)
+    assert r.status_code == 200 and r.json()["total"] == 2
+    assert {i["survey_type"] for i in r.json()["items"]} == {"RS", "CS"}
+    assert all("[" in i["snippet"] and i["land_id"] == "LP-10100" for i in r.json()["items"])
+    assert seeded.get(URL, params={"q": "karim"}, headers=h).json()["total"] == 0  # not approved
+
+
+def test_filters_survey_and_district(seeded):
+    h = _h(seeded, "OFFICER")
+    rs = seeded.get(URL, params={"q": "বারমী", "survey": "RS"}, headers=h).json()
+    assert [i["survey_type"] for i in rs["items"]] == ["RS"]
+    dh = seeded.get(URL, params={"q": "বারমী", "district": "dhaka"}, headers=h).json()
+    assert [i["survey_type"] for i in dh["items"]] == ["CS"] and dh["items"][0][
+        "district"
+    ] == "Dhaka"
+    assert seeded.get(URL, params={"q": "x", "survey": "ZZ"}, headers=h).status_code == 422
+
+
+def test_query_is_sanitised_and_paged(seeded):
+    h = _h(seeded, "ADMIN")
+    for q in ['"', "AND OR NOT", "বারমী*", 'a" OR "b', "NEAR(", "-"]:
+        assert seeded.get(URL, params={"q": q}, headers=h).status_code in (200, 422), q
+    assert seeded.get(URL, params={"q": "   "}, headers=h).status_code == 422
+    p = seeded.get(URL, params={"q": "বারমী", "limit": 1, "offset": 1}, headers=h).json()
+    assert p["total"] == 2 and len(p["items"]) == 1
+
+
+def test_index_follows_changes(seeded):
+    h = _h(seeded, "REVIEWER")
+    assert seeded.get(URL, params={"q": "pending"}, headers=h).json()["total"] == 0
+    with _db(seeded) as s:
+        d = s.scalar(select(Document).where(Document.file_hash == "c"))
+        d.processing_status = "APPROVED"
+        s.commit()
+    assert seeded.get(URL, params={"q": "pending"}, headers=h).json()["total"] == 1
+
+
+def test_citizen_and_anonymous_are_refused(seeded):
+    assert seeded.get(URL, params={"q": "x"}).status_code == 401
+    r = seeded.get(URL, params={"q": "x"}, headers=_h(seeded, "CITIZEN"))
+    assert r.status_code == 403
+
+
+# ---------------------------------------------------------------- SURVEY_CHAIN_GAP
+
+
+def _ctx(records, txs=(), owners=None):
+    return LandContext(
+        "LP-X", 10.0, "decimal", survey_records=tuple(records), transactions=tuple(txs),
+        owners=owners or {}, as_of=date(2000, 1, 1),
+    )  # fmt: skip
+
+
+def test_gap_when_later_owner_has_no_link():
+    ev = survey_chain.evaluate(
+        _ctx([SurveyRecord("d1", "CS", ("Rahim Uddin",)), SurveyRecord("d2", "RS", ("Karim Mia",))])
+    )
+    (e,) = ev
+    assert (e.code, e.severity) == ("SURVEY_CHAIN_GAP", "MEDIUM")
+    assert e.params["from_survey"] == "CS" and e.params["to_survey"] == "RS"
+    assert e.params["unlinked_owners"] == 1 and "Karim" not in str(e.to_dict())
+
+
+def test_no_gap_when_same_person_or_variant():
+    recs = [
+        SurveyRecord("d1", "SA", ("Rahim Uddin",)),
+        SurveyRecord("d2", "RS", ("Md. Rahim Uddin",)),
+    ]
+    assert survey_chain.evaluate(_ctx(recs)) == []
+
+
+def test_no_gap_when_transfers_link_through_two_hops():
+    owners = {"a": OwnerRef("Rahim Uddin"), "b": OwnerRef("Salam Mia"), "c": OwnerRef("Karim Mia")}
+    txs = [
+        TxRecord("t1", "a", "b", date(2000, 1, 1), 10.0, "decimal"),
+        TxRecord("t2", "b", "c", date(2005, 1, 1), 10.0, "decimal"),
+    ]
+    recs = [SurveyRecord("d1", "CS", ("Rahim Uddin",)), SurveyRecord("d2", "BS", ("Karim Mia",))]
+    assert survey_chain.evaluate(_ctx(recs, txs, owners)) == []
+
+
+def test_single_survey_or_unordered_inputs():
+    assert survey_chain.evaluate(_ctx([SurveyRecord("d1", "RS", ("A B",))])) == []
+    recs = [SurveyRecord("d2", "BS", ("Karim Mia",)), SurveyRecord("d1", "CS", ("Rahim Uddin",))]
+    assert survey_chain.evaluate(_ctx(recs))[0].params["from_survey"] == "CS"
+
+
+def test_loader_reads_only_approved_khatians_and_rule_runs(env):
+    with _db(env) as s:
+        land = s.scalar(select(LandParcel).where(LandParcel.land_id == "LP-10100"))
+        s.add_all(
+            [
+                _doc(land.id, "x", "CS", h="1", names=("Qwerty Zxcvb",)),
+                _doc(land.id, "y", "RS", h="2", names=("Plokij Mnbvc",)),
+                _doc(land.id, "z", "BS", status="REVIEW_REQUIRED", h="3", names=("Zed",)),
+            ]
+        )
+        s.commit()
+        ctx = load_land_context(s, land)
+        assert [r.survey_type for r in ctx.survey_records] == ["CS", "RS"]
+        assert "SURVEY_CHAIN_GAP" in [e.code for e in run_rules(ctx)]

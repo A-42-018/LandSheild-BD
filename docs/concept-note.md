@@ -64,7 +64,7 @@ Other features: ownership graph (one seller → two buyers), parcel map of Bangl
 | Anomaly model, held-out split (2 000 rows) | precision 0.974 · recall 0.935 · F1 0.954 · ROC AUC 0.998 |
 | OCR + extraction, 20 synthetic deeds (exact / fuzzy) | 30.0 % / 47.9 % of fields overall; 61.9 % / 94.0 % on clean English-label deeds |
 
-**Limitations (stated honestly).** Every number comes from synthetic data. Bangla OCR accuracy has **not** been measured yet, and noisy scans currently fail extraction, which is why human review is mandatory. The anomaly score is not a probability. The ledger is only as strong as write access to the database (anchoring the chain head off-database comes next). The demo uses SQLite with no real registry integration. The free hosting tier sleeps, so the first request has a cold start.
+**Limitations (stated honestly).** Every number comes from synthetic data. Bangla OCR was measured only on two synthetic khatian/porcha specimens (mean CER ≈ 17 %, parsed fields 77–90 %), and noisy scans still fail extraction most of the time, which is why human review is mandatory. The anomaly score is not a probability. The ledger is only as strong as write access to the database (anchoring the chain head off-database comes next). The demo uses SQLite with no real registry integration. The free hosting tier sleeps, so the first request has a cold start.
 
 ## 7. Countrywide implementation plan
 

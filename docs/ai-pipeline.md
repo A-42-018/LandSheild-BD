@@ -18,15 +18,15 @@ Setup for OCR: see `ocr-setup.md`.
 
 **Offline / mock fallback:** the defaults (`OCR_PROVIDER=mock`, `DOCUMENT_AI_PROVIDER=mock`) return fixed fixtures from `ai/mock_fixtures.json`, so the whole upload-to-approval flow works with no OCR install, no model and no network. If `OCR_PROVIDER=tesseract` is set but Tesseract is not installed, OCR falls back to the mock with a logged warning. The other unimplemented provider names return 503 rather than falling back.
 
-**Rules and levels:** `POSSIBLE_DUPLICATE_TRANSACTION` 40 · `SELLER_MISMATCH` 30 · `DUPLICATE_DEED` 30 · `INCONSISTENT_OWNERSHIP` 20 · `REPEATED_SUSPICIOUS_TRANSACTIONS` 20 · `AREA_MISMATCH` 15 · `UNIT_MISMATCH`, `POSSIBLE_NAME_VARIANT`, `LOW_EXTRACTION_CONFIDENCE`, `ML_ANOMALY` are informational (0 points). Levels: LOW < 30, MEDIUM 30-59, HIGH >= 60. Source of truth: `backend/app/risk/config.py`.
+**Rules and levels:** `POSSIBLE_DUPLICATE_TRANSACTION` 40 · `SELLER_MISMATCH` 30 · `DUPLICATE_DEED` 30 · `INCONSISTENT_OWNERSHIP` 20 · `REPEATED_SUSPICIOUS_TRANSACTIONS` 20 · `AREA_MISMATCH` 15 · `DEED_NO_FORMAT_INVALID` 15 · `RAPID_RESALE` 15 · `SURVEY_CHAIN_GAP` 15 · `IMPOSSIBLE_DATE` 30 · `UNIT_MISMATCH`, `POSSIBLE_NAME_VARIANT`, `LOW_EXTRACTION_CONFIDENCE`, `ML_ANOMALY` are informational (0 points). Levels: LOW < 30, MEDIUM 30-59, HIGH >= 60. Source of truth: `backend/app/risk/config.py`.
 
 **Reproduce the evaluation:** `python ai/evaluation/make_synthetic.py` (documents + ground truth), then `python ai/evaluation/run_eval.py --write-docs` (rewrites only the block between the EVAL markers below).
 
 ## Limitations
 
 - All evaluation data is synthetic; numbers do not predict accuracy on real scanned deeds.
-- Bangla OCR accuracy is not measured (the eval run had no `ben` model).
-- Noisy synthetic documents score 0% on the rules extractor; preprocessing has not been shown to fix this.
+- Bangla OCR was measured (F5b, `ben+eng`, Tesseract `tessdata_fast` model) on two synthetic khatian/porcha specimens × 3 variants only: mean CER about 17%, so every Bangla document still needs human review. Synthetic data, not real scans; real scans will be worse.
+- Noisy synthetic deeds score about 12% on the rules extractor (8% without preprocessing); Bangla-labelled deeds are the weakest group (see tables).
 - The Isolation Forest is trained on synthetic data; its score is a relative anomaly hint, not a probability.
 - No learned document-understanding model (`vlm`, `remote`) is implemented.
 
@@ -34,42 +34,41 @@ Setup for OCR: see `ocr-setup.md`.
 
 ## Evaluation results
 
-- Date: 2026-10-02 (UTC)
+- Date: 2026-10-06 (UTC)
 - Dataset: 20 synthetic documents × 12 fields = 240 field values
-- OCR: Tesseract, languages used: `eng` (installed: eng, osd)
+- OCR: Tesseract, languages used: `ben+eng` (installed: ben, eng)
 - Extractor: rule-based (`DOCUMENT_AI_PROVIDER=rules`); a field counts only on exact match (trimmed, case-insensitive)
 - **Synthetic documents, not real records.**
-- Caveat: `ben` traineddata was not installed for this run, so Bangla labels/names were read by an English-only model; Bangla accuracy is **not** measured. Re-run with `sudo apt install tesseract-ocr-ben && python ai/evaluation/run_eval.py --write-docs`.
 
 ### A. Per-field accuracy (Tesseract + rules)
 
 | Field | PREPROCESS off | PREPROCESS on |
 |---|---|---|
 | deed_no | 20.0% (4/20) | 30.0% (6/20) |
-| deed_date | 25.0% (5/20) | 35.0% (7/20) |
-| district | 45.0% (9/20) | 65.0% (13/20) |
+| deed_date | 50.0% (10/20) | 70.0% (14/20) |
+| district | 45.0% (9/20) | 70.0% (14/20) |
 | upazila | 45.0% (9/20) | 65.0% (13/20) |
-| mouza | 45.0% (9/20) | 65.0% (13/20) |
-| khatian_no | 25.0% (5/20) | 35.0% (7/20) |
-| dag_no | 20.0% (4/20) | 35.0% (7/20) |
-| land_area | 20.0% (4/20) | 20.0% (4/20) |
-| area_unit | 40.0% (8/20) | 65.0% (13/20) |
-| seller | 25.0% (5/20) | 65.0% (13/20) |
-| father_name | 20.0% (4/20) | 30.0% (6/20) |
-| buyer | 30.0% (6/20) | 65.0% (13/20) |
-| **All fields** | **30.0% (72/240)** | **47.9% (115/240)** |
+| mouza | 45.0% (9/20) | 70.0% (14/20) |
+| khatian_no | 50.0% (10/20) | 70.0% (14/20) |
+| dag_no | 40.0% (8/20) | 50.0% (10/20) |
+| land_area | 35.0% (7/20) | 45.0% (9/20) |
+| area_unit | 40.0% (8/20) | 70.0% (14/20) |
+| seller | 40.0% (8/20) | 70.0% (14/20) |
+| father_name | 20.0% (4/20) | 35.0% (7/20) |
+| buyer | 35.0% (7/20) | 75.0% (15/20) |
+| **All fields** | **38.8% (93/240)** | **60.0% (144/240)** |
 
 By document variant:
 
 | Variant | off | on |
 |---|---|---|
-| labels=bn | 0.0% (0/84) | 0.0% (0/84) |
-| labels=both | 27.8% (20/72) | 50.0% (36/72) |
-| labels=en | 61.9% (52/84) | 94.0% (79/84) |
-| noise=low | 46.2% (72/156) | 73.7% (115/156) |
-| noise=yes | 0.0% (0/84) | 0.0% (0/84) |
-| skew=!=0 | 24.4% (44/180) | 48.3% (87/180) |
-| skew=0 | 46.7% (28/60) | 46.7% (28/60) |
+| labels=bn | 8.3% (7/84) | 11.9% (10/84) |
+| labels=both | 45.8% (33/72) | 76.4% (55/72) |
+| labels=en | 63.1% (53/84) | 94.0% (79/84) |
+| noise=low | 55.1% (86/156) | 85.9% (134/156) |
+| noise=yes | 8.3% (7/84) | 11.9% (10/84) |
+| skew=!=0 | 35.0% (63/180) | 63.3% (114/180) |
+| skew=0 | 50.0% (30/60) | 50.0% (30/60) |
 
 Per document (correct fields of 12):
 
@@ -77,24 +76,55 @@ Per document (correct fields of 12):
 |---|---|---|
 | eval01.png | 10 | 11 |
 | eval02.png | 0 | 0 |
-| eval03.png | 4 | 6 |
+| eval03.png | 7 | 9 |
 | eval04.png | 11 | 11 |
-| eval05.png | 0 | 0 |
-| eval06.png | 0 | 6 |
+| eval05.png | 0 | 3 |
+| eval06.png | 0 | 9 |
 | eval07.png | 11 | 12 |
 | eval08.png | 0 | 0 |
-| eval09.png | 0 | 6 |
+| eval09.png | 0 | 9 |
 | eval10.png | 0 | 10 |
-| eval11.png | 0 | 0 |
-| eval12.png | 6 | 6 |
+| eval11.png | 6 | 7 |
+| eval12.png | 8 | 8 |
 | eval13.png | 0 | 12 |
-| eval14.png | 0 | 0 |
-| eval15.png | 4 | 6 |
+| eval14.png | 1 | 0 |
+| eval15.png | 8 | 10 |
 | eval16.png | 11 | 11 |
 | eval17.png | 0 | 0 |
-| eval18.png | 6 | 6 |
-| eval19.png | 9 | 12 |
+| eval18.png | 10 | 10 |
+| eval19.png | 10 | 12 |
 | eval20.png | 0 | 0 |
+
+### C. Bangla khatian / porcha specimens (F5a) — CER and parsed fields
+
+Specimens: `Khatian_RS.png`, `Porcha_BS.png` (synthetic Bangla, shaped by headless Chrome). CER = Levenshtein distance / reference length over whitespace-normalised text; the parsed-field check compares the F5a parser output on the OCR text with the specimen's known values (khatian no, mouza, survey type, owner names, dag numbers). A document needs review when any word has confidence < 0.85.
+
+PREPROCESS off:
+
+| Specimen | Variant | CER | Fields correct | Mean word conf | Words < threshold |
+|---|---|---|---|---|---|
+| Khatian_RS | clean | 16.9% | 4/5 | 0.91 | 5/63 |
+| Khatian_RS | noisy | 15.1% | 4/5 | 0.91 | 8/64 |
+| Khatian_RS | skewed | 24.4% | 2/5 | 0.89 | 7/58 |
+| Porcha_BS | clean | 13.7% | 4/5 | 0.90 | 7/46 |
+| Porcha_BS | noisy | 9.1% | 5/5 | 0.90 | 6/45 |
+| Porcha_BS | skewed | 23.2% | 4/5 | 0.90 | 8/46 |
+
+**Mean CER 17.1%** · parsed fields 76.7% (23/30) · review rate 100.0% (6/6)
+
+PREPROCESS on:
+
+| Specimen | Variant | CER | Fields correct | Mean word conf | Words < threshold |
+|---|---|---|---|---|---|
+| Khatian_RS | clean | 16.9% | 4/5 | 0.90 | 6/63 |
+| Khatian_RS | noisy | 20.9% | 5/5 | 0.90 | 5/59 |
+| Khatian_RS | skewed | 23.5% | 4/5 | 0.90 | 4/59 |
+| Porcha_BS | clean | 13.7% | 4/5 | 0.90 | 6/46 |
+| Porcha_BS | noisy | 14.9% | 5/5 | 0.89 | 9/46 |
+| Porcha_BS | skewed | 13.3% | 5/5 | 0.91 | 7/46 |
+
+**Mean CER 17.2%** · parsed fields 90.0% (27/30) · review rate 100.0% (6/6)
+
 
 ### B. Rule engine precision / recall (seeded R7 scenarios)
 

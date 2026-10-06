@@ -15,6 +15,10 @@ RULE_POINTS: dict[str, int] = {
     "KHAS_LAND": 60,
     "UNDER_ACQUISITION": 60,
     "ACTIVE_MORTGAGE": 0,  # informational disclosure only
+    "SURVEY_CHAIN_GAP": 15,  # F5c
+    "DEED_NO_FORMAT_INVALID": 15,  # F6
+    "IMPOSSIBLE_DATE": 30,  # F6
+    "RAPID_RESALE": 15,  # F6
     "RECORD_INTEGRITY_FAILED": 60,  # F4c: live rows differ from the hash-chained ledger
     "UNIT_MISMATCH": 0,
     "POSSIBLE_NAME_VARIANT": 0,
@@ -37,6 +41,10 @@ RULE_SEVERITY: dict[str, str] = {
     "KHAS_LAND": "HIGH",
     "UNDER_ACQUISITION": "HIGH",
     "ACTIVE_MORTGAGE": "INFO",
+    "SURVEY_CHAIN_GAP": "MEDIUM",
+    "DEED_NO_FORMAT_INVALID": "MEDIUM",
+    "IMPOSSIBLE_DATE": "HIGH",
+    "RAPID_RESALE": "MEDIUM",
     "RECORD_INTEGRITY_FAILED": "HIGH",
     "UNIT_MISMATCH": "INFO",
     "POSSIBLE_NAME_VARIANT": "INFO",
@@ -50,6 +58,9 @@ AREA_EPS = 1e-6
 # REPEATED_SUSPICIOUS_TRANSACTIONS: >= MIN_COUNT dated non-rejected transfers inside WINDOW_DAYS.
 REPEATED_TX_WINDOW_DAYS = 90
 REPEATED_TX_MIN_COUNT = 3
+
+# RAPID_RESALE: the seller acquired the parcel fewer than this many days before selling it.
+RAPID_RESALE_DAYS = 60
 
 # REGISTERED_NOT_MUTATED: a sale older than this many days with no approved mutation is flagged.
 MUTATION_GRACE_DAYS = 180

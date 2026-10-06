@@ -1,7 +1,7 @@
 "use client";
 import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { ClipboardList, FileCheck2, LayoutDashboard, ScrollText, ShieldCheck, Upload, type LucideIcon } from "lucide-react";
+import { Archive, ClipboardList, FileCheck2, LayoutDashboard, ScrollText, ShieldCheck, Upload, type LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Button } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -11,6 +11,7 @@ export const OFFICER_NAV: { href: string; labelKey: string; roles: Role[] }[] = 
   { href: "/officer", labelKey: "officer.nav.dashboard", roles: REVIEW_UP },
   { href: "/officer/upload", labelKey: "officer.nav.upload", roles: OFFICER_UP },
   { href: "/officer/mutations", labelKey: "officer.nav.mutations", roles: REVIEW_UP },
+  { href: "/officer/archive", labelKey: "officer.nav.archive", roles: REVIEW_UP },
   { href: "/officer/audit-logs", labelKey: "officer.nav.audit", roles: OFFICER_UP },
   { href: "/officer/admin", labelKey: "officer.nav.admin", roles: ADMIN_ONLY },
 ];
@@ -19,6 +20,7 @@ const NAV_ICON: Record<string, LucideIcon> = {
   "/officer": LayoutDashboard,
   "/officer/upload": Upload,
   "/officer/mutations": FileCheck2,
+  "/officer/archive": Archive,
   "/officer/audit-logs": ScrollText,
   "/officer/admin": ShieldCheck,
 };

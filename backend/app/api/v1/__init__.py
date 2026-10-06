@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     admin,
     admin_audit,
+    archive,
     auth,
     documents,
     gis,
@@ -26,6 +27,7 @@ api_router.include_router(gis.router)
 api_router.include_router(map.router)  # before lands: /lands/map vs /lands/{land_id}
 api_router.include_router(lands.router)
 api_router.include_router(documents.router)
+api_router.include_router(archive.router)
 api_router.include_router(mutations.router)
 api_router.include_router(officer.router)
 api_router.include_router(risk.router)

@@ -89,6 +89,18 @@ class DocConfidence:
 
 
 @dataclass(frozen=True)
+class SurveyRecord:
+    """An approved khatian / porcha of the parcel (F5c): its survey and the owner names it lists.
+
+    Names are used only to compare surveys; they never reach evidence params.
+    """
+
+    document_id: str
+    survey_type: str  # CS | SA | RS | BS
+    owner_names: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class LandContext:
     land_id: str
     area: float
@@ -100,6 +112,7 @@ class LandContext:
     mutations: tuple[MutRecord, ...] = field(default_factory=tuple)  # F1b
     encumbrances: tuple[EncRecord, ...] = field(default_factory=tuple)  # F3a
     as_of: date | None = None  # reference "today" for time-based rules; None = date.today()
+    survey_records: tuple[SurveyRecord, ...] = field(default_factory=tuple)  # F5c
     # F4c: (entity_type, entity_id) of records whose live row differs from the ledger
     integrity_failures: tuple[tuple[str, str], ...] = field(default_factory=tuple)
 
@@ -186,6 +199,33 @@ def _encumbrances(db: Session, land: LandParcel) -> tuple[EncRecord, ...]:
     return tuple(EncRecord(e.id, e.type, e.reference_no, e.status, e.authority) for e in rows)
 
 
+SURVEY_TYPES = ("CS", "SA", "RS", "BS")
+
+
+def _survey_records(db: Session, land: LandParcel) -> tuple[SurveyRecord, ...]:
+    docs = db.scalars(
+        select(Document)
+        .where(
+            Document.land_id == land.id,
+            Document.processing_status == DocumentStatus.APPROVED.value,
+        )
+        .order_by(Document.created_at, Document.id)
+    ).all()
+    out: list[SurveyRecord] = []
+    for d in docs:
+        ex = d.extraction_json or {}
+        survey = ex.get("survey_type")
+        if survey not in SURVEY_TYPES:
+            continue
+        owners = (ex.get("extras") or {}).get("owners") or []
+        names = tuple(
+            o["name"] for o in owners if isinstance(o, dict) and isinstance(o.get("name"), str)
+        )
+        if names:
+            out.append(SurveyRecord(d.id, survey, names))
+    return tuple(out)
+
+
 def load_land_context(
     db: Session, land: LandParcel, review_threshold: float | None = None
 ) -> LandContext:
@@ -239,5 +279,6 @@ def load_land_context(
         low_confidence_docs=_low_confidence_docs(db, land, review_threshold),
         mutations=muts,
         encumbrances=_encumbrances(db, land),
+        survey_records=_survey_records(db, land),
         integrity_failures=ledger.integrity_failures(db, land),
     )

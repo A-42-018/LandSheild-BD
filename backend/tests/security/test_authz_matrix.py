@@ -56,6 +56,7 @@ EXPECTED = {
     ("POST", f"{P}/documents/{{document_id}}/approve"): REVIEW,
     ("POST", f"{P}/documents/{{document_id}}/reject"): REVIEW,
     ("POST", f"{P}/documents/{{document_id}}/reprocess"): REVIEW,
+    ("GET", f"{P}/archive/search"): REVIEW,
     ("GET", f"{P}/mutations"): REVIEW,
     ("GET", f"{P}/mutations/{{mutation_id}}"): REVIEW,
     ("POST", f"{P}/mutations/{{mutation_id}}/transition"): OFFICER,

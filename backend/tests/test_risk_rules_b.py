@@ -224,6 +224,10 @@ def test_config_covers_all_rule_codes():
         "UNDER_ACQUISITION",
         "ACTIVE_MORTGAGE",
         "RECORD_INTEGRITY_FAILED",  # F4c
+        "DEED_NO_FORMAT_INVALID",  # F6
+        "IMPOSSIBLE_DATE",
+        "RAPID_RESALE",
+        "SURVEY_CHAIN_GAP",  # F5c
     }
     assert codes == set(RULE_POINTS) == set(RULE_SEVERITY)
     assert RULE_POINTS["UNIT_MISMATCH"] == 0 and RULE_SEVERITY["UNIT_MISMATCH"] == "INFO"

@@ -10,8 +10,10 @@ from app.risk.rules import (
     integrity,
     mutation,
     ownership,
+    plausibility,
     repeated,
     seller,
+    survey_chain,
     unit,
 )
 
@@ -27,6 +29,8 @@ RULES: tuple[RuleFn, ...] = (
     unit.evaluate,
     mutation.evaluate,
     encumbrance.evaluate,
+    plausibility.evaluate,
+    survey_chain.evaluate,
     integrity.evaluate,
     extraction.evaluate,
 )

@@ -95,8 +95,16 @@
       "MUTATION_WITHOUT_DEED": "Potential inconsistency: a mutation application has no deed reference on record. Review required.",
       "MUTATION_AREA_EXCEEDS_DEED": "Potential inconsistency: mutation area {mutationArea} {mutationUnit} is larger than the deed area {deedArea} {deedUnit}. Review required.",
       "ML_ANOMALY": "Statistical anomaly signal. Informational only; review required.",
+      "DEED_NO_FORMAT_INVALID": "Possible inconsistency: deed number “{deedNo}” does not look like a registry deed number. Review required.",
+      "IMPOSSIBLE_DATE": "{reason, select, FUTURE {Possible inconsistency: a transfer is dated {date}, which is in the future. Review required.} BEFORE_SELLER_ACQUIRED {Possible inconsistency: a transfer dated {date} is earlier than the date the seller acquired the parcel. Review required.} other {Possible inconsistency: a transfer dated {date} is earlier than the first recorded owner of the parcel. Review required.}}",
+      "RAPID_RESALE": "Possible inconsistency: the seller held the parcel for only {heldDays} days (recorded {acquiredOn}) before the transfer on {date}. Review required.",
+      "ACTIVE_LITIGATION": "Recorded: an active court case ({referenceNo}) is attached to this parcel. Review required.",
+      "KHAS_LAND": "Recorded: this parcel is listed as khas (government) land ({referenceNo}). Review required.",
+      "UNDER_ACQUISITION": "Recorded: an active acquisition ({referenceNo}) is attached to this parcel. Review required.",
+      "ACTIVE_MORTGAGE": "Recorded: an active mortgage ({referenceNo}) is attached to this parcel. Informational.",
       "UNKNOWN": "Review required for indicator",
-      "RECORD_INTEGRITY_FAILED": "Potential inconsistency: a record of this parcel differs from the ledger entry written when it was approved. Review required."
+      "RECORD_INTEGRITY_FAILED": "Potential inconsistency: a record of this parcel differs from the ledger entry written when it was approved. Review required.",
+      "SURVEY_CHAIN_GAP": "Possible inconsistency: {unlinked} of {owners} owner(s) in the {toSurvey} survey record have no recorded link to the {fromSurvey} survey holders. Review required."
     }
   },
   "home": {
@@ -516,7 +524,8 @@
       "close": "Close menu",
       "audit": "Audit log",
       "admin": "Administration",
-      "mutations": "Mutations"
+      "mutations": "Mutations",
+      "archive": "Archive search"
     },
     "kpi": {
       "title": "Key figures",
@@ -1144,5 +1153,32 @@
       "generic": "We couldn't load this status. Please try again."
     },
     "example": "MUT-2026-0001"
+  },
+  "archive": {
+    "title": "Archive search",
+    "purpose": "Search the OCR text and fields of approved documents, including khatians and porchas of every survey.",
+    "filters": "Archive search filters",
+    "query": "Search text",
+    "survey": "Survey",
+    "district": "District",
+    "all": "All",
+    "search": "Search",
+    "reset": "Reset",
+    "hint": "Enter a word, name or number to search approved documents.",
+    "results": "Archive search results",
+    "empty": "No approved document matches this search.",
+    "cols": {
+      "survey": "Survey",
+      "land": "Land ID",
+      "place": "District · Upazila · Mouza",
+      "khatian": "Khatian",
+      "excerpt": "Excerpt"
+    },
+    "surveys": {
+      "CS": "CS (Cadastral)",
+      "SA": "SA (State Acquisition)",
+      "RS": "RS (Revisional)",
+      "BS": "BS (Bangladesh)"
+    }
   }
 }

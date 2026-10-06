@@ -25,3 +25,4 @@ scripts/.tamper_demo.json
 # S2 demo video (upload it; the .srt and the recorder script are tracked)
 docs/video/*.mp4
 docs/video/*.webm
+ai/tessdata/

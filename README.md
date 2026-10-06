@@ -26,7 +26,7 @@ All data is **synthetic**. Nothing here is an official record or a government sy
 | Same plot sold twice | Double-sale rule (Doc1 → Doc2 = HIGH 70) |
 | Rapid transfers | Rapid-transfer indicator in the risk engine |
 | Registration ↔ mutation mismatch | Planned (roadmap F1a–F1c) |
-| Forged / copied documents | Duplicate-deed + anomaly hint; hash/signature planned (F4a–F4c) |
+| Forged / copied documents | Duplicate-deed, deed-number format, impossible-date and rapid-resale rules; record hash + Ed25519 signature + signed QR; verify-a-copy; hash-chained ledger |
 
 Phase status: `plan.md`. Requirement audit and phase cards: `roadmap.md`.
 
@@ -46,9 +46,20 @@ Structure the records, cross-check them automatically, and show every risk indic
 - Possible double-sale detection, ownership graph (React Flow), parcel map (Leaflet, polygons are synthetic)
 - Bilingual report page (A4 print stylesheet), QR public verification page (counts incl. open cases and pending mutations)
 - Khatian / porcha parser (CS, SA, RS, BS survey type, owners with shares, dag list) with two Bangla synthetic specimens; nothing guessed, several owners/dags stay as lists for the reviewer
+- Archive search (`/officer/archive`, reviewer+): full-text search (SQLite FTS5) over approved documents, filter by survey and district; rule `SURVEY_CHAIN_GAP` flags later-survey owners with no recorded link to earlier-survey holders
+- Forged-document plausibility rules: `DEED_NO_FORMAT_INVALID`, `IMPOSSIBLE_DATE`, `RAPID_RESALE` (wording always "possible")
 - Public mutation tracker (`/track`): enter a mutation number, see Applied → Review → Hearing → Decided with dates and office, no sign-in, no personal data
 - Officer dashboard, review queue, risk alerts, audit log; RBAC with four roles
 - EN + BN UI (next-intl)
+
+## Changes since Round 1
+
+Work added after the Round 1 snapshot (the concept note, demo video and live link describe the earlier build):
+
+- **F5b Bangla OCR measured.** `ai/evaluation/run_eval.py` now also reports Bangla specimen CER, parsed khatian fields and review rate (clean / noisy / skewed, preprocessing off and on). Result with Tesseract `ben+eng`: mean CER ≈ 17 %, parsed fields 77 % (off) / 90 % (on), every Bangla specimen still needs review. Setup: [docs/ocr-setup.md](docs/ocr-setup.md).
+- **F5c Archive search.** `GET /archive/search` + officer page `/officer/archive` (reviewer and above); rule `SURVEY_CHAIN_GAP` (15, MEDIUM) for later-survey owners with no recorded link to earlier-survey holders.
+- **F6 Forged-document plausibility rules.** `DEED_NO_FORMAT_INVALID` (15), `IMPOSSIBLE_DATE` (30, HIGH), `RAPID_RESALE` (15); EN + BN evidence text, also added for the four encumbrance codes that had none.
+- Judge feedback and any fixes after selection: _to be added here._
 
 ## Architecture
 
@@ -211,7 +222,7 @@ Source code: [MIT](LICENSE). Third-party data and fonts keep their own licences 
 
 - **Synthetic data only.** Not a government system; no integration with any real land registry.
 - Risk scores are indicators from fixed rules, not findings of fraud or ownership.
-- OCR/extraction accuracy was measured on 20 synthetic documents only; **Bangla OCR is not measured** (no `ben` data in the eval run). Noisy documents score poorly. See the ai-pipeline doc.
+- OCR/extraction accuracy was measured on 20 synthetic documents only; Bangla OCR was measured on two synthetic khatian/porcha specimens only (mean CER ≈ 17 %, parsed fields 77–90 %), so Bangla documents always go to human review; noisy documents score poorly. See the [ai-pipeline doc](docs/ai-pipeline.md).
 - The anomaly model is trained on synthetic data; its score is not a probability and never creates HIGH alone.
 - Rate limits and refresh-token revocation are in-memory per process.
 - SQLite only (no Postgres). The Docker image for Render is written but its build/deploy was not run from this repo's sessions.
@@ -223,7 +234,7 @@ Source code: [MIT](LICENSE). Third-party data and fonts keep their own licences 
 
 ## Roadmap
 
-Next: i18n audit (P53), accessibility + responsive pass (P54), E2E tests (P55-P56), Docker + Postgres (P57), demo script and rehearsal (P59), final acceptance (P60). Later: dependency major upgrades (Next 16, next-intl 4), shared rate-limit store, Bangla OCR measurement, real-document pilot with legal review. Live status: `plan.md`.
+Next: i18n audit (P53), accessibility + responsive pass (P54), E2E tests (P55-P56), Docker + Postgres (P57), demo script and rehearsal (P59), final acceptance (P60). Later: dependency major upgrades (Next 16, next-intl 4), shared rate-limit store, real-document pilot with legal review. Live status: `plan.md`.
 
 ## Demo instructions
 

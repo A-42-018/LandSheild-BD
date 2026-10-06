@@ -3,6 +3,8 @@
 Part A  Tesseract + rules extractor, per-field accuracy on the 20 synthetic docs
         (PREPROCESS off vs on, split by label mode / skew / noise).
 Part B  Rule-engine precision/recall on the seeded R7 scenarios (exact evidence codes).
+Part C  Bangla khatian / porcha specimens (F5a): character error rate (CER), parsed-field
+        accuracy and review rate, on clean + noisy + skewed variants (F5b).
 Synthetic documents, not real records.
 """
 from __future__ import annotations
@@ -72,6 +74,69 @@ def run_extraction(preprocess: bool, lang: str) -> dict:
     return {"per_field": dict(per_field), "groups": dict(groups), "per_doc": per_doc, "total": (tot, n)}
 
 
+SPECIMENS = ("Khatian_RS", "Porcha_BS")
+VARIANTS = ("clean", "noisy", "skewed")
+REVIEW_THRESHOLD = 0.85  # settings.review_conf_threshold
+
+
+def _variant(png: bytes, kind: str) -> bytes:
+    """Deterministic degradation of a specimen (seeded noise, 2 degree skew)."""
+    import io
+
+    import numpy as np
+    from PIL import Image
+
+    if kind == "clean":
+        return png
+    img = Image.open(io.BytesIO(png)).convert("L")
+    if kind == "skewed":
+        img = img.rotate(2.0, resample=Image.BICUBIC, fillcolor=255)
+    else:
+        arr = np.asarray(img, dtype=np.float32)
+        arr += np.random.default_rng(7).normal(0, 18, arr.shape)
+        img = Image.fromarray(np.clip(arr, 0, 255).astype("uint8"))
+    out = io.BytesIO()
+    img.save(out, "PNG")
+    return out.getvalue()
+
+
+def _cer(ref: str, hyp: str) -> float:
+    from rapidfuzz.distance import Levenshtein
+
+    ref, hyp = " ".join(ref.split()), " ".join(hyp.split())
+    return Levenshtein.distance(ref, hyp) / max(1, len(ref))
+
+
+def run_bangla(preprocess: bool, lang: str) -> dict:
+    from ai.extraction import khatian
+    from ai.ocr.tesseract import TesseractOCRProvider
+
+    fx = json.loads((ROOT / "ai" / "mock_fixtures.json").read_text(encoding="utf-8"))["by_marker"]
+    ocr = TesseractOCRProvider(lang=lang, preprocess=preprocess)
+    rows = []
+    for name in SPECIMENS:
+        truth = fx[name]["ocr_text"]
+        want = fx[name]["extras"]
+        png = (ROOT / "database" / "sample_data" / f"{name}.png").read_bytes()
+        for kind in VARIANTS:
+            res = ocr.recognize(_variant(png, kind), "png")
+            hits = khatian.parse(res.text)
+            got = khatian.extras(res.text)
+            checks = {
+                "khatian_no": hits.get("khatian_no", (None,))[0] == fx[name]["fields"]["khatian_no"][0],
+                "mouza": hits.get("mouza", (None,))[0] == fx[name]["fields"]["mouza"][0],
+                "survey_type": got["survey_type"] == want["survey_type"],
+                "owners": [o["name"] for o in got["owners"]] == [o["name"] for o in want["owners"]],
+                "dags": [d["dag_no"] for d in got["dags"]] == [d["dag_no"] for d in want["dags"]],
+            }
+            low = [w for w in res.words if w.confidence < REVIEW_THRESHOLD]
+            rows.append({
+                "doc": name, "variant": kind, "cer": _cer(truth, res.text), "checks": checks,
+                "word_conf": res.confidence, "low_words": len(low), "words": len(res.words),
+            })  # fmt: skip
+    return {"rows": rows}
+
+
 def run_rules() -> dict:
     import app.models  # noqa: F401
     import loader
@@ -112,7 +177,31 @@ def pct(a: int, b: int) -> str:
     return f"{100 * a / b:.1f}% ({a}/{b})" if b else "n/a"
 
 
-def render(results: dict, rules: dict, lang: str, installed: list[str]) -> str:
+def render_bangla(bn: dict) -> list[str]:
+    out = ["", "### C. Bangla khatian / porcha specimens (F5a) — CER and parsed fields", "",
+           "Specimens: `Khatian_RS.png`, `Porcha_BS.png` (synthetic Bangla, shaped by headless Chrome). "
+           "CER = Levenshtein distance / reference length over whitespace-normalised text; the "
+           "parsed-field check compares the F5a parser output on the OCR text with the specimen's "
+           "known values (khatian no, mouza, survey type, owner names, dag numbers). A document "
+           f"needs review when any word has confidence < {REVIEW_THRESHOLD:.2f}.", ""]
+    for flag in ("off", "on"):
+        out += [f"PREPROCESS {flag}:", "", "| Specimen | Variant | CER | Fields correct | Mean word conf | Words < threshold |",
+                "|---|---|---|---|---|---|"]
+        for r in bn[flag]["rows"]:
+            ok = sum(r["checks"].values())
+            out.append(f"| {r['doc']} | {r['variant']} | {100 * r['cer']:.1f}% | {ok}/{len(r['checks'])} "
+                       f"| {r['word_conf']:.2f} | {r['low_words']}/{r['words']} |")
+        rows = bn[flag]["rows"]
+        mean_cer = sum(r["cer"] for r in rows) / len(rows)
+        review = sum(1 for r in rows if r["low_words"] > 0)
+        fields = sum(sum(r["checks"].values()) for r in rows)
+        total = sum(len(r["checks"]) for r in rows)
+        out += ["", f"**Mean CER {100 * mean_cer:.1f}%** · parsed fields {pct(fields, total)} · "
+                f"review rate {pct(review, len(rows))}", ""]
+    return out
+
+
+def render(results: dict, rules: dict, lang: str, installed: list[str], bangla: dict | None = None) -> str:
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     n_docs = len(results["off"]["per_doc"])
     out = [
@@ -141,6 +230,8 @@ def render(results: dict, rules: dict, lang: str, installed: list[str]) -> str:
     for (f, a), (_, b) in zip(results["off"]["per_doc"], results["on"]["per_doc"], strict=True):
         out.append(f"| {f} | {a} | {b} |")
 
+    if bangla:
+        out += render_bangla(bangla)
     p, r = _pr(rules["tp"], rules["fp"], rules["fn"])
     out += ["", "### B. Rule engine precision / recall (seeded R7 scenarios)", "",
             "| Land | Expected codes | Got | Match |", "|---|---|---|---|"]
@@ -173,7 +264,8 @@ def main() -> int:
         return 2
     results = {k: run_extraction(k == "on", lang) for k in ("off", "on")}
     rules = run_rules()
-    text = render(results, rules, lang, installed)
+    bangla = {k: run_bangla(k == "on", lang) for k in ("off", "on")} if "ben" in installed else None
+    text = render(results, rules, lang, installed, bangla)
     print(text)
     if a.write_docs:
         old = DOC.read_text(encoding="utf-8") if DOC.exists() else "# AI pipeline\n"

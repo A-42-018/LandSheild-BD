@@ -6,8 +6,12 @@
 
 ## STATE
 ```text
-Plan version : 118
+Plan version : 119
 Competition  : LandTech 2026 · P3 Fraud & Double-Selling (P1/P2/P4/P5 supporting) · submit by 15 Oct (deadline 16 Oct)
+T1/T2 (2026-10-06) ✅ drafts — docs/landshield-pitch-deck.pptx (10 slides, native chart; NOT visually rendered here: no LibreOffice, open it once and check fit), README "Changes since Round 1", docs/final-presentation.md (5-min script, ownership split, offline fallback, hardware checklist, 30-question Q&A). Pay the 100 BDT fee + judge-feedback fixes stay with the user.
+F5c (2026-10-06) ✅ — GET /archive/search (REVIEWER+; FTS5 over approved docs, lazy signature-based rebuild, LIKE fallback off SQLite; survey + district filters), officer page /officer/archive (+ nav), rule SURVEY_CHAIN_GAP (15 MEDIUM, counts only, transitive transfer links, name-variant matching), EN+BN. Tests: backend 639 pass (8 skipped), ruff clean; vitest 360, tsc, i18n OK (904); test_archive.py (10), authz matrix updated.
+F6 (2026-10-06) ✅ — rules DEED_NO_FORMAT_INVALID 15, IMPOSSIBLE_DATE 30 HIGH (future / before seller acquired / before record origin), RAPID_RESALE 15 (< 60 d); test_plausibility.py (23); EN+BN evidence incl. the 4 encumbrance codes that had none.
+F5b (2026-10-06) ✅ — Tesseract installed (brew) + ben.traineddata (tessdata_fast, git-ignored ai/tessdata, TESSDATA_PREFIX); run_eval.py Part C: Bangla specimens × clean/noisy/skewed, CER, parsed fields, review rate. Result: mean CER ≈ 17 %, parsed fields 77 % (preproc off) / 90 % (on), review rate 100 %; deed set 38.8 % -> 60.0 %. docs/ai-pipeline.md, ocr-setup.md, README limitations updated.
 F5a (2026-10-06) ✅ — khatian/porcha parser ai/extraction/khatian.py (Bangla + English labels; survey type CS|SA|RS|BS, JL no, owners + shares incl. shares-add-up check, dags + areas; R4 owner/dag fields filled only when exactly one owner / one dag, else lists in extras; nothing guessed). Routed by text in the rules provider (not by upload type); ExtractionResult.extras -> extraction_json.survey_type + extras; PORCHA added to DOCUMENT_TYPES (backend + 3 frontend lists + EN/BN label). Specimens database/sample_data/Khatian_RS.png + Porcha_BS.png via ai/evaluation/make_khatian_samples.py (headless Chrome for correct Bangla shaping, quantised to 16 greys to respect the 2 MiB assets cap) + mock fixtures with extras. Tests: new test_khatian.py (17, incl. API upload with mock providers); backend 585 pass, ruff clean; vitest 356, tsc, i18n OK (874). NOT done: real Tesseract on the specimens, review UI does not show survey_type/owners/dags yet (stored only), posting a khatian to ownership is not implemented.
 U7 (2026-10-06) ✅ — officer/review/map/admin polish: white 1 px sidebar with green active bar; 8 flat KPI tiles (records, pending review, high-risk, verified + open alerts, pending mutations, active cases/claims, ledger Intact/Broken + entry count; /officer/stats extended, ledger status only, no detail); PageHeader (breadcrumb, purpose) on dashboard, review, mutation queue, admin; review = two panes with 1 px divider + sticky Approve/Reject bar; map overlays flat (white, border, 6 px radius, solid primary header bar, glass blur removed). Tests: backend 568 pass, ruff clean; vitest 356, tsc clean, check:i18n OK (873). Checked in browser desktop + mobile. Not touched: upload, audit-log and graph pages keep card titles (no PageHeader).
 F2c (2026-10-06) ✅ — public mutation tracker: GET /public/mutation-status/{no} (status + step dates from MUTATION_TRANSITION audit rows + office + days pending; seeded rows show a skipped hearing; 404 MUTATION_NOT_FOUND; 60/min/IP; no names/land id), page /track (public, 4-step stepper with icon+text, EN+BN, anonymous API call), header nav + landing tile on, QR page now shows open-case and pending-mutation counts. Tests: backend 567 pass (new test_public_mutation.py 14, leak sweep + authz matrix cover the route), ruff clean; vitest 356 pass, tsc clean, check:i18n OK (861). Checked in the browser EN+BN.
@@ -15,7 +19,7 @@ Current phase: S2 (2026-10-06) 🟡 — demo video recorded automatically: docs/
 S2-b (user): watch it; optional voice-over; upload (YouTube unlisted or Drive, "anyone with link") → send the link → VIDEO_URL in docs/concept-note.md + re-export PDF + README.
 S1: ✅ (concept note PDF 3 p; only VIDEO_URL left).
 OPEN (carried): EN+BN evidence i18n for ACTIVE_LITIGATION/KHAS_LAND/UNDER_ACQUISITION/ACTIVE_MORTGAGE not done; real OCR (tesseract) path of verify-document untested; ML scoring skipped in plain dev venv; Docker image never built locally; `next build` not run. Ledger chain is only as strong as DB write access (anchoring head hash off-DB is a T1 idea).
-Next phase   : S2-b upload + VIDEO_URL (user) → S3 submit Round 1 🔒 (tag `round1-submission`)
+Next phase   : S2-b upload + VIDEO_URL (user) → S3 submit Round 1 🔒 (both skipped by request; user does them). Re-export the concept note PDF (scripts/export_concept_note.py, needs Chromium): its Bangla-OCR sentence changed.
 Carried over : reseed for demo password (Q17)
 ```
 
@@ -44,15 +48,15 @@ Carried over : reseed for demo password (Q17)
 | 12 Oct | F2c | Public mutation tracker | Should | ✅ |
 | 12 Oct | U7 | Officer, review, map, admin polish | Should | ✅ |
 | 12 Oct | F5a | Khatian/Porcha parser + samples | Should | ✅ |
-| 13 Oct | F5b | Bangla OCR measurement | Should | ⬜ |
-| 13 Oct | F6 / F5c | Plausibility rules / archive search | Could | ⬜ |
+| 13 Oct | F5b | Bangla OCR measurement | Should | ✅ |
+| 13 Oct | F6 / F5c | Plausibility rules / archive search | Could | ✅ |
 | 13 Oct | Q1 | Integration + full regression 🔒 | Must | ✅ |
 | 14 Oct | Q2 | Deploy + live smoke + e2e | Must | ✅ (live deploy done by user) |
 | 14 Oct | S2 | Demo video ≤ 3 min (user) | Must | 🟡 (recorded 2:17; S2-b upload + link) |
 | 15 Oct | S1 | Concept note ≤ 4 p PDF | Must | ✅ (VIDEO_URL after S2) |
 | 15 Oct | S3 | Submit Round 1 🔒 | Must | ⬜ |
-| TBA | T1 | Final build + "Changes since Round 1" + pitch deck | Should | ⬜ |
-| TBA | T2 | Final presentation readiness | Must | ⬜ |
+| TBA | T1 | Final build + "Changes since Round 1" + pitch deck | Should | ✅ (draft; fee + feedback user) |
+| TBA | T2 | Final presentation readiness | Must | ✅ (docs/final-presentation.md) |
 
 ## KICKOFF PROMPT (paste in a new chat with the latest zip)
 ```text

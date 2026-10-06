@@ -29,6 +29,7 @@ cd backend && PYTHONPATH=.. python -c "import json; from app.main import app; pr
 | gis | `GET /gis/capabilities`, `/gis/divisions`, `/gis/districts`, `/gis/upazilas`, `/gis/mouzas`, `/gis/search` | any signed-in |
 | lands | `GET /lands/search`, `/lands/{id}`, `/lands/{id}/ownership`, `/lands/{id}/transactions`, `/lands/{id}/graph`, `/lands/map`; `GET /lands/{id}/risk` | any signed-in |
 | lands (F1/F3) | `GET /lands/{id}/mutations` (mutation history + registration↔mutation mismatches), `/lands/{id}/encumbrances` (court case · khas · acquisition · mortgage), `/lands/{id}/pre-purchase-check?seller=` (six-row "Check Before You Buy", no owner names in payload; seller ≤ 120 chars) | any signed-in |
+| archive (F5c) | `GET /archive/search?q=&survey=CS\|SA\|RS\|BS&district=&limit=&offset=` (full-text over approved documents; FTS5 on SQLite; empty `q` → 422 `INVALID_QUERY`) | REVIEWER and above |
 | mutations (F2) | `GET /mutations` (officer queue), `GET /mutations/{id}` (detail + pre-checks) | REVIEWER and above |
 | mutations (F2) | `POST /mutations/{id}/transition` (`to`, `reason`; HEARING/REJECTED need a reason; illegal move → 409) | OFFICER, ADMIN |
 | verification | `POST /verification`, `GET /verification/{id}`, `GET /verification/{id}/report` | any signed-in |
