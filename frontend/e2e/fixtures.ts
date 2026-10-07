@@ -26,6 +26,8 @@ export async function openEvidenceTab(page: Page): Promise<void> {
 
 export async function signIn(page: Page, role: DemoRole): Promise<void> {
   await apiLogin(page.context(), role);
+  // a real sign-in leaves this hint; the page skips the boot-time /auth/refresh without it
+  await page.addInitScript(() => window.localStorage.setItem("ls-session", "1"));
 }
 
 /** Seeded CLEAN parcel LP-10001 (database/seed/data.json). */
