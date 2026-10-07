@@ -141,3 +141,64 @@ def test_upload_khatian_sample_stores_survey_type_and_lists(env, jobs):
     # the review API still serves the 13 fields, with no extras leak into the field list
     got = env.get(f"/api/v1/documents/{doc_id}/extraction", headers=_h(env, "REVIEWER"))
     assert got.status_code == 200 and len(got.json()["fields"]) == 13
+
+
+def _survey_doc(env, name, doc_type, land_id=None):
+    from tests.test_documents import _up
+    from tests.test_processing import _process
+
+    root = Path(__file__).resolve().parents[2] / "database" / "sample_data"
+    kw = {"land_id": land_id} if land_id else {}
+    r = _up(env, name, (root / name).read_bytes(), "OFFICER", document_type=doc_type, **kw)
+    assert r.status_code == 201, r.text
+    assert _process(env, r.json()["id"]).status_code == 202
+    return r.json()["id"]
+
+
+def test_khatian_can_be_approved_without_deed_fields_and_is_archived_not_posted(env, jobs):
+    """A survey record needs khatian/mouza/district/upazila + survey type, not seller/buyer/area."""
+    from sqlalchemy import func, select
+
+    from app.models.deed import Deed
+    from app.models.ledger import LedgerEntry
+    from app.models.transaction import Transaction
+    from tests.test_documents import _db
+    from tests.test_lands import _h
+
+    doc_id = _survey_doc(env, "Khatian_RS.png", "KHATIAN")
+    ex = env.get(f"/api/v1/documents/{doc_id}/extraction", headers=_h(env, "REVIEWER")).json()
+    assert ex["validation"]["valid"] is True, ex["validation"]  # no deed-only REQUIRED errors
+    with _db(env) as s:
+        before = [s.scalar(select(func.count()).select_from(m)) for m in (Deed, Transaction, LedgerEntry)]
+    r = env.post(f"/api/v1/documents/{doc_id}/approve", headers=_h(env, "REVIEWER"))
+    assert r.status_code == 200 and r.json()["processing_status"] == "APPROVED"
+    with _db(env) as s:  # nothing was posted to ownership / ledger
+        after = [s.scalar(select(func.count()).select_from(m)) for m in (Deed, Transaction, LedgerEntry)]
+    assert after == before
+    hits = env.get("/api/v1/archive/search", params={"q": "খতিয়ান", "survey": "RS"}, headers=_h(env, "REVIEWER")).json()
+    assert hits["total"] >= 1 and hits["items"][0]["survey_type"] == "RS"
+    again = env.post(f"/api/v1/documents/{doc_id}/approve", headers=_h(env, "REVIEWER"))
+    assert again.status_code == 409
+
+
+def test_porcha_is_approvable_and_deeds_still_need_every_deed_field(env, jobs):
+    from tests.test_lands import _h
+
+    porcha = _survey_doc(env, "Porcha_BS.png", "PORCHA")
+    assert env.post(f"/api/v1/documents/{porcha}/approve", headers=_h(env, "REVIEWER")).status_code == 200
+    # the same Khatian image uploaded as a DEED keeps the strict deed validation
+    deed = _survey_doc(env, "Khatian_RS.png", "DEED")
+    ex = env.get(f"/api/v1/documents/{deed}/extraction", headers=_h(env, "REVIEWER")).json()
+    assert ex["validation"]["valid"] is False
+    r = env.post(f"/api/v1/documents/{deed}/approve", headers=_h(env, "REVIEWER"))
+    assert r.status_code == 422 and r.json()["code"] == "EXTRACTION_INVALID"
+
+
+def test_survey_doc_missing_its_identifiers_cannot_be_approved(env, jobs):
+    from tests.test_extraction import _patch
+    from tests.test_lands import _h
+
+    doc_id = _survey_doc(env, "Khatian_RS.png", "KHATIAN")
+    assert _patch(env, doc_id, {"mouza": None}).status_code == 200
+    r = env.post(f"/api/v1/documents/{doc_id}/approve", headers=_h(env, "REVIEWER"))
+    assert r.status_code == 422 and {"field": "mouza", "code": "REQUIRED"} in r.json()["details"]

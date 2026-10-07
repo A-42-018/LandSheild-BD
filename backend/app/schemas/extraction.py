@@ -8,6 +8,9 @@ REQUIRED_FIELDS = (
     "khatian_no", "dag_no", "mouza", "district", "upazila",
     "land_area", "area_unit", "deed_no", "seller", "buyer",
 )  # fmt: skip
+# khatian / porcha (survey records): no deed, so no deed number / seller / buyer / area to demand
+SURVEY_REQUIRED_FIELDS = ("khatian_no", "mouza", "district", "upazila")
+SURVEY_DOC_TYPES = ("KHATIAN", "PORCHA")
 AREA_UNITS = ("decimal", "katha", "bigha", "acre", "sqft", "sqm")
 MAX_VALUE_LEN = 200
 

@@ -9,7 +9,12 @@ from app.schemas.document import DocumentOut
 from app.schemas.extraction import Extraction
 from app.services import audit, posting
 from app.services.documents import _to_out
-from app.services.extraction import EDITABLE_STATUSES, self_approval_blocked, validate_fields
+from app.services.extraction import (
+    EDITABLE_STATUSES,
+    _validate_doc,
+    is_survey_doc,
+    self_approval_blocked,
+)
 
 REPROCESSABLE_STATUSES = (*EDITABLE_STATUSES, DocumentStatus.FAILED.value)
 
@@ -40,13 +45,26 @@ def approve_document(db: Session, user: User, document_id: str, ip: str | None) 
             {"status": doc.processing_status},
         )  # fmt: skip
     extraction = Extraction.model_validate(doc.extraction_json)
-    errors = validate_fields(extraction.fields)
+    errors = _validate_doc(doc, extraction)
     if errors:  # backend-enforced: invalid data can never be approved
         raise AppError(
             "EXTRACTION_INVALID", "Extraction has validation errors", 422,
             [e.model_dump(exclude_none=True) for e in errors],
         )  # fmt: skip
     old = doc.processing_status
+    if is_survey_doc(doc):
+        # A survey record (khatian / porcha) is archived, not posted: no seller, buyer or deed, so
+        # ownership, ledger and mutations stay untouched. It becomes searchable in the archive.
+        doc.processing_status = DocumentStatus.APPROVED.value
+        audit.log(
+            db, user, "DOCUMENT_APPROVE", "document", doc.id,
+            old={"status": old},
+            new={"status": DocumentStatus.APPROVED.value, "posted": False,
+                 "survey_type": extraction.survey_type},
+            ip=ip,
+        )  # fmt: skip
+        db.commit()
+        return _to_out(db, doc)
     try:  # one transaction: posting + status + audit commit together or not at all
         result = posting.post_document(db, user, doc, extraction, ip)
         doc.processing_status = DocumentStatus.APPROVED.value

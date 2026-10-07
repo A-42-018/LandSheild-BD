@@ -19,6 +19,8 @@ from app.schemas.extraction import (
     AREA_UNITS,
     MAX_VALUE_LEN,
     REQUIRED_FIELDS,
+    SURVEY_DOC_TYPES,
+    SURVEY_REQUIRED_FIELDS,
     ExtractedField,
     ExtractedFieldOut,
     Extraction,
@@ -86,11 +88,19 @@ def _parse_area(value: str) -> Decimal | None:
     return d if d.is_finite() else None
 
 
-def validate_fields(fields: list[ExtractedField], today: date | None = None) -> list[FieldError]:
+def is_survey_doc(doc: Document) -> bool:
+    return doc.document_type in SURVEY_DOC_TYPES
+
+
+def validate_fields(
+    fields: list[ExtractedField],
+    today: date | None = None,
+    required: tuple[str, ...] = REQUIRED_FIELDS,
+) -> list[FieldError]:
     today = today or datetime.now(UTC).date()
     by = {f.field: _clean(f.value) for f in fields}
     errors: list[FieldError] = []
-    for name in REQUIRED_FIELDS:
+    for name in required:
         if by.get(name) is None:
             errors.append(FieldError(field=name, code="REQUIRED"))
     area = by.get("land_area")
@@ -151,6 +161,16 @@ def self_approval_blocked(doc: Document, user: User) -> bool:
     return doc.uploaded_by == user.id and user.role != Role.ADMIN.value
 
 
+def _validate_doc(doc: Document, ex: Extraction) -> list[FieldError]:
+    """Deeds need the full field set; a khatian / porcha only survey identifiers + survey type."""
+    if not is_survey_doc(doc):
+        return validate_fields(ex.fields)
+    errors = validate_fields(ex.fields, required=SURVEY_REQUIRED_FIELDS)
+    if not ex.survey_type:
+        errors.append(FieldError(field="survey_type", code="REQUIRED"))
+    return errors
+
+
 def _to_out(
     doc: Document, ex: Extraction, threshold: float, viewer: User | None = None
 ) -> ExtractionOut:
@@ -161,7 +181,7 @@ def _to_out(
         )
         for f in ex.fields
     ]
-    errors = validate_fields(ex.fields)
+    errors = _validate_doc(doc, ex)
     low = [f.field for f in fields if f.low_confidence]
     return ExtractionOut(
         document_id=doc.id,
