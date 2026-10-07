@@ -24,6 +24,9 @@ logger = logging.getLogger("landshield.processing")
 
 SessionFactory = Callable[[], Session]
 
+# Provider failure codes that map to an HTTP status when surfaced synchronously (verify-document)
+OCR_ERROR_STATUS = {"OCR_UNAVAILABLE": 503, "OCR_TIMEOUT": 504}
+
 
 def start_processing(db: Session, user: User, document_id: str, ip: str | None) -> DocumentOut:
     doc = db.get(Document, document_id)
@@ -48,12 +51,17 @@ def start_processing(db: Session, user: User, document_id: str, ip: str | None) 
 
 
 def _fail(db: Session, doc: Document, code: str) -> None:
+    """Job failure: status FAILED, code kept in the audit trail (and shown as failure_code)."""
     db.rollback()
     doc.processing_status = DocumentStatus.FAILED.value
     audit.log(
         db, None, "DOCUMENT_PROCESS_FAILED", "document", doc.id,
         old={"status": DocumentStatus.PROCESSING.value},
-        new={"status": DocumentStatus.FAILED.value, "error": code},
+        new={
+            "status": DocumentStatus.FAILED.value,
+            "error": code,
+            "http_status": OCR_ERROR_STATUS.get(code),
+        },
     )  # fmt: skip
     db.commit()
 
@@ -76,7 +84,7 @@ def run_processing(
             result = providers.ai.extract(data, ocr)
             doc.ocr_text = ocr.text
             doc.ocr_confidence = ocr.confidence
-            doc.extraction_json = build_extraction(result)
+            doc.extraction_json = build_extraction(result, ocr)
             # every document needs human approval regardless of confidence (R4)
             doc.processing_status = DocumentStatus.REVIEW_REQUIRED.value
             audit.log(
@@ -86,6 +94,8 @@ def run_processing(
                     "status": DocumentStatus.REVIEW_REQUIRED.value,
                     "ocr_provider": ocr.provider,
                     "ai_provider": result.provider,
+                    "model": result.model,
+                    "warnings": [*ocr.warnings, *result.warnings],
                 },
             )  # fmt: skip
             db.commit()

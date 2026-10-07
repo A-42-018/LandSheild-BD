@@ -77,7 +77,17 @@ Next.js frontend → FastAPI backend (`/api/v1`) → SQLAlchemy (SQLite by defau
 
 ## AI pipeline
 
-Upload → optional preprocessing → OCR → rule-based extraction → confidence check → human review → rules + optional ML hint. Everything works offline with `OCR_PROVIDER=mock` and `DOCUMENT_AI_PROVIDER=mock` (the defaults). Details and measured results: [docs/ai-pipeline.md](docs/ai-pipeline.md), OCR install: [docs/ocr-setup.md](docs/ocr-setup.md).
+Upload → preprocessing → OCR → field extraction → confidence check → human review → rules + optional ML hint. Details and measured results: [docs/ai-pipeline.md](docs/ai-pipeline.md), [docs/ocr-accuracy.md](docs/ocr-accuracy.md); OCR install: [docs/ocr-setup.md](docs/ocr-setup.md).
+
+### How OCR works
+
+The site works fully with **no API key**: Tesseract + rules is the default path.
+
+1. **Source** (`OCR_PROVIDER=auto`): the saved demo sample files (matched by exact SHA-256 only) return their stored result and are always labelled **"Demo sample"**; a PDF with an embedded text layer is read directly (**"PDF text"**); anything else goes to **Tesseract** (Bangla + English, OpenCV clean-up, upscaling of small images, two page-segmentation modes, per-page timeout, first `OCR_MAX_PAGES` pages). If Tesseract is not installed the job ends `FAILED` with `OCR_UNAVAILABLE`; there is never a silent mock.
+2. **Extractor**: rule-based label patterns (EN + BN; unknown → empty, never guessed). Optionally **Claude** (`ANTHROPIC_API_KEY`): one call per file, temperature 0, one tool with the 13 fields; the answer is format-checked and cross-checked against the Tesseract text (a value not found in the text loses 40 % confidence). Any failure (no key, timeout, API error, daily cap) falls back to the rules. Results are cached per file hash + model.
+3. **Review**: every result records its source (`demo` / `pdf-text` / `tesseract`), extractor (`rules` / `claude`) and per-field confidence; the review page shows them as badges. Fields below `REVIEW_CONF_THRESHOLD` (0.85) always go to the human reviewer.
+
+Measured accuracy (Tesseract + rules, 20 synthetic deeds, demo fixtures off): see [docs/ocr-accuracy.md](docs/ocr-accuracy.md) — **85.4 %** of 240 field values exact on 20 synthetic deeds (73.3 % without preprocessing; 60.0 % before the O track); Bangla specimens CER 21.6 %, parsed khatian fields 90 %. Claude accuracy is not measured. Synthetic data only; real scans will score lower.
 
 ## Database
 
@@ -132,10 +142,15 @@ Defined in `.env.example` (copy to `backend/.env`).
 | `PUBLIC_RATE_LIMIT_PER_MIN` | 60 | Public QR endpoint per IP |
 | `UPLOAD_RATE_LIMIT_PER_HOUR` | 20 | Uploads per user |
 | `STORAGE_PATH` | `./storage` | Uploaded files |
-| `OCR_PROVIDER` | `mock` | `mock` / `tesseract` (falls back to mock if not installed); `paddle` not implemented |
-| `DOCUMENT_AI_PROVIDER` | `mock` | `mock` / `rules`; `vlm`, `remote` not implemented (503) |
+| `OCR_PROVIDER` | `auto` | `auto` = demo fixture → PDF text → Tesseract; `tesseract`; `mock` (tests only). No silent mock: no Tesseract → `OCR_UNAVAILABLE` (503). `paddle` not implemented |
+| `DEMO_FIXTURES` | `on` | `on` = the saved demo samples (exact SHA-256) return their stored result, labelled "Demo sample"; `off` = real OCR on them too |
+| `DOCUMENT_AI_PROVIDER` | `auto` | `auto` = Claude if `ANTHROPIC_API_KEY` is set, else rules; `rules`; `claude` (falls back to rules on any failure); `mock` (tests); `vlm`, `remote` not implemented (503) |
+| `ANTHROPIC_API_KEY` | empty | Empty = Claude disabled. Never logged, never sent to the frontend |
+| `CLAUDE_MODEL` | `claude-haiku-4-5-20251001` | Switch to `claude-sonnet-5-5` if accuracy is weak |
+| `CLAUDE_DAILY_CAP` / `CLAUDE_TIMEOUT_S` | 100 / 30 | Calls per day (over the cap → rules) / seconds per call (timeout → rules) |
+| `OCR_TIMEOUT_S` / `OCR_MAX_PAGES` | 30 / 5 | Tesseract seconds per page (`OCR_TIMEOUT` 504) / PDF pages read (rest dropped, warning `PAGES_TRUNCATED`) |
 | `REVIEW_CONF_THRESHOLD` | 0.85 | Fields below this need review |
-| `PREPROCESS` | `off` | OpenCV preprocessing |
+| `PREPROCESS` | `on` | OpenCV clean-up before Tesseract |
 | `ML_SCORING` / `ML_MODEL_PATH` | `on` / empty | Isolation Forest hint (skipped silently if unavailable) |
 | `TESSERACT_LANG` | `ben+eng` | Missing languages are dropped with a warning |
 | `DEMO_PASSWORD` | empty | Password for seeded demo users |
@@ -205,10 +220,11 @@ Short list: JWT (access in memory, refresh in an HttpOnly cookie), role read fro
 | Tool | Used for | Human review |
 |---|---|---|
 | Claude (Anthropic) | Code generation, tests, docs, roadmap and requirement audit, phase by phase | Team reviewed and ran the code and tests, and edited the output |
-| Tesseract OCR (runtime) | Text extraction from deed images (optional, `OCR_PROVIDER`) | Every extraction goes through human review before approval |
+| Tesseract OCR (runtime) | Default text extraction from uploaded deed images and scanned PDFs | Every extraction goes through human review before approval |
+| Claude (Anthropic API, runtime, **optional**) | Reads the 13 deed fields when `ANTHROPIC_API_KEY` is set; off by default | Output is validated against the OCR text; low-confidence fields and every document go to a human reviewer. **Data sent to Anthropic only when enabled**: the page image (≤ 1568 px) and the OCR text of that upload; nothing otherwise |
 | scikit-learn Isolation Forest (runtime) | Anomaly hint trained on synthetic data | Hint only; never creates a HIGH risk alone |
 
-The risk rules are deterministic and explainable; no generative AI is used at runtime.
+The risk rules are deterministic and explainable. Generative AI is used at runtime only for the optional Claude field reader above, never for risk scoring.
 
 ## Credits
 

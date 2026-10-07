@@ -6,6 +6,7 @@ export interface DocumentOut {
   file_hash: string;
   file_type: string;
   created_at: string;
+  failure_code?: string | null; // FAILED: OCR_UNAVAILABLE | OCR_TIMEOUT | ...
 }
 
 export interface DocumentUploadOut extends DocumentOut {

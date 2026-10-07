@@ -1,3 +1,10 @@
+import os
+
+# Tests never need Tesseract or the network (O1): force the offline providers before Settings load.
+os.environ["OCR_PROVIDER"] = "mock"
+os.environ["DOCUMENT_AI_PROVIDER"] = "mock"
+os.environ["ANTHROPIC_API_KEY"] = ""
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient

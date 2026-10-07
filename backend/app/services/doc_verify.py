@@ -16,6 +16,7 @@ from app.core.errors import AppError
 from app.models.deed import Deed
 from app.models.document import Document
 from app.schemas.public import DocumentVerifyOut
+from app.services.processing import OCR_ERROR_STATUS
 from app.services.providers import get_providers
 from app.services.storage import sha256_hex
 from app.services.upload_validation import validate_upload
@@ -93,7 +94,11 @@ def verify_file(
         res = providers.ai.extract(data, ocr)
     except AppError:
         raise
-    except Exception:  # provider boundary: unreadable copy is an answer, not a 500
+    except Exception as exc:  # provider boundary: unreadable copy is an answer, not a 500
+        code = getattr(exc, "code", "")
+        if code in OCR_ERROR_STATUS:  # engine problem, not an unreadable copy
+            status = OCR_ERROR_STATUS[code]
+            raise AppError(code, "Text recognition is not available", status) from exc
         return DocumentVerifyOut(state=UNREADABLE)
     by = {f.field: f.value for f in res.fields}
     if not by.get("deed_no"):

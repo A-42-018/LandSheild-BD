@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
+from app.models.audit import AuditLog
 from app.models.document import Document
 from app.models.enums import DocumentStatus
 from app.models.land_parcel import LandParcel
@@ -10,6 +11,18 @@ from app.schemas.document import DOCUMENT_TYPES, DocumentOut, DocumentUploadOut
 from app.services import audit
 from app.services.storage import StorageError, StorageService, sha256_hex
 from app.services.upload_validation import validate_upload
+
+
+def _failure_code(db: Session, doc: Document) -> str | None:
+    if doc.processing_status != DocumentStatus.FAILED.value:
+        return None
+    new = db.scalar(
+        select(AuditLog.new_value)
+        .where(AuditLog.entity_id == doc.id, AuditLog.action == "DOCUMENT_PROCESS_FAILED")
+        .order_by(AuditLog.created_at.desc())
+        .limit(1)
+    )
+    return (new or {}).get("error")
 
 
 def _to_out(db: Session, doc: Document) -> DocumentOut:
@@ -22,6 +35,7 @@ def _to_out(db: Session, doc: Document) -> DocumentOut:
         file_hash=doc.file_hash,
         file_type=doc.file_path.rsplit(".", 1)[-1],
         created_at=doc.created_at,
+        failure_code=_failure_code(db, doc),
     )
 
 

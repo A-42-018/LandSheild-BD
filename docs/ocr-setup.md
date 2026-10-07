@@ -11,17 +11,31 @@ cd backend && pip install -e .[dev,ai]
 
 Verify: `tesseract --list-langs` should list `ben` and `eng`.
 
-Enable in `.env`:
+Defaults (`.env`; the site works with no API key):
 
 ```text
-OCR_PROVIDER=tesseract
+OCR_PROVIDER=auto           # demo fixture -> pdf-text -> Tesseract. tesseract | mock (tests) also exist
+DEMO_FIXTURES=on            # saved demo samples return their stored result ("Demo sample"); off = real OCR
 TESSERACT_LANG=ben+eng      # languages not installed are dropped (logged)
-PREPROCESS=on               # optional OpenCV preprocessing before OCR
+PREPROCESS=on               # OpenCV clean-up before Tesseract
+OCR_TIMEOUT_S=30            # per page -> OCR_TIMEOUT (504)
+OCR_MAX_PAGES=5             # more pages: first N read + warning PAGES_TRUNCATED
 ```
 
-- Result: text, per-word boxes and confidence; `documents.ocr_text` and `documents.ocr_confidence` (mean word confidence, 0..1) are stored.
-- If Tesseract/pytesseract is missing the app logs `ocr_fallback_to_mock` and uses the mock provider. If none of the requested languages is installed, the document ends `FAILED` with code `TESSERACT_LANG_MISSING`.
-- Field extraction from the OCR text arrives with the rules extractor (P40); until then `DOCUMENT_AI_PROVIDER` stays `mock`.
+- Result: text, per-word boxes (original image coordinates) and confidence; `documents.ocr_text` and `documents.ocr_confidence` (mean word confidence, 0..1) are stored. The extraction JSON records `ocr_source` (`demo` / `pdf-text` / `tesseract`), `extractor` (`rules` / `claude`), `model` and `warnings`.
+- Without the Tesseract binary an upload that is not a demo sample ends `FAILED` with `failure_code=OCR_UNAVAILABLE` (verify-document answers 503). There is no fallback to the mock. If none of the requested languages is installed: `TESSERACT_LANG_MISSING`.
+- Docker/Render: the image downloads `tessdata_best` `ben` + `eng` into the Tesseract data directory.
+- Tests force `OCR_PROVIDER=mock` / `DOCUMENT_AI_PROVIDER=mock`; they need neither Tesseract nor the network.
+
+## Optional: Claude field reader
+
+```bash
+cd backend && pip install -e ".[llm]"      # anthropic SDK (lazy import: the app boots without it)
+```
+
+Set `ANTHROPIC_API_KEY` (and optionally `CLAUDE_MODEL`, `CLAUDE_DAILY_CAP`, `CLAUDE_TIMEOUT_S`) and keep `DOCUMENT_AI_PROVIDER=auto`.
+Remove the key and the app is back on the rules, no code change. Cache and daily counter live in `<STORAGE_PATH>/claude_cache/`.
+Page image and OCR text are sent to Anthropic only while a key is set.
 
 ## Measuring Bangla accuracy (F5b)
 

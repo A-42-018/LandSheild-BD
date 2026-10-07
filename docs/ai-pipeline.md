@@ -34,66 +34,67 @@ Setup for OCR: see `ocr-setup.md`.
 
 ## Evaluation results
 
-- Date: 2026-10-06 (UTC)
+- Date: 2026-10-07 (UTC)
 - Dataset: 20 synthetic documents × 12 fields = 240 field values
-- OCR: Tesseract, languages used: `ben+eng` (installed: ben, eng)
-- Extractor: rule-based (`DOCUMENT_AI_PROVIDER=rules`); a field counts only on exact match (trimmed, case-insensitive)
+- OCR: Tesseract (`--ocr tesseract`, demo fixtures off), languages used: `ben+eng` (installed: ben, eng)
+- Extractor: `--extractor rules` (rule-based)
+- A field counts only on exact match (trimmed, case-insensitive)
 - **Synthetic documents, not real records.**
 
 ### A. Per-field accuracy (Tesseract + rules)
 
 | Field | PREPROCESS off | PREPROCESS on |
 |---|---|---|
-| deed_no | 20.0% (4/20) | 30.0% (6/20) |
-| deed_date | 50.0% (10/20) | 70.0% (14/20) |
-| district | 45.0% (9/20) | 70.0% (14/20) |
-| upazila | 45.0% (9/20) | 65.0% (13/20) |
-| mouza | 45.0% (9/20) | 70.0% (14/20) |
-| khatian_no | 50.0% (10/20) | 70.0% (14/20) |
-| dag_no | 40.0% (8/20) | 50.0% (10/20) |
-| land_area | 35.0% (7/20) | 45.0% (9/20) |
-| area_unit | 40.0% (8/20) | 70.0% (14/20) |
-| seller | 40.0% (8/20) | 70.0% (14/20) |
-| father_name | 20.0% (4/20) | 35.0% (7/20) |
-| buyer | 35.0% (7/20) | 75.0% (15/20) |
-| **All fields** | **38.8% (93/240)** | **60.0% (144/240)** |
+| deed_no | 35.0% (7/20) | 50.0% (10/20) |
+| deed_date | 95.0% (19/20) | 95.0% (19/20) |
+| district | 85.0% (17/20) | 95.0% (19/20) |
+| upazila | 85.0% (17/20) | 95.0% (19/20) |
+| mouza | 70.0% (14/20) | 90.0% (18/20) |
+| khatian_no | 80.0% (16/20) | 95.0% (19/20) |
+| dag_no | 85.0% (17/20) | 85.0% (17/20) |
+| land_area | 85.0% (17/20) | 90.0% (18/20) |
+| area_unit | 85.0% (17/20) | 95.0% (19/20) |
+| seller | 65.0% (13/20) | 90.0% (18/20) |
+| father_name | 40.0% (8/20) | 60.0% (12/20) |
+| buyer | 70.0% (14/20) | 85.0% (17/20) |
+| **All fields** | **73.3% (176/240)** | **85.4% (205/240)** |
 
 By document variant:
 
 | Variant | off | on |
 |---|---|---|
-| labels=bn | 8.3% (7/84) | 11.9% (10/84) |
-| labels=both | 45.8% (33/72) | 76.4% (55/72) |
-| labels=en | 63.1% (53/84) | 94.0% (79/84) |
-| noise=low | 55.1% (86/156) | 85.9% (134/156) |
-| noise=yes | 8.3% (7/84) | 11.9% (10/84) |
-| skew=!=0 | 35.0% (63/180) | 63.3% (114/180) |
-| skew=0 | 50.0% (30/60) | 50.0% (30/60) |
+| labels=bn | 53.6% (45/84) | 77.4% (65/84) |
+| labels=both | 75.0% (54/72) | 83.3% (60/72) |
+| labels=en | 91.7% (77/84) | 95.2% (80/84) |
+| noise=low | 84.0% (131/156) | 89.7% (140/156) |
+| noise=yes | 53.6% (45/84) | 77.4% (65/84) |
+| skew=!=0 | 68.9% (124/180) | 84.4% (152/180) |
+| skew=0 | 86.7% (52/60) | 88.3% (53/60) |
 
 Per document (correct fields of 12):
 
 | Doc | off | on |
 |---|---|---|
-| eval01.png | 10 | 11 |
-| eval02.png | 0 | 0 |
-| eval03.png | 7 | 9 |
-| eval04.png | 11 | 11 |
-| eval05.png | 0 | 3 |
-| eval06.png | 0 | 9 |
-| eval07.png | 11 | 12 |
-| eval08.png | 0 | 0 |
-| eval09.png | 0 | 9 |
-| eval10.png | 0 | 10 |
-| eval11.png | 6 | 7 |
-| eval12.png | 8 | 8 |
-| eval13.png | 0 | 12 |
-| eval14.png | 1 | 0 |
+| eval01.png | 11 | 12 |
+| eval02.png | 5 | 10 |
+| eval03.png | 7 | 10 |
+| eval04.png | 12 | 12 |
+| eval05.png | 6 | 9 |
+| eval06.png | 10 | 10 |
+| eval07.png | 11 | 11 |
+| eval08.png | 11 | 12 |
+| eval09.png | 10 | 10 |
+| eval10.png | 12 | 11 |
+| eval11.png | 3 | 6 |
+| eval12.png | 10 | 10 |
+| eval13.png | 10 | 11 |
+| eval14.png | 8 | 11 |
 | eval15.png | 8 | 10 |
 | eval16.png | 11 | 11 |
-| eval17.png | 0 | 0 |
-| eval18.png | 10 | 10 |
+| eval17.png | 4 | 9 |
+| eval18.png | 9 | 10 |
 | eval19.png | 10 | 12 |
-| eval20.png | 0 | 0 |
+| eval20.png | 8 | 8 |
 
 ### C. Bangla khatian / porcha specimens (F5a) — CER and parsed fields
 
@@ -103,27 +104,27 @@ PREPROCESS off:
 
 | Specimen | Variant | CER | Fields correct | Mean word conf | Words < threshold |
 |---|---|---|---|---|---|
-| Khatian_RS | clean | 16.9% | 4/5 | 0.91 | 5/63 |
-| Khatian_RS | noisy | 15.1% | 4/5 | 0.91 | 8/64 |
-| Khatian_RS | skewed | 24.4% | 2/5 | 0.89 | 7/58 |
-| Porcha_BS | clean | 13.7% | 4/5 | 0.90 | 7/46 |
-| Porcha_BS | noisy | 9.1% | 5/5 | 0.90 | 6/45 |
-| Porcha_BS | skewed | 23.2% | 4/5 | 0.90 | 8/46 |
+| Khatian_RS | clean | 25.3% | 4/5 | 0.92 | 4/56 |
+| Khatian_RS | noisy | 25.6% | 4/5 | 0.92 | 5/56 |
+| Khatian_RS | skewed | 28.8% | 2/5 | 0.91 | 8/56 |
+| Porcha_BS | clean | 14.9% | 4/5 | 0.89 | 6/46 |
+| Porcha_BS | noisy | 14.9% | 5/5 | 0.90 | 5/46 |
+| Porcha_BS | skewed | 21.2% | 4/5 | 0.90 | 8/46 |
 
-**Mean CER 17.1%** · parsed fields 76.7% (23/30) · review rate 100.0% (6/6)
+**Mean CER 21.8%** · parsed fields 76.7% (23/30) · review rate 100.0% (6/6)
 
 PREPROCESS on:
 
 | Specimen | Variant | CER | Fields correct | Mean word conf | Words < threshold |
 |---|---|---|---|---|---|
-| Khatian_RS | clean | 16.9% | 4/5 | 0.90 | 6/63 |
-| Khatian_RS | noisy | 20.9% | 5/5 | 0.90 | 5/59 |
-| Khatian_RS | skewed | 23.5% | 4/5 | 0.90 | 4/59 |
-| Porcha_BS | clean | 13.7% | 4/5 | 0.90 | 6/46 |
-| Porcha_BS | noisy | 14.9% | 5/5 | 0.89 | 9/46 |
-| Porcha_BS | skewed | 13.3% | 5/5 | 0.91 | 7/46 |
+| Khatian_RS | clean | 25.3% | 4/5 | 0.92 | 5/56 |
+| Khatian_RS | noisy | 32.3% | 5/5 | 0.89 | 9/53 |
+| Khatian_RS | skewed | 25.3% | 4/5 | 0.92 | 4/56 |
+| Porcha_BS | clean | 15.4% | 4/5 | 0.89 | 6/46 |
+| Porcha_BS | noisy | 16.2% | 5/5 | 0.90 | 8/46 |
+| Porcha_BS | skewed | 14.9% | 5/5 | 0.91 | 6/46 |
 
-**Mean CER 17.2%** · parsed fields 90.0% (27/30) · review rate 100.0% (6/6)
+**Mean CER 21.6%** · parsed fields 90.0% (27/30) · review rate 100.0% (6/6)
 
 
 ### B. Rule engine precision / recall (seeded R7 scenarios)

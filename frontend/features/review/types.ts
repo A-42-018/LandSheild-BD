@@ -17,6 +17,10 @@ export interface ExtractionOut {
   document_id: string;
   processing_status: string;
   provider: string;
+  ocr_source?: string | null; // demo | pdf-text | tesseract | mock
+  extractor?: string | null; // rules | claude | mock
+  model?: string | null;
+  warnings?: string[];
   threshold: number;
   fields: ExtractedFieldOut[];
   edited_by_human: boolean;

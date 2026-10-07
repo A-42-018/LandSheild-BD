@@ -11,9 +11,10 @@ import re
 from datetime import date
 from statistics import fmean
 
-from ai.extraction import patterns as P
 from ai.extraction import khatian, saf_kabala
+from ai.extraction import patterns as P
 from ai.extraction.base import EXTRACTION_FIELDS, ExtractedField, ExtractionResult
+from ai.ocr import normalize
 from ai.ocr.base import OCRResult, OCRWord
 
 _FLAGS = re.IGNORECASE | re.MULTILINE
@@ -42,7 +43,7 @@ for _f in P.LABELS:
     else:
         _val = r"[^.,;:\n_]+"
     _INLINE[_f] = re.compile(rf"{_label(_f)}[ \t]+(?![/|])(?P<v>{_val})", _FLAGS)
-_UNIT_AFTER_AREA = re.compile(rf"(?<![A-Za-z]){_label('land_area')}[ \t]+{P.VALUE_RE['land_area']}[ \t]*(?P<u>{P.UNIT_RE})(?![A-Za-z])", _FLAGS)
+_UNIT_AFTER_AREA = re.compile(rf"(?<![A-Za-z]){_label('land_area')}[ \t]*[:：]?[ \t]*{P.VALUE_RE['land_area']}[ \t]*(?P<u>{P.UNIT_RE})(?![A-Za-z])", _FLAGS)
 
 
 def _clean(v: str) -> str:
@@ -99,7 +100,7 @@ def _first(field: str, text: str, norm: str) -> tuple[str, float] | None:
 
 
 def _norm_word(t: str) -> str:
-    return t.translate(P.BN_DIGITS).strip(_PUNCT).casefold()
+    return normalize.number(normalize.text(t)).strip(_PUNCT).casefold()
 
 
 def _locate(field: str, raw: str, words: tuple[OCRWord, ...]) -> list[OCRWord] | None:
@@ -131,7 +132,7 @@ class RuleBasedDocumentAIProvider:
     name = "rules"
 
     def extract(self, data: bytes, ocr: OCRResult) -> ExtractionResult:
-        text = ocr.text or ""
+        text = normalize.text(ocr.text)  # NFC, zero-width chars, common label slips (O2)
         if saf_kabala.looks_like(text):
             return self._from_layout(text, ocr, saf_kabala.parse)
         if khatian.looks_like(text):

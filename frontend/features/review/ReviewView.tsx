@@ -33,7 +33,8 @@ export default function ReviewView({ id }: { id: string }) {
       </div>
     );
   } else if (status === "FAILED") {
-    body = <ErrorState message={te("generic")} />;
+    const code = d?.failure_code;
+    body = <ErrorState message={code && t.has(`failed.${code}`) ? t(`failed.${code}`) : te("generic")} />;
   } else if (status && EXTRACTION_READY.includes(status)) {
     if (ext.isLoading) body = <LoadingState />;
     else if (ext.isError || !ext.data) {

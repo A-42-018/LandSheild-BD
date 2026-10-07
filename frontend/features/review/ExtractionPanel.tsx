@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { AlertTriangle, ListChecks, Pencil } from "lucide-react";
 import { Badge, Button, Card, Input } from "@/components/ui";
 import { BAND_TONE, bandFor, percent } from "./confidence";
+import EngineBadge from "./EngineBadge";
 import ReviewActions, { REVIEWABLE } from "./ReviewActions";
 import { fieldErrorText, toFieldErrors, useReviewActions } from "./useReviewActions";
 import type { ExtractedFieldOut, ExtractionOut, FieldError } from "./types";
@@ -151,6 +152,7 @@ export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
           </p>
         </div>
       )}
+      <EngineBadge data={data} />
       <Card title={t("fieldsTitle")} icon={<ListChecks />} accent="primary">
         <dl className="divide-y divide-line">
           {data.fields.map((f) => (

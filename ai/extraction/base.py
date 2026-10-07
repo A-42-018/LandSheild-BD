@@ -24,6 +24,8 @@ class ExtractionResult:
     fields: list[ExtractedField] = field(default_factory=list)
     # document-level data that does not fit the 13 single-valued fields (khatian: survey type, owners, dags)
     extras: dict = field(default_factory=dict)
+    model: str | None = None  # LLM model name when provider == "claude"
+    warnings: list[str] = field(default_factory=list)  # e.g. CLAUDE_FALLBACK:timeout
 
 
 class DocumentAIProvider(Protocol):

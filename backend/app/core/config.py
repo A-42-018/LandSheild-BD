@@ -29,12 +29,21 @@ class Settings(BaseSettings):
     upload_rate_limit_per_hour: int = 20  # per user (R4)
     cors_origins: str = "http://localhost:3000"
     storage_path: str = "./storage"
-    ocr_provider: str = "mock"
-    document_ai_provider: str = "mock"
+    # auto = demo fixture -> pdf-text -> tesseract; also tesseract | mock (tests)
+    ocr_provider: str = "auto"
+    demo_fixtures: str = "on"  # on = saved demo files return their stored result; off = real OCR
+    # auto = claude if ANTHROPIC_API_KEY else rules; also rules | claude | mock
+    document_ai_provider: str = "auto"
+    anthropic_api_key: str = Field(default="", repr=False)  # empty = Claude disabled; never logged
+    claude_model: str = "claude-haiku-4-5-20251001"
+    claude_daily_cap: int = Field(default=100, ge=0)  # max Claude calls/day; over cap -> rules
+    claude_timeout_s: int = Field(default=30, ge=1)
+    ocr_timeout_s: int = Field(default=30, ge=1)  # Tesseract, per page
+    ocr_max_pages: int = Field(default=5, ge=1)  # PDF pages read; the rest dropped + warning
     document_ai_model: str = ""
     embedding_model: str = ""
     review_conf_threshold: float = Field(default=0.85, ge=0.0, le=1.0)
-    preprocess: str = "off"
+    preprocess: str = "on"  # OpenCV clean-up before Tesseract
     ml_scoring: str = "on"  # on | off (P49); missing model/scikit-learn -> skipped with a log
     ml_model_path: str = ""  # empty = models/iforest.joblib at the repo root
     tesseract_lang: str = "ben+eng"

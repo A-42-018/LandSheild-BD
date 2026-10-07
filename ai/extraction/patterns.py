@@ -14,12 +14,12 @@ BN_DIGITS = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
 LABELS: dict[str, tuple[str, ...]] = {
     "owner_name": (r"owner\s+name", r"name\s+of\s+owner", r"owner", r"মালিকের\s+নাম", r"জমির\s+মালিক", r"মালিক"),
     "father_name": (r"father['’`]?s?\s+name", r"father", r"পিতার\s+নাম", r"পিতা"),
-    "khatian_no": (r"khatian\s+(?:no\.?|number)", r"khatian", r"খতিয়ান\s+নং", r"খতিয়ান\s+নম্বর", r"খতিয়ান"),
-    "dag_no": (r"dag\s+(?:no\.?|number)", r"dag", r"দাগ\s+নং", r"দাগ\s+নম্বর", r"দাগ"),
-    "mouza": (r"mouza", r"mouja", r"মৌজা"),
+    "khatian_no": (r"khatian\s+(?:no\.?|number)", r"khatian", r"খতিয়ান\s+নং", r"খতিয়ান\s+নম্বর", r"খতিয়ান\s+নাম্বার", r"খতিয়ান"),
+    "dag_no": (r"dag\s+(?:no\.?|number)", r"dag", r"দাগ\s+নং", r"দাগ\s+নম্বর", r"দাগ\s+নাম্বার", r"দাগ"),
+    "mouza": (r"mouza", r"mouja", r"মৌজার\s+নাম", r"মৌজা"),
     "district": (r"district", r"(?<!উপ)জেলা"),
     "upazila": (r"upazila", r"upazilla", r"thana", r"উপজেলা"),
-    "land_area": (r"land\s+area", r"area", r"জমির\s+পরিমাণ", r"পরিমাণ"),
+    "land_area": (r"land\s+area", r"area", r"জমির\s+পরিমাণ", r"মোট\s+জমি", r"পরিমাণ"),
     "area_unit": (r"unit", r"একক"),
     "deed_no": (r"deed\s+(?:no\.?|number)", r"দলিল\s+নং", r"দলিল\s+নম্বর"),
     "deed_date": (r"deed\s+date", r"date", r"দলিলের\s+তারিখ", r"তারিখ"),
@@ -45,7 +45,7 @@ TEXT_FIELDS = ("owner_name", "father_name", "mouza", "district", "upazila", "sel
 
 # unit synonym (casefolded) -> canonical unit accepted by the backend (AREA_UNITS)
 UNIT_SYNONYMS: dict[str, str] = {
-    "decimal": "decimal", "decimals": "decimal", "dec": "decimal", "শতাংশ": "decimal", "শতক": "decimal",
+    "decimal": "decimal", "decimals": "decimal", "dec": "decimal", "শতাংশ": "decimal", "শতক": "decimal", "ডেসিমাল": "decimal",
     "katha": "katha", "কাঠা": "katha",
     "bigha": "bigha", "বিঘা": "bigha",
     "acre": "acre", "acres": "acre", "একর": "acre",

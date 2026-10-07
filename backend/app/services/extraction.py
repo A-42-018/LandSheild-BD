@@ -8,6 +8,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 
 from ai.extraction.base import EXTRACTION_FIELDS, ExtractionResult
+from ai.ocr.base import OCRResult
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
@@ -34,7 +35,7 @@ _DATE_FORMATS = ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y")
 EDITABLE_STATUSES = (DocumentStatus.REVIEW_REQUIRED.value, DocumentStatus.EXTRACTED.value)
 
 
-def build_extraction(result: ExtractionResult) -> dict:
+def build_extraction(result: ExtractionResult, ocr: OCRResult | None = None) -> dict:
     """Provider output -> stored JSON (all 13 fields, absent -> value None / confidence 0)."""
     by = {f.field: f for f in result.fields}
     fields = [
@@ -48,7 +49,16 @@ def build_extraction(result: ExtractionResult) -> dict:
     ]
     extras = dict(result.extras) if result.extras else None
     survey = extras.get("survey_type") if extras else None
-    ex = Extraction(provider=result.provider, fields=fields, survey_type=survey, extras=extras)
+    ex = Extraction(
+        provider=result.provider,
+        ocr_source=ocr.provider if ocr else None,
+        extractor=result.provider,
+        model=result.model,
+        warnings=[*(ocr.warnings if ocr else ()), *result.warnings],
+        fields=fields,
+        survey_type=survey,
+        extras=extras,
+    )
     return ex.dump()
 
 
@@ -150,6 +160,10 @@ def _to_out(doc: Document, ex: Extraction, threshold: float) -> ExtractionOut:
         document_id=doc.id,
         processing_status=doc.processing_status,
         provider=ex.provider,
+        ocr_source=ex.ocr_source,
+        extractor=ex.extractor or ex.provider,
+        model=ex.model,
+        warnings=ex.warnings,
         threshold=threshold,
         fields=fields,
         edited_by_human=ex.edited_by_human,

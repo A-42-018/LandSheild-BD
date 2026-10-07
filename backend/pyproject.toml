@@ -33,6 +33,10 @@ ai = [
   "pytesseract>=0.3.10",  # P39 (also needs the tesseract binary + ben/eng data, docs/ocr-setup.md)
 ]
 
+llm = [
+  "anthropic>=0.40",  # O3 optional Claude extractor (lazy import; the app boots without it)
+]
+
 [tool.pytest.ini_options]
 pythonpath = [".", ".."]  # ".." exposes the repo-root `ai` package
 testpaths = ["tests"]

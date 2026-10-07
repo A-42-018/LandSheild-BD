@@ -26,6 +26,10 @@ class Extraction(BaseModel):
     """Shape stored in documents.extraction_json (P25 rows without the new keys still load)."""
 
     provider: str = "unknown"
+    ocr_source: str | None = None  # demo | pdf-text | tesseract | mock (O1)
+    extractor: str | None = None  # rules | claude | mock (O3)
+    model: str | None = None  # LLM model name when extractor == "claude"
+    warnings: list[str] = Field(default_factory=list)  # PAGES_TRUNCATED, CLAUDE_FALLBACK:<why>
     fields: list[ExtractedField] = Field(default_factory=list)
     edited_by_human: bool = False
     original_fields: list[ExtractedField] | None = None  # snapshot taken before the first edit
@@ -55,6 +59,10 @@ class ExtractionOut(BaseModel):
     document_id: str
     processing_status: str
     provider: str
+    ocr_source: str | None = None
+    extractor: str | None = None
+    model: str | None = None
+    warnings: list[str] = Field(default_factory=list)
     threshold: float
     fields: list[ExtractedFieldOut]
     edited_by_human: bool

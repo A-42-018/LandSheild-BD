@@ -24,6 +24,7 @@ class OCRResult:
     confidence: float  # 0..1
     provider: str
     words: tuple[OCRWord, ...] = ()  # empty for providers without word boxes (mock)
+    warnings: tuple[str, ...] = ()  # e.g. PAGES_TRUNCATED
 
 
 class OCRProvider(Protocol):

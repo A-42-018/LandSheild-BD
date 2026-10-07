@@ -15,6 +15,7 @@ class DocumentOut(BaseModel):
     file_hash: str  # sha256 of the stored bytes
     file_type: str  # jpg | png | pdf
     created_at: datetime
+    failure_code: str | None = None  # status FAILED: OCR_UNAVAILABLE, OCR_TIMEOUT, ...
 
 
 class DocumentUploadOut(DocumentOut):

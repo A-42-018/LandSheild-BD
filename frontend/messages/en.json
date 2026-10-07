@@ -409,7 +409,29 @@
       "reasonRequired": "A reason is required.",
       "confirm": "Reject document"
     },
-    "purpose": "Check every extracted field against the document. Nothing is saved until a reviewer approves."
+    "purpose": "Check every extracted field against the document. Nothing is saved until a reviewer approves.",
+    "engine": {
+      "source": "Source",
+      "extractor": "Extractor",
+      "sources": {
+        "demo": "Demo sample",
+        "pdfText": "PDF text",
+        "tesseract": "Tesseract OCR"
+      },
+      "extractors": {
+        "rules": "Rules",
+        "claude": "Claude"
+      },
+      "note": "Low-confidence fields are checked by a reviewer.",
+      "warnings": {
+        "PAGES_TRUNCATED": "Only the first pages of this PDF were read.",
+        "CLAUDE_FALLBACK": "The optional AI reader was unavailable; the rule-based reader was used."
+      }
+    },
+    "failed": {
+      "OCR_UNAVAILABLE": "Text recognition is not available on this server right now. Please try again later.",
+      "OCR_TIMEOUT": "Reading this document took too long. Try a smaller or clearer file."
+    }
   },
   "landing": {
     "disclaimerTitle": "Disclaimer",

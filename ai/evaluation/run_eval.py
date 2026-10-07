@@ -1,4 +1,8 @@
-"""P41 evaluation. One command:  python ai/evaluation/run_eval.py [--write-docs]
+"""P41/O4 evaluation. One command:  python ai/evaluation/run_eval.py [--write-docs]
+        [--ocr {tesseract,auto}] [--extractor {rules,claude}] [--out FILE]
+
+The OCR is always run on the real image (demo fixtures are never used here). `--extractor claude`
+needs ANTHROPIC_API_KEY (+ `pip install anthropic`); without it the run stops, nothing is faked.
 
 Part A  Tesseract + rules extractor, per-field accuracy on the 20 synthetic docs
         (PREPROCESS off vs on, split by label mode / skew / noise).
@@ -11,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import tempfile
@@ -46,17 +51,42 @@ def _norm(v: str | None) -> str:
     return re.sub(r"\s+", " ", (v or "").strip().lower())
 
 
-def run_extraction(preprocess: bool, lang: str) -> dict:
+def make_providers(ocr_name: str, extractor: str, preprocess: bool, lang: str, cache_dir: str):
+    """(ocr, extractor) for one eval run. Demo fixtures are off; Claude uses a private cache."""
+    import os
+
+    from ai.extraction.claude import ClaudeDocumentAIProvider
     from ai.extraction.rules import RuleBasedDocumentAIProvider
+    from ai.ocr.router import AutoOCRProvider
     from ai.ocr.tesseract import TesseractOCRProvider
 
+    if ocr_name == "auto":
+        ocr = AutoOCRProvider(demo_fixtures=False, lang=lang, preprocess=preprocess)
+    else:
+        ocr = TesseractOCRProvider(lang=lang, preprocess=preprocess)
+    if extractor == "claude":
+        ext = ClaudeDocumentAIProvider(
+            os.environ["ANTHROPIC_API_KEY"],
+            os.environ.get("CLAUDE_MODEL", "claude-haiku-4-5-20251001"),
+            daily_cap=10_000,
+            cache_dir=cache_dir,
+        )
+    else:
+        ext = RuleBasedDocumentAIProvider()
+    return ocr, ext
+
+
+def run_extraction(make, preprocess: bool) -> dict:
     truth = json.loads((DATA / "ground_truth.json").read_text(encoding="utf-8"))["documents"]
-    ocr, ext = TesseractOCRProvider(lang=lang, preprocess=preprocess), RuleBasedDocumentAIProvider()
+    ocr, ext = make(preprocess)
+    fallbacks = 0
     per_field = defaultdict(lambda: [0, 0])
     per_doc, groups = [], defaultdict(lambda: [0, 0])
     for d in truth:
         data = (DATA / d["file"]).read_bytes()
-        got = {f.field: f.value for f in ext.extract(data, ocr.recognize(data, "png")).fields}
+        res = ext.extract(data, ocr.recognize(data, "png"))
+        fallbacks += res.provider != ext.name
+        got = {f.field: f.value for f in res.fields}
         ok = 0
         for f in FIELDS:
             hit = _norm(got.get(f)) == _norm(d["fields"].get(f))
@@ -71,7 +101,10 @@ def run_extraction(preprocess: bool, lang: str) -> dict:
         per_doc.append((d["file"], ok))
     tot = sum(v[0] for v in per_field.values())
     n = sum(v[1] for v in per_field.values())
-    return {"per_field": dict(per_field), "groups": dict(groups), "per_doc": per_doc, "total": (tot, n)}
+    return {
+        "per_field": dict(per_field), "groups": dict(groups), "per_doc": per_doc,
+        "total": (tot, n), "fallbacks": fallbacks,
+    }  # fmt: skip
 
 
 SPECIMENS = ("Khatian_RS", "Porcha_BS")
@@ -107,12 +140,11 @@ def _cer(ref: str, hyp: str) -> float:
     return Levenshtein.distance(ref, hyp) / max(1, len(ref))
 
 
-def run_bangla(preprocess: bool, lang: str) -> dict:
+def run_bangla(make, preprocess: bool) -> dict:
     from ai.extraction import khatian
-    from ai.ocr.tesseract import TesseractOCRProvider
 
     fx = json.loads((ROOT / "ai" / "mock_fixtures.json").read_text(encoding="utf-8"))["by_marker"]
-    ocr = TesseractOCRProvider(lang=lang, preprocess=preprocess)
+    ocr, _ = make(preprocess)
     rows = []
     for name in SPECIMENS:
         truth = fx[name]["ocr_text"]
@@ -138,11 +170,11 @@ def run_bangla(preprocess: bool, lang: str) -> dict:
 
 
 def run_rules() -> dict:
-    import app.models  # noqa: F401
     import loader
     from sqlalchemy import select
     from sqlalchemy.orm import sessionmaker
 
+    import app.models  # noqa: F401
     from app.core.db import Base, make_engine
     from app.models.land_parcel import LandParcel
     from app.risk.context import load_land_context
@@ -201,15 +233,21 @@ def render_bangla(bn: dict) -> list[str]:
     return out
 
 
-def render(results: dict, rules: dict, lang: str, installed: list[str], bangla: dict | None = None) -> str:
+def render(
+    results: dict, rules: dict, lang: str, installed: list[str], bangla: dict | None = None,
+    ocr_name: str = "tesseract", extractor: str = "rules",
+) -> str:  # fmt: skip
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     n_docs = len(results["off"]["per_doc"])
     out = [
         BEGIN, "", "## Evaluation results", "",
         f"- Date: {today} (UTC)",
         f"- Dataset: {n_docs} synthetic documents × {len(FIELDS)} fields = {n_docs * len(FIELDS)} field values",
-        f"- OCR: Tesseract, languages used: `{lang}` (installed: {', '.join(installed)})",
-        "- Extractor: rule-based (`DOCUMENT_AI_PROVIDER=rules`); a field counts only on exact match (trimmed, case-insensitive)",
+        f"- OCR: Tesseract (`--ocr {ocr_name}`, demo fixtures off), languages used: `{lang}` (installed: {', '.join(installed)})",
+        f"- Extractor: `--extractor {extractor}`"
+        + (" (rule-based)" if extractor == "rules" else f", model `{os.environ.get('CLAUDE_MODEL', 'claude-haiku-4-5-20251001')}`, "
+           f"{results['off'].get('fallbacks', 0) + results['on'].get('fallbacks', 0)} fallbacks to rules"),
+        "- A field counts only on exact match (trimmed, case-insensitive)",
         "- **Synthetic documents, not real records.**",
     ]
     if "ben" not in installed:
@@ -251,7 +289,10 @@ def render(results: dict, rules: dict, lang: str, installed: list[str], bangla: 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--write-docs", action="store_true", help="update docs/ai-pipeline.md")
+    ap.add_argument("--out", help="also write the report to this file")
     ap.add_argument("--lang", default="ben+eng")
+    ap.add_argument("--ocr", choices=("tesseract", "auto"), default="tesseract")
+    ap.add_argument("--extractor", choices=("rules", "claude"), default="rules")
     a = ap.parse_args()
 
     from ai.ocr.tesseract import installed_languages, resolve_lang
@@ -262,11 +303,27 @@ def main() -> int:
     except Exception as exc:  # Tesseract unavailable
         print(f"Tesseract not runnable ({exc}). Install it and re-run.")
         return 2
-    results = {k: run_extraction(k == "on", lang) for k in ("off", "on")}
+    if a.extractor == "claude":
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            print("ANTHROPIC_API_KEY is not set: cannot evaluate the Claude extractor.")
+            return 2
+        try:
+            import anthropic  # noqa: F401
+        except ImportError:
+            print("The 'anthropic' package is not installed (pip install 'anthropic>=0.40').")
+            return 2
+    cache = tempfile.mkdtemp(prefix="ls-eval-claude-")
+
+    def make(pre: bool):
+        return make_providers(a.ocr, a.extractor, pre, lang, cache)
+
+    results = {k: run_extraction(make, k == "on") for k in ("off", "on")}
     rules = run_rules()
-    bangla = {k: run_bangla(k == "on", lang) for k in ("off", "on")} if "ben" in installed else None
-    text = render(results, rules, lang, installed, bangla)
+    bangla = {k: run_bangla(make, k == "on") for k in ("off", "on")} if "ben" in installed else None
+    text = render(results, rules, lang, installed, bangla, a.ocr, a.extractor)
     print(text)
+    if a.out:
+        Path(a.out).write_text(text + "\n", encoding="utf-8")
     if a.write_docs:
         old = DOC.read_text(encoding="utf-8") if DOC.exists() else "# AI pipeline\n"
         if BEGIN in old and END in old:
