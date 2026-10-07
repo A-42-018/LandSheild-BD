@@ -21,7 +21,7 @@ Tester: Claude (automated: live API probes + Playwright/Chromium + the project's
 - [x] 1.2 Backend `http://127.0.0.1:8001/api/v1/health` returns OK
 - [x] 1.3 Frontend `http://localhost:3000/en` loads; `/bn` loads
 - [x] 1.4 API docs open at `http://127.0.0.1:8001/docs` (dev only)
-- [ ] 1.5 Browser console has no red errors on landing page **FAIL** — _MINOR: a signed-OUT visitor sees 1 red console error on every page: `401 /auth/refresh` (the silent session check). Signed-in users: 0 errors_
+- [x] 1.5 Browser console has no red errors on landing page — _FIXED (a3797d3, ee6fb92): anonymous visitors make no /auth/refresh call; e2e proves 0 console errors_
 
 ## 2. Landing page `/en`
 - [x] 2.1 Hero, stats tiles, how-it-works, features, trust sections all render
@@ -196,7 +196,7 @@ Tester: Claude (automated: live API probes + Playwright/Chromium + the project's
 
 ## 17. Archive search `/officer/archive` (reviewer+)
 - [x] 17.1 Search a word from an approved document (e.g. "Barmi") returns results
-- [ ] 17.2 Filter by survey (CS/SA/RS/BS) and district works _PARTIAL_ — _district filter OK; survey=RS returned 0 because a khatian cannot be approved yet (see finding A), so no RS document is in the archive_
+- [x] 17.2 Filter by survey (CS/SA/RS/BS) and district works — _FIXED (adcddce): khatian/porcha approval works, RS filter returns the archived Khatian_RS_
 - [x] 17.3 Empty query → validation error (422 INVALID_QUERY)
 - [x] 17.4 Pagination (limit/offset) works
 - [ ] 17.5 Only APPROVED documents appear; unapproved ones don't _NOT TESTED_ — _not checked that unapproved documents are absent_
@@ -233,7 +233,7 @@ Tester: Claude (automated: live API probes + Playwright/Chromium + the project's
 - [x] 21.1 12.5 shatangsho (decimal) converts to all units; sq ft ≈ 5,445, katha ≈ 7.56
 - [x] 21.2 1 katha = 720 sq ft; 1 bigha = 14,400 sq ft (standard)
 - [x] 21.3 Bigha definition switch (standard / 33 shatangsho) changes the result
-- [ ] 21.4 Invalid input (letters, negative, empty) shows error **FAIL** — _MINOR: 'abc' and '-5' show the error; an EMPTY field shows no error message_
+- [x] 21.4 Invalid input (letters, negative, empty) shows error — _FIXED (be665f4): an emptied field now shows the error_
 - [x] 21.5 Copy results works
 **Fee calculator**
 - [x] 21.6 Deed value 2,500,000 BDT, Sale, City corporation → itemised: registration 25,000 · stamp duty 37,500 · local tax 75,000 · source tax 37,500 · mutation 1,100 · total 176,100
@@ -288,7 +288,7 @@ Tester: Claude (automated: live API probes + Playwright/Chromium + the project's
 - [x] 27.3 Disclaimer ("does not establish legal ownership") present on report and result
 
 ## 28. Responsive & accessibility
-- [ ] 28.1 375 px (phone): no horizontal scroll on landing, verify, result, report, officer pages **FAIL** — _375 px: horizontal scroll on /verify/result (+194 px), /officer/mutations (+163 px), /officer/admin (+7 px). The tab bar and wide tables are not contained in their own scroll box. Landing, verify, check, report, track, public page: OK_
+- [x] 28.1 375 px (phone): no horizontal scroll on landing, verify, result, report, officer pages — _FIXED (a0f38fd): tab bars scroll inside themselves; e2e regression on a 375 px desktop window_
 - [x] 28.2 768 px (tablet) layout OK
 - [x] 28.3 1440 px (desktop) layout OK
 - [ ] 28.4 Keyboard only: Tab reaches every control, visible focus ring, Esc closes modals/menus _PARTIAL_ — _login page only: Tab order and focus ring OK; Esc closes the mobile menu; modals not tested_
@@ -310,15 +310,15 @@ Tester: Claude (automated: live API probes + Playwright/Chromium + the project's
 
 ---
 ## Result summary
-Checklist lines: 205 (7.1–7.12 counted as one line, 29.2–29.6 as one)  ·  Ticked (passed): 190  ·  FAIL: 3  ·  Partial: 3  ·  Not tested: 9
+Checklist lines: 205 (7.1–7.12 counted as one line, 29.2–29.6 as one)  ·  Ticked (passed): 194  ·  FAIL: 0 (4 earlier failures fixed, see below)  ·  Partial: 2  ·  Not tested: 9
 Blocking bugs: none.
 
 Findings from this run:
-- A (Major, by design gap): a khatian / porcha cannot be approved. The review step demands deed-only fields (dag, area, unit, deed no., seller, buyer), so approval fails with 422 EXTRACTION_INVALID. The parsed data stays in the extraction only; the archive never gets an RS/BS document (17.2). plan.md already lists "posting a khatian is not implemented".
-- B (Minor, 28.1): horizontal scroll at 375 px on /verify/result, /officer/mutations, /officer/admin (tab bar + wide tables overflow the page).
-- C (Minor, 1.5): signed-out visitors get one red console error (401 on the silent /auth/refresh).
-- D (Minor, 21.4): empty input in the unit converter shows no error message.
-- E (Doc): the guide's example deed no. `XYZ-1` does not trigger DEED_NO_FORMAT_INVALID (it is a valid format); a 2031 date is blocked at save, so IMPOSSIBLE_DATE needs a date before the seller owned the land.
-- F (Doc): 13.1 says NEEDS_REVIEW, the app says REVIEW_REQUIRED; 13.6 (NO_MOCK_FIXTURE) no longer happens since the O-track.
-- G (Data): mouza list is empty everywhere (database/gis/mouzas.json has no rows), 7 of 12 parcels have no polygon.
+- A (Major) — FIXED in adcddce: a khatian / porcha cannot be approved. The review step demands deed-only fields (dag, area, unit, deed no., seller, buyer), so approval fails with 422 EXTRACTION_INVALID. The parsed data stays in the extraction only; the archive never gets an RS/BS document (17.2). plan.md already lists "posting a khatian is not implemented".
+- B (Minor, 28.1) — FIXED in a0f38fd: horizontal scroll at 375 px on /verify/result, /officer/mutations, /officer/admin (tab bar + wide tables overflow the page).
+- C (Minor, 1.5) — FIXED in a3797d3/ee6fb92: signed-out visitors get one red console error (401 on the silent /auth/refresh).
+- D (Minor, 21.4) — FIXED in be665f4: empty input in the unit converter shows no error message.
+- E (Doc) — FIXED in the pack's guide/checklist: the guide's example deed no. `XYZ-1` does not trigger DEED_NO_FORMAT_INVALID (it is a valid format); a 2031 date is blocked at save, so IMPOSSIBLE_DATE needs a date before the seller owned the land.
+- F (Doc) — FIXED in the pack's guide/checklist: 13.1 says NEEDS_REVIEW, the app says REVIEW_REQUIRED; 13.6 (NO_MOCK_FIXTURE) no longer happens since the O-track.
+- G (Data) — OPEN, not a code bug: mouza list is empty everywhere (database/gis/mouzas.json has no rows), 7 of 12 parcels have no polygon.
 Sign-off: automated run by Claude, 2026-10-07 — a human still has to do the NOT TESTED / PARTIAL lines (other browsers, phone, screen reader, BN read-through).
