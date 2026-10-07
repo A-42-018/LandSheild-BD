@@ -105,7 +105,7 @@ def get_extraction(
     db: Session = Depends(get_db),
 ) -> ExtractionOut:
     threshold = request.app.state.settings.review_conf_threshold
-    return extraction_svc.get_extraction(db, document_id, threshold)
+    return extraction_svc.get_extraction(db, document_id, threshold, user)
 
 
 @router.patch("/documents/{document_id}/extraction", response_model=ExtractionOut)

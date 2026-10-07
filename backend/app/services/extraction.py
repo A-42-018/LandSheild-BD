@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
 from app.models.document import Document
-from app.models.enums import DocumentStatus
+from app.models.enums import DocumentStatus, Role
 from app.models.user import User
 from app.schemas.extraction import (
     AREA_UNITS,
@@ -146,7 +146,14 @@ def _get_doc(db: Session, document_id: str) -> Document:
     return doc
 
 
-def _to_out(doc: Document, ex: Extraction, threshold: float) -> ExtractionOut:
+def self_approval_blocked(doc: Document, user: User) -> bool:
+    """Four-eyes rule: the uploader may not approve their own document (ADMIN is exempt)."""
+    return doc.uploaded_by == user.id and user.role != Role.ADMIN.value
+
+
+def _to_out(
+    doc: Document, ex: Extraction, threshold: float, viewer: User | None = None
+) -> ExtractionOut:
     fields = [
         ExtractedFieldOut(
             **f.model_dump(),
@@ -171,12 +178,15 @@ def _to_out(doc: Document, ex: Extraction, threshold: float) -> ExtractionOut:
         low_confidence_fields=low,
         validation=ExtractionValidation(valid=not errors, errors=errors),
         original_fields=ex.original_fields if ex.edited_by_human else None,
+        self_approval_blocked=bool(viewer and self_approval_blocked(doc, viewer)),
     )
 
 
-def get_extraction(db: Session, document_id: str, threshold: float) -> ExtractionOut:
+def get_extraction(
+    db: Session, document_id: str, threshold: float, viewer: User | None = None
+) -> ExtractionOut:
     doc = _get_doc(db, document_id)
-    return _to_out(doc, _load(doc), threshold)
+    return _to_out(doc, _load(doc), threshold, viewer)
 
 
 def patch_extraction(
@@ -224,7 +234,7 @@ def patch_extraction(
     current = {f.field: f for f in ex.fields}
     changed = {n: v for n, v in edits.items() if current[n].value != v}
     if not changed:
-        return _to_out(doc, ex, threshold)
+        return _to_out(doc, ex, threshold, user)
 
     if ex.original_fields is None:  # keep the machine output exactly once
         ex.original_fields = [f.model_copy(deep=True) for f in ex.fields]
@@ -241,4 +251,4 @@ def patch_extraction(
         old={"fields": old}, new={"fields": changed}, ip=ip,
     )  # fmt: skip
     db.commit()
-    return _to_out(doc, ex, threshold)
+    return _to_out(doc, ex, threshold, user)

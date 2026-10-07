@@ -31,6 +31,7 @@ export default function ReviewActions({
 
   const { approve, reject, reprocess } = actions;
   const invalid = !data.validation.valid;
+  const ownUpload = !!data.self_approval_blocked;
   const busy = approve.isPending || reject.isPending || reprocess.isPending;
   const failure = (e: ApiError | null, fallback: string) =>
     e && e.code === "SELF_APPROVAL_FORBIDDEN"
@@ -48,9 +49,9 @@ export default function ReviewActions({
       <div className="flex flex-wrap gap-2">
         <Button
           onClick={() => approve.mutate()}
-          disabled={invalid || busy}
+          disabled={invalid || ownUpload || busy}
           loading={approve.isPending}
-          aria-describedby={invalid ? "approve-blocked" : undefined}
+          aria-describedby={ownUpload ? "approve-own-upload" : invalid ? "approve-blocked" : undefined}
           data-testid="approve-btn"
         >
           {t("actions.approve")}
@@ -62,6 +63,11 @@ export default function ReviewActions({
           {t("actions.reprocess")}
         </Button>
       </div>
+      {ownUpload && (
+        <p id="approve-own-upload" data-testid="approve-own-upload" className="text-xs text-ink-muted">
+          {t("actions.selfApproval")}
+        </p>
+      )}
       {invalid && (
         <p id="approve-blocked" data-testid="approve-blocked" className="text-xs text-ink-muted">
           {t("actions.approveBlocked")}

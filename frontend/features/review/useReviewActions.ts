@@ -37,7 +37,11 @@ export function useReviewActions(id: string) {
       return refresh();
     },
   });
-  return { save, approve, reject, reprocess };
+  const start = useMutation<unknown, ApiError, void>({
+    mutationFn: () => api.post(`/documents/${id}/process`),
+    onSuccess: refresh,
+  });
+  return { save, approve, reject, reprocess, start };
 }
 
 export function fieldErrorText(

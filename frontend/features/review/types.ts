@@ -27,6 +27,8 @@ export interface ExtractionOut {
   has_low_confidence: boolean;
   low_confidence_fields: string[];
   validation: { valid: boolean; errors: FieldError[] };
+  /** true: the viewer uploaded this document (and is not ADMIN), so approving is refused */
+  self_approval_blocked?: boolean;
 }
 
 /** Statuses for which GET /documents/{id}/extraction returns data. */

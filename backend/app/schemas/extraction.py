@@ -70,6 +70,8 @@ class ExtractionOut(BaseModel):
     low_confidence_fields: list[str]
     validation: ExtractionValidation
     original_fields: list[ExtractedField] | None = None
+    # viewer uploaded this document and is not ADMIN: approve is refused (SELF_APPROVAL_FORBIDDEN)
+    self_approval_blocked: bool = False
 
 
 class FieldEdit(BaseModel):

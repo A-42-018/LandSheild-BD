@@ -3,13 +3,13 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
 from app.models.document import Document
-from app.models.enums import DocumentStatus, Role
+from app.models.enums import DocumentStatus
 from app.models.user import User
 from app.schemas.document import DocumentOut
 from app.schemas.extraction import Extraction
 from app.services import audit, posting
 from app.services.documents import _to_out
-from app.services.extraction import EDITABLE_STATUSES, validate_fields
+from app.services.extraction import EDITABLE_STATUSES, self_approval_blocked, validate_fields
 
 REPROCESSABLE_STATUSES = (*EDITABLE_STATUSES, DocumentStatus.FAILED.value)
 
@@ -31,8 +31,8 @@ def approve_document(db: Session, user: User, document_id: str, ip: str | None) 
     _require_status(
         doc, EDITABLE_STATUSES, "DOCUMENT_NOT_REVIEWABLE", "Document is not awaiting review"
     )
-    # four-eyes: whoever uploaded a document cannot approve it (ADMIN is exempt, demo/ops role)
-    if doc.uploaded_by == user.id and user.role != Role.ADMIN.value:
+    # four-eyes: whoever uploaded a document cannot approve it (ADMIN exempt, demo/ops role)
+    if self_approval_blocked(doc, user):
         raise AppError("SELF_APPROVAL_FORBIDDEN", "You cannot approve a document you uploaded", 403)
     if doc.extraction_json is None:
         raise AppError(

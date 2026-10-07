@@ -151,3 +151,12 @@ def test_admin_uploader_is_exempt_from_four_eyes(env, jobs):
     assert _process(env, doc["id"], "ADMIN").status_code == 202
     _fill(env, doc["id"])
     assert _post(env, doc["id"], "approve", role="ADMIN").status_code == 200
+
+
+def test_extraction_tells_the_uploader_approve_is_blocked(env, jobs):
+    doc_id = _ready(env)  # OFFICER uploaded
+    assert _get(env, doc_id, role="OFFICER").json()["self_approval_blocked"] is True
+    assert _get(env, doc_id, role="REVIEWER").json()["self_approval_blocked"] is False
+    assert _get(env, doc_id, role="ADMIN").json()["self_approval_blocked"] is False
+    r = _patch(env, doc_id, {"mouza": "Barmi"}, role="OFFICER")
+    assert r.status_code == 200 and r.json()["self_approval_blocked"] is True

@@ -6,6 +6,7 @@ import StatusBadge from "@/components/domain/StatusBadge";
 import { ErrorState, LoadingState } from "@/components/ui";
 import DocumentPreview from "./DocumentPreview";
 import ExtractionPanel from "./ExtractionPanel";
+import StalledActions from "./StalledActions";
 import { EXTRACTION_READY, IN_PROGRESS } from "./types";
 import { useDocumentStatus, useExtraction } from "./useReviewData";
 
@@ -26,15 +27,14 @@ export default function ReviewView({ id }: { id: string }) {
 
   const d = doc.data;
   let body;
-  if (status && IN_PROGRESS.includes(status)) {
+  if (status === "UPLOADED" || status === "FAILED") {
+    body = <StalledActions id={id} status={status} failureCode={d?.failure_code} />;
+  } else if (status && IN_PROGRESS.includes(status)) {
     body = (
       <div role="status" data-testid="processing-state" className="rounded-xl border border-line bg-surface p-6 text-center text-ink-muted shadow-card">
         {t("processing")}
       </div>
     );
-  } else if (status === "FAILED") {
-    const code = d?.failure_code;
-    body = <ErrorState message={code && t.has(`failed.${code}`) ? t(`failed.${code}`) : te("generic")} />;
   } else if (status && EXTRACTION_READY.includes(status)) {
     if (ext.isLoading) body = <LoadingState />;
     else if (ext.isError || !ext.data) {

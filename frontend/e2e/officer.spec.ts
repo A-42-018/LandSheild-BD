@@ -71,8 +71,8 @@ test.describe("officer flow (mock providers, seeded database)", () => {
     });
 
     await test.step("uploader cannot approve their own document (four-eyes)", async () => {
-      await page.getByTestId("approve-btn").click();
-      await expect(page.getByTestId("decision-banner")).toHaveCount(0);
+      await expect(page.getByTestId("approve-btn")).toBeDisabled();
+      await expect(page.getByTestId("approve-own-upload")).toBeVisible();
       const token = await apiToken(request, "officer");
       const r = await request.post(`${API}/documents/${doc1}/approve`, { headers: { Authorization: `Bearer ${token}` } });
       expect(r.status()).toBe(403);
