@@ -4,6 +4,7 @@ import { expectNoHorizontalScroll, fillVerifyForm, openEvidenceTab, signIn } fro
 test.use({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
 
 test.describe("mobile viewport (375 px)", () => {
+  // the last test runs as a narrow desktop window (isMobile off): mobile emulation hides this kind of overflow
   test("menu opens, verify flow completes, no sideways scroll", async ({ page }) => {
     await signIn(page, "citizen");
     await page.goto("/en");
@@ -30,5 +31,24 @@ test.describe("mobile viewport (375 px)", () => {
     await openEvidenceTab(page);
     await expect(page.getByTestId("risk-section")).toBeVisible();
     await expectNoHorizontalScroll(page);
+  });
+
+  test.describe("narrow desktop window", () => {
+  test.use({ isMobile: false, hasTouch: false });
+  test("HIGH-risk result, mutation queue and admin console fit 375 px (tab bars scroll inside themselves)", async ({ page }) => {
+    await signIn(page, "admin");
+    await page.goto("/en/verify/result?land_id=LP-10240");
+    await expect(page.getByRole("tab").first()).toBeVisible();
+    await expectNoHorizontalScroll(page);
+    await openEvidenceTab(page);
+    await expect(page.getByTestId("risk-section")).toBeVisible();
+    await expectNoHorizontalScroll(page);
+    await page.goto("/en/officer/mutations");
+    await expect(page.getByRole("tab").first()).toBeVisible();
+    await expectNoHorizontalScroll(page);
+    await page.goto("/en/officer/admin");
+    await expect(page.getByRole("tab").first()).toBeVisible();
+    await expectNoHorizontalScroll(page);
+  });
   });
 });
