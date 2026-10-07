@@ -535,6 +535,7 @@
         "mutation": "e-Mutation processing",
         "audit": "Audit log and ledger integrity"
       },
+      "openDashboard": "Open the review queue",
       "signIn": "Officer sign-in"
     },
     "tools": {

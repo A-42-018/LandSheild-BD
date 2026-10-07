@@ -67,6 +67,16 @@ describe("landing sections (U5)", () => {
     await new Promise((r) => setTimeout(r, 30));
     expect(screen.queryByRole("link", { name: en.landing.ctaUpload })).not.toBeInTheDocument();
   });
+  it("officer band sends a reviewer to the review queue; a citizen gets no staff link", async () => {
+    render(wrap(<OfficerBand />, "en", "REVIEWER"));
+    expect(await screen.findByRole("link", { name: en.landing.officer.openDashboard })).toHaveAttribute("href", "/officer");
+  });
+  it("officer band shows no staff link to a citizen", async () => {
+    render(wrap(<OfficerBand />, "en", "CITIZEN"));
+    await new Promise((r) => setTimeout(r, 30));
+    expect(screen.queryByRole("link", { name: en.landing.officer.openDashboard })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: en.landing.officer.signIn })).not.toBeInTheDocument();
+  });
   it("footer has labelled nav and disclaimer", () => {
     render(wrap(<Footer />));
     expect(screen.getByRole("navigation", { name: en.landing.footerNav })).toBeInTheDocument();
