@@ -394,6 +394,7 @@
       "approveBlocked": "Fix the highlighted fields before approving.",
       "reprocessHint": "Reprocessing re-runs extraction and discards manual edits.",
       "approveFailed": "We couldn't approve this document. Please try again.",
+      "selfApproval": "You uploaded this document, so another reviewer must approve it.",
       "reprocessFailed": "We couldn't request reprocessing. Please try again.",
       "rejectFailed": "We couldn't reject this document. Please try again.",
       "saveFailed": "We couldn't save this change. Please try again.",

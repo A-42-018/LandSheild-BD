@@ -31,6 +31,14 @@ async function uploadAndProcess(page: Page, file: string): Promise<string> {
   return id;
 }
 
+/** Four-eyes rule: the uploader cannot approve, so a reviewer opens the same review page and decides. */
+async function approveAsReviewer(page: Page, id: string): Promise<void> {
+  await signIn(page, "reviewer");
+  await page.goto(`/en/officer/review/${id}`);
+  await expect(page.getByTestId("extraction-panel")).toBeVisible({ timeout: 30_000 });
+  await approve(page);
+}
+
 async function approve(page: Page): Promise<void> {
   const btn = page.getByTestId("approve-btn");
   await expect(btn).toBeEnabled();
@@ -43,9 +51,11 @@ test.describe("officer flow (mock providers, seeded database)", () => {
 
   test("upload → extraction → edit → approve → conflicting upload → alert → risk report", async ({ page, request }) => {
     await signIn(page, "officer");
+    let doc1 = "";
+    let doc2 = "";
 
     await test.step("Doc1: upload, extraction is visible", async () => {
-      await uploadAndProcess(page, "Doc1.png");
+      doc1 = await uploadAndProcess(page, "Doc1.png");
       await expect(page.getByTestId("value-khatian_no")).toHaveText("1245");
       await expect(page.getByTestId("value-dag_no")).toHaveText("785");
       await expect(page.getByTestId("value-seller")).toHaveText("Rahim Uddin");
@@ -54,14 +64,23 @@ test.describe("officer flow (mock providers, seeded database)", () => {
 
     await test.step("edit one field (deed no.), it is marked Edited", async () => {
       await page.getByTestId("edit-deed_no").click();
-      await page.getByTestId("input-deed_no").fill("D-2024-0785-E2E");
+      await page.getByTestId("input-deed_no").fill("D-2024-0786");
       await page.getByTestId("save-deed_no").click();
-      await expect(page.getByTestId("value-deed_no")).toHaveText("D-2024-0785-E2E");
+      await expect(page.getByTestId("value-deed_no")).toHaveText("D-2024-0786");
       await expect(page.getByTestId("field-deed_no")).toContainText("Edited");
     });
 
-    await test.step("approve Doc1 → recorded, no alert yet", async () => {
-      await approve(page);
+    await test.step("uploader cannot approve their own document (four-eyes)", async () => {
+      await page.getByTestId("approve-btn").click();
+      await expect(page.getByTestId("decision-banner")).toHaveCount(0);
+      const token = await apiToken(request, "officer");
+      const r = await request.post(`${API}/documents/${doc1}/approve`, { headers: { Authorization: `Bearer ${token}` } });
+      expect(r.status()).toBe(403);
+      expect((await r.json()).code).toBe("SELF_APPROVAL_FORBIDDEN");
+    });
+
+    await test.step("reviewer approves Doc1 → recorded, no alert yet", async () => {
+      await approveAsReviewer(page, doc1);
       const token = await apiToken(request, "reviewer");
       const r = await request.get(`${API}/risk-alerts?land_id=${LAND}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -71,9 +90,10 @@ test.describe("officer flow (mock providers, seeded database)", () => {
     });
 
     await test.step("Doc2 (conflicting sale): upload, review, approve", async () => {
-      await uploadAndProcess(page, "Doc2.png");
+      await signIn(page, "officer");
+      doc2 = await uploadAndProcess(page, "Doc2.png");
       await expect(page.getByTestId("value-buyer")).toHaveText("Hasan Ali");
-      await approve(page);
+      await approveAsReviewer(page, doc2);
     });
 
     await test.step("dashboard shows a HIGH alert for the parcel", async () => {

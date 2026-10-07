@@ -55,6 +55,8 @@ Pre-run Doc1 + Doc2 on LP-10234 before recording, or use LP-10240 (identical out
 | 15 | 4:30 | Architecture | `docs/architecture.md` | Upload → OCR → extraction → review → rules/ML → signature + ledger → report |
 | – | 4:45 | Closing | | "Land records should not only be digital. They should be searchable, connected, verifiable, and risk-aware." |
 
+> Four-eyes rule: whoever uploaded a document cannot approve it (`SELF_APPROVAL_FORBIDDEN`, 403). Live demo: upload as the officer, approve as `reviewer@demo.landshield.test`; or do both as admin (admin is exempt, as in the recorded video).
+
 ## Pre-baked fallbacks (no upload needed)
 | Land ID | Shows | Expected (as seeded) |
 |---|---|---|

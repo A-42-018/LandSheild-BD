@@ -132,3 +132,22 @@ def test_not_ready_document_cannot_be_approved(env, jobs):
     doc = _upload(env, b"Doc1")  # UPLOADED, never processed
     r = _post(env, doc["id"], "approve")
     assert r.status_code == 409 and r.json()["code"] == "DOCUMENT_NOT_REVIEWABLE"
+
+
+def test_uploader_cannot_approve_own_document(env, jobs):
+    doc_id = _ready(env)  # uploaded + processed by the OFFICER
+    _fill(env, doc_id)
+    r = _post(env, doc_id, "approve", role="OFFICER")
+    assert r.status_code == 403 and r.json()["code"] == "SELF_APPROVAL_FORBIDDEN"
+    assert _row(env, doc_id).processing_status == "REVIEW_REQUIRED"
+    assert "DOCUMENT_APPROVE" not in _actions(env, doc_id)
+    assert _post(env, doc_id, "approve", role="REVIEWER").status_code == 200  # a second person can
+
+
+def test_admin_uploader_is_exempt_from_four_eyes(env, jobs):
+    from tests.test_processing import _process, _upload
+
+    doc = _upload(env, b"Doc1", role="ADMIN")
+    assert _process(env, doc["id"], "ADMIN").status_code == 202
+    _fill(env, doc["id"])
+    assert _post(env, doc["id"], "approve", role="ADMIN").status_code == 200

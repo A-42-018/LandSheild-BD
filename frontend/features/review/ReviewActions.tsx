@@ -33,7 +33,11 @@ export default function ReviewActions({
   const invalid = !data.validation.valid;
   const busy = approve.isPending || reject.isPending || reprocess.isPending;
   const failure = (e: ApiError | null, fallback: string) =>
-    e && e.status === 409 ? t("actions.notReviewable") : fallback;
+    e && e.code === "SELF_APPROVAL_FORBIDDEN"
+      ? t("actions.selfApproval")
+      : e && e.status === 409
+        ? t("actions.notReviewable")
+        : fallback;
 
   return (
     <section
