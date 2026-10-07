@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.core.rbac import REVIEW_UP, require_roles
+from app.models.enums import Role
 from app.models.user import User
 from app.schemas.officer import (
     ActivityList,
@@ -49,4 +50,5 @@ def activity(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> ActivityList:
-    return svc.get_activity(db, action, limit, offset)
+    scope = svc.REVIEWER_ACTIVITY_ENTITIES if user.role == Role.REVIEWER.value else None
+    return svc.get_activity(db, action, limit, offset, scope)

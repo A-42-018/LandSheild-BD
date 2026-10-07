@@ -214,8 +214,18 @@ def get_queue(
     return QueueList(items=items, total=total, limit=limit, offset=offset)
 
 
-def get_activity(db: Session, action: str | None, limit: int, offset: int) -> ActivityList:
+# Reviewers see work items only. Sign-ins, failed logins and user administration stay in the
+# audit log, which is officer/admin only (GET /admin/audit-logs).
+REVIEWER_ACTIVITY_ENTITIES = ("document", "mutation", "fraud_alert")
+
+
+def get_activity(
+    db: Session, action: str | None, limit: int, offset: int,
+    entity_types: tuple[str, ...] | None = None,
+) -> ActivityList:  # fmt: skip
     cond = [AuditLog.action == action] if action else []
+    if entity_types is not None:
+        cond.append(AuditLog.entity_type.in_(entity_types))
     total = db.scalar(select(func.count()).select_from(AuditLog).where(*cond)) or 0
     rows = db.execute(
         select(AuditLog, User.name, User.role)

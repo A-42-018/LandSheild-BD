@@ -156,3 +156,22 @@ def test_citizen_forbidden_and_unauthenticated(env, ep):
 @pytest.mark.parametrize("ep", ENDPOINTS)
 def test_reviewer_up_allowed(env, role, ep):
     assert _get(env, ep, role).status_code == 200
+
+
+def test_reviewer_activity_hides_sign_ins_and_user_admin(env):
+    with _db(env) as s:
+        for a, e in [("FAILED_LOGIN", "user"), ("LOGIN", "user"), ("USER_UPDATE", "user"),
+                     ("DOCUMENT_APPROVE", "document"), ("MUTATION_TRANSITION", "mutation"),
+                     ("RISK_ALERT_UPDATE", "fraud_alert")]:  # fmt: skip
+            s.add(AuditLog(action=a, entity_type=e))
+        s.commit()
+
+    def actions(role, **q):
+        r = env.get("/api/v1/officer/activity", params={"limit": 100, **q}, headers=_h(env, role))
+        return {i["action"] for i in r.json()["items"]}
+
+    rev = actions("REVIEWER")
+    assert {"DOCUMENT_APPROVE", "MUTATION_TRANSITION", "RISK_ALERT_UPDATE"} <= rev
+    assert not rev & {"FAILED_LOGIN", "LOGIN", "USER_UPDATE"}
+    assert actions("REVIEWER", action="FAILED_LOGIN") == set()  # the filter cannot reach them
+    assert {"FAILED_LOGIN", "LOGIN", "USER_UPDATE"} <= actions("OFFICER")
