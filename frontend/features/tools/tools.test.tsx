@@ -44,6 +44,23 @@ describe("unit converter", () => {
   });
 });
 
+describe("empty input", () => {
+  it("unit converter: untouched is fine, an emptied field shows the error", () => {
+    render(wrap(<UnitConverter />));
+    expect(screen.queryByText(en.tools.units.invalid)).toBeNull();
+    type("Area", "");
+    expect(screen.getByText(en.tools.units.invalid)).toBeInTheDocument();
+    expect(screen.queryByTestId("unit-table")).toBeNull();
+  });
+  it("fee calculator: untouched empty is fine, emptied again shows the error", () => {
+    render(wrap(<FeeCalculator />));
+    expect(screen.queryByText(en.tools.fees.invalid)).toBeNull();
+    type("Deed value", "5");
+    type("Deed value", "");
+    expect(screen.getByText(en.tools.fees.invalid)).toBeInTheDocument();
+  });
+});
+
 describe("fee calculator", () => {
   it("itemises a sale and totals it", () => {
     render(wrap(<FeeCalculator />));

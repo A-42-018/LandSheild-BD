@@ -15,7 +15,8 @@ export default function FeeCalculator() {
   const [transfer, setTransfer] = useState<Transfer>("sale");
   const [loc, setLoc] = useState<Location>("pourashava");
   const value = parseNum(raw);
-  const bad = raw.trim() !== "" && Number.isNaN(value);
+  const [touched, setTouched] = useState(false); // an emptied field is an error, an untouched one is not
+  const bad = raw.trim() !== "" ? Number.isNaN(value) : touched;
   const res = !Number.isNaN(value) ? calcFees(transfer, loc, value) : null;
   const nf = new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: 1 });
   const money = (n: number) => `${t("currency")} ${new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: 0 }).format(n)}`;
@@ -25,7 +26,7 @@ export default function FeeCalculator() {
     <ToolShell title={t("title")} purpose={t("purpose")} notice={t("disclaimer", { date: FEE_CONFIG.as_of })}>
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Input label={t("value")} inputMode="decimal" value={raw} onChange={(e) => setRaw(e.target.value)} error={bad ? t("invalid") : undefined} hint={t("valueHint")} />
+          <Input label={t("value")} inputMode="decimal" value={raw} onChange={(e) => { setTouched(true); setRaw(e.target.value); }} error={bad ? t("invalid") : undefined} hint={t("valueHint")} />
           <Select label={t("transfer")} value={transfer} onChange={(e) => setTransfer(e.target.value as Transfer)} options={TRANSFERS.map((x) => ({ value: x, label: t(`transfers.${x}`) }))} />
           <Select label={t("location")} value={loc} onChange={(e) => setLoc(e.target.value as Location)} options={LOCATIONS.map((x) => ({ value: x, label: t(`locations.${x}`) }))} />
         </div>
