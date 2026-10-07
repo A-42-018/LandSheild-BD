@@ -2,6 +2,22 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createApiClient, type ApiClient, type ApiUser } from "@/lib/api";
 
+/**
+ * The refresh cookie is httpOnly (and on another origin in production), so the page cannot see it.
+ * A signed-in browser leaves this flag; without it we skip the boot-time /auth/refresh call, which
+ * would only return 401 (a red console error for every anonymous visitor).
+ */
+export const SESSION_HINT = "ls-session";
+function hint(on?: boolean): boolean {
+  try {
+    if (on === true) window.localStorage.setItem(SESSION_HINT, "1");
+    else if (on === false) window.localStorage.removeItem(SESSION_HINT);
+    return window.localStorage.getItem(SESSION_HINT) === "1";
+  } catch {
+    return true; // storage blocked: fall back to asking the server
+  }
+}
+
 export type AuthStatus = "loading" | "authenticated" | "anonymous";
 
 interface AuthValue {
@@ -23,6 +39,7 @@ export function AuthProvider({ children, client }: { children: ReactNode; client
       client ??
       createApiClient({
         onSession: (s) => {
+          hint(!!s);
           setUser(s?.user ?? null);
           setStatus(s ? "authenticated" : "anonymous");
         },
@@ -34,7 +51,11 @@ export function AuthProvider({ children, client }: { children: ReactNode; client
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    // restore session from the httpOnly refresh cookie
+    // restore session from the httpOnly refresh cookie (only if this browser ever signed in)
+    if (!client && !hint()) {
+      setStatus("anonymous");
+      return;
+    }
     api
       .refresh()
       .then((s) => {
@@ -42,7 +63,7 @@ export function AuthProvider({ children, client }: { children: ReactNode; client
         setStatus(s ? "authenticated" : "anonymous");
       })
       .catch(() => setStatus("anonymous"));
-  }, [api]);
+  }, [api, client]);
 
   const login = useCallback(
     async (email: string, password: string) => {
