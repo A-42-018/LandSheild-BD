@@ -31,4 +31,4 @@ services:
         sync: false          # https://<your-site>.netlify.app (no trailing slash)
       - key: SIGNING_KEY
         sync: false          # Ed25519 seed (base64url, 32 bytes); without it the disk-less instance signs with a new key on every restart
-# Start command (Dockerfile CMD): alembic upgrade head (migrations 0001-0007) + seed --reset (signatures + ledger backfill) on every boot.
+# Start command (Dockerfile CMD): alembic upgrade head (migrations 0001-0008) + seed --reset (signatures + ledger backfill) on every boot.

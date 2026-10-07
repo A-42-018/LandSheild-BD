@@ -228,7 +228,7 @@ def get_activity(
         cond.append(AuditLog.entity_type.in_(entity_types))
     total = db.scalar(select(func.count()).select_from(AuditLog).where(*cond)) or 0
     rows = db.execute(
-        select(AuditLog, User.name, User.role)
+        select(AuditLog, User.name, func.coalesce(AuditLog.actor_role, User.role))
         .outerjoin(User, User.id == AuditLog.actor_id)
         .where(*cond)
         .order_by(AuditLog.created_at.desc(), AuditLog.id)

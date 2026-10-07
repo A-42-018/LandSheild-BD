@@ -85,3 +85,24 @@ def test_validation(env):
     assert env.get(URL, headers=h, params={"date_from": "nope"}).status_code == 422
     r = env.get(URL, headers=h, params={"date_from": "2026-02-02", "date_to": "2026-01-01"})
     assert r.status_code == 422 and r.json()["code"] == "INVALID_DATE_RANGE"
+
+
+def test_actor_role_is_the_role_at_the_time(env):
+    from sqlalchemy import select
+
+    from app.models.user import User
+
+    h = _h(env, "REVIEWER")  # login writes a LOGIN row while the user is REVIEWER
+    with _db(env) as s:
+        u = s.scalar(select(User).where(User.email == "reviewer@x.test"))
+        q = select(AuditLog).where(AuditLog.actor_id == u.id, AuditLog.action == "LOGIN")
+        login = s.scalar(q)
+        assert login.actor_role == "REVIEWER"
+        u.role = "CITIZEN"  # demoted later
+        s.commit()
+    del h
+    items = env.get(
+        "/api/v1/admin/audit-logs", params={"limit": 100}, headers=_h(env, "ADMIN")
+    ).json()["items"]
+    mine = [i for i in items if i["actor"] and i["actor"]["name"] == u.name]
+    assert mine and all(i["actor"]["role"] == "REVIEWER" for i in mine)

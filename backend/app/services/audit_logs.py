@@ -44,7 +44,8 @@ def list_audit_logs(
         end = datetime.combine(date_to + timedelta(days=1), time.min, tzinfo=UTC)
         cond.append(AuditLog.created_at < end)
 
-    base = select(AuditLog, User.name, User.role).outerjoin(User, User.id == AuditLog.actor_id)
+    role_then = func.coalesce(AuditLog.actor_role, User.role)  # role at the time of the action
+    base = select(AuditLog, User.name, role_then).outerjoin(User, User.id == AuditLog.actor_id)
     count = select(func.count()).select_from(AuditLog).outerjoin(User, User.id == AuditLog.actor_id)
     total = db.scalar(count.where(*cond)) or 0
     ordered = base.where(*cond).order_by(AuditLog.created_at.desc(), AuditLog.id)

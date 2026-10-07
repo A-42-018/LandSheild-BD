@@ -135,7 +135,7 @@ erDiagram
   LEDGER_ENTRIES ||--o| LEDGER_ENTRIES : "prev_hash"
 ```
 
-`ledger_entries` has no FK: each row stores `entity_type` + `entity_id` + `payload_hash` so it survives edits to the source row and can detect them. Migrations: 0004 mutation_records · 0005 land_encumbrances · 0006 deed record_hash/signature · 0007 ledger_entries.
+`ledger_entries` has no FK: each row stores `entity_type` + `entity_id` + `payload_hash` so it survives edits to the source row and can detect them. Migrations: 0004 mutation_records · 0005 land_encumbrances · 0006 deed record_hash/signature · 0007 ledger_entries · 0008 audit_logs.actor_role (role at the time of the action).
 
 Column-level detail: `backend/app/models/` and the Alembic revisions.
 

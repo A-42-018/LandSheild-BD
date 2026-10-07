@@ -29,8 +29,14 @@ def log(
 ) -> AuditLog:
     """Add an audit row to the session (caller commits, so it shares the caller's transaction)."""
     actor_id = actor.id if isinstance(actor, User) else actor
+    if isinstance(actor, User):
+        role = actor.role
+    else:
+        found = db.get(User, actor_id) if actor_id else None
+        role = found.role if found else None
     row = AuditLog(
         actor_id=actor_id,
+        actor_role=role,
         action=action,
         entity_type=entity_type,
         entity_id=entity_id,

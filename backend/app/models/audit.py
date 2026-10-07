@@ -15,6 +15,8 @@ class AuditLog(IdMixin, CreatedMixin, Base):
     actor_id: Mapped[str | None] = mapped_column(
         String(UUID_LEN), ForeignKey("users.id"), nullable=True
     )
+    # role at the time of the action (0008); the user's current role may differ later
+    actor_role: Mapped[str | None] = mapped_column(String(20), nullable=True)
     action: Mapped[str] = mapped_column(String(100), nullable=False)
     entity_type: Mapped[str] = mapped_column(String(50), nullable=False)
     entity_id: Mapped[str | None] = mapped_column(String(UUID_LEN), nullable=True)

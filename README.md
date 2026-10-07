@@ -91,7 +91,7 @@ Measured accuracy (Tesseract + rules, 20 synthetic deeds, demo fixtures off): se
 
 ## Database
 
-Tables: `users`, `owners`, `land_parcels`, `deeds`, `transactions`, `ownership_history`, `documents`, `verification_requests`, `risk_assessments`, `fraud_alerts`, `audit_logs`. Migrations: `backend/migrations` (Alembic, 3 revisions). Seed data: `database/seed/` (7 parcels, 4 users).
+Tables: `users`, `owners`, `land_parcels`, `deeds`, `transactions`, `ownership_history`, `documents`, `verification_requests`, `risk_assessments`, `fraud_alerts`, `audit_logs`. Migrations: `backend/migrations` (Alembic, 8 revisions). Seed data: `database/seed/` (7 parcels, 4 users).
 
 ## Setup
 
