@@ -139,8 +139,9 @@ def test_patch_permission_not_found_validation(env):
 
 def test_reanalysis_keeps_reviewer_decision(env):
     aid = _first_alert_id(env)
-    h = _h(env, "REVIEWER")
-    env.patch(f"/api/v1/risk-alerts/{aid}", json={"status": "DISMISSED"}, headers=h)
+    h = _h(env, "OFFICER")
+    body = {"status": "DISMISSED", "reason": "checked with sub-registrar"}
+    assert env.patch(f"/api/v1/risk-alerts/{aid}", json=body, headers=h).status_code == 200
     _risk(env, "LP-10500")
     body = env.get("/api/v1/risk-alerts?land_id=LP-10500", headers=h).json()
     assert body["total"] == 1 and body["items"][0]["status"] == "DISMISSED"
@@ -154,3 +155,41 @@ def test_analyze_land_service_persists_assessment(env):
             "POSSIBLE_DUPLICATE_TRANSACTION",
             "SELLER_MISMATCH",
         }
+
+
+def _high_alert_id(env):
+    _risk(env, "LP-10500")
+    r = env.get("/api/v1/risk-alerts?severity=HIGH", headers=_h(env, "REVIEWER"))
+    items = r.json()["items"]
+    assert items, "LP-10500 must produce a HIGH alert"
+    return items[0]["id"]
+
+
+def test_dismiss_requires_a_reason(env):
+    aid = _high_alert_id(env)
+    for body in ({"status": "DISMISSED"}, {"status": "DISMISSED", "reason": "   "}):
+        r = env.patch(f"/api/v1/risk-alerts/{aid}", json=body, headers=_h(env, "OFFICER"))
+        assert r.status_code == 422 and r.json()["code"] == "REASON_REQUIRED"
+    with _db(env) as s:
+        assert s.get(FraudAlert, aid).status == "OPEN"
+
+
+def test_reviewer_cannot_dismiss_high_alert_but_officer_can(env):
+    aid = _high_alert_id(env)
+    body = {"status": "DISMISSED", "reason": "looks fine"}
+    r = env.patch(f"/api/v1/risk-alerts/{aid}", json=body, headers=_h(env, "REVIEWER"))
+    assert r.status_code == 403 and r.json()["code"] == "ALERT_DISMISS_FORBIDDEN"
+    # reviewer may still triage it
+    ok = env.patch(
+        f"/api/v1/risk-alerts/{aid}", json={"status": "ESCALATED"}, headers=_h(env, "REVIEWER")
+    )
+    assert ok.status_code == 200
+    r = env.patch(f"/api/v1/risk-alerts/{aid}", json=body, headers=_h(env, "OFFICER"))
+    assert r.status_code == 200 and r.json()["status"] == "DISMISSED"
+    with _db(env) as s:
+        row = s.scalars(
+            select(AuditLog)
+            .where(AuditLog.action == "RISK_ALERT_UPDATE")
+            .order_by(AuditLog.created_at.desc())
+        ).first()
+        assert row.new_value == {"status": "DISMISSED", "reason": "looks fine"}

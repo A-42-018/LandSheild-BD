@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
 from app.models.alert import FraudAlert
-from app.models.enums import AlertStatus
+from app.models.enums import AlertStatus, Role
 from app.models.land_parcel import LandParcel
 from app.models.risk import RiskAssessment
 from app.models.user import User
@@ -21,6 +21,8 @@ from app.schemas.risk import (
     public_params,
 )
 from app.services import audit
+
+_DISMISS_HIGH = (Role.OFFICER.value, Role.ADMIN.value)  # may dismiss a HIGH alert
 
 
 def _land_or_404(db: Session, land_id: str) -> LandParcel:
@@ -190,11 +192,21 @@ def list_alerts(
 
 
 def update_alert(
-    db: Session, alert_id: str, new_status: AlertStatus, actor: User, ip: str | None
-) -> RiskAlertOut:
+    db: Session, alert_id: str, new_status: AlertStatus, actor: User, ip: str | None,
+    reason: str | None = None,
+) -> RiskAlertOut:  # fmt: skip
     alert = db.get(FraudAlert, alert_id)
     if alert is None:
         raise AppError("ALERT_NOT_FOUND", "Risk alert not found", 404)
+    reason = " ".join(reason.split()) if reason else None
+    if new_status == AlertStatus.DISMISSED:
+        # a dismissed alert leaves the public QR count and stops gating mutations
+        if alert.severity == "HIGH" and actor.role not in _DISMISS_HIGH:
+            raise AppError(
+                "ALERT_DISMISS_FORBIDDEN", "Only an officer can dismiss a HIGH alert", 403
+            )
+        if not reason:
+            raise AppError("REASON_REQUIRED", "A reason is required to dismiss an alert", 422)
     old = alert.status
     alert.status = new_status.value
     alert.reviewed_by = None if new_status == AlertStatus.OPEN else actor.id
@@ -205,7 +217,7 @@ def update_alert(
         "fraud_alert",
         alert.id,
         old={"status": old},
-        new={"status": alert.status},
+        new={"status": alert.status, **({"reason": reason} if reason else {})},
         ip=ip,
     )
     db.commit()

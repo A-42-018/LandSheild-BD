@@ -69,8 +69,9 @@ export function useAlerts() {
 export function useAlertStatus() {
   const { api } = useAuth();
   const qc = useQueryClient();
-  return useMutation<AlertItem, ApiError, { id: string; status: AlertStatus }>({
-    mutationFn: ({ id, status }) => api.patch<AlertItem>(`/risk-alerts/${id}`, { status }),
+  return useMutation<AlertItem, ApiError, { id: string; status: AlertStatus; reason?: string }>({
+    mutationFn: ({ id, status, reason }) =>
+      api.patch<AlertItem>(`/risk-alerts/${id}`, reason ? { status, reason } : { status }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["officer", "alerts"] });
       qc.invalidateQueries({ queryKey: ["officer", "alert-totals"] });

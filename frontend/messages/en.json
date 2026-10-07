@@ -610,6 +610,13 @@
       "empty": "No risk alerts.",
       "actionsLabel": "Review actions for {land}",
       "updateError": "Could not update the alert. Please try again.",
+      "dismissModal": {
+        "title": "Dismiss the alert for {land}",
+        "label": "Reason for dismissing",
+        "required": "Please give a reason.",
+        "confirm": "Dismiss alert",
+        "cancel": "Cancel"
+      },
       "actions": {
         "reopen": "Reopen",
         "underReview": "Mark under review",

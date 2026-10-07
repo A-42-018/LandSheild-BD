@@ -167,8 +167,31 @@ describe("dashboard B", () => {
   it("alert update error and 403 are shown", async () => {
     const patch = vi.fn().mockRejectedValue(new ApiError(500, "X", "x"));
     wrap(<DashboardView />, { ...api(router()), patch } as unknown as ApiClient);
-    fireEvent.click(await screen.findByRole("button", { name: "Dismiss" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Escalate" }));
     expect(await screen.findByText(en.officer.alerts.updateError)).toBeInTheDocument();
+  });
+
+  it("dismissing asks for a reason and sends it", async () => {
+    const patch = vi.fn().mockResolvedValue(ALERT({ status: "DISMISSED" }));
+    wrap(<DashboardView />, { ...api(router()), patch } as unknown as ApiClient);
+    fireEvent.click(await screen.findByRole("button", { name: "Dismiss" }));
+    fireEvent.click(await screen.findByTestId("dismiss-confirm"));
+    expect(await screen.findByText(en.officer.alerts.dismissModal.required)).toBeInTheDocument();
+    expect(patch).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByTestId("dismiss-reason"), { target: { value: " verified at office " } });
+    fireEvent.click(screen.getByTestId("dismiss-confirm"));
+    await waitFor(() =>
+      expect(patch).toHaveBeenCalledWith("/risk-alerts/al-1", { status: "DISMISSED", reason: "verified at office" }),
+    );
+  });
+
+  it("a reviewer cannot dismiss a HIGH alert but can for MEDIUM", async () => {
+    const alerts = LIST([ALERT(), ALERT({ id: "al-2", severity: "MEDIUM" })]);
+    wrap(<DashboardView />, api(router(undefined, alerts), "REVIEWER"));
+    const high = await screen.findByTestId("alert-al-1");
+    expect(within(high).queryByRole("button", { name: "Dismiss" })).toBeNull();
+    expect(within(high).getByRole("button", { name: "Escalate" })).toBeInTheDocument();
+    expect(within(screen.getByTestId("alert-al-2")).getByRole("button", { name: "Dismiss" })).toBeInTheDocument();
   });
 
   it("empty alerts; activity maps known actions and falls back to raw code", async () => {

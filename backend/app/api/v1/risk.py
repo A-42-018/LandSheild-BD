@@ -42,4 +42,4 @@ def patch_risk_alert(
     db: Session = Depends(get_db),
 ) -> RiskAlertOut:
     ip = request.client.host if request.client else None
-    return svc.update_alert(db, alert_id, body.status, user, ip)
+    return svc.update_alert(db, alert_id, body.status, user, ip, body.reason)

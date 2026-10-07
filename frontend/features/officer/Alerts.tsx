@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { BellRing } from "lucide-react";
 import { ApiError } from "@/lib/api";
@@ -8,8 +9,11 @@ import StatusBadge from "@/components/domain/StatusBadge";
 import { RISK_TONE } from "@/components/domain/RiskBadge";
 import EvidenceList from "@/features/risk/EvidenceList";
 import { formatDateTime } from "@/features/result/format";
+import { useAuth } from "@/features/auth/AuthContext";
+import { hasRole, OFFICER_UP } from "@/features/auth/roles";
+import DismissModal from "./DismissModal";
 import { useAlertStatus, useAlerts } from "./useOfficerData";
-import { ALERT_STATUSES, type AlertStatus } from "./types";
+import { ALERT_STATUSES, type AlertItem, type AlertStatus } from "./types";
 
 const ACTION_KEY: Record<AlertStatus, string> = {
   OPEN: "reopen",
@@ -25,6 +29,10 @@ export default function Alerts() {
   const locale = useLocale();
   const q = useAlerts();
   const m = useAlertStatus();
+  const { user } = useAuth();
+  const [dismissing, setDismissing] = useState<AlertItem | null>(null);
+  // backend: a HIGH alert can only be dismissed by an officer/admin (ALERT_DISMISS_FORBIDDEN)
+  const canDismiss = (a: AlertItem) => a.severity !== "HIGH" || hasRole(user?.role, OFFICER_UP);
 
   return (
     <Card title={t("title")} icon={<BellRing />} accent="critical" data-testid="alerts-card">
@@ -55,14 +63,14 @@ export default function Alerts() {
                 <EvidenceList evidence={a.evidence} />
               </div>
               <div role="group" aria-label={t("actionsLabel", { land: a.land_id })} className="mt-2 flex flex-wrap gap-2">
-                {ALERT_STATUSES.filter((s) => s !== a.status).map((s) => (
+                {ALERT_STATUSES.filter((s) => s !== a.status && (s !== "DISMISSED" || canDismiss(a))).map((s) => (
                   <Button
                     key={s}
                     size="sm"
                     variant={s === "ESCALATED" ? "danger" : "secondary"}
                     loading={m.isPending && m.variables?.id === a.id && m.variables.status === s}
                     disabled={m.isPending}
-                    onClick={() => m.mutate({ id: a.id, status: s })}
+                    onClick={() => (s === "DISMISSED" ? setDismissing(a) : m.mutate({ id: a.id, status: s }))}
                   >
                     {t(`actions.${ACTION_KEY[s]}`)}
                   </Button>
@@ -77,6 +85,15 @@ export default function Alerts() {
           {m.error instanceof ApiError && m.error.status === 403 ? te("permission") : t("updateError")}
         </p>
       )}
+      <DismissModal
+        open={dismissing !== null}
+        land={dismissing?.land_id ?? ""}
+        loading={m.isPending}
+        onClose={() => setDismissing(null)}
+        onConfirm={(reason) =>
+          dismissing && m.mutate({ id: dismissing.id, status: "DISMISSED", reason }, { onSuccess: () => setDismissing(null) })
+        }
+      />
     </Card>
   );
 }

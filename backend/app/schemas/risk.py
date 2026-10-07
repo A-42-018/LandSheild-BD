@@ -47,3 +47,4 @@ class RiskAlertList(BaseModel):
 
 class RiskAlertPatch(BaseModel):
     status: AlertStatus
+    reason: str | None = Field(default=None, max_length=500)  # required to dismiss
