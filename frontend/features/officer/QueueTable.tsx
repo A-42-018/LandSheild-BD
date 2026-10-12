@@ -8,6 +8,7 @@ import StatusBadge from "@/components/domain/StatusBadge";
 import RiskBadge from "@/components/domain/RiskBadge";
 import { Badge, Button, Card, ErrorState, Input, LoadingState, Select, Table, type Column } from "@/components/ui";
 import { formatDateTime } from "@/features/result/format";
+import AreaFilter, { NO_AREA } from "@/features/officers/AreaFilter";
 import { useOfficerQueue } from "./useOfficerData";
 import { PAGE_SIZE, QUEUE_FILTERS, SORT_KEYS, type QueueItem, type QueueParams, type QueueSortKey } from "./types";
 
@@ -77,6 +78,11 @@ export default function QueueTable() {
             <Button type="submit" variant="primary" icon={<Search />}>{t("search.submit")}</Button>
           </form>
         </div>
+
+        <AreaFilter
+          value={{ ...NO_AREA, ...params }}
+          onChange={(a) => patch({ division: a.division, district: a.district, upazila: a.upazila })}
+        />
 
         {q.isLoading ? (
           <LoadingState />

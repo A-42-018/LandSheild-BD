@@ -191,9 +191,15 @@ def _item(db: Session, m: MutationRecord) -> MutationQueueItem:
 
 
 def list_mutations(
-    db: Session, status: str | None, limit: int, offset: int
+    db: Session, status: str | None, limit: int, offset: int, scope=None, area=None
 ) -> MutationList:
     q = select(MutationRecord)
+    if scope is not None or area is not None:
+        q = q.join(LandParcel, LandParcel.id == MutationRecord.land_id)
+    if scope is not None:  # an office officer sees their office and the offices beneath it
+        q = q.where(scope)
+    if area is not None:  # 'sort the databases': one office / upazila / zila / division
+        q = q.where(area)
     if status:
         q = q.where(MutationRecord.status == status)
     total = db.scalar(select(func.count()).select_from(q.subquery()))
@@ -203,8 +209,11 @@ def list_mutations(
     return MutationList(total=total, items=[_item(db, m) for m in rows])
 
 
-def get_mutation(db: Session, mutation_id: str) -> MutationDetail:
+def get_mutation(db: Session, mutation_id: str, scope=None) -> MutationDetail:
     m = db.get(MutationRecord, mutation_id)
+    if m is not None and scope is not None:
+        in_area = db.scalar(select(LandParcel.id).where(LandParcel.id == m.land_id, scope))
+        m = m if in_area else None  # outside the officer's offices looks like "not found"
     if m is None:
         raise AppError("MUTATION_NOT_FOUND", "Mutation not found", 404)
     base = _item(db, m).model_dump()

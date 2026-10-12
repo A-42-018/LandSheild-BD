@@ -2,6 +2,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
+import { areaParams } from "@/features/officers/AreaFilter";
 import {
   PAGE_SIZE, SIDE_LIST_SIZE,
   type ActivityList, type AlertItem, type AlertList, type AlertStatus,
@@ -26,6 +27,7 @@ export function queueQuery(p: QueueParams): string {
   if (q) s.set("q", q);
   s.set("sort", p.sort);
   s.set("order", p.order);
+  areaParams(s, { division: p.division ?? "", district: p.district ?? "", upazila: p.upazila ?? "" });
   s.set("limit", String(PAGE_SIZE));
   s.set("offset", String((p.page - 1) * PAGE_SIZE));
   return s.toString();

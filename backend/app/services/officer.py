@@ -137,8 +137,14 @@ def get_queue(
     order: SortOrder,
     limit: int,
     offset: int,
+    scope=None,
+    area=None,
 ) -> QueueList:
     cond = []
+    if scope is not None:  # an office officer sees their office and the offices beneath it
+        cond.append(scope)
+    if area is not None:  # 'sort the databases' by office / upazila / zila / division
+        cond.append(area)
     if flt == QueueFilter.PENDING:
         cond.append(Document.processing_status.in_(PENDING_STATUSES))
     elif flt == QueueFilter.LOW_CONFIDENCE:

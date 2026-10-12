@@ -12,6 +12,7 @@ from app.api.v1 import (
     map,
     mutations,
     officer,
+    offices,
     public,
     rbac_stub,
     risk,
@@ -23,6 +24,8 @@ api_router.include_router(health.router)
 api_router.include_router(admin_audit.router)
 api_router.include_router(admin.router)
 api_router.include_router(auth.router)
+api_router.include_router(offices.router)
+api_router.include_router(offices.admin_router)
 api_router.include_router(gis.router)
 api_router.include_router(map.router)  # before lands: /lands/map vs /lands/{land_id}
 api_router.include_router(lands.router)

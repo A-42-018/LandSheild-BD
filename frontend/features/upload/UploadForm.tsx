@@ -19,6 +19,8 @@ import {
 } from "./validation";
 import { TERMINAL_STATUSES, type DocumentUploadOut } from "./types";
 import { Link } from "@/i18n/navigation";
+import OfficeCascade from "@/features/officers/OfficeCascade";
+import { bi, officePath, type Office } from "@/features/officers/types";
 import { useDocumentStatus } from "./useDocumentStatus";
 
 function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
@@ -49,6 +51,16 @@ function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
         </dd>
         <dt className="text-ink-muted">{t("type")}</dt>
         <dd>{t(`types.${doc.document_type}`)}</dd>
+        {doc.office && (
+          <>
+            <dt className="text-ink-muted">{t("filedUnder")}</dt>
+            <dd data-testid="doc-office">
+              {bi(doc.office.name_en, doc.office.name_bn)}
+              <br />
+              <span className="text-xs text-ink-muted">{officePath(doc.office as Office)}</span>
+            </dd>
+          </>
+        )}
         {doc.land_id && (
           <>
             <dt className="text-ink-muted">{t("landId")}</dt>
@@ -96,7 +108,11 @@ function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
 
 export default function UploadForm() {
   const t = useTranslations("upload");
-  const { api } = useAuth();
+  const { api, user } = useAuth();
+  const myOffice = user?.office ?? null; // an office officer files only into their own office
+  const needsOffice = !myOffice && user?.role === "ADMIN";
+  const [office, setOffice] = useState<Office | null>(null);
+  const [officeError, setOfficeError] = useState(false);
   const fileId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -114,6 +130,7 @@ export default function UploadForm() {
       form.append("file", f);
       form.append("document_type", docType);
       if (landId.trim()) form.append("land_id", landId.trim().toUpperCase());
+      if (!myOffice && office) form.append("office_id", office.id);
       setProgress(0);
       return api.upload<DocumentUploadOut>("/documents/upload", form, { onProgress: setProgress });
     },
@@ -156,7 +173,9 @@ export default function UploadForm() {
     setFileError(fe);
     const badLand = landId.trim() !== "" && !LAND_ID_RE.test(landId.trim().toUpperCase());
     setLandIdError(badLand);
-    if (fe || badLand) return;
+    const noOffice = needsOffice && !office;
+    setOfficeError(noOffice);
+    if (fe || badLand || noOffice) return;
     m.mutate(file);
   }
 
@@ -235,6 +254,23 @@ export default function UploadForm() {
           </p>
         )}
 
+        <fieldset className="flex flex-col gap-3 rounded-lg border border-line p-3" data-testid="office-sortlist">
+          <legend className="px-1 text-sm font-semibold">{t("officeLegend")}</legend>
+          {myOffice ? (
+            <p className="text-sm" data-testid="my-office">
+              <span className="font-medium">{bi(myOffice.name_en, myOffice.name_bn)}</span>
+              <br />
+              <span className="text-ink-muted">{officePath(myOffice as Office)}</span>
+              <br />
+              <span className="text-xs text-ink-muted">{t("ownOfficeOnly")}</span>
+            </p>
+          ) : (
+            <>
+              <p className="text-xs text-ink-muted">{t(needsOffice ? "pickOffice" : "pickOfficeOptional")}</p>
+              <OfficeCascade officeId={office?.id ?? ""} onChange={setOffice} error={officeError ? t("errors.OFFICE_REQUIRED") : undefined} />
+            </>
+          )}
+        </fieldset>
         <Select
           label={t("type")}
           value={docType}

@@ -1,7 +1,7 @@
-from sqlalchemy import Float, String, UniqueConstraint
+from sqlalchemy import Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.db import Base, IdMixin, JSONType, TimestampMixin
+from app.core.db import UUID_LEN, Base, IdMixin, JSONType, TimestampMixin
 from app.models.enums import LandStatus
 
 
@@ -28,3 +28,8 @@ class LandParcel(IdMixin, TimestampMixin, Base):
     area_unit: Mapped[str] = mapped_column(String(20), nullable=False)
     geometry: Mapped[dict | None] = mapped_column(JSONType, nullable=True)  # GeoJSON
     status: Mapped[str] = mapped_column(String(20), default=LandStatus.ACTIVE.value, nullable=False)
+    # the land office whose database holds this parcel (set when its first document is posted)
+    office_id: Mapped[str | None] = mapped_column(
+        String(UUID_LEN), ForeignKey("land_offices.id"), index=True, nullable=True
+    )
+    union: Mapped[str | None] = mapped_column(String(100), nullable=True)

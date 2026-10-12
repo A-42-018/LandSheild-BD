@@ -8,6 +8,7 @@ import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { Badge, Card, ErrorState, LoadingState, Table, Tabs, type Column } from "@/components/ui";
 import { formatArea, formatDate } from "@/features/result/format";
+import AreaFilter, { NO_AREA, type Area } from "@/features/officers/AreaFilter";
 import { useMutationQueue } from "./useMutations";
 import { daysSince, MUTATION_STATUSES, PAGE_SIZE, type MutationQueueItem } from "./types";
 
@@ -17,7 +18,8 @@ export default function MutationQueue() {
   const locale = useLocale();
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
-  const q = useMutationQueue(status, page);
+  const [area, setArea] = useState<Area>(NO_AREA);
+  const q = useMutationQueue(status, page, area);
 
   const columns: Column<MutationQueueItem>[] = [
     {
@@ -80,6 +82,9 @@ export default function MutationQueue() {
     <div className="flex flex-col gap-4">
     <PageHeader title={t("title")} purpose={t("purpose")} crumbs={[{ label: te("officerCrumb"), href: "/officer" }]} />
     <Card icon={<FileCheck2 />} accent="primary">
+      <div className="mb-4">
+        <AreaFilter value={area} onChange={(a) => { setArea(a); setPage(1); }} />
+      </div>
       <Tabs
         tabs={tabs}
         value={status || "ALL"}

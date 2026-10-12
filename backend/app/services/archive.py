@@ -61,13 +61,17 @@ def _row(doc: Document, land: LandParcel | None) -> dict:
     return out
 
 
-def _approved(db: Session) -> list[tuple[Document, LandParcel | None]]:
+def _approved(
+    db: Session, office_cond=None
+) -> list[tuple[Document, LandParcel | None]]:
     q = (
         select(Document, LandParcel)
         .outerjoin(LandParcel, LandParcel.id == Document.land_id)
         .where(Document.processing_status == DocumentStatus.APPROVED.value)
         .order_by(Document.created_at, Document.id)
     )
+    if office_cond is not None:
+        q = q.where(office_cond)
     return [(d, land) for d, land in db.execute(q).all()]
 
 
@@ -156,10 +160,10 @@ def _like(value: str) -> str:
     return f"%{esc.lower()}%"
 
 
-def _search_generic(db, q, survey, district, limit, offset) -> ArchiveSearchOut:
+def _search_generic(db, q, survey, district, limit, offset, office_cond=None) -> ArchiveSearchOut:
     words = _match_expr(q).replace('"', "").split()
     hits = []
-    for d, land in _approved(db):
+    for d, land in _approved(db, office_cond):
         r = _row(d, land)
         if survey and r["survey"] != survey:
             continue
@@ -183,9 +187,12 @@ def _search_generic(db, q, survey, district, limit, offset) -> ArchiveSearchOut:
 
 
 def search(
-    db: Session, q: str, survey: str | None, district: str | None, limit: int, offset: int
+    db: Session, q: str, survey: str | None, district: str | None, limit: int, offset: int,
+    office_cond=None,
 ) -> ArchiveSearchOut:
     if survey and survey not in SURVEYS:
         raise AppError("INVALID_SURVEY", "survey must be CS, SA, RS or BS", 422)
+    if office_cond is not None:  # office-scoped or area-sorted: filter the approved documents
+        return _search_generic(db, q.strip(), survey, district, limit, offset, office_cond)
     fn = _search_sqlite if _is_sqlite(db) else _search_generic
     return fn(db, q.strip(), survey, district, limit, offset)

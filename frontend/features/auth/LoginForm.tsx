@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMutation } from "@tanstack/react-query";
 import { AlertCircle, Info, LogIn, ShieldCheck } from "lucide-react";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Button, Card, Input } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "./AuthContext";
@@ -30,10 +30,16 @@ export default function LoginForm() {
     onSuccess: () => router.replace(safeNext(params.get("next"))),
   });
 
+  const rejectReason =
+    m.error instanceof ApiError && m.error.code === "ACCOUNT_REJECTED"
+      ? String((m.error.details as { reason?: string } | undefined)?.reason ?? "")
+      : "";
   const errKey = (() => {
     const e = m.error;
     if (!e) return null;
     if (e instanceof ApiError) {
+      if (e.code === "ACCOUNT_PENDING") return "accountPending";
+      if (e.code === "ACCOUNT_REJECTED") return "accountRejected";
       if (e.status === 429 || e.code === "RATE_LIMITED") return "rateLimited";
       if (e.code === "NETWORK_ERROR") return "network";
       if (e.status === 401 || e.status === 422 || e.code === "INVALID_CREDENTIALS") return "invalidCredentials";
@@ -73,13 +79,20 @@ export default function LoginForm() {
         {errKey && (
           <p role="alert" className="flex items-start gap-2 rounded-md border border-critical/40 bg-critical/10 px-3 py-2 text-sm text-critical">
             <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{t(errKey)}</span>
+            <span>
+              {t(errKey)}
+              {errKey === "accountRejected" && rejectReason ? ` ${t("rejectReason", { reason: rejectReason })}` : ""}
+            </span>
           </p>
         )}
         <Button type="submit" loading={m.isPending} icon={<LogIn />} className="w-full">
           {t("submit")}
         </Button>
       </form>
+      <p className="mt-4 text-sm">
+        {t("officerPrompt")}{" "}
+        <Link href="/officer-signup" className="text-link underline-offset-2 hover:underline">{t("officerLink")}</Link>
+      </p>
       <aside aria-labelledby="demo-accounts" className="mt-5 rounded-md border border-line bg-surface-muted p-3 text-sm" data-testid="demo-accounts">
         <p id="demo-accounts" className="flex items-center gap-2 font-semibold text-ink">
           <Info aria-hidden="true" className="h-4 w-4 text-ink-muted" />

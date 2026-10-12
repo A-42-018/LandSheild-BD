@@ -37,6 +37,10 @@ export interface QueueParams {
   sort: QueueSortKey;
   order: "asc" | "desc";
   page: number; // 1-based
+  /** sort the record databases by area (optional) */
+  division?: string;
+  district?: string;
+  upazila?: string;
 }
 
 export const PAGE_SIZE = 20;

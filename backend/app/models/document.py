@@ -1,5 +1,5 @@
 from sqlalchemy import Float, ForeignKey, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import UUID_LEN, Base, CreatedMixin, IdMixin, JSONType
 from app.models.enums import DocumentStatus
@@ -23,3 +23,8 @@ class Document(IdMixin, CreatedMixin, Base):
     uploaded_by: Mapped[str | None] = mapped_column(
         String(UUID_LEN), ForeignKey("users.id"), nullable=True
     )
+    # the land office this record belongs to (the uploader's office); None only for legacy rows
+    office_id: Mapped[str | None] = mapped_column(
+        String(UUID_LEN), ForeignKey("land_offices.id"), index=True, nullable=True
+    )
+    office = relationship("LandOffice", lazy="joined", foreign_keys=[office_id])

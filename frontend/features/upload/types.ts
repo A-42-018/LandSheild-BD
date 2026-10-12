@@ -7,6 +7,7 @@ export interface DocumentOut {
   file_type: string;
   created_at: string;
   failure_code?: string | null; // FAILED: OCR_UNAVAILABLE | OCR_TIMEOUT | ...
+  office?: { name_en: string; name_bn: string; division_en: string; division_bn: string; district_en: string; district_bn: string; upazila_en: string | null; upazila_bn: string | null } | null;
 }
 
 export interface DocumentUploadOut extends DocumentOut {

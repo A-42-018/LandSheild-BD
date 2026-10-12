@@ -7,7 +7,7 @@ from app.models.enums import DocumentStatus
 from app.models.user import User
 from app.schemas.document import DocumentOut
 from app.schemas.extraction import Extraction
-from app.services import audit, posting
+from app.services import audit, offices, posting
 from app.services.documents import _to_out
 from app.services.extraction import (
     EDITABLE_STATUSES,
@@ -51,6 +51,8 @@ def approve_document(db: Session, user: User, document_id: str, ip: str | None) 
             "EXTRACTION_INVALID", "Extraction has validation errors", 422,
             [e.model_dump(exclude_none=True) for e in errors],
         )  # fmt: skip
+    by = {f.field: f.value for f in extraction.fields}
+    offices.check_record_area(doc.office, by.get("district"), by.get("upazila"))
     old = doc.processing_status
     if is_survey_doc(doc):
         # A survey record (khatian / porcha) is archived, not posted: no seller, buyer or deed, so

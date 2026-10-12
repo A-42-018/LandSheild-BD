@@ -25,8 +25,8 @@ const doc = (over: Partial<DocumentUploadOut> = {}): DocumentUploadOut => ({
   ...over,
 });
 
-function client(upload: any, get: any = vi.fn(), post: any = vi.fn()): ApiClient {
-  return { refresh: vi.fn().mockResolvedValue({ user: officer }), upload, get, post } as unknown as ApiClient;
+function client(upload: any, get: any = vi.fn(), post: any = vi.fn(), user: any = officer): ApiClient {
+  return { refresh: vi.fn().mockResolvedValue({ user }), upload, get, post } as unknown as ApiClient;
 }
 
 function wrap(c: ApiClient, messages: any = en, locale = "en") {
@@ -197,4 +197,51 @@ describe("UploadForm", () => {
     await new Promise((r) => setTimeout(r, 2500));
     expect(get.mock.calls.length).toBe(calls); // no further polling
   }, 15000);
+});
+
+describe("UploadForm office sortlist", () => {
+  const OFFICE = {
+    id: "o1", code: "LO-1", office_type: "Union Land Office", name_en: "Ashulia Union Land Office", name_bn: "আশুলিয়া ইউনিয়ন ভূমি অফিস",
+    division_en: "Dhaka", division_bn: "ঢাকা", district_en: "Dhaka", district_bn: "ঢাকা", upazila_en: "Savar", upazila_bn: "সাভার",
+  };
+  const places = vi.fn(async (url: string) => {
+    if (url.startsWith("/offices/divisions") || url.startsWith("/offices/districts")) return [{ en: "Dhaka", bn: "ঢাকা" }];
+    if (url.startsWith("/offices/upazilas")) return [{ en: "Savar", bn: "সাভার" }];
+    return { items: [{ ...OFFICE, union_en: null, union_bn: null, location: null }], total: 1 };
+  });
+
+  it("locks an office officer to their own office and sends no office_id", async () => {
+    const upload = vi.fn().mockResolvedValue(doc({ office: { ...OFFICE } } as any));
+    wrap(client(upload, places, vi.fn(), { ...officer, office: OFFICE }));
+    expect(await screen.findByTestId("my-office")).toHaveTextContent("Ashulia Union Land Office / আশুলিয়া ইউনিয়ন ভূমি অফিস");
+    expect(screen.queryByLabelText(/Division/)).toBeNull();
+    choose(pdf());
+    fireEvent.click(screen.getByRole("button", { name: en.upload.submit }));
+    await waitFor(() => expect(upload).toHaveBeenCalled());
+    expect((upload.mock.calls[0][1] as FormData).get("office_id")).toBeNull();
+    expect(await screen.findByTestId("doc-office")).toHaveTextContent("Dhaka / ঢাকা › Dhaka / ঢাকা › Savar / সাভার");
+  });
+
+  it("makes an admin pick the office (Division > Zila > Upozila) before uploading", async () => {
+    const upload = vi.fn().mockResolvedValue(doc());
+    wrap(client(upload, places, vi.fn(), { ...officer, role: "ADMIN" }));
+    choose(pdf());
+    fireEvent.click(await screen.findByRole("button", { name: en.upload.submit }));
+    expect(upload).not.toHaveBeenCalled();
+    fireEvent.change(await screen.findByLabelText(/Division/), { target: { value: "Dhaka" } });
+    await waitFor(() => expect(screen.getByLabelText(/Zila/)).toBeEnabled());
+    fireEvent.change(screen.getByLabelText(/Zila/), { target: { value: "Dhaka" } });
+    fireEvent.change(await screen.findByLabelText(/Upozila/), { target: { value: "Savar" } });
+    const office = await screen.findByLabelText(/Land office/);
+    await waitFor(() => expect(office.querySelectorAll("option").length).toBe(2));
+    fireEvent.change(office, { target: { value: "o1" } });
+    fireEvent.click(screen.getByRole("button", { name: en.upload.submit }));
+    await waitFor(() => expect(upload).toHaveBeenCalled());
+    expect((upload.mock.calls[0][1] as FormData).get("office_id")).toBe("o1");
+  });
+
+  it("explains an office mismatch (403) instead of a generic permission error", () => {
+    expect(errorCodeFromApi({ status: 403, code: "OFFICE_MISMATCH" })).toBe("OFFICE_MISMATCH");
+    expect(errorCodeFromApi({ status: 409, code: "DOCUMENT_ALREADY_FILED" })).toBe("DOCUMENT_ALREADY_FILED");
+  });
 });

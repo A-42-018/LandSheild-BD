@@ -9,6 +9,7 @@ from app.schemas.document import DocumentOut, DocumentUploadOut, RejectBody
 from app.schemas.extraction import ExtractionOut, ExtractionPatch
 from app.services import documents as svc
 from app.services import extraction as extraction_svc
+from app.services import offices as office_svc
 from app.services import processing
 from app.services import review as review_svc
 from app.services.providers import Providers, get_providers
@@ -39,6 +40,7 @@ async def upload_document(
     file: UploadFile = File(...),
     document_type: str = Form("DEED"),
     land_id: str | None = Form(None),
+    office_id: str | None = Form(None),
     user: User = Depends(require_roles(*OFFICER_UP)),
     db: Session = Depends(get_db),
     storage: StorageService = Depends(get_storage),
@@ -48,7 +50,9 @@ async def upload_document(
     check_rate("upload", user.id, limit, window=3600.0)
     data = await file.read(MAX_UPLOAD_BYTES + 1)  # +1 so oversize is detectable, never buffered
     ip = request.client.host if request.client else None
-    out = svc.upload_document(db, storage, user, file.filename, data, document_type, land_id, ip)
+    out = svc.upload_document(
+        db, storage, user, file.filename, data, document_type, land_id, ip, office_id
+    )
     if out.duplicate:
         response.status_code = 200
     return out
@@ -60,6 +64,7 @@ def get_document(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> DocumentOut:
+    office_svc.ensure_doc_access(db, user, document_id)
     return svc.get_document(db, document_id)
 
 
@@ -70,6 +75,7 @@ def get_document_file(
     db: Session = Depends(get_db),
     storage: StorageService = Depends(get_storage),
 ) -> Response:
+    office_svc.ensure_doc_access(db, user, document_id)
     data, media = svc.read_document_file(db, storage, document_id)
     return Response(
         content=data,
@@ -89,6 +95,7 @@ def process_document(
     providers: Providers = Depends(get_job_providers),
     session_factory: processing.SessionFactory = Depends(get_session_factory),
 ) -> DocumentOut:
+    office_svc.ensure_doc_access(db, user, document_id, write=True)
     ip = request.client.host if request.client else None
     out = processing.start_processing(db, user, document_id, ip)  # UPLOADED -> PROCESSING
     BackgroundTasksRunner(background).submit(
@@ -104,6 +111,7 @@ def get_extraction(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> ExtractionOut:
+    office_svc.ensure_doc_access(db, user, document_id)
     threshold = request.app.state.settings.review_conf_threshold
     return extraction_svc.get_extraction(db, document_id, threshold, user)
 
@@ -116,6 +124,7 @@ def patch_extraction(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> ExtractionOut:
+    office_svc.ensure_doc_access(db, user, document_id)
     ip = request.client.host if request.client else None
     threshold = request.app.state.settings.review_conf_threshold
     return extraction_svc.patch_extraction(db, user, document_id, body, threshold, ip)
@@ -128,6 +137,7 @@ def approve_document(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> DocumentOut:
+    office_svc.ensure_doc_access(db, user, document_id)
     ip = request.client.host if request.client else None
     return review_svc.approve_document(db, user, document_id, ip)
 
@@ -140,6 +150,7 @@ def reject_document(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> DocumentOut:
+    office_svc.ensure_doc_access(db, user, document_id)
     ip = request.client.host if request.client else None
     return review_svc.reject_document(db, user, document_id, body.reason, ip)
 
@@ -155,6 +166,7 @@ def reprocess_document(
     providers: Providers = Depends(get_job_providers),
     session_factory: processing.SessionFactory = Depends(get_session_factory),
 ) -> DocumentOut:
+    office_svc.ensure_doc_access(db, user, document_id)
     ip = request.client.host if request.client else None
     out = review_svc.request_reprocess(db, user, document_id, ip)  # -> PROCESSING
     BackgroundTasksRunner(background).submit(

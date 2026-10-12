@@ -12,6 +12,9 @@ export type UploadErrorCode =
   | "IMAGE_TOO_LARGE"
   | "PDF_TOO_MANY_PAGES"
   | "LAND_NOT_FOUND"
+  | "OFFICE_MISMATCH"
+  | "DOCUMENT_ALREADY_FILED"
+  | "OFFICE_REQUIRED"
   | "PERMISSION"
   | "NETWORK"
   | "GENERIC";
@@ -37,13 +40,15 @@ const SERVER_CODES: UploadErrorCode[] = [
   "IMAGE_TOO_LARGE",
   "PDF_TOO_MANY_PAGES",
   "LAND_NOT_FOUND",
+  "OFFICE_MISMATCH",
+  "DOCUMENT_ALREADY_FILED",
 ];
 
 export function errorCodeFromApi(e: { status: number; code: string }): UploadErrorCode {
   if (e.code === "NETWORK_ERROR") return "NETWORK";
-  if (e.status === 403) return "PERMISSION";
   const hit = SERVER_CODES.find((c) => c === e.code);
-  return hit ?? "GENERIC";
+  if (hit) return hit;
+  return e.status === 403 ? "PERMISSION" : "GENERIC";
 }
 
 export function formatBytes(n: number): string {

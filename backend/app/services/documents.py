@@ -5,10 +5,11 @@ from app.core.errors import AppError
 from app.models.audit import AuditLog
 from app.models.document import Document
 from app.models.enums import DocumentStatus
+from app.models.land_office import LandOffice
 from app.models.land_parcel import LandParcel
 from app.models.user import User
-from app.schemas.document import DOCUMENT_TYPES, DocumentOut, DocumentUploadOut
-from app.services import audit
+from app.schemas.document import DOCUMENT_TYPES, DocumentOut, DocumentUploadOut, OfficeBrief
+from app.services import audit, offices
 from app.services.storage import StorageError, StorageService, sha256_hex
 from app.services.upload_validation import validate_upload
 
@@ -36,6 +37,7 @@ def _to_out(db: Session, doc: Document) -> DocumentOut:
         file_type=doc.file_path.rsplit(".", 1)[-1],
         created_at=doc.created_at,
         failure_code=_failure_code(db, doc),
+        office=OfficeBrief.model_validate(doc.office) if doc.office else None,
     )
 
 
@@ -48,6 +50,7 @@ def upload_document(
     document_type: str,
     land_id: str | None,
     ip: str | None,
+    office_id: str | None = None,
 ) -> DocumentUploadOut:
     document_type = document_type.strip().upper()
     if document_type not in DOCUMENT_TYPES:
@@ -59,11 +62,17 @@ def upload_document(
         land = db.scalar(select(LandParcel).where(LandParcel.land_id == land_id.strip()))
         if land is None:
             raise AppError("LAND_NOT_FOUND", "Land parcel not found", 404)
+    office: LandOffice | None = offices.resolve_upload_office(db, user, office_id)
+    if land is not None and office is not None and land.office_id not in (None, office.id):
+        raise AppError("OFFICE_MISMATCH", "That land belongs to another land office", 403)
 
     checked = validate_upload(filename, data)
     digest = sha256_hex(data)
 
     existing = db.scalar(select(Document).where(Document.file_hash == digest))
+    if existing is not None and office is not None and existing.office_id not in (None, office.id):
+        # the same file already sits in another office: say so, but show nothing about it
+        raise AppError("DOCUMENT_ALREADY_FILED", "This file was already filed elsewhere", 409)
     if existing is not None:  # same bytes: flag, never overwrite or store twice
         audit.log(
             db, user, "DOCUMENT_UPLOAD_DUPLICATE", "document", existing.id,
@@ -81,6 +90,7 @@ def upload_document(
             file_hash=stored.sha256,
             processing_status=DocumentStatus.UPLOADED.value,
             uploaded_by=user.id,
+            office_id=office.id if office else None,
         )
         db.add(doc)
         db.flush()
@@ -92,6 +102,7 @@ def upload_document(
                 "file_type": checked.ext,
                 "size": stored.size,
                 "land_id": land.land_id if land else None,
+                "office": office.code if office else None,
             },
             ip=ip,
         )  # fmt: skip

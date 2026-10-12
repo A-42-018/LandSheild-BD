@@ -161,7 +161,12 @@
     "loginRequired": "Please sign in to continue.",
     "demoTitle": "Demo accounts",
     "demoHint": "For this demo only. Use one of these e-mails with the demo password from the README.",
-    "notice": "Demo e-governance prototype. Not a government website."
+    "notice": "Demo e-governance prototype. Not a government website.",
+    "accountPending": "Your officer account is awaiting admin approval. You can sign in once it is approved.",
+    "accountRejected": "Your officer account request was rejected.",
+    "rejectReason": "Reason: {reason}",
+    "officerPrompt": "Land office officer without an account?",
+    "officerLink": "Request an officer account"
   },
   "verify": {
     "title": "Verify Land",
@@ -326,8 +331,16 @@
       "PERMISSION": "You don't have permission to perform this action.",
       "NETWORK": "Cannot reach the server. Please try again.",
       "GENERIC": "We couldn't process this document. Please check the file and try again.",
-      "LAND_ID": "Enter a land ID like LP-10100."
-    }
+      "LAND_ID": "Enter a land ID like LP-10100.",
+      "OFFICE_MISMATCH": "You can only upload records for your own land office, and only onto land held by it.",
+      "DOCUMENT_ALREADY_FILED": "This file has already been filed in the system.",
+      "OFFICE_REQUIRED": "Choose the land office this record belongs to."
+    },
+    "filedUnder": "Filed under",
+    "officeLegend": "Land office (area) for this record",
+    "ownOfficeOnly": "Records you upload are kept in this office only. You cannot upload for another area.",
+    "pickOffice": "Choose the land office this record belongs to (required).",
+    "pickOfficeOptional": "Choose the land office this record belongs to."
   },
   "review": {
     "title": "Review extraction",
@@ -689,7 +702,8 @@
         "users": "Users",
         "records": "Land records",
         "documents": "Documents",
-        "ledger": "Ledger integrity"
+        "ledger": "Ledger integrity",
+        "officers": "Officer requests"
       },
       "search": "Search",
       "all": "All",
@@ -769,7 +783,35 @@
           "created": "Uploaded (UTC)"
         }
       },
-      "purpose": "Users, records, documents and ledger integrity."
+      "purpose": "Users, records, documents and ledger integrity.",
+      "officers": {
+        "title": "Officer account requests",
+        "hint": "Verify each applicant's posting before approving. Approved officers see only their own office's area.",
+        "pendingCount": "{n} pending.",
+        "cols": {
+          "applicant": "Applicant",
+          "office": "Office",
+          "details": "Details",
+          "requested": "Requested",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "empId": "Employee ID",
+        "status": {
+          "PENDING": "Pending",
+          "APPROVED": "Approved",
+          "REJECTED": "Rejected"
+        },
+        "approve": "Approve",
+        "reject": "Reject",
+        "approveFor": "Approve {name}",
+        "rejectFor": "Reject {name}",
+        "rejectTitle": "Reject {name}",
+        "reason": "Reason for rejection",
+        "reasonHint": "The applicant sees this reason when they try to sign in.",
+        "empty": "No requests.",
+        "error": "Could not update the request. Please try again."
+      }
     },
     "ledger": {
       "title": "Ledger integrity",
@@ -1345,5 +1387,50 @@
         "partition": "Sharing the plot needs a registered partition deed and a mutation."
       }
     }
+  },
+  "officerSignup": {
+    "title": "Request an officer account",
+    "intro": "Choose the land office you work in, then enter your details. An administrator will verify and approve your request before you can sign in.",
+    "officeStep": "Your land office",
+    "division": "Division",
+    "district": "Zila (District)",
+    "upazila": "Upozila (Upazila)",
+    "selectDivision": "Select division",
+    "selectDistrict": "Select zila",
+    "districtLevel": "District-level office (no upozila)",
+    "upazilaHint": "Pick your upozila for an upozila or union land office; leave empty for a district office.",
+    "office": "Land office",
+    "selectOffice": "Select your office",
+    "officeRequired": "Select the office you work in.",
+    "name": "Full name",
+    "email": "Official email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "passwordShort": "Use at least 8 characters.",
+    "designation": "Designation",
+    "employeeId": "Government employee ID",
+    "phone": "Mobile number",
+    "proof": "Posting order / ID reference (optional)",
+    "proofHint": "Memo or order number that lets the admin verify your posting.",
+    "required": "This field is required.",
+    "emailInvalid": "Enter a valid email.",
+    "phoneInvalid": "Enter a valid mobile number, e.g. +8801711000000.",
+    "submit": "Send request",
+    "haveAccount": "Already approved?",
+    "toLogin": "Sign in",
+    "doneTitle": "Request sent",
+    "doneBody": "Your request was sent to the administrator. Your account stays inactive until it is approved.",
+    "doneHint": "Come back and sign in with the same email and password after approval.",
+    "errors": {
+      "emailTaken": "This email is already registered. If your request was rejected, apply again with the same password.",
+      "rateLimited": "Too many attempts. Please wait a minute and try again.",
+      "officeGone": "That office no longer exists. Pick it again.",
+      "invalid": "Some details are not valid. Please check the form.",
+      "generic": "Could not send the request. Please try again."
+    }
+  },
+  "area": {
+    "legend": "Filter records by area",
+    "all": "All"
   }
 }

@@ -16,6 +16,7 @@ from app.models.enums import (
     TransactionType,
     VerificationStatus,
 )
+from app.models.land_office import LandOffice, OfficerRequest
 from app.models.land_parcel import LandParcel
 from app.models.ledger import LedgerEntry
 from app.models.mutation import MutationRecord
@@ -36,12 +37,14 @@ __all__ = [
     "EncumbranceType",
     "FraudAlert",
     "LandEncumbrance",
+    "LandOffice",
     "LandParcel",
     "LandStatus",
     "LedgerEntry",
     "MutationRecord",
     "MutationSource",
     "MutationStatus",
+    "OfficerRequest",
     "Owner",
     "OwnershipHistory",
     "RiskAssessment",

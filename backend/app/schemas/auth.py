@@ -30,6 +30,22 @@ class LoginIn(BaseModel):
     _email = field_validator("email")(_norm_email)
 
 
+class OfficeBrief(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    code: str
+    office_type: str
+    name_en: str
+    name_bn: str
+    division_en: str
+    division_bn: str
+    district_en: str
+    district_bn: str
+    upazila_en: str | None = None
+    upazila_bn: str | None = None
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -38,6 +54,7 @@ class UserOut(BaseModel):
     email: str
     role: str
     preferred_language: str
+    office: OfficeBrief | None = None
 
 
 class TokenOut(BaseModel):

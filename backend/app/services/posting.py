@@ -14,6 +14,7 @@ from app.core.errors import AppError
 from app.models.deed import Deed
 from app.models.document import Document
 from app.models.enums import LandStatus, TransactionStatus, TransactionType
+from app.models.land_office import LandOffice
 from app.models.land_parcel import LandParcel
 from app.models.owner import Owner
 from app.models.ownership import OwnershipHistory
@@ -81,6 +82,7 @@ def _resolve_land(
                 409,
                 {"land_id": land.land_id},
             )
+        _same_office(doc, land)
         return land, False
     cands = db.scalars(
         select(LandParcel).where(
@@ -93,8 +95,10 @@ def _resolve_land(
         if _key(land.khatian_no) == _key(v["khatian_no"]) and _key(land.dag_no) == _key(
             v["dag_no"]
         ):
+            _same_office(doc, land)
             doc.land_id = land.id
             return land, False
+    office = db.get(LandOffice, doc.office_id) if doc.office_id else None
     land = LandParcel(
         land_id=_next_land_code(db),
         district=_norm(v["district"]),
@@ -105,11 +109,22 @@ def _resolve_land(
         area=area,
         area_unit=unit,
         status=LandStatus.ACTIVE.value,
+        office_id=doc.office_id,
+        union=office.union_en if office else None,
     )
     db.add(land)
     db.flush()
     doc.land_id = land.id
     return land, True
+
+
+def _same_office(doc: Document, land: LandParcel) -> None:
+    """A parcel held by one office's database cannot be changed by another office."""
+    if doc.office_id and land.office_id and land.office_id != doc.office_id:
+        raise AppError(
+            "RECORD_OUTSIDE_AREA", "This land is held by another land office", 409,
+            {"land_id": land.land_id},
+        )
 
 
 def _next_land_code(db: Session) -> str:

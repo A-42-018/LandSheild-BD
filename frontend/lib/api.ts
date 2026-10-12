@@ -16,6 +16,20 @@ export interface ApiUser {
   email: string;
   role: "CITIZEN" | "REVIEWER" | "OFFICER" | "ADMIN";
   preferred_language: string;
+  /** set for an approved officer: the land office they work in */
+  office?: {
+    id: string;
+    code: string;
+    office_type: string;
+    name_en: string;
+    name_bn: string;
+    division_en: string;
+    division_bn: string;
+    district_en: string;
+    district_bn: string;
+    upazila_en: string | null;
+    upazila_bn: string | null;
+  } | null;
 }
 
 export interface TokenResponse {

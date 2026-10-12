@@ -30,6 +30,9 @@ AUDIT = {
     ("POST", f"{P}/mutations/{{mutation_id}}/transition"): "MUTATION_TRANSITION",
     ("POST", f"{P}/admin/users"): "USER_CREATE",
     ("PATCH", f"{P}/admin/users/{{user_id}}"): "USER_UPDATE",
+    ("POST", f"{P}/offices/officer-requests"): "OFFICER_REQUEST",
+    ("POST", f"{P}/admin/officer-requests/{{request_id}}/approve"): "OFFICER_REQUEST_APPROVE",
+    ("POST", f"{P}/admin/officer-requests/{{request_id}}/reject"): "OFFICER_REQUEST_REJECT",
 }
 
 
@@ -128,6 +131,30 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     _audited(env, "USER_UPDATE", lambda: env.patch(
         f"{P}/admin/users/{created.json()['id']}", json={"role": "OFFICER"}, headers=adm))  # fmt: skip
     mark("PATCH", f"{P}/admin/users/{{user_id}}")
+
+    env.get(f"{P}/offices/divisions")  # loads the bundled office list
+    from sqlalchemy import select as _select
+
+    from app.models.land_office import LandOffice
+    from tests.test_documents import _db as _session
+
+    with _session(env) as s:
+        office_id = s.scalar(_select(LandOffice.id).limit(1))
+    reqs = []
+    for i in range(2):
+        reqs.append(_audited(env, "OFFICER_REQUEST", lambda i=i: env.post(
+            f"{P}/offices/officer-requests", json={
+                "name": f"Off{i}", "email": f"off{i}@x.test", "password": "correct-horse-1",
+                "office_id": office_id, "designation": "Tahsildar",
+                "phone": "+8801711000000", "employee_id": f"E{i}"})))  # fmt: skip
+    mark("POST", f"{P}/offices/officer-requests")
+    rid = [r["id"] for r in env.get(f"{P}/admin/officer-requests", headers=adm).json()["items"]]
+    _audited(env, "OFFICER_REQUEST_APPROVE", lambda: env.post(
+        f"{P}/admin/officer-requests/{rid[0]}/approve", headers=adm))  # fmt: skip
+    mark("POST", f"{P}/admin/officer-requests/{{request_id}}/approve")
+    _audited(env, "OFFICER_REQUEST_REJECT", lambda: env.post(
+        f"{P}/admin/officer-requests/{rid[1]}/reject", json={"reason": "Not verified"}, headers=adm))  # fmt: skip
+    mark("POST", f"{P}/admin/officer-requests/{{request_id}}/reject")
 
     assert ran == set(AUDIT), f"write routes with no scenario: {set(AUDIT) - ran}"
 

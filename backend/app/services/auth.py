@@ -65,6 +65,12 @@ def register_user(db: Session, data: RegisterIn) -> User:
 def authenticate(db: Session, email: str, password: str) -> User:
     user = db.scalar(select(User).where(User.email == email))
     ok = verify_password(password, user.password_hash if user else "x$0$0$0$00$00")
-    if not user or not ok or not user.is_active:
+    if not user or not ok:
         raise AppError("INVALID_CREDENTIALS", "Invalid email or password", 401)
+    if not user.is_active:
+        from app.services import offices  # local: offices imports models that import this module
+
+        raise offices.login_block(db, user) or AppError(
+            "INVALID_CREDENTIALS", "Invalid email or password", 401
+        )
     return user
