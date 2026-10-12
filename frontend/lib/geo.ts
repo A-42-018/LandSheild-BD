@@ -353,4 +353,5 @@ export const divisionOf = (district: string): string => DISTRICTS.find((d) => d.
 export const upazilasOf = (district: string): GeoOption[] =>
   DISTRICTS.find((d) => d.value === district)?.upazilas ?? [];
 
-export const labelOf = (o: GeoOption, locale: string): string => (locale === "bn" ? o.bn : o.en);
+/** Place names always show both scripts, e.g. "Dhaka (ঢাকা)", whatever the site language. */
+export const labelOf = (o: GeoOption, _locale?: string): string => `${o.en} (${o.bn})`;
