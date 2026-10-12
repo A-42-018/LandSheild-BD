@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Search, SearchCheck } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -7,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "@/i18n/navigation";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { ApiError } from "@/lib/api";
-import { DISTRICTS, labelOf, upazilasOf } from "@/lib/geo";
+import { DISTRICTS, DIVISIONS, districtsOf, divisionOf, labelOf, upazilasOf } from "@/lib/geo";
 import { useAuth } from "@/features/auth/AuthContext";
 import { verifySchema, type VerifyInput, type VerifyValues } from "./schema";
 
@@ -34,6 +35,9 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   });
 
   const district = watch("district") as string;
+  // Division is a UI-only filter: picking one narrows the districts; picking a district fills it in.
+  const [division, setDivision] = useState("");
+  const districtOptions = division ? districtsOf(division) : DISTRICTS;
   const err = (k?: { message?: string }) => (k?.message ? t(`errors.${k.message}`) : undefined);
 
   const m = useMutation({
@@ -67,16 +71,32 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
         onSubmit={handleSubmit((v) => m.mutate(v))}
         noValidate
         aria-label={compact ? t("title") : undefined}
-        className={compact ? "grid grid-cols-2 items-start gap-3 lg:grid-cols-6" : "flex flex-col gap-4"}
+        className={compact ? "grid grid-cols-2 items-start gap-3 lg:grid-cols-7" : "flex flex-col gap-4"}
       >
         {!compact && <p className="text-ink-muted">{t("intro")}</p>}
+        <Select
+          label={t("division")}
+          placeholder={t("selectDivision")}
+          options={DIVISIONS.map((d) => ({ value: d.value, label: labelOf(d, locale) }))}
+          value={division}
+          onChange={(e) => {
+            setDivision(e.target.value);
+            setValue("district", "");
+            setValue("upazila", "");
+          }}
+        />
         <Select
           label={t("district")}
           required
           placeholder={t("selectDistrict")}
-          options={DISTRICTS.map((d) => ({ value: d.value, label: labelOf(d, locale) }))}
+          options={districtOptions.map((d) => ({ value: d.value, label: labelOf(d, locale) }))}
           error={err(errors.district)}
-          {...register("district", { onChange: () => setValue("upazila", "") })}
+          {...register("district", {
+            onChange: (e) => {
+              setValue("upazila", "");
+              if (e.target.value) setDivision(divisionOf(e.target.value));
+            },
+          })}
         />
         <Select
           label={t("upazila")}

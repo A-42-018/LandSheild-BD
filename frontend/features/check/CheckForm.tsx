@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ListChecks, Search } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -6,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { ApiError } from "@/lib/api";
-import { DISTRICTS, labelOf, upazilasOf } from "@/lib/geo";
+import { DISTRICTS, DIVISIONS, districtsOf, divisionOf, labelOf, upazilasOf } from "@/lib/geo";
 import { useAuth } from "@/features/auth/AuthContext";
 import { checkSchema, type CheckInput, type CheckValues } from "./schema";
 import CheckResult from "./CheckResult";
@@ -30,6 +31,9 @@ export default function CheckForm() {
   });
 
   const district = watch("district") as string;
+  // Division is a UI-only filter: picking one narrows the districts; picking a district fills it in.
+  const [division, setDivision] = useState("");
+  const districtOptions = division ? districtsOf(division) : DISTRICTS;
   const err = (k?: { message?: string }) => (k?.message ? t(`errors.${k.message}`) : undefined);
 
   const m = useMutation<PrePurchaseDto, ApiError, CheckValues>({
@@ -56,12 +60,28 @@ export default function CheckForm() {
         <form onSubmit={handleSubmit((v) => m.mutate(v))} noValidate className="flex flex-col gap-4">
           <p className="text-ink-muted">{t("intro")}</p>
           <Select
+            label={tv("division")}
+            placeholder={tv("selectDivision")}
+            options={DIVISIONS.map((d) => ({ value: d.value, label: labelOf(d, locale) }))}
+            value={division}
+            onChange={(e) => {
+              setDivision(e.target.value);
+              setValue("district", "");
+              setValue("upazila", "");
+            }}
+          />
+          <Select
             label={tv("district")}
             required
             placeholder={tv("selectDistrict")}
-            options={DISTRICTS.map((d) => ({ value: d.value, label: labelOf(d, locale) }))}
+            options={districtOptions.map((d) => ({ value: d.value, label: labelOf(d, locale) }))}
             error={err(errors.district)}
-            {...register("district", { onChange: () => setValue("upazila", "") })}
+            {...register("district", {
+            onChange: (e) => {
+              setValue("upazila", "");
+              if (e.target.value) setDivision(divisionOf(e.target.value));
+            },
+          })}
           />
           <Select
             label={tv("upazila")}
