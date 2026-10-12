@@ -8,6 +8,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { Button, Card, Input } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "./AuthContext";
+import { hasRole, REVIEW_UP } from "./roles";
 
 /** Seeded demo users (README "Demo accounts"); the password is never shown in the UI. */
 export const DEMO_ACCOUNTS = ["citizen", "reviewer", "officer", "admin"].map((r) => `${r}@demo.landshield.test`);
@@ -27,7 +28,11 @@ export default function LoginForm() {
 
   const m = useMutation({
     mutationFn: () => login(email, password),
-    onSuccess: () => router.replace(safeNext(params.get("next"))),
+    // An explicit ?next= wins; otherwise reviewers/officers/admins land on their dashboard.
+    onSuccess: (user) => {
+      const next = params.get("next");
+      router.replace(next ? safeNext(next) : hasRole(user.role, REVIEW_UP) ? "/officer" : "/");
+    },
   });
 
   const rejectReason =
