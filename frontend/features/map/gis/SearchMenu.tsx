@@ -6,12 +6,15 @@ import { Button, Select } from "@/components/ui";
 import { useGisSearch } from "./useGis";
 import {
   gisLabel,
+  mouzasInUnion,
   select,
+  sheetRef,
   type GisCapabilitiesDto,
   type GisFeatureDto,
   type GisSelection,
   type MouzaListDto,
   type SearchHitDto,
+  type UnionListDto,
 } from "./types";
 
 export interface SearchMenuProps {
@@ -22,6 +25,7 @@ export interface SearchMenuProps {
   divisions: GisFeatureDto[];
   districts: GisFeatureDto[];
   upazilas: GisFeatureDto[];
+  unions?: UnionListDto;
   mouzas?: MouzaListDto;
   caps?: GisCapabilitiesDto;
   loading: boolean;
@@ -32,7 +36,7 @@ const opts = (fs: GisFeatureDto[]) =>
     .map((f) => ({ value: f.properties.id, label: gisLabel(f.properties) }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
-/** Cascading Division → District → Upazila → Mouza → Sheet → Plot menu (reference: map.land.gov.bd). */
+/** Cascading Division → District → Upazila → Union → Mouza (JL) → Sheet → Plot menu (reference: map.land.gov.bd). */
 export default function SearchMenu(p: SearchMenuProps) {
   const t = useTranslations("map.gis");
   const [term, setTerm] = useState("");
@@ -40,24 +44,38 @@ export default function SearchMenu(p: SearchMenuProps) {
   const search = useGisSearch(submitted);
   const { sel } = p;
 
-  const mouzaOptions = (p.mouzas?.mouzas ?? []).map((m) => ({
+  const allMouzas = p.mouzas?.mouzas ?? [];
+  const unionOptions = (p.unions?.unions ?? []).map((u) => ({
+    value: u.id,
+    label: `${gisLabel(u)} · ${t("mouzaCount", { count: u.mouza_count })}`,
+  }));
+  const unionDisabled = !sel.upazilaId || !p.unions?.enabled || unionOptions.length === 0;
+  const mouzaOptions = mouzasInUnion(allMouzas, sel.unionId).map((m) => ({
     value: m.id,
-    label: `${m.code}-${m.name}${m.bn_name ? ` (${m.bn_name})` : ""}`,
+    label: `${m.jl_no ? `${t("jlShort", { jl: m.jl_no })} · ` : ""}${gisLabel(m)}`,
   }));
   const mouzaDisabled = !sel.upazilaId || !p.mouzas?.enabled || mouzaOptions.length === 0;
   let mouzaHint: string | undefined;
   if (sel.upazilaId && p.mouzas) {
     if (!p.mouzas.enabled) {
       mouzaHint = t("mouzaOutOfScope", { division: p.caps?.mouza_enabled_division_name ?? "—" });
-    } else if (mouzaOptions.length === 0) {
+    } else if (allMouzas.length === 0) {
       mouzaHint = t("mouzaNone");
+    } else if (p.unions && unionOptions.length === 0) {
+      mouzaHint = t("mouzaNoUnion");
+    } else if (!sel.unionId) {
+      mouzaHint = t("mouzaPickUnion");
     }
   }
-  const sheets = p.mouzas?.mouzas.find((m) => m.id === sel.mouzaId)?.sheets ?? [];
+  const mouza = allMouzas.find((m) => m.id === sel.mouzaId);
+  const union = p.unions?.unions.find((u) => u.id === (mouza?.union_id ?? sel.unionId));
+  const sheets = mouza?.sheets ?? [];
   const sheetOptions = sheets
-    .map((s) => s.sheet_no)
-    .filter((n): n is string => Boolean(n))
-    .map((n) => ({ value: n, label: n }));
+    .filter((s) => Boolean(s.sheet_no))
+    .map((s) => ({
+      value: `${s.survey ?? ""}-${s.sheet_no}`,
+      label: s.plots ? `${sheetRef(s)} · ${t("plotCount", { count: s.plots })}` : sheetRef(s),
+    }));
 
   return (
     <div className="flex flex-col gap-3" data-testid="gis-menu">
@@ -149,6 +167,14 @@ export default function SearchMenu(p: SearchMenuProps) {
         disabled={!sel.districtId}
         onChange={(e) => p.onChange(select(sel, "upazilaId", e.target.value))}
       />
+      <Select
+        label={t("union")}
+        placeholder={t("allUnions")}
+        value={sel.unionId}
+        options={unionOptions}
+        disabled={unionDisabled}
+        onChange={(e) => p.onChange(select(sel, "unionId", e.target.value))}
+      />
       <details className="group rounded-md border border-line/70 px-2.5 py-1.5">
         <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-ink-muted">
           {t("advanced")}
@@ -161,9 +187,44 @@ export default function SearchMenu(p: SearchMenuProps) {
         options={mouzaOptions}
         disabled={mouzaDisabled}
         hint={mouzaHint}
-        onChange={(e) => p.onChange(select(sel, "mouzaId", e.target.value))}
+        onChange={(e) => {
+          const picked = allMouzas.find((m) => m.id === e.target.value);
+          // picking a mouza from the whole upazila also fills in its union
+          p.onChange({ ...select(sel, "mouzaId", e.target.value), unionId: picked?.union_id ?? sel.unionId });
+        }}
       />
+      {mouza && (
+        <dl
+          data-testid="mouza-info"
+          className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-md bg-surface-muted px-2.5 py-2 text-xs"
+        >
+          <dt className="text-ink-muted">{t("mouza")}</dt>
+          <dd className="font-medium">{gisLabel(mouza)}</dd>
+          <dt className="text-ink-muted">{t("jlNo")}</dt>
+          <dd className="font-medium">{mouza.jl_no ?? "—"}</dd>
+          <dt className="text-ink-muted">{t("union")}</dt>
+          <dd>{union ? gisLabel(union) : t("unionUnknown")}</dd>
+          <dt className="text-ink-muted">{t("sheetRefs")}</dt>
+          <dd>{sheets.length ? sheets.map(sheetRef).join(", ") : "—"}</dd>
+          {(mouza.source_url ?? p.caps?.mouza_source_url) && (
+            <>
+              <dt className="text-ink-muted">{t("source")}</dt>
+              <dd>
+                <a
+                  href={mouza.source_url ?? p.caps?.mouza_source_url ?? ""}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-primary underline"
+                >
+                  {(mouza.source_url ?? p.caps?.mouza_source_url ?? "").replace(/^https?:\/\//, "")}
+                </a>
+              </dd>
+            </>
+          )}
+        </dl>
+      )}
       <Select
+        key={sel.mouzaId}
         label={t("sheet")}
         placeholder={t("choose")}
         options={sheetOptions}

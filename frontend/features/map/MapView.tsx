@@ -26,6 +26,7 @@ import {
   useDivisions,
   useGisCapabilities,
   useMouzas,
+  useUnions,
   useUpazilas,
 } from "./gis/useGis";
 import type { PopupLabels } from "./popup";
@@ -54,6 +55,7 @@ export default function MapView() {
   const [sel, setSel] = useState<GisSelection>(EMPTY_SELECTION);
   const districts = useDistricts(sel.divisionId);
   const upazilas = useUpazilas(sel.districtId);
+  const unions = useUnions(sel.upazilaId);
   const mouzas = useMouzas(sel.upazilaId);
 
   const [filter, setFilter] = useState<RiskFilter>("ALL");
@@ -110,11 +112,14 @@ export default function MapView() {
     else if (h.level === "district")
       setSel({ ...EMPTY_SELECTION, divisionId: h.division_id ?? "", districtId: h.id });
     else if (h.level === "upazila")
+      setSel({ ...EMPTY_SELECTION, divisionId: h.division_id ?? "", districtId: h.district_id ?? "", upazilaId: h.id });
+    else
       setSel({
         divisionId: h.division_id ?? "",
         districtId: h.district_id ?? "",
-        upazilaId: h.id,
-        mouzaId: "",
+        upazilaId: h.upazila_id ?? "",
+        unionId: h.level === "union" ? h.id : (h.union_id ?? ""),
+        mouzaId: h.level === "mouza" ? h.id : "",
       });
   };
 
@@ -305,6 +310,7 @@ export default function MapView() {
                 divisions={divisions.data?.features ?? []}
                 districts={districts.data?.features ?? []}
                 upazilas={upazilas.data?.features ?? []}
+                unions={unions.data}
                 mouzas={mouzas.data}
                 caps={caps.data}
                 loading={divisions.isPending}
