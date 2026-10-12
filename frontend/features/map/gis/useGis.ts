@@ -7,6 +7,7 @@ import type {
   GisCollectionDto,
   MouzaListDto,
   SearchResultDto,
+  UnionListDto,
 } from "./types";
 
 const STATIC = { staleTime: Infinity, retry: false } as const; // boundary data never changes at runtime
@@ -49,6 +50,17 @@ export function useUpazilas(districtId: string) {
   });
 }
 
+export function useUnions(upazilaId: string) {
+  const { api } = useAuth();
+  return useQuery<UnionListDto, ApiError>({
+    queryKey: ["gis", "unions", upazilaId],
+    queryFn: () => api.get<UnionListDto>(`/gis/unions?upazila_id=${encodeURIComponent(upazilaId)}`),
+    enabled: Boolean(upazilaId),
+    ...STATIC,
+  });
+}
+
+/** Every mouza of the upazila (one request); the menu narrows them by union locally. */
 export function useMouzas(upazilaId: string) {
   const { api } = useAuth();
   return useQuery<MouzaListDto, ApiError>({

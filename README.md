@@ -205,12 +205,14 @@ Not covered by automated runs: `next build`, a live deploy walk, Postgres, Chrom
 Short list: JWT (access in memory, refresh in an HttpOnly cookie), role read from the database, RBAC matrix test, rate limits, upload validation, security headers, log redaction, audit trail, no personal data on the public QR page. Full notes and open items: [docs/security.md](docs/security.md).
 
 ### Bangladesh map
-`/map` shows all of Bangladesh (street basemap + division/district/upazila boundaries) with a search menu; mouza/sheet/plot are demo-scope only and empty until mouza maps are added. Data sources, licences, API and how to add mouzas: [docs/gis.md](docs/gis.md).
+`/map` shows all of Bangladesh (street basemap + division/district/upazila boundaries) with a search menu. In the demo division (Khulna) the menu continues **Upazila → Union → Mouza (with JL no.) → Survey sheet**, using public Ministry of Land and DLRS mouza lists (see Data sources). Data sources, licences, API and how to rebuild the list: [docs/gis.md](docs/gis.md).
 
 ## Data sources
 
 - **All land, deed and person records are synthetic.** Seed data: `database/seed/`, `scripts/seed.py`; evaluation documents: `ai/evaluation/make_synthetic.py`. Names, deed numbers and plots are invented.
-- **No scraping and no government portal access.** Nothing was downloaded from any land-record system.
+- **No land records were downloaded.** No khatian, deed, owner or plot-ownership data was read from any government land-record system.
+- **Union-wise mouza list (mouza name, JL no., survey sheet no.)**: public administrative reference data from the Ministry of Land, Government of Bangladesh: *Smart Bhumi Naksha* ([map.land.gov.bd](https://map.land.gov.bd)). `scripts/build_mouza_data.py` reads the same public lookups the portal's own search menu uses (union names and boundaries, mouza names with JL numbers, map sheet numbers and survey type, e.g. RS). The portal does not record which union a mouza is in, so each mouza is assigned to the union that holds most of its plots. The output is `database/gis/mouzas.json`, and coverage is the upazilas the portal has digitised (in Khulna division: Kachua, Dacope).
+- **Mouzas of surveys in progress (JL no., survey sheet no.)**: Directorate of Land Records and Survey (DLRS), Ministry of Land, *Online Land Record and Survey System* ([settlement.gov.bd](https://settlement.gov.bd)), read through the lookups of its khatian-search menu. It covers 15 more Khulna-division upazilas (Magura, Narail, Jhenaidah, Satkhira, Bagerhat, Khulna districts), but names no union and gives Bangla names only. Details: [docs/gis.md](docs/gis.md).
 - Boundaries: geoBoundaries gbOpen ADM3 (CC BY 4.0) via `ifahimreza/bangladesh-geojson` (ODbL), simplified and **not official**. Details: [docs/gis.md](docs/gis.md).
 - Basemap tiles: © OpenStreetMap contributors (ODbL), demo traffic only.
 - Font for generated PDFs and synthetic documents: GNU FreeSans (FreeFont, GPL-3.0 with font exception), see `ai/fonts/LICENSE-FreeFont.txt`.
@@ -229,7 +231,7 @@ The risk rules are deterministic and explainable. Generative AI is used at runti
 ## Credits
 
 Open-source libraries: Next.js, React, Tailwind CSS, next-intl, TanStack Query, React Hook Form, Leaflet, React Flow, Recharts, qrcode.react, Zod (MIT, Leaflet BSD-2); FastAPI, Uvicorn, Pydantic, PyJWT, rapidfuzz (MIT); SQLAlchemy, Alembic (MIT); Pillow (HPND); OpenCV (Apache-2.0); PyMuPDF (AGPL-3.0, optional); scikit-learn (BSD-3); pytesseract and Tesseract (Apache-2.0); Vitest, Playwright (MIT/Apache-2.0).
-Data: geoBoundaries (CC BY 4.0), ifahimreza/bangladesh-geojson (ODbL), OpenStreetMap contributors (ODbL).
+Data: geoBoundaries (CC BY 4.0), ifahimreza/bangladesh-geojson (ODbL), OpenStreetMap contributors (ODbL); mouza names, JL numbers, survey sheets and union boundaries: Ministry of Land, Government of the People's Republic of Bangladesh, Smart Bhumi Naksha ([map.land.gov.bd](https://map.land.gov.bd)); mouza JL numbers and survey sheets of surveys in progress: Directorate of Land Records and Survey, Ministry of Land ([settlement.gov.bd](https://settlement.gov.bd)); Bangla names for land offices: [nuhil/bangladesh-geocode](https://github.com/nuhil/bangladesh-geocode).
 
 ## Licence
 

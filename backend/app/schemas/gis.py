@@ -20,7 +20,30 @@ class GisCapabilities(BaseModel):
     mouza_enabled_division_name: str | None
     counts: dict[str, int]
     mouza_count: int
+    union_count: int = 0
+    mouza_source: str | None = None
+    mouza_source_url: str | None = None
+    mouza_sources: list[dict[str, str]] = []
     disclaimer_code: str = "DEMO_DATASET"
+
+
+class UnionOut(BaseModel):
+    id: str
+    name: str
+    bn_name: str
+    mouza_count: int = 0
+
+
+class UnionList(BaseModel):
+    enabled: bool
+    upazila_id: str
+    unions: list[UnionOut]
+
+
+class SheetRef(BaseModel):
+    sheet_no: str
+    survey: str = ""  # e.g. RS, BS, CS (survey the sheet belongs to)
+    plots: int = 0
 
 
 class MouzaOut(BaseModel):
@@ -28,20 +51,24 @@ class MouzaOut(BaseModel):
     code: str
     name: str
     bn_name: str
+    union_id: str | None = None
     jl_no: str | None = None
     lat: float | None = None
     long: float | None = None
-    sheets: list[dict[str, Any]] = []
+    plot_count: int | None = None
+    source_url: str | None = None
+    sheets: list[SheetRef] = []
 
 
 class MouzaList(BaseModel):
     enabled: bool
     upazila_id: str
+    union_id: str | None = None
     mouzas: list[MouzaOut]
 
 
 class SearchHit(BaseModel):
-    level: Literal["division", "district", "upazila", "mouza"]
+    level: Literal["division", "district", "upazila", "union", "mouza"]
     id: str
     name: str
     bn_name: str
@@ -49,6 +76,9 @@ class SearchHit(BaseModel):
     bbox: list[float] | None = None
     division_id: str | None = None
     district_id: str | None = None
+    upazila_id: str | None = None
+    union_id: str | None = None
+    jl_no: str | None = None
 
 
 class SearchResult(BaseModel):

@@ -1,8 +1,9 @@
 # ruff: noqa: E501
 """National admin-boundary data for the map (P61-P65). Read-only, file-backed, third-party/simplified.
 
-Files live in database/gis (built by scripts/build_gis_data.py). Mouzas come from
-database/gis/mouzas.json and are served ONLY for the configured demo division.
+Files live in database/gis (built by scripts/build_gis_data.py). Unions and mouzas (JL no,
+survey sheets) come from database/gis/mouzas.json (built by scripts/build_mouza_data.py from
+map.land.gov.bd) and are served ONLY for the configured demo division.
 """
 
 import json
@@ -21,6 +22,8 @@ from app.schemas.gis import (
     MouzaOut,
     SearchHit,
     SearchResult,
+    UnionList,
+    UnionOut,
 )
 
 _REPO = Path(__file__).resolve().parents[3]
@@ -47,9 +50,17 @@ def _features(level: str) -> list[dict[str, Any]]:
     return data["features"]
 
 
-def _mouzas() -> list[dict[str, Any]]:
+def _mouza_file() -> dict[str, Any]:
     data = _read("mouzas.json", str(_dir()))
-    return list(data.get("mouzas", [])) if isinstance(data, dict) else []
+    return data if isinstance(data, dict) else {}
+
+
+def _mouzas() -> list[dict[str, Any]]:
+    return list(_mouza_file().get("mouzas", []))
+
+
+def _unions() -> list[dict[str, Any]]:
+    return list(_mouza_file().get("unions", []))
 
 
 def _collection(feats: list[dict[str, Any]]) -> GisCollection:
@@ -93,21 +104,62 @@ def capabilities() -> GisCapabilities:
             "upazilas": len(_features("upazilas")),
         },
         mouza_count=len(_mouzas()) if enabled else 0,
+        union_count=len(_unions()) if enabled else 0,
+        mouza_source=_mouza_file().get("source") if enabled else None,
+        mouza_source_url=_mouza_file().get("source_url") if enabled else None,
+        mouza_sources=list(_mouza_file().get("sources", [])) if enabled else [],
     )
 
 
-def mouzas(upazila_id: str) -> MouzaList:
+def _in_scope(upazila_id: str) -> bool:
+    """404 for an unknown upazila; False when it lies outside the mouza demo division."""
     upa = next((f for f in _features("upazilas") if f["properties"]["id"] == upazila_id), None)
     if upa is None:
         raise AppError("UPAZILA_NOT_FOUND", "Upazila not found", 404)
     div = get_settings().mouza_enabled_division_id.strip()
-    if not div or upa["properties"]["division_id"] != div:
-        return MouzaList(enabled=False, upazila_id=upazila_id, mouzas=[])
-    rows = [m for m in _mouzas() if str(m.get("upazila_id")) == upazila_id]
+    return bool(div) and upa["properties"]["division_id"] == div
+
+
+def _jl_key(m: dict[str, Any]) -> tuple[int, str]:
+    jl = str(m.get("jl_no") or "")
+    return (int(jl) if jl.isdigit() else 1_000_000, str(m.get("name", "")))
+
+
+def unions(upazila_id: str) -> UnionList:
+    if not _in_scope(upazila_id):
+        return UnionList(enabled=False, upazila_id=upazila_id, unions=[])
+    counts: dict[str, int] = {}
+    for m in _mouzas():
+        if str(m.get("upazila_id")) == upazila_id and m.get("union_id"):
+            counts[str(m["union_id"])] = counts.get(str(m["union_id"]), 0) + 1
+    rows = [u for u in _unions() if str(u.get("upazila_id")) == upazila_id]
+    return UnionList(
+        enabled=True,
+        upazila_id=upazila_id,
+        unions=sorted(
+            (
+                UnionOut(id=str(u["id"]), name=u["name"], bn_name=u.get("bn_name", ""), mouza_count=counts.get(str(u["id"]), 0))
+                for u in rows
+                if counts.get(str(u["id"]))  # pourashava wards / forest ranges with no digitised mouza are left out
+            ),
+            key=lambda u: u.name,
+        ),
+    )
+
+
+def mouzas(upazila_id: str, union_id: str | None = None) -> MouzaList:
+    if not _in_scope(upazila_id):
+        return MouzaList(enabled=False, upazila_id=upazila_id, union_id=union_id, mouzas=[])
+    rows = [
+        m
+        for m in _mouzas()
+        if str(m.get("upazila_id")) == upazila_id and (not union_id or str(m.get("union_id")) == union_id)
+    ]
     return MouzaList(
         enabled=True,
         upazila_id=upazila_id,
-        mouzas=[MouzaOut(**{k: v for k, v in m.items() if k != "upazila_id"}) for m in rows],
+        union_id=union_id,
+        mouzas=[MouzaOut(**{k: v for k, v in m.items() if k != "upazila_id"}) for m in sorted(rows, key=_jl_key)],
     )
 
 
@@ -146,11 +198,40 @@ def search(q: str, limit: int = 20) -> SearchResult:
                     )
                 )
     scoped = capabilities().mouza_enabled
-    for m in _mouzas() if scoped else []:
-        if needle in _fold(m.get("name", "")) or needle in _fold(m.get("bn_name", "")):
+    upas = {f["properties"]["id"]: f["properties"] for f in _features("upazilas")} if scoped else {}
+    union_names = {str(u["id"]): u["name"] for u in _unions()} if scoped else {}
+
+    def _place(upazila_id: str) -> dict[str, Any]:
+        up = upas.get(upazila_id, {})
+        return {
+            "division_id": up.get("division_id"),
+            "district_id": up.get("district_id"),
+            "upazila_id": upazila_id,
+            "path": f'{names["district"].get(up.get("district_id"), "")} / {up.get("name", "")}'.strip(" /"),
+        }
+
+    for u in _unions() if scoped else []:
+        if needle in _fold(u.get("name", "")) or needle in _fold(u.get("bn_name", "")):
             hits.append(
-                SearchHit(level="mouza", id=str(m["id"]), name=m["name"], bn_name=m.get("bn_name", ""), path="")
+                SearchHit(level="union", id=str(u["id"]), name=u["name"], bn_name=u.get("bn_name", ""), **_place(str(u["upazila_id"])))
             )
-    order = {"division": 0, "district": 1, "upazila": 2, "mouza": 3}
+    for m in _mouzas() if scoped else []:
+        jl = str(m.get("jl_no") or "")
+        if needle in _fold(m.get("name", "")) or needle in _fold(m.get("bn_name", "")) or (needle.isdigit() and jl.lstrip("0") == needle.lstrip("0")):
+            place = _place(str(m["upazila_id"]))
+            union = union_names.get(str(m.get("union_id")), "")
+            place["path"] = f'{place["path"]} / {union}'.strip(" /") if union else place["path"]
+            hits.append(
+                SearchHit(
+                    level="mouza",
+                    id=str(m["id"]),
+                    name=m["name"],
+                    bn_name=m.get("bn_name", ""),
+                    union_id=m.get("union_id"),
+                    jl_no=m.get("jl_no"),
+                    **place,
+                )
+            )
+    order = {"division": 0, "district": 1, "upazila": 2, "union": 3, "mouza": 4}
     hits.sort(key=lambda h: (order[h.level], not _fold(h.name).startswith(needle), h.name))
     return SearchResult(hits=hits[:limit], out_of_scope_hint=not any(h.level == "mouza" for h in hits))

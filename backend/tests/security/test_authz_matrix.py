@@ -40,6 +40,7 @@ EXPECTED = {
     ("GET", f"{P}/gis/divisions"): ANY,
     ("GET", f"{P}/gis/districts"): ANY,
     ("GET", f"{P}/gis/upazilas"): ANY,
+    ("GET", f"{P}/gis/unions"): ANY,
     ("GET", f"{P}/gis/mouzas"): ANY,
     ("GET", f"{P}/gis/search"): ANY,
     ("GET", f"{P}/lands/search"): ANY,

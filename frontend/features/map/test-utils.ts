@@ -13,6 +13,7 @@ export const GIS: Record<string, unknown> = {
   "/gis/divisions": fc(gf("4", "Khulna", "খুলনা"), gf("3", "Dhaka", "ঢাকা")),
   "/gis/districts?division_id=4": fc(gf("55", "Bagerhat", "বাগেরহাট", { division_id: "4" })),
   "/gis/upazilas?district_id=55": fc(gf("273", "Kachua", "কচুয়া", { division_id: "4", district_id: "55" })),
+  "/gis/unions?upazila_id=273": { enabled: true, upazila_id: "273", unions: [] },
   "/gis/mouzas?upazila_id=273": { enabled: true, upazila_id: "273", mouzas: [] },
 };
 export const route = (d: MapCollectionDto, extra: Record<string, unknown> = {}) =>
