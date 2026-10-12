@@ -79,7 +79,7 @@ def get_public_verify(db: Session, land_id: str) -> PublicVerify:
             db,
             MutationRecord.id,
             MutationRecord.land_id == land.id,
-            MutationRecord.status.in_(("APPLIED", "UNDER_REVIEW", "HEARING")),
+            MutationRecord.status.in_(("APPLIED", "UNDER_REVIEW", "HEARING", "APPEALED")),
         ),
     )
     return PublicVerify(
@@ -94,7 +94,9 @@ def get_public_verify(db: Session, land_id: str) -> PublicVerify:
     )
 
 
-_RANK = {"APPLIED": 0, "UNDER_REVIEW": 1, "HEARING": 2, "APPROVED": 3, "REJECTED": 3}
+_RANK = {
+    "APPLIED": 0, "UNDER_REVIEW": 1, "HEARING": 2, "APPEALED": 2, "APPROVED": 3, "REJECTED": 3,
+}
 
 
 def get_mutation_status(db: Session, mutation_no: str) -> PublicMutationStatus:

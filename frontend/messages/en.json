@@ -57,7 +57,8 @@
     "ESCALATED": "Escalated",
     "APPLIED": "Applied",
     "HEARING": "Hearing",
-    "RESOLVED": "Resolved"
+    "RESOLVED": "Resolved",
+    "APPEALED": "Appealed"
   },
   "risk": {
     "level": {
@@ -1022,7 +1023,8 @@
       "UNDER_REVIEW": "Under review",
       "HEARING": "Hearing",
       "APPROVED": "Approved",
-      "REJECTED": "Rejected"
+      "REJECTED": "Rejected",
+      "APPEALED": "Appealed"
     },
     "khatian": "Khatian (old → new)",
     "office": "AC Land office",
@@ -1073,9 +1075,28 @@
     "notFound": "Mutation not found.",
     "errors": {
       "failed": "The action could not be completed. Please try again.",
-      "invalid": "This move is no longer allowed. Reload the page."
+      "invalid": "This move is no longer allowed. Reload the page.",
+      "forbidden": "Your office cannot take this decision. Ask the upozila or zila office.",
+      "self": "You cannot decide a case you recommended, or a rejection you made yourself."
     },
-    "purpose": "Applications created from approved deeds. Open one to review its pre-checks."
+    "purpose": "Applications created from approved deeds. Open one to review its pre-checks.",
+    "heldBy": "Held by office",
+    "opinions": {
+      "title": "Opinions and appeal",
+      "actionsTitle": "Field note and appeal",
+      "advisory": "Advisory only. The upozila or zila office decides.",
+      "APPROVE": "Recommends approval",
+      "REJECT": "Recommends rejection",
+      "appeal": "Appeal filed",
+      "recommend": "Add recommendation",
+      "recommendTitle": "Field recommendation",
+      "noteLabel": "Field-verification note",
+      "recommendConfirm": "Save recommendation",
+      "fileAppeal": "File an appeal",
+      "appealTitle": "Appeal the rejection",
+      "appealLabel": "Grounds for the appeal",
+      "appealConfirm": "File appeal"
+    }
   },
   "check": {
     "title": "Check Before You Buy",

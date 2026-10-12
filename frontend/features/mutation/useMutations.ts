@@ -42,3 +42,19 @@ export function useMutationTransition(id: string) {
     },
   });
 }
+
+function useDetailAction<V>(id: string, path: string) {
+  const { api } = useAuth();
+  const qc = useQueryClient();
+  return useMutation<MutationDetailData, ApiError, V>({
+    mutationFn: (v) => api.post<MutationDetailData>(`/mutations/${id}/${path}`, v),
+    onSuccess: (data) => {
+      qc.setQueryData(["mutations", "detail", id], data);
+      qc.invalidateQueries({ queryKey: ["mutations", "list"] });
+    },
+  });
+}
+
+export const useMutationRecommend = (id: string) =>
+  useDetailAction<{ decision: string; note: string }>(id, "recommend");
+export const useMutationAppeal = (id: string) => useDetailAction<{ reason: string }>(id, "appeal");

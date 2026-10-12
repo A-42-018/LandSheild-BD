@@ -54,6 +54,7 @@ class MutationStatus(StrEnum):
     APPLIED = "APPLIED"
     UNDER_REVIEW = "UNDER_REVIEW"
     HEARING = "HEARING"
+    APPEALED = "APPEALED"  # a rejection was appealed; the office above decides
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
 

@@ -9,8 +9,10 @@ import { Badge, Button, Card, ErrorState, LoadingState } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthContext";
 import { hasRole, OFFICER_UP } from "@/features/auth/roles";
 import { formatArea, formatDateTime } from "@/features/result/format";
+import { bi, officePath, type Office } from "@/features/officers/types";
+import NoteModal from "./NoteModal";
 import ReasonModal from "./ReasonModal";
-import { useMutationDetail, useMutationTransition } from "./useMutations";
+import { useMutationAppeal, useMutationDetail, useMutationRecommend, useMutationTransition } from "./useMutations";
 import { CHECK_CODES, REASON_REQUIRED, type MutationStatusCode } from "./types";
 
 const CHECK_ICON: Record<string, JSX.Element> = {
@@ -26,6 +28,9 @@ export default function MutationDetail({ id }: { id: string }) {
   const { user } = useAuth();
   const q = useMutationDetail(id);
   const tr = useMutationTransition(id);
+  const rec = useMutationRecommend(id);
+  const app = useMutationAppeal(id);
+  const [note, setNote] = useState<"RECOMMEND" | "APPEAL" | null>(null);
   const [modal, setModal] = useState<"HEARING" | "REJECTED" | null>(null);
 
   if (q.isLoading) return <LoadingState />;
@@ -47,7 +52,16 @@ export default function MutationDetail({ id }: { id: string }) {
     { key: "changed", at: m.status_changed_at },
     ...(m.decided_at ? [{ key: "decided", at: m.decided_at }] : []),
   ];
-  const invalid = tr.error instanceof ApiError && tr.error.status === 409;
+  const errKey =
+    tr.error instanceof ApiError
+      ? tr.error.code === "SELF_DECISION_FORBIDDEN"
+        ? "self"
+        : tr.error.status === 403
+          ? "forbidden"
+          : tr.error.status === 409
+            ? "invalid"
+            : "failed"
+      : "failed";
 
   return (
     <div className="flex flex-col gap-4">
@@ -62,6 +76,13 @@ export default function MutationDetail({ id }: { id: string }) {
           <Row label={t("cols.area")}>{formatArea(m.area, m.area_unit, locale, m.area_unit)}</Row>
           <Row label={t("khatian")}>{`${m.previous_khatian_no ?? "—"} → ${m.new_khatian_no ?? "—"}`}</Row>
           <Row label={t("office")}>{m.ac_land_office ?? "—"}</Row>
+          {m.holder_office && (
+            <Row label={t("heldBy")}>
+              <span data-testid="holder-office">{bi(m.holder_office.name_en, m.holder_office.name_bn)}</span>
+              <br />
+              <span className="text-xs text-ink-muted">{officePath(m.holder_office as Office)}</span>
+            </Row>
+          )}
           <Row label={t("deed")}>{m.deed_no ?? t("noDeed")}</Row>
         </dl>
         <p className="mt-3 text-sm">
@@ -88,6 +109,32 @@ export default function MutationDetail({ id }: { id: string }) {
         )}
       </Card>
 
+      {(m.recommendation || m.appeal_reason) && (
+        <Card title={t("opinions.title")}>
+          <div className="flex flex-col gap-3 text-sm">
+            {m.recommendation && (
+              <p data-testid="recommendation">
+                <span className="font-medium">{t(`opinions.${m.recommendation}`)}</span>
+                {m.recommended_by_name ? ` — ${m.recommended_by_name}` : ""}
+                {m.recommended_at ? ` · ${dt(m.recommended_at)}` : ""}
+                <br />
+                <span className="text-ink-muted">{m.recommendation_note}</span>
+                <br />
+                <span className="text-xs text-ink-muted">{t("opinions.advisory")}</span>
+              </p>
+            )}
+            {m.appeal_reason && (
+              <p data-testid="appeal-reason">
+                <span className="font-medium">{t("opinions.appeal")}</span>
+                {m.appealed_at ? ` · ${dt(m.appealed_at)}` : ""}
+                <br />
+                <span className="text-ink-muted">{m.appeal_reason}</span>
+              </p>
+            )}
+          </div>
+        </Card>
+      )}
+
       <Card title={t("timeline")}>
         <ol className="flex flex-col gap-2 text-sm" data-testid="mutation-timeline">
           {timeline.map((e) => (
@@ -98,6 +145,19 @@ export default function MutationDetail({ id }: { id: string }) {
           ))}
         </ol>
       </Card>
+
+      {canAct && (m.can_recommend || m.can_appeal) && (
+        <Card title={t("opinions.actionsTitle")}>
+          <div className="flex flex-wrap gap-2">
+            {m.can_recommend && (
+              <Button variant="secondary" onClick={() => setNote("RECOMMEND")} data-testid="act-recommend">{t("opinions.recommend")}</Button>
+            )}
+            {m.can_appeal && (
+              <Button variant="secondary" onClick={() => setNote("APPEAL")} data-testid="act-appeal">{t("opinions.fileAppeal")}</Button>
+            )}
+          </div>
+        </Card>
+      )}
 
       {canAct && m.allowed_transitions.length > 0 && (
         <Card title={t("actions.title")}>
@@ -115,9 +175,29 @@ export default function MutationDetail({ id }: { id: string }) {
             ))}
           </div>
           {tr.isError && modal === null && (
-            <p role="alert" className="mt-2 text-xs text-critical">{invalid ? t("errors.invalid") : t("errors.failed")}</p>
+            <p role="alert" className="mt-2 text-xs text-critical">{t(`errors.${errKey}`)}</p>
           )}
         </Card>
+      )}
+
+      {note && (
+        <NoteModal
+          open
+          title={t(note === "RECOMMEND" ? "opinions.recommendTitle" : "opinions.appealTitle")}
+          label={t(note === "RECOMMEND" ? "opinions.noteLabel" : "opinions.appealLabel")}
+          confirm={t(note === "RECOMMEND" ? "opinions.recommendConfirm" : "opinions.appealConfirm")}
+          cancel={t("cancel")}
+          requiredText={t("reason.required")}
+          choices={note === "RECOMMEND" ? [{ value: "APPROVE", label: t("opinions.APPROVE") }, { value: "REJECT", label: t("opinions.REJECT") }] : undefined}
+          onClose={() => setNote(null)}
+          loading={rec.isPending || app.isPending}
+          failedText={rec.isError || app.isError ? t("errors.failed") : null}
+          onConfirm={(text, choice) =>
+            note === "RECOMMEND"
+              ? rec.mutate({ decision: choice, note: text }, { onSuccess: () => setNote(null) })
+              : app.mutate({ reason: text }, { onSuccess: () => setNote(null) })
+          }
+        />
       )}
 
       {modal && (

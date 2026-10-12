@@ -83,7 +83,7 @@ def get_stats(db: Session) -> OfficerStats:
     pending_mutations = (
         db.scalar(
             select(func.count()).select_from(MutationRecord).where(
-                MutationRecord.status.in_(("APPLIED", "UNDER_REVIEW", "HEARING"))
+                MutationRecord.status.in_(("APPLIED", "UNDER_REVIEW", "HEARING", "APPEALED"))
             )
         )
         or 0

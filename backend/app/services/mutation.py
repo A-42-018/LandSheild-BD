@@ -14,13 +14,15 @@ from app.core.rbac import REVIEW_UP
 from app.models.alert import FraudAlert
 from app.models.deed import Deed
 from app.models.encumbrance import LandEncumbrance
-from app.models.enums import AlertStatus, MutationSource, MutationStatus
+from app.models.enums import AlertStatus, MutationSource, MutationStatus, Role
+from app.models.land_office import LandOffice
 from app.models.land_parcel import LandParcel
 from app.models.mutation import MutationRecord
 from app.models.ownership import OwnershipHistory
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.risk.config import AREA_TO_SQM
+from app.schemas.document import OfficeBrief
 from app.schemas.mutation import (
     MutationDetail,
     MutationList,
@@ -43,10 +45,50 @@ TRANSITIONS: dict[str, tuple[str, ...]] = {
     S.APPLIED: (S.UNDER_REVIEW, S.HEARING, S.REJECTED),
     S.UNDER_REVIEW: (S.APPROVED, S.HEARING, S.REJECTED),
     S.HEARING: (S.UNDER_REVIEW, S.APPROVED, S.REJECTED),
+    S.APPEALED: (S.APPROVED, S.REJECTED),  # decided by the office above the holder
     S.APPROVED: (),
     S.REJECTED: (),
 }
 REASON_REQUIRED = (S.REJECTED.value, S.HEARING.value)
+OPEN = (S.APPLIED.value, S.UNDER_REVIEW.value, S.HEARING.value)
+DECISIONS = (S.APPROVED.value, S.REJECTED.value)
+# Who decides: the union (tahsil) office prepares a case and recommends; the upozila (AC Land) and
+# zila (ADC Revenue) offices decide. An appeal against a rejection goes to the office above.
+RANK = {
+    "Union Land Office": 1,
+    "Circle Land Office (Metropolitan)": 2,
+    "Upazila Land Office": 2,
+    "District Land Office": 3,
+}
+
+
+def _holder(db: Session, m: MutationRecord) -> LandOffice | None:
+    land = db.get(LandParcel, m.land_id)
+    return db.get(LandOffice, land.office_id) if land and land.office_id else None
+
+
+def can_decide(actor: User, m_office: LandOffice | None) -> bool:
+    """Approve / reject a case. Admins and office-less officers (legacy / demo) are unrestricted."""
+    own = actor.office if actor.role == Role.OFFICER.value else None
+    if actor.role == Role.ADMIN.value or own is None:
+        return actor.role in (Role.ADMIN.value, Role.OFFICER.value)
+    return RANK.get(own.office_type, 0) >= 2
+
+
+def can_decide_appeal(actor: User, m_office: LandOffice | None) -> bool:
+    """Decide an appeal: only an office strictly above the one holding the land."""
+    own = actor.office if actor.role == Role.OFFICER.value else None
+    if actor.role == Role.ADMIN.value or own is None:
+        return actor.role in (Role.ADMIN.value, Role.OFFICER.value)
+    if m_office is None or own.id == m_office.id:
+        return False
+    return RANK.get(own.office_type, 0) > RANK.get(m_office.office_type, 0)
+
+
+def _four_eyes(actor: User, other_id: str | None) -> bool:
+    """True when this actor may not take the decision because they made the previous step."""
+    return other_id is not None and other_id == actor.id and actor.role != Role.ADMIN.value
+
 _OPEN_ALERT = (AlertStatus.OPEN.value, AlertStatus.UNDER_REVIEW.value, AlertStatus.ESCALATED.value)
 
 
@@ -171,13 +213,89 @@ def transition(
             "MUTATION_TRANSITION_INVALID", f"Cannot move from {m.status} to {to}", 409,
             {"from": m.status, "to": to, "allowed": [s.value for s in TRANSITIONS[m.status]]},
         )  # fmt: skip
+    holder = _holder(db, m)
+    if m.status == S.APPEALED.value:
+        if not can_decide_appeal(actor, holder):
+            raise AppError(
+                "APPEAL_DECISION_FORBIDDEN", "Only the office above decides this appeal", 403
+            )
+        if _four_eyes(actor, m.decided_by):  # not the one who rejected it in the first place
+            raise AppError("SELF_DECISION_FORBIDDEN", "You cannot decide your own rejection", 403)
+    elif to in DECISIONS:
+        if not can_decide(actor, holder):
+            raise AppError(
+                "DECISION_FORBIDDEN", "Only the upozila or zila office approves or rejects", 403
+            )
+        if _four_eyes(actor, m.recommended_by):  # the recommender cannot also be the decider
+            raise AppError(
+                "SELF_DECISION_FORBIDDEN", "You cannot decide a case you recommended", 403
+            )
     if to in REASON_REQUIRED and not reason:
         raise AppError("REASON_REQUIRED", "A reason is required for this decision", 422)
     _set_status(db, m, to, actor, reason, ip)
+    if to in DECISIONS:
+        m.decided_by = actor.id
     if to == S.APPROVED.value:  # an approved mutation changes the risk picture
         analyze_land(db, db.get(LandParcel, m.land_id).land_id, commit=False)
     db.commit()
     return m
+
+
+def recommend(
+    db: Session, mutation_id: str, actor: User, decision: str, note: str, ip: str | None
+) -> MutationRecord:
+    """Field-level recommendation (advisory): recorded and audited, status unchanged."""
+    m = db.get(MutationRecord, mutation_id)
+    if m is None:
+        raise AppError("MUTATION_NOT_FOUND", "Mutation not found", 404)
+    if m.status not in OPEN:
+        raise AppError("MUTATION_NOT_OPEN", "Only an open case can be recommended", 409,
+                       {"status": m.status})  # fmt: skip
+    old = {"recommendation": m.recommendation}
+    m.recommendation, m.recommendation_note = decision, " ".join(note.split())
+    m.recommended_by, m.recommended_at = actor.id, datetime.now(UTC)
+    audit.log(
+        db, actor, "MUTATION_RECOMMEND", "mutation", m.id, old=old,
+        new={"recommendation": decision, "mutation_no": m.mutation_no}, ip=ip,
+    )  # fmt: skip
+    db.commit()
+    return m
+
+
+def appeal(
+    db: Session, mutation_id: str, actor: User, reason: str, ip: str | None
+) -> MutationRecord:
+    """A rejection can be appealed once; the office above the holder then decides."""
+    m = db.get(MutationRecord, mutation_id)
+    if m is None:
+        raise AppError("MUTATION_NOT_FOUND", "Mutation not found", 404)
+    if m.status != S.REJECTED.value or m.appealed_at is not None:
+        raise AppError(
+            "APPEAL_NOT_ALLOWED", "Only a rejected case that was not appealed before can be", 409,
+            {"status": m.status},
+        )  # fmt: skip
+    m.appeal_reason, m.appealed_by = " ".join(reason.split()), actor.id
+    m.appealed_at = datetime.now(UTC)
+    _set_status(db, m, S.APPEALED.value, actor, m.appeal_reason, ip)
+    db.commit()
+    return m
+
+
+def _allowed(db: Session, m: MutationRecord, actor: User | None) -> list[str]:
+    if actor is None or actor.role not in (Role.OFFICER.value, Role.ADMIN.value):
+        return []  # reviewers and citizens read cases; they do not move them
+    holder = _holder(db, m)
+    out = []
+    for to in TRANSITIONS.get(m.status, ()):
+        if m.status == S.APPEALED.value:
+            ok = can_decide_appeal(actor, holder) and not _four_eyes(actor, m.decided_by)
+        elif to in DECISIONS:
+            ok = can_decide(actor, holder) and not _four_eyes(actor, m.recommended_by)
+        else:
+            ok = True
+        if ok:
+            out.append(to.value if hasattr(to, "value") else to)
+    return out
 
 
 def _item(db: Session, m: MutationRecord) -> MutationQueueItem:
@@ -209,7 +327,9 @@ def list_mutations(
     return MutationList(total=total, items=[_item(db, m) for m in rows])
 
 
-def get_mutation(db: Session, mutation_id: str, scope=None) -> MutationDetail:
+def get_mutation(
+    db: Session, mutation_id: str, scope=None, actor: User | None = None
+) -> MutationDetail:
     m = db.get(MutationRecord, mutation_id)
     if m is not None and scope is not None:
         in_area = db.scalar(select(LandParcel.id).where(LandParcel.id == m.land_id, scope))
@@ -221,7 +341,20 @@ def get_mutation(db: Session, mutation_id: str, scope=None) -> MutationDetail:
         **base, previous_khatian_no=m.previous_khatian_no, new_khatian_no=m.new_khatian_no,
         ac_land_office=m.ac_land_office, checklist=m.checklist,
         deed_no=m.deed.deed_no if m.deed else None, transaction_id=m.transaction_id,
-        allowed_transitions=[s.value for s in TRANSITIONS.get(m.status, ())],
+        allowed_transitions=_allowed(db, m, actor),
+        holder_office=OfficeBrief.model_validate(holder) if (holder := _holder(db, m)) else None,
+        recommendation=m.recommendation, recommendation_note=m.recommendation_note,
+        recommended_by_name=(rb.name if (rb := db.get(User, m.recommended_by)) else None)
+        if m.recommended_by else None,
+        recommended_at=m.recommended_at,
+        appeal_reason=m.appeal_reason, appealed_at=m.appealed_at,
+        can_recommend=bool(
+            actor and actor.role in (Role.OFFICER.value, Role.ADMIN.value) and m.status in OPEN
+        ),
+        can_appeal=bool(
+            actor and actor.role in (Role.OFFICER.value, Role.ADMIN.value)
+            and m.status == S.REJECTED.value and m.appealed_at is None
+        ),
     )  # fmt: skip
 
 

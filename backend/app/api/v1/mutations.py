@@ -6,7 +6,13 @@ from app.core.rbac import OFFICER_UP, REVIEW_UP, require_roles
 from app.models.enums import MutationStatus
 from app.models.land_parcel import LandParcel
 from app.models.user import User
-from app.schemas.mutation import MutationDetail, MutationList, MutationTransitionIn
+from app.schemas.mutation import (
+    MutationAppealIn,
+    MutationDetail,
+    MutationList,
+    MutationRecommendIn,
+    MutationTransitionIn,
+)
 from app.services import mutation as svc
 from app.services.offices import area_filter, land_scope
 
@@ -37,7 +43,7 @@ def get_mutation(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> MutationDetail:
-    return svc.get_mutation(db, mutation_id, land_scope(user))
+    return svc.get_mutation(db, mutation_id, land_scope(user), user)
 
 
 @router.post("/{mutation_id}/transition", response_model=MutationDetail)
@@ -51,4 +57,32 @@ def transition_mutation(
     svc.get_mutation(db, mutation_id, land_scope(user))  # 404 outside the officer's offices
     ip = request.client.host if request.client else None
     svc.transition(db, mutation_id, body.to.value, user, body.reason, ip)
-    return svc.get_mutation(db, mutation_id)
+    return svc.get_mutation(db, mutation_id, None, user)
+
+
+@router.post("/{mutation_id}/recommend", response_model=MutationDetail)
+def recommend_mutation(
+    mutation_id: str,
+    body: MutationRecommendIn,
+    request: Request,
+    user: User = Depends(require_roles(*OFFICER_UP)),
+    db: Session = Depends(get_db),
+) -> MutationDetail:
+    svc.get_mutation(db, mutation_id, land_scope(user))
+    ip = request.client.host if request.client else None
+    svc.recommend(db, mutation_id, user, body.decision, body.note, ip)
+    return svc.get_mutation(db, mutation_id, None, user)
+
+
+@router.post("/{mutation_id}/appeal", response_model=MutationDetail)
+def appeal_mutation(
+    mutation_id: str,
+    body: MutationAppealIn,
+    request: Request,
+    user: User = Depends(require_roles(*OFFICER_UP)),
+    db: Session = Depends(get_db),
+) -> MutationDetail:
+    svc.get_mutation(db, mutation_id, land_scope(user))
+    ip = request.client.host if request.client else None
+    svc.appeal(db, mutation_id, user, body.reason, ip)
+    return svc.get_mutation(db, mutation_id, None, user)

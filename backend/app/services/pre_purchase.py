@@ -20,6 +20,7 @@ _PENDING = (
     MutationStatus.APPLIED.value,
     MutationStatus.UNDER_REVIEW.value,
     MutationStatus.HEARING.value,
+    MutationStatus.APPEALED.value,
 )
 
 

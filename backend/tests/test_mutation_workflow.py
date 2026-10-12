@@ -31,6 +31,8 @@ def test_doc1_approve_creates_fast_tracked_mutation(env, jobs):
     assert d["checklist"]["NO_ACTIVE_CASE"] == "PASS"  # F3a fills encumbrance checks
     assert d["checklist"]["NOT_KHAS_OR_ACQUIRED"] == "PASS"
     assert "FAIL" not in d["checklist"].values()
+    assert d["allowed_transitions"] == []  # reviewers read cases; they do not move them
+    d = env.get(f"{M}/{m['id']}", headers=_h(env, "OFFICER")).json()
     assert d["allowed_transitions"] == ["APPROVED", "HEARING", "REJECTED"]
 
 

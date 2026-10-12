@@ -16,7 +16,7 @@ from app.risk.context import Evidence, LandContext, MutRecord, active_transactio
 
 APPROVED = "APPROVED"
 REJECTED = "REJECTED"
-PENDING = ("APPLIED", "UNDER_REVIEW", "HEARING")
+PENDING = ("APPLIED", "UNDER_REVIEW", "HEARING", "APPEALED")
 
 
 def _live(ctx: LandContext) -> list[MutRecord]:

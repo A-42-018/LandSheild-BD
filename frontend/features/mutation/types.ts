@@ -1,4 +1,4 @@
-export const MUTATION_STATUSES = ["APPLIED", "UNDER_REVIEW", "HEARING", "APPROVED", "REJECTED"] as const;
+export const MUTATION_STATUSES = ["APPLIED", "UNDER_REVIEW", "HEARING", "APPEALED", "APPROVED", "REJECTED"] as const;
 export type MutationStatusCode = (typeof MUTATION_STATUSES)[number];
 export const REASON_REQUIRED: MutationStatusCode[] = ["HEARING", "REJECTED"];
 export const CHECK_CODES = [
@@ -40,6 +40,20 @@ export interface MutationDetailData extends MutationQueueItem {
   deed_no: string | null;
   transaction_id: string | null;
   allowed_transitions: string[];
+  holder_office?: {
+    name_en: string; name_bn: string;
+    division_en: string; division_bn: string;
+    district_en: string; district_bn: string;
+    upazila_en: string | null; upazila_bn: string | null;
+  } | null;
+  recommendation?: "APPROVE" | "REJECT" | null;
+  recommendation_note?: string | null;
+  recommended_by_name?: string | null;
+  recommended_at?: string | null;
+  appeal_reason?: string | null;
+  appealed_at?: string | null;
+  can_recommend?: boolean;
+  can_appeal?: boolean;
 }
 
 export function daysSince(iso: string, now: number = Date.now()): number {

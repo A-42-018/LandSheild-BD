@@ -51,6 +51,22 @@ class MutationRecord(IdMixin, CreatedMixin, Base):
         String(20), default=MutationSource.WORKFLOW.value, nullable=False
     )
 
+    # union office's field-verification recommendation (advisory; it never decides the case)
+    recommendation: Mapped[str | None] = mapped_column(String(10), nullable=True)  # APPROVE|REJECT
+    recommendation_note: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    recommended_by: Mapped[str | None] = mapped_column(
+        String(UUID_LEN), ForeignKey("users.id"), nullable=True
+    )
+    recommended_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    decided_by: Mapped[str | None] = mapped_column(
+        String(UUID_LEN), ForeignKey("users.id"), nullable=True
+    )
+    appeal_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    appealed_by: Mapped[str | None] = mapped_column(
+        String(UUID_LEN), ForeignKey("users.id"), nullable=True
+    )
+    appealed_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+
     land = relationship("LandParcel")
     deed = relationship("Deed")
     transaction = relationship("Transaction")

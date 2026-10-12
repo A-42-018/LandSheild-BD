@@ -1,8 +1,10 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
 from app.models.enums import MutationStatus
+from app.schemas.document import OfficeBrief
 from app.schemas.land import LandOwnerPublic
 
 
@@ -54,9 +56,27 @@ class MutationDetail(MutationQueueItem):
     checklist: dict[str, str] | None = None
     deed_no: str | None = None
     transaction_id: str | None = None
-    allowed_transitions: list[str] = []
+    allowed_transitions: list[str] = []  # what THIS user may do now (role + office level)
+    holder_office: OfficeBrief | None = None  # the office whose database holds the land
+    recommendation: str | None = None  # APPROVE | REJECT (advisory, from the field-level office)
+    recommendation_note: str | None = None
+    recommended_by_name: str | None = None
+    recommended_at: datetime | None = None
+    appeal_reason: str | None = None
+    appealed_at: datetime | None = None
+    can_recommend: bool = False
+    can_appeal: bool = False
 
 
 class MutationTransitionIn(BaseModel):
     to: MutationStatus
     reason: str | None = Field(default=None, max_length=500)
+
+
+class MutationRecommendIn(BaseModel):
+    decision: Literal["APPROVE", "REJECT"]
+    note: str = Field(min_length=3, max_length=500)
+
+
+class MutationAppealIn(BaseModel):
+    reason: str = Field(min_length=3, max_length=500)

@@ -28,6 +28,8 @@ AUDIT = {
     ("POST", f"{P}/documents/{{document_id}}/reprocess"): "DOCUMENT_REPROCESS_REQUEST",
     ("PATCH", f"{P}/risk-alerts/{{alert_id}}"): "RISK_ALERT_UPDATE",
     ("POST", f"{P}/mutations/{{mutation_id}}/transition"): "MUTATION_TRANSITION",
+    ("POST", f"{P}/mutations/{{mutation_id}}/recommend"): "MUTATION_RECOMMEND",
+    ("POST", f"{P}/mutations/{{mutation_id}}/appeal"): "MUTATION_TRANSITION",
     ("POST", f"{P}/admin/users"): "USER_CREATE",
     ("PATCH", f"{P}/admin/users/{{user_id}}"): "USER_UPDATE",
     ("POST", f"{P}/offices/officer-requests"): "OFFICER_REQUEST",
@@ -113,9 +115,16 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     mark("POST", f"{P}/documents/{{document_id}}/reject")
 
     mid = env.get(f"{P}/mutations", headers=off).json()["items"][0]["id"]
+    _audited(env, "MUTATION_RECOMMEND", lambda: env.post(
+        f"{P}/mutations/{mid}/recommend", json={"decision": "REJECT", "note": "audit"}, headers=off))  # fmt: skip
+    mark("POST", f"{P}/mutations/{{mutation_id}}/recommend")
+    # the recommender may not also decide (four-eyes), so an admin decides; then the appeal
     _audited(env, "MUTATION_TRANSITION", lambda: env.post(
-        f"{P}/mutations/{mid}/transition", json={"to": "REJECTED", "reason": "audit"}, headers=off))  # fmt: skip
+        f"{P}/mutations/{mid}/transition", json={"to": "REJECTED", "reason": "audit"}, headers=heads["ADMIN"]))  # fmt: skip
     mark("POST", f"{P}/mutations/{{mutation_id}}/transition")
+    _audited(env, "MUTATION_TRANSITION", lambda: env.post(
+        f"{P}/mutations/{mid}/appeal", json={"reason": "audit appeal"}, headers=off))  # fmt: skip
+    mark("POST", f"{P}/mutations/{{mutation_id}}/appeal")
 
     assert env.get(f"{P}/lands/LP-10240/risk", headers=rev).status_code == 200
     alerts = env.get(f"{P}/risk-alerts", headers=rev).json()["items"]
