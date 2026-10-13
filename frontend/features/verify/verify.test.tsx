@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -99,11 +99,19 @@ describe("VerifyForm", () => {
         };
       throw new ApiError(404, "LAND_NOT_FOUND", "x");
     });
-    const { container } = wrap(client(get as any));
+    wrap(client(get as any));
     fill();
-    await waitFor(() => expect(container.querySelectorAll("#mouza-suggestions option")).toHaveLength(2));
-    expect([...container.querySelectorAll("#mouza-suggestions option")].map((o) => o.getAttribute("value"))).toEqual(["Barmi", "মাওনা"]);
-    expect(screen.getByLabelText(new RegExp(en.verify.mouza)).getAttribute("list")).toBe("mouza-suggestions");
+    const input = screen.getByLabelText(new RegExp(en.verify.mouza)) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "" } });
+    fireEvent.focus(input);
+    const options = within(await screen.findByRole("listbox")).getAllByRole("option");
+    expect(options).toHaveLength(2);
+    expect(options[0].textContent).toContain("Barmi");
+    expect(options[1].textContent).toContain("মাওনা");
+    fireEvent.mouseDown(options[0]);
+    expect(input.value).toBe("Barmi");
+    fireEvent.change(input, { target: { value: "মাও" } });
+    expect(within(screen.getByRole("listbox")).getAllByRole("option")).toHaveLength(1);
   });
 
   it("shows the empty state on 404", async () => {

@@ -57,8 +57,8 @@ export default function CheckForm() {
   return (
     <div className="flex flex-col gap-4">
       <Card title={t("title")} icon={<ListChecks />} accent="primary">
-        <form onSubmit={handleSubmit((v) => m.mutate(v))} noValidate className="flex flex-col gap-4">
-          <p className="text-ink-muted">{t("intro")}</p>
+        <form onSubmit={handleSubmit((v) => m.mutate(v))} noValidate className="grid grid-cols-1 items-start gap-4 md:grid-cols-3">
+          <p className="text-ink-muted md:col-span-3">{t("intro")}</p>
           <Select
             label={tv("division")}
             placeholder={tv("selectDivision")}
@@ -93,20 +93,20 @@ export default function CheckForm() {
             {...register("upazila")}
           />
           <Input label={tv("mouza")} required autoComplete="off" error={err(errors.mouza)} {...register("mouza")} />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="contents">
             <Input label={tv("khatian")} required inputMode="numeric" autoComplete="off" hint={tv("numericHint")} error={err(errors.khatian)} {...register("khatian")} />
             <Input label={tv("dag")} required inputMode="numeric" autoComplete="off" hint={tv("numericHint")} error={err(errors.dag)} {...register("dag")} />
           </div>
-          <Input label={t("seller")} autoComplete="off" hint={t("sellerHint")} error={err(errors.seller)} {...register("seller")} />
+          <div className="md:col-span-3"><Input label={t("seller")} autoComplete="off" hint={t("sellerHint")} error={err(errors.seller)} {...register("seller")} /></div>
           {apiErr && (
-            <p role="alert" className="text-sm text-critical">
+            <p role="alert" className="text-sm text-critical md:col-span-3">
               {t(`errors.${apiErr}`)}
             </p>
           )}
-          <Button type="submit" loading={m.isPending} icon={<Search />} className="w-full">
+          <Button type="submit" loading={m.isPending} icon={<Search />} className="w-full md:col-span-3">
             {m.isPending ? t("checking") : t("submit")}
           </Button>
-          <p className="text-xs text-ink-muted">{tv("demoNote")}</p>
+          <p className="text-xs text-ink-muted md:col-span-3">{tv("demoNote")}</p>
         </form>
       </Card>
       <div aria-live="polite">{m.data && <CheckResult data={m.data} />}</div>
