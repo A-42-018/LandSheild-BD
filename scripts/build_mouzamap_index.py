@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE = "https://free.mouzamap.tech"
 FOLDER = "application/vnd.google-apps.folder"
 _BN = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
-SURVEY_BN = {"সি.এস": "CS", "সি এস": "CS", "এস.এ": "SA", "এস এ": "SA", "আর.এস": "RS", "আর এস": "RS", "বি.আর.এস": "BRS", "বি.এস": "BS", "বি এস": "BS", "পি.এস": "PS"}
+SURVEY_BN = {"সিএস-এসএ": "CS-SA", "সি.এস-এস.এ": "CS-SA", "সিএস": "CS", "এসএ": "SA", "আরএস": "RS", "বিআরএস": "BRS", "বিএস": "BS", "পিএস": "PS", "সি.এস": "CS", "সি এস": "CS", "এস.এ": "SA", "এস এ": "SA", "আর.এস": "RS", "আর এস": "RS", "বি.আর.এস": "BRS", "বি.এস": "BS", "বি এস": "BS", "পি.এস": "PS"}
 SURVEY_RE = r"CS[-_ ]?SA|CS|SA|RS|BRS|BDS|BS|PS|" + "|".join(re.escape(k) for k in SURVEY_BN)
 
 
@@ -102,6 +102,12 @@ def parse_name(name: str) -> dict:
         stem, jl, sheet = m.group(1), m.group(2), m.group(3) or None
     elif m := re.match(rf"^0*(\d+)-(?:({SURVEY_RE})-)?(.+?)(?:-(\d+))?$", stem, flags=re.I):  # '11-RS-সেলনা-1', '18-Raypara-2'
         jl, survey, stem, sheet = m.group(1), _survey(m.group(2)), m.group(3), m.group(4)
+    elif m := re.match(r"^0*(\d+)\s*([A-Za-z][^\d]*?)(?:-(\d+))?$", stem):  # '22Suktiya-1', '120 SHEKHERHAT' (no hyphen after the JL no)
+        jl, stem, sheet = m.group(1), m.group(2), m.group(3)
+    elif m := re.match(r"^([A-Za-z][A-Za-z ]*?)\s+(\d+)-(\d+)\s*(?:\([^()]*\))?$", stem):  # 'Palashpol 94-30 (Shafiq)' (name, JL, sheet)
+        stem, jl, sheet = m.group(1), m.group(2), m.group(3)
+    elif m := re.match(r"^([^\d\sA-Za-z][^\d]*?)\s*-\s*(\d+)(?:\s*-\s*(\d+)|\s+সিট\s*নং\s*(\d+))?$", stem):  # Bangla 'গোপালপুর-4-1', 'আমডাঙ্গা-61 সিট নং 2', 'আমহাটি-206' (name, JL, sheet)
+        stem, jl, sheet = m.group(1), m.group(2), m.group(3) or m.group(4)
     elif m := re.match(r"^(.*?)_+(\d+)_+\d+_+(\d+)$", stem):  # 'চর বেরেট_71_141_6' (name, JL, other no., sheet)
         stem, jl, sheet = m.group(1), m.group(2), m.group(3)
     elif m := re.match(r"^(.*?)_+(\d+)(?:_+(\d*))?$", stem):  # 'অলুয়া_60_1'
