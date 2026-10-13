@@ -90,13 +90,19 @@ def _division_name(division_id: str) -> str | None:
     return None
 
 
+def _enabled_divisions() -> dict[str, str]:
+    """Division id -> name for each id in MOUZA_ENABLED_DIVISION_ID (comma separated) that exists."""
+    ids = [d.strip() for d in get_settings().mouza_enabled_division_id.split(",") if d.strip()]
+    return {d: n for d in ids if (n := _division_name(d))}
+
+
 def capabilities() -> GisCapabilities:
-    div = get_settings().mouza_enabled_division_id.strip()
-    name = _division_name(div) if div else None
-    enabled = bool(name)
+    divs = _enabled_divisions()
+    name = ", ".join(divs.values()) or None
+    enabled = bool(divs)
     return GisCapabilities(
         mouza_enabled=enabled,
-        mouza_enabled_division_id=div if enabled else None,
+        mouza_enabled_division_id=",".join(divs) if enabled else None,
         mouza_enabled_division_name=name,
         counts={
             "divisions": len(_features("divisions")),
@@ -116,8 +122,7 @@ def _in_scope(upazila_id: str) -> bool:
     upa = next((f for f in _features("upazilas") if f["properties"]["id"] == upazila_id), None)
     if upa is None:
         raise AppError("UPAZILA_NOT_FOUND", "Upazila not found", 404)
-    div = get_settings().mouza_enabled_division_id.strip()
-    return bool(div) and upa["properties"]["division_id"] == div
+    return upa["properties"]["division_id"] in _enabled_divisions()
 
 
 def _jl_key(m: dict[str, Any]) -> tuple[int, str]:

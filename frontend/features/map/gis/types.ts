@@ -53,6 +53,8 @@ export interface SheetRefDto {
   sheet_no: string;
   survey?: string;
   plots?: number;
+  /** Link to a scanned map PDF on a third-party site; absent for official-portal sheets. */
+  url?: string;
 }
 
 export interface MouzaDto {
