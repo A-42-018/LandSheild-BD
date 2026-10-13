@@ -15,8 +15,10 @@ import {
   EMPTY_SELECTION,
   gisLabel,
   mouzasInUnion,
+  placeOptions,
   resolveTileUrl,
   select,
+  selectionFromHit,
   sheetRef,
   viewLevel,
 } from "./types";
@@ -91,6 +93,22 @@ describe("gis helpers", () => {
     expect(sheetRef({ sheet_no: "001", survey: "RS" })).toBe("RS 001");
     expect(sheetRef({ sheet_no: "002" })).toBe("002");
   });
+  it("a search hit becomes the menu selection with every parent filled in", () => {
+    const base = { name: "X", bn_name: "", path: "", bbox: null, division_id: "4", district_id: "55" };
+    expect(selectionFromHit({ ...base, level: "division", id: "4" })).toEqual({ ...EMPTY_SELECTION, divisionId: "4" });
+    expect(selectionFromHit({ ...base, level: "upazila", id: "273" })).toEqual({ ...EMPTY_SELECTION, divisionId: "4", districtId: "55", upazilaId: "273" });
+    expect(selectionFromHit({ ...base, level: "mouza", id: "m2", upazila_id: "273", union_id: "u1" })).toEqual({
+      divisionId: "4", districtId: "55", upazilaId: "273", unionId: "u1", mouzaId: "m2",
+    });
+    expect(selectionFromHit({ ...base, level: "union", id: "u9", upazila_id: "273" })).toMatchObject({ unionId: "u9", mouzaId: "" });
+  });
+  it("place options are alphabetical 'English (বাংলা)' labels", () => {
+    const f = (id: string, name: string, bn: string) => ({ type: "Feature", geometry: { type: "Point", coordinates: [] }, properties: { id, name, bn_name: bn, bbox: [0, 0, 0, 0], lat: 0, long: 0 } }) as any;
+    expect(placeOptions([f("2", "Khulna", "খুলনা"), f("1", "Barishal", "বরিশাল")])).toEqual([
+      { value: "1", label: "Barishal (বরিশাল)" },
+      { value: "2", label: "Khulna (খুলনা)" },
+    ]);
+  });
   it("tile url: OSM by default, 'off' disables, custom wins", () => {
     expect(resolveTileUrl(undefined)).toBe(DEFAULT_TILE_URL);
     expect(resolveTileUrl("off")).toBeUndefined();
@@ -127,7 +145,9 @@ describe("national map", () => {
     const before = canvas().getAttribute("data-fit-key");
     fireEvent.change(upa, { target: { value: "273" } });
     await waitFor(() => expect(canvas().getAttribute("data-fit-key")).not.toBe(before));
-    expect(get).toHaveBeenCalledWith("/gis/mouzas?upazila_id=273");
+    // map viewing only: unions and mouzas are not fetched here
+    expect(get).not.toHaveBeenCalledWith("/gis/mouzas?upazila_id=273");
+    expect(get).not.toHaveBeenCalledWith("/gis/unions?upazila_id=273");
   });
 
   it("changing the division resets the lower levels; reset returns to Bangladesh", async () => {
@@ -141,128 +161,38 @@ describe("national map", () => {
     await waitFor(() => expect(canvas()).toHaveAttribute("data-admin-level", "division"));
   });
 
-  it("mouza/sheet/plot are present but disabled with an honest note when no mouza maps are loaded", async () => {
+  it("the menu stops at upazila and links to the mouza map", async () => {
     wrap(route(EMPTY));
     fireEvent.change(await screen.findByLabelText(en.map.gis.division), { target: { value: "4" } });
     fireEvent.change(await screen.findByLabelText(en.map.gis.district), { target: { value: "55" } });
     fireEvent.change(await screen.findByLabelText(en.map.gis.upazila), { target: { value: "273" } });
-    expect(await screen.findByText(en.map.gis.mouzaNone)).toBeInTheDocument();
-    expect(screen.getByLabelText(en.map.gis.union)).toBeDisabled();
-    expect(screen.getByLabelText(en.map.gis.mouza)).toBeDisabled();
-    expect(screen.getByLabelText(en.map.gis.sheet)).toBeDisabled();
-    expect(screen.getByLabelText(en.map.gis.plot)).toBeDisabled();
+    const menu = screen.getByTestId("gis-menu");
+    expect(within(menu).getAllByRole("combobox")).toHaveLength(3);
+    expect(within(menu).queryByLabelText(en.mouza.union)).toBeNull();
+    expect(within(menu).getByRole("link", { name: en.map.gis.mouzaLink })).toHaveAttribute("href", "/mouza-map");
   });
 
-  it("outside the demo division the mouza select explains the scope", async () => {
-    wrap(
-      route(EMPTY, {
-        "/gis/districts?division_id=3": { type: "FeatureCollection", features: [GIS_D()] },
-        "/gis/upazilas?district_id=1": { type: "FeatureCollection", features: [GIS_U()] },
-        "/gis/mouzas?upazila_id=9": { enabled: false, upazila_id: "9", mouzas: [] },
-      }),
-    );
-    fireEvent.change(await screen.findByLabelText(en.map.gis.division), { target: { value: "3" } });
-    fireEvent.change(await screen.findByLabelText(en.map.gis.district), { target: { value: "1" } });
-    fireEvent.change(await screen.findByLabelText(en.map.gis.upazila), { target: { value: "9" } });
-    expect(
-      await screen.findByText(en.map.gis.mouzaOutOfScope.replace("{division}", "Khulna")),
-    ).toBeInTheDocument();
-  });
-
-  const UNION_DATA = {
-    "/gis/unions?upazila_id=273": {
-      enabled: true,
-      upazila_id: "273",
-      unions: [
-        { id: "40013815", name: "Badhal", bn_name: "বাধাল", mouza_count: 1 },
-        { id: "40013828", name: "Dhopakhali", bn_name: "ধোপাখালী", mouza_count: 1 },
-      ],
-    },
-    "/gis/mouzas?upazila_id=273": {
-      enabled: true,
-      upazila_id: "273",
-      mouzas: [
-        { id: "m2", code: "c2", name: "Krishnapur", bn_name: "কৃষ্ণপুর", union_id: "40013815", jl_no: "002",
-          sheets: [{ sheet_no: "001", survey: "RS", plots: 40 }, { sheet_no: "002", survey: "RS", plots: 12 }] },
-        { id: "m4", code: "c4", name: "Dhopakhali", bn_name: "ধোপাখালী", union_id: "40013828", jl_no: "004", sheets: [] },
-      ],
-    },
-  };
-
-  it("lists union-wise mouzas with JL no. and survey sheet references", async () => {
-    wrap(route(EMPTY, UNION_DATA));
-    fireEvent.change(await screen.findByLabelText(en.map.gis.division), { target: { value: "4" } });
-    fireEvent.change(await screen.findByLabelText(en.map.gis.district), { target: { value: "55" } });
-    fireEvent.change(await screen.findByLabelText(en.map.gis.upazila), { target: { value: "273" } });
-    const un = screen.getByLabelText(en.map.gis.union);
-    await waitFor(() => expect(un).not.toBeDisabled());
-    expect(screen.getByRole("option", { name: "Badhal (বাধাল) · 1 mouza" })).toBeInTheDocument();
-    const mz = screen.getByLabelText(en.map.gis.mouza);
-    await waitFor(() => expect(within(mz).getAllByRole("option")).toHaveLength(3)); // placeholder + whole upazila
-    expect(await screen.findByText(en.map.gis.mouzaPickUnion)).toBeInTheDocument();
-
-    fireEvent.change(un, { target: { value: "40013815" } });
-    await waitFor(() => expect(within(mz).getAllByRole("option")).toHaveLength(2));
-    expect(screen.getByRole("option", { name: "JL 002 · Krishnapur (কৃষ্ণপুর)" })).toBeInTheDocument();
-
-    fireEvent.change(mz, { target: { value: "m2" } });
-    const info = await screen.findByTestId("mouza-info");
-    expect(info).toHaveTextContent("002");
-    expect(info).toHaveTextContent("Badhal (বাধাল)");
-    expect(info).toHaveTextContent("RS 001, RS 002");
-    const sheet = screen.getByLabelText(en.map.gis.sheet);
-    expect(sheet).not.toBeDisabled();
-    expect(within(sheet).getByRole("option", { name: "RS 001 · 40 plots" })).toBeInTheDocument();
-  });
-
-  it("mouzas the source gives no union for are listed under the upazila with a note", async () => {
-    wrap(
-      route(EMPTY, {
-        "/gis/mouzas?upazila_id=273": {
-          enabled: true,
-          upazila_id: "273",
-          mouzas: [{ id: "d1", code: "020601015", name: "চক তেলিগাতী", bn_name: "চক তেলিগাতী", union_id: null, jl_no: "015",
-            source_url: "https://settlement.gov.bd", sheets: [{ sheet_no: "001", survey: "BRS", plots: 0 }] }],
-        },
-      }),
-    );
-    fireEvent.change(await screen.findByLabelText(en.map.gis.division), { target: { value: "4" } });
-    fireEvent.change(await screen.findByLabelText(en.map.gis.district), { target: { value: "55" } });
-    fireEvent.change(await screen.findByLabelText(en.map.gis.upazila), { target: { value: "273" } });
-    expect(screen.getByLabelText(en.map.gis.union)).toBeDisabled();
-    expect(await screen.findByText(en.map.gis.mouzaNoUnion)).toBeInTheDocument();
-    const mz = screen.getByLabelText(en.map.gis.mouza);
-    await waitFor(() => expect(mz).not.toBeDisabled());
-    fireEvent.change(mz, { target: { value: "d1" } });
-    const info = await screen.findByTestId("mouza-info");
-    expect(info).toHaveTextContent(en.map.gis.unionUnknown);
-    expect(info).toHaveTextContent("BRS 001");
-    expect(within(info).getByRole("link")).toHaveAttribute("href", "https://settlement.gov.bd");
-  });
-
-  it("picking a mouza without a union fills in its union", async () => {
-    wrap(route(EMPTY, UNION_DATA));
-    fireEvent.change(await screen.findByLabelText(en.map.gis.division), { target: { value: "4" } });
-    fireEvent.change(await screen.findByLabelText(en.map.gis.district), { target: { value: "55" } });
-    fireEvent.change(await screen.findByLabelText(en.map.gis.upazila), { target: { value: "273" } });
-    const mz = screen.getByLabelText(en.map.gis.mouza);
-    await waitFor(() => expect(mz).not.toBeDisabled());
-    fireEvent.change(mz, { target: { value: "m4" } });
-    await waitFor(() => expect(screen.getByLabelText(en.map.gis.union)).toHaveValue("40013828"));
-    expect(screen.getByLabelText(en.map.gis.mouza)).toHaveValue("m4");
-  });
-
-  it("a mouza search hit selects its upazila, union and mouza", async () => {
-    const hit = { level: "mouza", id: "m2", name: "Krishnapur", bn_name: "কৃষ্ণপুর", path: "Bagerhat / Kachua / Badhal", bbox: null,
-      division_id: "4", district_id: "55", upazila_id: "273", union_id: "40013815", jl_no: "002" };
-    wrap(route(EMPTY, { ...UNION_DATA, "/gis/search?q=krishna": { hits: [hit], out_of_scope_hint: false } }));
-    fireEvent.change(await screen.findByLabelText(en.map.gis.searchLabel), { target: { value: "krishna" } });
+  it("search lists divisions, districts and upazilas only (no unions or mouzas)", async () => {
+    const base = { bbox: [89, 22, 90, 23], division_id: "4", district_id: "55" };
+    const hits = [
+      { ...base, level: "upazila", id: "273", name: "Kachua", bn_name: "কচুয়া", path: "Khulna / Bagerhat" },
+      { ...base, level: "union", id: "u1", name: "Kachua Union", bn_name: "", path: "Bagerhat / Kachua", upazila_id: "273" },
+      { ...base, level: "mouza", id: "m1", name: "Kachua Mouza", bn_name: "", path: "Bagerhat / Kachua", upazila_id: "273", jl_no: "001" },
+    ];
+    wrap(route(EMPTY, { "/gis/search?q=kachua": { hits, out_of_scope_hint: false } }));
+    fireEvent.change(await screen.findByLabelText(en.map.gis.searchLabel), { target: { value: "kachua" } });
     fireEvent.click(screen.getByRole("button", { name: en.map.gis.searchButton }));
-    fireEvent.click(await screen.findByRole("button", { name: /Krishnapur \(কৃষ্ণপুর\)/ }));
-    await waitFor(() => expect(screen.getByLabelText(en.map.gis.mouza)).toHaveValue("m2"));
-    expect(screen.getByLabelText(en.map.gis.upazila)).toHaveValue("273");
-    expect(screen.getByLabelText(en.map.gis.union)).toHaveValue("40013815");
-    expect(await screen.findByTestId("mouza-info")).toHaveTextContent("RS 001");
+    expect(await screen.findByRole("button", { name: /Kachua \(কচুয়া\)/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Kachua Union/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Kachua Mouza/ })).toBeNull();
+  });
+
+  it("search with only mouza hits says nothing matched", async () => {
+    const hit = { level: "mouza", id: "m1", name: "Alipur", bn_name: "", path: "", bbox: null, division_id: "4", district_id: "55", upazila_id: "273" };
+    wrap(route(EMPTY, { "/gis/search?q=alipur": { hits: [hit], out_of_scope_hint: false } }));
+    fireEvent.change(await screen.findByLabelText(en.map.gis.searchLabel), { target: { value: "alipur" } });
+    fireEvent.click(screen.getByRole("button", { name: en.map.gis.searchButton }));
+    expect(await screen.findByText(en.map.gis.searchNone)).toBeInTheDocument();
   });
 
   it("search finds a place in English or Bangla and jumps to it", async () => {
@@ -279,7 +209,7 @@ describe("national map", () => {
     expect(screen.getByLabelText(en.map.gis.district)).toHaveValue("55");
   });
 
-  it("search with no result says mouza search is demo-scope only", async () => {
+  it("search with no result says so", async () => {
     wrap(route(EMPTY, { "/gis/search?q=zzzz": { hits: [], out_of_scope_hint: true } }));
     fireEvent.change(await screen.findByLabelText(en.map.gis.searchLabel), { target: { value: "zzzz" } });
     fireEvent.click(screen.getByRole("button", { name: en.map.gis.searchButton }));
@@ -325,9 +255,3 @@ describe("national map", () => {
 });
 
 import { within } from "@testing-library/react";
-function GIS_D() {
-  return { type: "Feature", geometry: { type: "Polygon", coordinates: [[[90, 23], [91, 23], [91, 24], [90, 23]]] }, properties: { id: "1", name: "Dhaka", bn_name: "ঢাকা", division_id: "3", bbox: [90, 23, 91, 24], lat: 23.5, long: 90.5 } };
-}
-function GIS_U() {
-  return { type: "Feature", geometry: { type: "Polygon", coordinates: [[[90, 23], [91, 23], [91, 24], [90, 23]]] }, properties: { id: "9", name: "Savar", bn_name: "সাভার", division_id: "3", district_id: "1", bbox: [90, 23, 91, 24], lat: 23.5, long: 90.5 } };
-}
