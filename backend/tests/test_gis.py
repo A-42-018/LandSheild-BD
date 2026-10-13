@@ -170,8 +170,8 @@ def test_union_wise_mouzas_with_jl_and_sheets(env, tmp_path, monkeypatch):
         assert badhal["union_id"] == "40013815"
         assert [m["name"] for m in badhal["mouzas"]] == ["Krishnapur", "Badhal"]
         assert badhal["mouzas"][1]["sheets"] == [
-            {"sheet_no": "001", "survey": "RS", "plots": 40},
-            {"sheet_no": "002", "survey": "RS", "plots": 12},
+            {"sheet_no": "001", "survey": "RS", "plots": 40, "url": None},
+            {"sheet_no": "002", "survey": "RS", "plots": 12, "url": None},
         ]
         assert _get(env, "/mouzas", upazila_id=up, union_id="x1").status_code == 422
 

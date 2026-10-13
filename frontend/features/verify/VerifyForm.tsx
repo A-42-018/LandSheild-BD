@@ -10,10 +10,30 @@ import { Button, Card, Input, Select } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { DISTRICTS, DIVISIONS, districtsOf, divisionOf, labelOf, upazilasOf } from "@/lib/geo";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useGisSearch, useMouzas } from "@/features/map/gis/useGis";
 import { verifySchema, type VerifyInput, type VerifyValues } from "./schema";
 
 interface LandHit {
   land_id: string;
+}
+
+const fold = (s: string) => s.toLowerCase().replace(/[^a-z0-9\u0980-\u09ff]/g, "");
+
+/** Mouza names of the chosen upazila (from the map data) to suggest while typing; empty when unavailable. */
+function useMouzaSuggestions(district: string, upazila: string): { value: string; label: string }[] {
+  const { data: found } = useGisSearch(upazila);
+  const hits = (found?.hits ?? []).filter((h) => h.level === "upazila" && fold(h.name) === fold(upazila));
+  const hit = hits.find((h) => fold(h.path).includes(fold(district))) ?? (hits.length === 1 ? hits[0] : undefined);
+  const { data } = useMouzas(hit?.id ?? "");
+  const seen = new Set<string>();
+  const out: { value: string; label: string }[] = [];
+  for (const m of data?.mouzas ?? []) {
+    const value = (m.name || m.bn_name).trim();
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    out.push({ value, label: [m.jl_no ? `JL ${m.jl_no}` : "", m.bn_name && m.bn_name !== value ? m.bn_name : ""].filter(Boolean).join(" · ") });
+  }
+  return out;
 }
 
 /** `compact` (U5): landing-page hero variant — no card, no intro/hints, fields in a responsive grid. */
@@ -38,6 +58,8 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   // Division is a UI-only filter: picking one narrows the districts; picking a district fills it in.
   const [division, setDivision] = useState("");
   const districtOptions = division ? districtsOf(division) : DISTRICTS;
+  const upazila = watch("upazila") as string;
+  const mouzaNames = useMouzaSuggestions(district, upazila);
   const err = (k?: { message?: string }) => (k?.message ? t(`errors.${k.message}`) : undefined);
 
   const m = useMutation({
@@ -107,7 +129,23 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
           error={err(errors.upazila)}
           {...register("upazila")}
         />
-        <Input label={t("mouza")} required autoComplete="off" error={err(errors.mouza)} {...register("mouza")} />
+        <div className="flex flex-col">
+          <Input
+            label={t("mouza")}
+            required
+            autoComplete="off"
+            list={mouzaNames.length ? "mouza-suggestions" : undefined}
+            error={err(errors.mouza)}
+            {...register("mouza")}
+          />
+          {mouzaNames.length > 0 && (
+            <datalist id="mouza-suggestions">
+              {mouzaNames.map((o) => (
+                <option key={o.value} value={o.value} label={o.label} />
+              ))}
+            </datalist>
+          )}
+        </div>
         <div className={compact ? "contents" : "grid grid-cols-1 gap-4 sm:grid-cols-2"}>
           <Input
             label={t("khatian")}
