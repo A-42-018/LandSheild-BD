@@ -27,6 +27,7 @@ P51 and P52 suites have been run: backend 470 passed, ruff clean; frontend 183 p
 - **Upload limits:** 10 MB, 40 MP images, 20 PDF pages, extension and magic bytes must agree, stored names are random UUIDs, path traversal and symlink escapes are rejected (constants are pinned by a test).
 - **Secrets grep:** no private-key blocks, cloud or API tokens in the repository text files. `tests/test_security_a.py` repeats the scan. Passwords in `start.sh` (`LandShield2026!`) and `run_eval.py` are demo-only defaults overridable by `DEMO_PASSWORD`.
 - **Public and map endpoints:** `/public/verify/{id}` (60/min/IP) and `/lands/map` expose no names, hashes, ids or file paths; both compute risk read-only.
+- **Scan download proxy:** `GET /gis/scan?url=` makes the server fetch a file, so it is pinned to one host (`https://free.mouzamap.tech`, `.pdf` paths only), never follows redirects, only relays the site's own `/download.aspx?` link, caps the size at 100 MB, needs a signed-in user and is rate limited per user (`SCAN_RATE_LIMIT_PER_MIN`). `tests/test_gis_scan.py` covers each rule.
 
 ## Still open (not fixed in P51)
 

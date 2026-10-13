@@ -15,20 +15,14 @@ import {
   LEVEL_STYLE,
   resolveTileUrl,
   select,
+  selectionFromHit,
   viewLevel,
   type GisFeatureDto,
   type GisLevel,
   type GisSelection,
   type SearchHitDto,
 } from "./gis/types";
-import {
-  useDistricts,
-  useDivisions,
-  useGisCapabilities,
-  useMouzas,
-  useUnions,
-  useUpazilas,
-} from "./gis/useGis";
+import { useDistricts, useDivisions, useUpazilas } from "./gis/useGis";
 import type { PopupLabels } from "./popup";
 import { filterFeatures, RISK_COLOR, RISK_FILTERS, type RiskFilter } from "./types";
 import { useParcelMap } from "./useMap";
@@ -50,13 +44,10 @@ export default function MapView() {
   const t = useTranslations();
   const router = useRouter();
   const q = useParcelMap();
-  const caps = useGisCapabilities();
   const divisions = useDivisions();
   const [sel, setSel] = useState<GisSelection>(EMPTY_SELECTION);
   const districts = useDistricts(sel.divisionId);
   const upazilas = useUpazilas(sel.districtId);
-  const unions = useUnions(sel.upazilaId);
-  const mouzas = useMouzas(sel.upazilaId);
 
   const [filter, setFilter] = useState<RiskFilter>("ALL");
   const [selected, setSelected] = useState<string | null>(null);
@@ -107,21 +98,7 @@ export default function MapView() {
     setSel((s) =>
       select(s, lvl === "division" ? "divisionId" : lvl === "district" ? "districtId" : "upazilaId", id),
     );
-  const pickHit = (h: SearchHitDto) => {
-    if (h.level === "division") setSel({ ...EMPTY_SELECTION, divisionId: h.id });
-    else if (h.level === "district")
-      setSel({ ...EMPTY_SELECTION, divisionId: h.division_id ?? "", districtId: h.id });
-    else if (h.level === "upazila")
-      setSel({ ...EMPTY_SELECTION, divisionId: h.division_id ?? "", districtId: h.district_id ?? "", upazilaId: h.id });
-    else
-      setSel({
-        divisionId: h.division_id ?? "",
-        districtId: h.district_id ?? "",
-        upazilaId: h.upazila_id ?? "",
-        unionId: h.level === "union" ? h.id : (h.union_id ?? ""),
-        mouzaId: h.level === "mouza" ? h.id : "",
-      });
-  };
+  const pickHit = (h: SearchHitDto) => setSel(selectionFromHit(h));
 
   const code = (ns: string, c: string) => (t.has(`${ns}.${c}`) ? t(`${ns}.${c}`) : c);
   const labels: PopupLabels = {
@@ -189,7 +166,7 @@ export default function MapView() {
     );
   }
 
-  const gisFailed = divisions.isError || caps.isError;
+  const gisFailed = divisions.isError;
 
   return (
     <div
@@ -214,10 +191,7 @@ export default function MapView() {
         <div className={PAD}>
           <ErrorState
             message={t("map.gis.loadError")}
-            onRetry={() => {
-              void divisions.refetch();
-              void caps.refetch();
-            }}
+            onRetry={() => void divisions.refetch()}
           />
         </div>
       )}
@@ -310,9 +284,6 @@ export default function MapView() {
                 divisions={divisions.data?.features ?? []}
                 districts={districts.data?.features ?? []}
                 upazilas={upazilas.data?.features ?? []}
-                unions={unions.data}
-                mouzas={mouzas.data}
-                caps={caps.data}
                 loading={divisions.isPending}
               />
               <fieldset className="flex flex-col gap-2 border-t border-line pt-3 text-sm text-ink">
