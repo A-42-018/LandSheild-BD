@@ -61,7 +61,7 @@ export const DISTRICTS: District[] = [
   {
     ...g("Chuadanga", "চুয়াডাঙ্গা"),
     division: "Khulna",
-    upazilas: [g("Alamdanga", "আলমডাঙ্গা"), g("Chuadanga Sadar", "চুয়াডাঙ্গা সদর"), g("Damurhuda", "দামুরহুদা"), g("Gangni", "গাংনী"), g("Jibannagar", "জীবন নগর"), g("Meherpur Sadar", "মেহেরপুর সদর"), g("Mirpur", "মিরপুর")],
+    upazilas: [g("Alamdanga", "আলমডাঙ্গা"), g("Chuadanga Sadar", "চুয়াডাঙ্গা সদর"), g("Damurhuda", "দামুরহুদা"), g("Gangni", "গাংনী"), g("Jibannagar", "জীবন নগর"), g("Meherpur Sadar", "মেহেরপুর সদর")],
   },
   {
     ...g("Cox's Bazar", "কক্স বাজার"),
@@ -76,7 +76,7 @@ export const DISTRICTS: District[] = [
   {
     ...g("Dhaka", "ঢাকা"),
     division: "Dhaka",
-    upazilas: [g("Bangshal", "বংশাল"), g("Biman Bandar", "বিমানবন্দর"), g("Chak Bazar", "চকবাজার"), g("Dhamrai", "ধামরাই"), g("Dohar", "দোহার"), g("Gendaria", "গেণ্ডারিয়া"), g("Hazaribagh", "হাজারীবাগ"), g("Jatrabari", "যাত্রাবাড়ী"), g("Kadamtali", "কদমতলী"), g("Kamrangir Char", "কামরাঙ্গীরচর"), g("Keraniganj", "কেরানীগঞ্জ"), g("Kotwali", "কোতোয়ালী"), g("Lalbagh", "লালবাগ"), g("Motijheel", "মতিঝিল"), g("Nawabganj", "নবাবগঞ্জ"), g("Paltan", "পল্টন"), g("Sabujbagh", "সবুজবাগ"), g("Savar", "সাভার"), g("Shyampur", "শ্যামপুর"), g("Sutrapur", "সূত্রাপুর"), g("Turag", "তুরাগ"), g("Uttara", "উত্তরা")],
+    upazilas: [g("Adabor", "আদাবর"), g("Badda", "বাড্ডা"), g("Bangshal", "বংশাল"), g("Biman Bandar", "বিমানবন্দর"), g("Cantonment", "ক্যান্টনমেন্ট"), g("Chak Bazar", "চকবাজার"), g("Dakshinkhan", "দক্ষিণখান"), g("Darus Salam", "দারুস সালাম"), g("Demra", "ডেমরা"), g("Dhamrai", "ধামরাই"), g("Dhanmondi", "ধানমন্ডি"), g("Dohar", "দোহার"), g("Gendaria", "গেণ্ডারিয়া"), g("Gulshan", "গুলশান"), g("Hazaribagh", "হাজারীবাগ"), g("Jatrabari", "যাত্রাবাড়ী"), g("Kadamtali", "কদমতলী"), g("Kafrul", "কাফরুল"), g("Kalabagan", "কলাবাগান"), g("Kamrangir Char", "কামরাঙ্গীরচর"), g("Keraniganj", "কেরানীগঞ্জ"), g("Khilgaon", "খিলগাঁও"), g("Khilkhet", "খিলক্ষেত"), g("Kotwali", "কোতোয়ালী"), g("Lalbagh", "লালবাগ"), g("Mirpur", "মিরপুর"), g("Mohammadpur", "মোহাম্মদপুর"), g("Motijheel", "মতিঝিল"), g("Nawabganj", "নবাবগঞ্জ"), g("New Market", "নিউ মার্কেট"), g("Pallabi", "পল্লবী"), g("Paltan", "পল্টন"), g("Ramna", "রমনা"), g("Rampura", "রামপুরা"), g("Sabujbagh", "সবুজবাগ"), g("Savar", "সাভার"), g("Shah Ali", "শাহ আলী"), g("Shahbagh", "শাহবাগ"), g("Sher-e-bangla Nagar", "শেরেবাংলা নগর"), g("Shyampur", "শ্যামপুর"), g("Sutrapur", "সূত্রাপুর"), g("Tejgaon", "তেজগাঁও"), g("Tejgaon Ind. Area", "তেজগাঁও শিল্প এলাকা"), g("Turag", "তুরাগ"), g("Uttar Khan", "উত্তরখান"), g("Uttara", "উত্তরা")],
   },
   {
     ...g("Dinajpur", "দিনাজপুর"),
@@ -101,7 +101,7 @@ export const DISTRICTS: District[] = [
   {
     ...g("Gazipur", "গাজীপুর"),
     division: "Dhaka",
-    upazilas: [g("Dakshinkhan", "দক্ষিণখান"), g("Gazipur Sadar", "গাজীপুর সদর"), g("Kaliakair", "কালিয়াকৈর"), g("Kaliganj", "কালীগঞ্জ"), g("Kapasia", "কাপাসিয়া"), g("Sreepur", "শ্রীপুর"), g("Uttar Khan", "উত্তরখান")],
+    upazilas: [g("Gazipur Sadar", "গাজীপুর সদর"), g("Kaliakair", "কালিয়াকৈর"), g("Kaliganj", "কালীগঞ্জ"), g("Kapasia", "কাপাসিয়া"), g("Sreepur", "শ্রীপুর")],
   },
   {
     ...g("Gopalganj", "গোপালগঞ্জ"),
@@ -121,7 +121,7 @@ export const DISTRICTS: District[] = [
   {
     ...g("Jashore", "যশোর"),
     division: "Khulna",
-    upazilas: [g("Abhaynagar", "অভয়নগর"), g("Bagherpara", "বাঘের পাড়া"), g("Chaugachha", "চৌগাছা"), g("Jhikargachha", "ঝিকরগাছা"), g("Keshabpur", "কেশবপুর"), g("Kotwali", "কোতোয়ালী"), g("Manirampur", "মনিরামপুর"), g("Sharsha", "সারশা")],
+    upazilas: [g("Abhaynagar", "অভয়নগর"), g("Bagherpara", "বাঘের পাড়া"), g("Chaugachha", "চৌগাছা"), g("Jhikargachha", "ঝিকরগাছা"), g("Keshabpur", "কেশবপুর"), g("Manirampur", "মনিরামপুর"), g("Sharsha", "সারশা")],
   },
   {
     ...g("Jhalokati", "ঝালকাঠি"),
@@ -161,7 +161,7 @@ export const DISTRICTS: District[] = [
   {
     ...g("Kushtia", "কুষ্টিয়া"),
     division: "Khulna",
-    upazilas: [g("Bheramara", "ভেরামারা"), g("Cantonment", "ক্যান্টনমেন্ট"), g("Darus Salam", "দারুস সালাম"), g("Daulatpur", "দৌলতপুর"), g("Gulshan", "গুলশান"), g("Kafrul", "কাফরুল"), g("Khoksa", "খোকসা"), g("Kumarkhali", "কুমারখালি"), g("Kushtia Sadar", "কুষ্টিয়া সদর"), g("Mirpur", "মিরপুর"), g("Pallabi", "পল্লবী"), g("Shah Ali", "শাহ আলী")],
+    upazilas: [g("Bheramara", "ভেরামারা"), g("Daulatpur", "দৌলতপুর"), g("Khoksa", "খোকসা"), g("Kumarkhali", "কুমারখালি"), g("Kushtia Sadar", "কুষ্টিয়া সদর"), g("Mirpur", "মিরপুর")],
   },
   {
     ...g("Lakshmipur", "লক্ষ্মীপুর"),
@@ -181,7 +181,7 @@ export const DISTRICTS: District[] = [
   {
     ...g("Magura", "মাগুরা"),
     division: "Khulna",
-    upazilas: [g("Adabor", "আদাবর"), g("Dhanmondi", "ধানমন্ডি"), g("Kalabagan", "কলাবাগান"), g("Kaliakair", "কালিয়াকৈর"), g("Magura Sadar", "মাগুরা সদর"), g("Mohammadpur", "মোহাম্মাদপুর"), g("New Market", "নিউ মার্কেট"), g("Ramna", "রমনা"), g("Rampura", "রামপুরা"), g("Shahbagh", "শাহবাগ"), g("Shalikha", "শালিখা"), g("Sher-e-bangla Nagar", "শেরেবাংলা নগর"), g("Sreepur", "শ্রীপুর"), g("Tejgaon", "তেজগাঁও"), g("Tejgaon Ind. Area", "তেজগাঁও শিল্প এলাকা")],
+    upazilas: [g("Magura Sadar", "মাগুরা সদর"), g("Mohammadpur", "মোহাম্মাদপুর"), g("Shalikha", "শালিখা"), g("Sreepur", "শ্রীপুর")],
   },
   {
     ...g("Manikganj", "মানিকগঞ্জ"),
@@ -221,7 +221,7 @@ export const DISTRICTS: District[] = [
   {
     ...g("Narayanganj", "নারায়াণগঞ্জ"),
     division: "Dhaka",
-    upazilas: [g("Araihazar", "আড়াইহাজার"), g("Badda", "বাড্ডা"), g("Bandar", "বান্দার"), g("Demra", "ডেমরা"), g("Khilgaon", "খিলগাঁও"), g("Khilkhet", "খিলক্ষেত"), g("Narayanganj Sadar", "নারায়ণগঞ্জ সদর"), g("Rupganj", "রূপগঞ্জ"), g("Sonargaon", "সোনারগাঁও")],
+    upazilas: [g("Araihazar", "আড়াইহাজার"), g("Bandar", "বান্দার"), g("Narayanganj Sadar", "নারায়ণগঞ্জ সদর"), g("Rupganj", "রূপগঞ্জ"), g("Sonargaon", "সোনারগাঁও")],
   },
   {
     ...g("Narsingdi", "নরসিংদী"),
