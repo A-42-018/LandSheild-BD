@@ -66,7 +66,7 @@ def test_valid_tool_call_is_parsed(tmp_path):
     assert by["buyer"].value == "Karim Mia" and len(res.fields) == len(EXTRACTION_FIELDS)
     assert by["owner_name"].value is None and by["owner_name"].confidence == 0.0
     kw = client.calls[0]
-    assert kw["temperature"] == 0 and kw["tool_choice"]["name"] == "submit_fields"
+    assert kw["extra_body"]["temperature"] == 0 and kw["tool_choice"]["name"] == "submit_fields"
     assert "DATA" in kw["system"] and kw["timeout"] == 30
     assert kw["messages"][0]["content"][0]["type"] == "image"
 

@@ -70,6 +70,8 @@ def _claude(settings: Settings) -> ClaudeDocumentAIProvider:
         timeout_s=settings.claude_timeout_s,
         daily_cap=settings.claude_daily_cap,
         cache_dir=Path(settings.storage_path) / "claude_cache",
+        base_url=settings.anthropic_base_url,
+        auth=settings.anthropic_auth,
     )
 
 

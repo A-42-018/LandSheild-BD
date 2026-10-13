@@ -7,8 +7,9 @@ found in the mouzamap.tech listing:
   - otherwise a new mouza is added (source "mouzamap", no union, no coordinates).
 Entries from an earlier run (source "mouzamap") are dropped first, so reruns are idempotent.
 Sheet links open the third-party site's viewer page (?a=view); nothing is copied.
+Files with a JL no. but no survey type in their name or folders are labelled "Unknown" (Khulna, Rajshahi, Rangpur drives only).
 
-Usage:  python scripts/merge_mouzamap_index.py [--division 3]
+Usage:  python scripts/merge_mouzamap_index.py [--division 3,1]   (app division ids: 3 = Dhaka, 1 = Barishal, 4 = Khulna, 5 = Rajshahi, 6 = Rangpur)
 """
 
 from __future__ import annotations
@@ -46,11 +47,50 @@ ALIASES = {
     ("Rajbari", "গোয়ালান্দ-"): "Goalandaghat", ("Shariatpur", "জার্জিরা"): "Zanjira",
     ("Shariatpur", "ড্যামুডে"): "Damudya", ("Shariatpur", "নরিয়া"): "Naria", ("Tangail", "দেলদোয়ার"): "Delduar",
     ("Tangail", "ভূয়াপুর-"): "Bhuapur",
+    # Barishal division. "District/Name" = the folder sits under the wrong district on the site.
+    ("Pirojpur", "মঠবাড়িয়া"): "Mathbaria", ("Barishal", "বানরীপাড়া"): "Banaripara", ("Barishal", "স্বরুপকাটী"): "Pirojpur/Nesarabad",
+    ("Barishal", "দৌলত খাঁ"): "Bhola/Daulatkhan", ("Barishal", "দৌলতখাঁ-"): "Bhola/Daulatkhan", ("Bhola", "মনিপুরা"): "Manpura",
+    ("Barishal", "কলাপাড়া"): "Patuakhali/Kalapara", ("Jhalokati", "কলাপাড়া-CS"): "Patuakhali/Kalapara",
+    ("Barishal", "বাউফল-"): "Patuakhali/Bauphal", ("Barishal", "পটুয়াখালী -"): "Patuakhali/Patuakhali Sadar",
+    ("Barishal", "পাথরঘাটা"): "Barguna/Patharghata", ("Barguna", "পাথর ঘাটা"): "Patharghata",
+    ("Barishal", "নাজিরপুর (বাকেরগঞ্জ)"): "Pirojpur/Nazirpur", ("Barishal", "বাকরগঞ্জ-দিয়ারা"): "Bakerganj",
+    ("Barishal", "বাকরগঞ্জ-CS"): "Bakerganj", ("Patuakhali", "দুম\u200cকি-"): "Dumki", ("Patuakhali", "গোলাচিপা-"): "Galachipa",
+    # Khulna division.
+    ("Jessore", "যশোর সদর-"): "Kotwali", ("Jessore", "শার্শা-"): "Sharsha", ("Khulna", "দাকপ-"): "Dacope",
+    ("Khulna", "খুলনা সদর-"): "Khulna Sadar", ("Khulna", "কয়রা-"): "Koyra", ("Khulna", "শ্যামনগর-"): "Satkhira/Shyamnagar",
+    ("Khulna", "তালা"): "Satkhira/Tala", ("Khulna", "ফকিরহাট-CS"): "Bagerhat/Fakirhat", ("Bagerhat", "কচুয়া-"): "Kachua",
+    ("Satkhira", "কলারোয়া"): "Kalaroa", ("Meherpur", "গাংনী-"): "Chuadanga/Gangni",
+    ("Meherpur", "মেহেরপুর-"): "Chuadanga/Meherpur Sadar", ("Meherpur", "মেহেরপুর সদর-"): "Chuadanga/Meherpur Sadar",
+    ("Chuadanga", "জিবননগর-(153)"): "Jibannagar",
+    # Rajshahi and Rangpur divisions.
+    ("Dinajpur", "BODHA"): "Panchagarh/Boda", ("Dinajpur", "AUTWARI"): "Panchagarh/Atwari", ("Dinajpur", "আটোয়ারী-"): "Panchagarh/Atwari",
+    ("Panchagarh", "আটোয়ারী"): "Atwari", ("Lalmonirhat", "লালমুনিরহাট সদর"): "Kurigram/Lalmonirhat Sadar",
+    ("Sirajganj", "রায়গঞ্জ"): "Royganj", ("Dinajpur", "ফুলবাড়ী"): "Phulbari", ("Bogura", "বগুড়া সদর-"): "Bogra Sadar",
+    ("Gaibandha", "ফুলছুড়ি"): "Fulchhari", ("Thakurgaon", "রাণীশংকৈল-J"): "Ranisankail",
+    ("Dinajpur", "বালিয়াডাঙ্গী-"): "Thakurgaon/Baliadangi", ("Bogura", "দুবচাচিয়া"): "Dhupchanchia",
+    ("Dinajpur", "বিরল"): "Biral", ("Dinajpur", "ঘোড়াঘাঠ"): "Ghoraghat", ("Kurigram", "রৌওমারি"): "Raumari",
+    # Naragati thana (old Jessore) is Kalia today: Baoishona, Bagudanga, Mulshri and Charsinggoti are in Kalia's official list.
+    ("Jessore", "নড়াগাতী-CS"): "Narail/Kalia Upazilla",
+    # Folders named after a survey, not an upazila. Panchagarh Sadar: JL 9-13, 21, 22 are exactly the gaps in its official RS list.
+    ("Panchagarh", "RS"): "Panchagarh Sadar", ("Panchagarh", "bs"): "Panchagarh Sadar",
+    ("Rajshahi", "Poba"): "Paba", ("Rajshahi", "বোয়ালিয়া-"): "Boalia",
 }
 
+# Survey-named folders that hold one folder per upazila: the upazila is the next path segment (2:/Rajshahi/RS/Poba/...).
+NESTED = {("Rajshahi", "RS"), ("Rajshahi", "রাজশাহী")}
 
-def build_upazila_index(division: str) -> dict[str, list[tuple[str, str]]]:
-    dists = {d["id"]: d for d in _feats("districts") if d["division_id"] == division}
+# Files with a JL no. but no survey anywhere in the file or folder name are listed under this label, for these drives
+# only (3:/ Khulna, 2:/ Rajshahi, 6:/ Rangpur); Dhaka (0:/) and Barishal (4:/) keep skipping them.
+UNKNOWN_SURVEY = "Unknown"
+UNKNOWN_SURVEY_ROOTS = ("3:/", "2:/", "6:/")
+
+
+# District spellings on the site that differ from this app's district names.
+DISTRICT_ALIASES = {"Jessore": "Jashore", "Sirajganj": "Sirajgonj"}
+
+
+def build_upazila_index(divisions: set[str]) -> dict[str, list[tuple[str, str]]]:
+    dists = {d["id"]: d for d in _feats("districts") if d["division_id"] in divisions}
     out: dict[str, list[tuple[str, str]]] = {d["name"]: [] for d in dists.values()}
     for u in _feats("upazilas"):
         if u["district_id"] in dists:
@@ -62,9 +102,13 @@ def build_upazila_index(division: str) -> dict[str, list[tuple[str, str]]]:
 
 
 def match_upazila(index: dict[str, list[tuple[str, str]]], district: str, folder: str) -> str | None:
-    cands = index.get(district, [])
     alias = ALIASES.get((district, folder))
+    district = DISTRICT_ALIASES.get(district, district)
+    cands = index.get(district, [])
     if alias:
+        if "/" in alias:
+            district, alias = alias.split("/", 1)
+            cands = index.get(district, [])
         return next((i for key, i in cands if key == _key(alias)), None)
     k = _key(folder)
     if not k:
@@ -78,7 +122,7 @@ def match_upazila(index: dict[str, list[tuple[str, str]]], district: str, folder
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--division", default="3")
+    ap.add_argument("--division", default="3,1", help="comma separated app division ids")
     a = ap.parse_args()
     listing = json.loads((GIS / "mouzamap_index.json").read_text(encoding="utf-8"))
     dest = GIS / "mouzas.json"
@@ -90,17 +134,22 @@ def main() -> None:
     for m in mouzas:
         by_upazila[str(m["upazila_id"])].append(m)
 
-    index = build_upazila_index(a.division)
+    index = build_upazila_index({d.strip() for d in a.division.split(",")})
     groups: dict[tuple[str, str, str], list[dict]] = collections.defaultdict(list)
     unmatched: collections.Counter[tuple[str, str]] = collections.Counter()
     skipped = 0
     for f in listing["files"]:
+        if f["jl_no"] and not f["survey"] and f["path"].startswith(UNKNOWN_SURVEY_ROOTS):
+            f = {**f, "survey": UNKNOWN_SURVEY}
         if not f["jl_no"] or not f["survey"]:
             skipped += 1
             continue
-        up = match_upazila(index, f["district"], f["upazila_folder"] or "")
+        folder = f["upazila_folder"] or ""
+        if (f["district"], folder) in NESTED:
+            folder = f["path"].split("/")[3].strip()
+        up = match_upazila(index, f["district"], folder)
         if up is None:
-            unmatched[(f["district"], f["upazila_folder"] or "")] += 1
+            unmatched[(f["district"], folder)] += 1
             continue
         groups[(up, f["survey"], f["jl_no"])].append(f)
 
@@ -151,7 +200,7 @@ def main() -> None:
         data["note"] += " mouzamap.tech entries fill upazilas the official sources lack; names, JL and sheet numbers are parsed from file names."
     dest.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"added {added} mouzas, extended {extended}; skipped {skipped} unparseable files; total {len(mouzas)}")
-    for (d, u), n in unmatched.most_common(25):
+    for (d, u), n in unmatched.most_common(80):
         print(f"  ! unmatched folder {d} / {u}: {n} files")
 
 

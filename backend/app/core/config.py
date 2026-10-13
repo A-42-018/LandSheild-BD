@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     document_ai_provider: str = "auto"
     anthropic_api_key: str = Field(default="", repr=False)  # empty = Claude disabled; never logged
     claude_model: str = "claude-haiku-4-5-20251001"
+    anthropic_base_url: str = ""  # Anthropic-compatible gateway, e.g. https://api.meta.ai; empty = Anthropic
+    anthropic_auth: str = "x-api-key"  # x-api-key | bearer (Authorization: Bearer, as most gateways expect)
     claude_daily_cap: int = Field(default=100, ge=0)  # max Claude calls/day; over cap -> rules
     claude_timeout_s: int = Field(default=30, ge=1)
     ocr_timeout_s: int = Field(default=30, ge=1)  # Tesseract, per page
@@ -47,7 +49,7 @@ class Settings(BaseSettings):
     ml_scoring: str = "on"  # on | off (P49); missing model/scikit-learn -> skipped with a log
     ml_model_path: str = ""  # empty = models/iforest.joblib at the repo root
     tesseract_lang: str = "ben+eng"
-    mouza_enabled_division_id: str = "4,3"  # GIS demo scope (P61); comma separated, 4 = Khulna, 3 = Dhaka, '' = off
+    mouza_enabled_division_id: str = "4,3,1,5,6"  # GIS demo scope (P61); comma separated, 4 = Khulna, 3 = Dhaka, 1 = Barishal, 5 = Rajshahi, 6 = Rangpur, '' = off
     gis_data_dir: str = ""  # empty = <repo>/database/gis
     signing_key: str = ""  # base64 32-byte Ed25519 seed (F4a); wins over the key file
     signing_key_path: str = ""  # empty = <STORAGE_PATH>/signing/ed25519.pem (auto-created in dev)
