@@ -60,6 +60,11 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   const districtOptions = division ? districtsOf(division) : DISTRICTS;
   const upazila = watch("upazila") as string;
   const mouzaNames = useMouzaSuggestions(district, upazila);
+  const [mouzaOpen, setMouzaOpen] = useState(false);
+  const mouzaValue = watch("mouza") as string;
+  const mouzaField = register("mouza");
+  const typed = fold(mouzaValue ?? "");
+  const mouzaMatches = mouzaNames.filter((o) => !typed || fold(o.value).includes(typed)).slice(0, 50);
   const err = (k?: { message?: string }) => (k?.message ? t(`errors.${k.message}`) : undefined);
 
   const m = useMutation({
@@ -93,9 +98,9 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
         onSubmit={handleSubmit((v) => m.mutate(v))}
         noValidate
         aria-label={compact ? t("title") : undefined}
-        className={compact ? "grid grid-cols-2 items-start gap-3 lg:grid-cols-7" : "flex flex-col gap-4"}
+        className={compact ? "grid grid-cols-2 items-start gap-3 lg:grid-cols-7" : "grid grid-cols-1 items-start gap-4 md:grid-cols-3"}
       >
-        {!compact && <p className="text-ink-muted">{t("intro")}</p>}
+        {!compact && <p className="text-ink-muted md:col-span-3">{t("intro")}</p>}
         <Select
           label={t("division")}
           placeholder={t("selectDivision")}
@@ -129,24 +134,54 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
           error={err(errors.upazila)}
           {...register("upazila")}
         />
-        <div className="flex flex-col">
+        <div className="relative flex flex-col">
           <Input
             label={t("mouza")}
             required
             autoComplete="off"
-            list={mouzaNames.length ? "mouza-suggestions" : undefined}
+            role={mouzaNames.length ? "combobox" : undefined}
+            aria-expanded={mouzaNames.length ? mouzaOpen && mouzaMatches.length > 0 : undefined}
+            aria-controls={mouzaNames.length ? "mouza-suggestions" : undefined}
             error={err(errors.mouza)}
-            {...register("mouza")}
+            {...mouzaField}
+            onChange={(e) => {
+              mouzaField.onChange(e);
+              setMouzaOpen(true);
+            }}
+            onFocus={() => setMouzaOpen(true)}
+            onBlur={(e) => {
+              mouzaField.onBlur(e);
+              setMouzaOpen(false);
+            }}
+            onKeyDown={(e) => e.key === "Escape" && setMouzaOpen(false)}
           />
-          {mouzaNames.length > 0 && (
-            <datalist id="mouza-suggestions">
-              {mouzaNames.map((o) => (
-                <option key={o.value} value={o.value} label={o.label} />
+          {mouzaOpen && mouzaMatches.length > 0 && (
+            <ul
+              id="mouza-suggestions"
+              role="listbox"
+              className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-auto rounded-md border border-line bg-surface py-1 shadow-lg"
+            >
+              {mouzaMatches.map((o) => (
+                <li
+                  key={o.value}
+                  role="option"
+                  aria-selected={o.value === mouzaValue}
+                  // mousedown (not click) so the input's blur doesn't close the list first
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setValue("mouza", o.value, { shouldValidate: true });
+                    setMouzaOpen(false);
+                  }}
+                  className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-sm text-ink hover:bg-primary/10"
+                >
+                  <span className="truncate">{o.value}</span>
+                  {o.label && <span className="shrink-0 text-xs text-ink-muted">{o.label}</span>}
+                </li>
               ))}
-            </datalist>
+            </ul>
           )}
         </div>
-        <div className={compact ? "contents" : "grid grid-cols-1 gap-4 sm:grid-cols-2"}>
+        <div className="contents">
           <Input
             label={t("khatian")}
             required
@@ -167,7 +202,7 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
           />
         </div>
         {apiErr && (
-          <p role="alert" className={compact ? "col-span-full text-sm text-critical" : "text-sm text-critical"}>
+          <p role="alert" className="col-span-full text-sm text-critical">
             {apiErr === "generic" ? t("errors.generic") : t(`errors.${apiErr}`)}
           </p>
         )}
@@ -175,11 +210,11 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
           type="submit"
           loading={m.isPending}
           icon={<Search />}
-          className={compact ? "mt-6 w-full" : "w-full"}
+          className={compact ? "mt-6 w-full" : "w-full md:col-span-3"}
         >
           {m.isPending ? t("searching") : t("submit")}
         </Button>
-        {!compact && <p className="text-xs text-ink-muted">{t("demoNote")}</p>}
+        {!compact && <p className="text-xs text-ink-muted md:col-span-3">{t("demoNote")}</p>}
       </form>
   );
 

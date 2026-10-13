@@ -7,7 +7,7 @@ export default async function VerifyPage({ params: { locale } }: { params: { loc
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+    <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <PageHeader title={t("nav.verify")} purpose={t("page.verifyPurpose")} />
       <RequireRole>
         <VerifyForm />
