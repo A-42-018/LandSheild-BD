@@ -10,6 +10,7 @@ at anything else.
 
 import logging
 import re
+import time
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from urllib.parse import quote, unquote, urlsplit
@@ -23,6 +24,9 @@ logger = logging.getLogger("landshield.scans")
 SCAN_HOST = "free.mouzamap.tech"
 MAX_SCAN_BYTES = 100 * 1024 * 1024
 _CHUNK = 64 * 1024
+# the scan site (Google Drive behind it) fails now and then; retry so one bad response is not fatal
+ATTEMPTS = 3
+RETRY_DELAY = 0.7  # seconds, multiplied by the attempt number
 # drive number, then folders, ending in .pdf: "/3:/Bagerhat/<upazila>/BS/1-ALIPUR-1.pdf"
 _PATH = re.compile(r"^/\d+:/[^\x00-\x1f]{1,900}\.pdf$", re.IGNORECASE)
 _LINK = re.compile(r"^/download\.aspx\?[A-Za-z0-9_=&%.\-]{1,600}$")
@@ -89,8 +93,23 @@ def content_disposition(filename: str) -> str:
 
 
 def open_scan(make: Callable[[], httpx.Client], raw_url: str) -> Scan:
-    """Ask the site for a signed link and open the PDF as a byte stream (the caller iterates it)."""
+    """Ask the site for a signed link and open the PDF as a byte stream (the caller iterates it).
+
+    A transient upstream failure (SCAN_UNAVAILABLE) is retried with a fresh client and signed link;
+    not-found and too-large answers are final.
+    """
     url = scan_file_url(raw_url)
+    for attempt in range(1, ATTEMPTS + 1):
+        try:
+            return _open_once(make, url)
+        except AppError as exc:
+            if exc.code != "SCAN_UNAVAILABLE" or attempt == ATTEMPTS:
+                raise
+            time.sleep(RETRY_DELAY * attempt)
+    raise AssertionError("unreachable")
+
+
+def _open_once(make: Callable[[], httpx.Client], url: str) -> Scan:
     client = make()
     resp: httpx.Response | None = None
     try:
