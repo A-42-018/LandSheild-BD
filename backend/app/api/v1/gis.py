@@ -1,9 +1,15 @@
-from fastapi import APIRouter, Depends, Query
+from collections.abc import Callable
 
+import httpx
+from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import StreamingResponse
+
+from app.core.ratelimit import check_rate
 from app.core.rbac import ANY_AUTH, require_roles
 from app.models.user import User
 from app.schemas.gis import GisCapabilities, GisCollection, MouzaList, SearchResult, UnionList
 from app.services import gis as svc
+from app.services import scans
 
 router = APIRouter(prefix="/gis", tags=["gis"])
 
@@ -57,3 +63,22 @@ def search(
     _user: User = Depends(require_roles(*ANY_AUTH)),
 ) -> SearchResult:
     return svc.search(q)
+
+
+@router.get("/scan", response_class=StreamingResponse)
+def scan(
+    request: Request,
+    url: str = Query(min_length=20, max_length=1100),
+    user: User = Depends(require_roles(*ANY_AUTH)),
+    make_client: Callable[[], httpx.Client] = Depends(scans.get_scan_client_factory),
+) -> StreamingResponse:
+    """Download a scanned mouza map, fetched from free.mouzamap.tech and passed through."""
+    check_rate("scan", user.id, request.app.state.settings.scan_rate_limit_per_min)
+    found = scans.open_scan(make_client, url)
+    headers = {
+        "Content-Disposition": scans.content_disposition(found.filename),
+        "Cache-Control": "private, no-store",
+    }
+    if found.size is not None:
+        headers["Content-Length"] = str(found.size)
+    return StreamingResponse(found.chunks, media_type="application/pdf", headers=headers)

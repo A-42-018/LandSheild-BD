@@ -141,6 +141,7 @@ Defined in `.env.example` (copy to `backend/.env`).
 | `AUTH_RATE_LIMIT_PER_MIN` | 10 | Login/register per IP |
 | `PUBLIC_RATE_LIMIT_PER_MIN` | 60 | Public QR endpoint per IP |
 | `UPLOAD_RATE_LIMIT_PER_HOUR` | 20 | Uploads per user |
+| `SCAN_RATE_LIMIT_PER_MIN` | 20 | Mouza map scan downloads per user |
 | `STORAGE_PATH` | `./storage` | Uploaded files |
 | `OCR_PROVIDER` | `auto` | `auto` = demo fixture → PDF text → Tesseract; `tesseract`; `mock` (tests only). No silent mock: no Tesseract → `OCR_UNAVAILABLE` (503). `paddle` not implemented |
 | `DEMO_FIXTURES` | `on` | `on` = the saved demo samples (exact SHA-256) return their stored result, labelled "Demo sample"; `off` = real OCR on them too |
@@ -205,7 +206,7 @@ Not covered by automated runs: `next build`, a live deploy walk, Postgres, Chrom
 Short list: JWT (access in memory, refresh in an HttpOnly cookie), role read from the database, RBAC matrix test, rate limits, upload validation, security headers, log redaction, audit trail, no personal data on the public QR page. Full notes and open items: [docs/security.md](docs/security.md).
 
 ### Bangladesh map
-`/map` shows all of Bangladesh (street basemap + division/district/upazila boundaries) with a search menu. In the demo division (Khulna) the menu continues **Upazila → Union → Mouza (with JL no.) → Survey sheet**, using public Ministry of Land and DLRS mouza lists (see Data sources). Data sources, licences, API and how to rebuild the list: [docs/gis.md](docs/gis.md).
+`/map` (**Parcel map**) shows all of Bangladesh (street basemap + division/district/upazila boundaries) and is map viewing only: a Division → District → Upazila menu and place search. `/mouza-map` (**Mouza map**, every signed-in role) lists the mouzas of an upazila, narrowed by union, with JL no. and survey sheets; the list can be filtered by name/JL no. and survey type, sorted by JL no., name or sheet count, and each scanned sheet has a **Download PDF** button that saves the scan to the device without leaving the page (the backend fetches it from free.mouzamap.tech, a third-party site, and passes it through; nothing is stored). Mouza lists come from public Ministry of Land and DLRS data (see Data sources). Data sources, licences, API and how to rebuild the list: [docs/gis.md](docs/gis.md).
 
 ## Data sources
 
@@ -261,4 +262,4 @@ Run `./start.sh`, sign in as the officer, then follow the 15-step flow: open Lan
 
 Repository: `frontend/` · `backend/` · `ai/` · `database/` · `docs/` · `scripts/` · `plan.md` (state) · `prompt.md` (master spec).
 
-**Gap fill from a third-party index (unofficial).** `scripts/build_mouzamap_index.py` lists the scanned CS/SA/RS mouza-map PDFs published on [free.mouzamap.tech](https://free.mouzamap.tech) (Dhaka, Barishal, Khulna, Rajshahi and Rangpur divisions) into `database/gis/mouzamap_index.json`: it reads folder listings only, parses mouza name, JL no., sheet and survey type from folder and file names, and never downloads the PDFs. `scripts/merge_mouzamap_index.py` then adds mouzas and sheets that the official sources above lack to `mouzas.json` (marked `source: "mouzamap"`, with a link per sheet). Names and numbers are parsed from file names and may be wrong; unmatched or unparseable files are skipped.
+**Gap fill from a third-party index (unofficial).** `scripts/build_mouzamap_index.py` lists the scanned CS/SA/RS mouza-map PDFs published on [free.mouzamap.tech](https://free.mouzamap.tech) (Dhaka, Barishal, Khulna, Rajshahi and Rangpur divisions) into `database/gis/mouzamap_index.json`: it reads folder listings only, parses mouza name, JL no., sheet and survey type from folder and file names, and never downloads the PDFs. `scripts/merge_mouzamap_index.py` then adds mouzas and sheets that the official sources above lack to `mouzas.json` (marked `source: "mouzamap"`, with a link per sheet); a scan is joined to an existing mouza when the name matches, or the JL no. matches and the name is similar, never on the JL no. alone (see docs/gis.md, "Matching scans to mouzas"). Names and numbers are parsed from file names and may be wrong; unmatched or unparseable files are skipped.

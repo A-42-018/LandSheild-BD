@@ -123,6 +123,13 @@ export function gisLabel(p: { name: string; bn_name: string }): string {
   return p.bn_name && p.bn_name !== p.name ? `${p.name} (${p.bn_name})` : p.name;
 }
 
+/** Select options for a boundary list, alphabetical by label. */
+export function placeOptions(fs: GisFeatureDto[]): { value: string; label: string }[] {
+  return fs
+    .map((f) => ({ value: f.properties.id, label: gisLabel(f.properties) }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
 /** Which boundary level the map shows for a selection (the level BELOW the deepest choice). */
 export function viewLevel(sel: GisSelection): GisLevel {
   if (!sel.divisionId) return "division";
@@ -144,6 +151,24 @@ export function select(sel: GisSelection, level: keyof GisSelection, id: string)
     default:
       return { ...sel, mouzaId: id };
   }
+}
+
+/** Search-hit levels the parcel map uses (it stops at upazila; mouzas live on the mouza map page). */
+export const ADMIN_LEVELS: SearchHitDto["level"][] = ["division", "district", "upazila"];
+
+/** The menu selection a search hit stands for (its own level plus every parent). */
+export function selectionFromHit(h: SearchHitDto): GisSelection {
+  if (h.level === "division") return { ...EMPTY_SELECTION, divisionId: h.id };
+  if (h.level === "district") return { ...EMPTY_SELECTION, divisionId: h.division_id ?? "", districtId: h.id };
+  if (h.level === "upazila")
+    return { ...EMPTY_SELECTION, divisionId: h.division_id ?? "", districtId: h.district_id ?? "", upazilaId: h.id };
+  return {
+    divisionId: h.division_id ?? "",
+    districtId: h.district_id ?? "",
+    upazilaId: h.upazila_id ?? "",
+    unionId: h.level === "union" ? h.id : (h.union_id ?? ""),
+    mouzaId: h.level === "mouza" ? h.id : "",
+  };
 }
 
 /** Mouzas of the chosen union (all of the upazila when no union is chosen), in JL order from the API. */

@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     public_rate_limit_per_min: int = 60
     verify_doc_rate_limit_per_min: int = 10
     upload_rate_limit_per_hour: int = 20  # per user (R4)
+    scan_rate_limit_per_min: int = 20  # mouza map scan downloads, per user
     cors_origins: str = "http://localhost:3000"
     storage_path: str = "./storage"
     # auto = demo fixture -> pdf-text -> tesseract; also tesseract | mock (tests)

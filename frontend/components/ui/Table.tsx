@@ -34,10 +34,12 @@ export interface TableProps<T> {
   emptyText?: string;
   /** Keep the header visible while the body scrolls (adds a 70vh max height). Off by default. */
   stickyHeader?: boolean;
+  /** Let the table shrink to the screen instead of scrolling sideways below 32rem; for tables whose columns wrap. */
+  compact?: boolean;
 }
 
 export default function Table<T>({
-  columns, rows, rowKey, caption, sort, onSortChange, page, pageSize, total, onPageChange, emptyText, stickyHeader = false,
+  columns, rows, rowKey, caption, sort, onSortChange, page, pageSize, total, onPageChange, emptyText, stickyHeader = false, compact = false,
 }: TableProps<T>) {
   const t = useTranslations("table");
   const paged = page !== undefined && pageSize !== undefined && total !== undefined && onPageChange;
@@ -51,7 +53,7 @@ export default function Table<T>({
   return (
     <div>
       <div className={cn("overflow-x-auto rounded-lg border border-line bg-surface", stickyHeader && "max-h-[70vh] overflow-y-auto")}>
-        <table className="w-full min-w-[32rem] border-collapse text-left text-sm">
+        <table className={cn("w-full border-collapse text-left text-sm", !compact && "min-w-[32rem]")}>
           {caption && <caption className="sr-only">{caption}</caption>}
           <thead className={cn("bg-surface-muted text-ink", stickyHeader && "sticky top-0 z-10")}>
             <tr>

@@ -136,11 +136,21 @@ Tester: ____________  Date: ____________  Browser/device: ____________  Build/co
 - [ ] 11.2 Legend card shows LOW/MEDIUM/HIGH with text
 - [ ] 11.3 Click polygon → popup with land ID and risk
 - [ ] 11.4 Parcel list rows match polygons; click row zooms to parcel
-- [ ] 11.5 Search panel: division → district → upazila → mouza filters work; Reset clears
+- [ ] 11.5 Search panel: division → district → upazila filters work (no union/mouza here); Reset clears; link to the Mouza map is shown
 - [ ] 11.6 Fullscreen button works; Esc exits
 - [ ] 11.7 Demo-only note shown on page
 - [ ] 11.8 Map works with tiles blocked (offline background / no crash)
-- [ ] 11.9 Mouza level data available only for the demo division (Khulna)
+- [ ] 11.9 Place search lists only divisions, districts and upazilas
+
+## 11A. Mouza map `/mouza-map`
+- [ ] 11A.1 "Mouza map" is in the header and footer for every signed-in role (citizen, reviewer, officer, admin); signed out → sign-in page
+- [ ] 11A.2 Division → District → Upazila → Union dropdowns cascade; changing a level clears the ones below
+- [ ] 11A.3 Upazila with data lists mouzas (JL no., name, union, sheets); an upazila outside the covered divisions, or with no list, says so
+- [ ] 11A.4 Sort dropdown (JL no., name, sheet count, both ways) and the column headers give the same order
+- [ ] 11A.5 Filter by name or JL no. (English, Bangla, Bangla digits), by survey, and "only mouzas with a scanned map"; the count line updates
+- [ ] 11A.6 A scanned sheet's "Download" button saves the PDF (named like "Alipur JL 001 BS 001.pdf") and the page stays put; it shows a spinner meanwhile and an error message if it fails; official-only sheets are plain text
+- [ ] 11A.7 Clicking a mouza name or "+N more" opens a dialog with all sheets grouped by survey; Esc closes it
+- [ ] 11A.8 Third-party / not-official note is visible under the list; works in Bangla and at phone width (no sideways page scroll)
 
 ## 12. Officer dashboard `/officer`
 - [ ] 12.1 KPI tiles: total, pending, high risk, verified — numbers plausible
