@@ -205,7 +205,22 @@ export default function SearchMenu(p: SearchMenuProps) {
           <dt className="text-ink-muted">{t("union")}</dt>
           <dd>{union ? gisLabel(union) : t("unionUnknown")}</dd>
           <dt className="text-ink-muted">{t("sheetRefs")}</dt>
-          <dd>{sheets.length ? sheets.map(sheetRef).join(", ") : "—"}</dd>
+          <dd>
+            {sheets.length
+              ? sheets.map((s, i) => (
+                  <span key={`${s.survey ?? ""}-${s.sheet_no}-${i}`}>
+                    {i > 0 && ", "}
+                    {s.url ? (
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="underline">
+                        {sheetRef(s)}
+                      </a>
+                    ) : (
+                      sheetRef(s)
+                    )}
+                  </span>
+                ))
+              : "—"}
+          </dd>
           {(mouza.source_url ?? p.caps?.mouza_source_url) && (
             <>
               <dt className="text-ink-muted">{t("source")}</dt>

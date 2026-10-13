@@ -79,9 +79,31 @@ describe("VerifyForm", () => {
     fill();
     fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/verify/result?land_id=LP-10100"));
-    const url = get.mock.calls[0][0] as string;
+    const url = get.mock.calls.map((c) => c[0] as string).find((u) => u.startsWith("/lands/search")) as string;
     expect(url).toContain("khatian=1245");
     expect(url).toContain("district=Gazipur");
+  });
+
+  it("suggests mouza names of the chosen upazila while typing", async () => {
+    const get = vi.fn(async (url: string) => {
+      if (url.startsWith("/gis/search"))
+        return { hits: [{ level: "upazila", id: "77", name: "Sreepur", bn_name: "", path: "Dhaka / Gazipur" }] };
+      if (url.startsWith("/gis/mouzas"))
+        return {
+          enabled: true,
+          mouzas: [
+            { id: "a", name: "Barmi", bn_name: "বারমী", jl_no: "012" },
+            { id: "b", name: "Barmi", bn_name: "বারমী", jl_no: "034" },
+            { id: "c", name: "মাওনা", bn_name: "মাওনা", jl_no: "005" },
+          ],
+        };
+      throw new ApiError(404, "LAND_NOT_FOUND", "x");
+    });
+    const { container } = wrap(client(get as any));
+    fill();
+    await waitFor(() => expect(container.querySelectorAll("#mouza-suggestions option")).toHaveLength(2));
+    expect([...container.querySelectorAll("#mouza-suggestions option")].map((o) => o.getAttribute("value"))).toEqual(["Barmi", "মাওনা"]);
+    expect(screen.getByLabelText(new RegExp(en.verify.mouza)).getAttribute("list")).toBe("mouza-suggestions");
   });
 
   it("shows the empty state on 404", async () => {

@@ -298,6 +298,8 @@ def build_dlrs(portal: Dlrs, divisions: list[str]) -> list[dict[str, object]]:
             for sv in portal.post("/Khatian/GetSurveyListDistrictWise", districtid=d["unitcod"], comcod=d["comcod"]):  # type: ignore[union-attr]
                 survey = "BDS" if sv["rsname"].startswith("বিডিএস") else DLRS_SURVEY.get(sv["rsname"], sv["rsname"])
                 for t in portal.post("/Khatian/GetThanaListBySurvey", compcode=d["comcod"], rsno1=sv["rsnum"], districtid=d["unitcod"]):  # type: ignore[union-attr]
+                    if not t.get("upazila"):
+                        continue
                     upazila_id = _match_bn(index, d["unitnam"], t["upazila"])
                     if upazila_id is None:
                         print(f"  ! no app upazila for {d['unitnam']} / {t['upazila']}, skipped")
