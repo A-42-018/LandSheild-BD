@@ -16,7 +16,8 @@ LINK = "/download.aspx?file=abc123&expiry=e7pk%2BFR93A%3D%3D&mac=3285ec0d"
 
 
 @pytest.fixture(autouse=True)
-def _reset():
+def _reset(monkeypatch):
+    monkeypatch.setattr(scans, "RETRY_DELAY", 0)
     reset_rate_limits()
     get_settings.cache_clear()
     yield
@@ -140,6 +141,29 @@ def test_upstream_trouble_is_a_clean_502(env, site):
     assert r.status_code == 502
     assert r.json()["code"] == "SCAN_UNAVAILABLE"
     assert all(q.url.host == "free.mouzamap.tech" for q in site.requests)
+
+
+def test_a_flaky_upstream_is_retried_until_it_answers(env):
+    site = Site()
+    calls = {"n": 0}
+
+    def flaky(request):
+        calls["n"] += 1
+        if calls["n"] <= 2:  # the first two attempts fail, the third gets through
+            return httpx.Response(503) if request.method == "POST" else httpx.Response(500)
+        return site.handler(request)
+
+    env.app.dependency_overrides[scans.get_scan_client_factory] = lambda: lambda: httpx.Client(transport=httpx.MockTransport(flaky))
+    r = _scan(env)
+    assert r.status_code == 200
+    assert r.content == PDF
+
+
+def test_a_missing_scan_is_not_retried(env):
+    site = Site(meta_status=404)
+    site.install(env)
+    assert _scan(env).status_code == 404
+    assert len(site.requests) == 1
 
 
 def test_network_failure_is_a_clean_502(env):
