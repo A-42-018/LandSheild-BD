@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     document_ai_provider: str = "auto"
     anthropic_api_key: str = Field(default="", repr=False)  # empty = Claude disabled; never logged
     claude_model: str = "claude-haiku-4-5-20251001"
+    anthropic_base_url: str = ""  # Anthropic-compatible gateway, e.g. https://api.meta.ai; empty = Anthropic
+    anthropic_auth: str = "x-api-key"  # x-api-key | bearer (Authorization: Bearer, as most gateways expect)
     claude_daily_cap: int = Field(default=100, ge=0)  # max Claude calls/day; over cap -> rules
     claude_timeout_s: int = Field(default=30, ge=1)
     ocr_timeout_s: int = Field(default=30, ge=1)  # Tesseract, per page
