@@ -61,3 +61,6 @@ File shape: `{"source","source_url","sources":[{"name","url"}],"retrieved","unio
 
 ## Not done yet
 Mouza layer/polygons, sheet PDF viewer, plot selection (the portal has plot numbers; not imported), parcel ↔ land-record links on real sheets (P64, P67, P68); `next build` not run (Google Fonts need network); browser walk with real OSM tiles not done.
+
+## Barishal division (`MOUZA_ENABLED_DIVISION_ID=4,3,1`)
+Added the same way as Dhaka: `python scripts/build_mouza_data.py --division 40,30,10 --dlrs-division 020000000,010000000,060000000` (map.land.gov.bd 10 = Barishal, DLRS 060000000 = Barishal), then `python scripts/build_mouzamap_index.py --root 4:/` (free.mouzamap.tech drive `4:/` = Barishal; `--root` is repeatable and only replaces the entries of the given roots) and `python scripts/merge_mouzamap_index.py --division 3,1`. Survey labels from folder names: `DIARA` (দিয়ারা/DIYARA), `PS` (PETY, petty survey); `CSRS` folders are labelled `RS`. Folders filed under the wrong district or spelled differently are mapped in `ALIASES` of `merge_mouzamap_index.py`; `Barishal / পং দক্ষিন সাহাবাজপুর` (56 files) is left unmatched on purpose. About 330 of 8,593 Barishal files have no parseable JL no. or survey and are skipped.

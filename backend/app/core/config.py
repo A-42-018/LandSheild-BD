@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     ml_scoring: str = "on"  # on | off (P49); missing model/scikit-learn -> skipped with a log
     ml_model_path: str = ""  # empty = models/iforest.joblib at the repo root
     tesseract_lang: str = "ben+eng"
-    mouza_enabled_division_id: str = "4,3"  # GIS demo scope (P61); comma separated, 4 = Khulna, 3 = Dhaka, '' = off
+    mouza_enabled_division_id: str = "4,3,1"  # GIS demo scope (P61); comma separated, 4 = Khulna, 3 = Dhaka, 1 = Barishal, '' = off
     gis_data_dir: str = ""  # empty = <repo>/database/gis
     signing_key: str = ""  # base64 32-byte Ed25519 seed (F4a); wins over the key file
     signing_key_path: str = ""  # empty = <STORAGE_PATH>/signing/ed25519.pem (auto-created in dev)

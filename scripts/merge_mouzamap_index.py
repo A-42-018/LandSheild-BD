@@ -8,7 +8,7 @@ found in the mouzamap.tech listing:
 Entries from an earlier run (source "mouzamap") are dropped first, so reruns are idempotent.
 Sheet links open the third-party site's viewer page (?a=view); nothing is copied.
 
-Usage:  python scripts/merge_mouzamap_index.py [--division 3]
+Usage:  python scripts/merge_mouzamap_index.py [--division 3,1]   (app division ids: 3 = Dhaka, 1 = Barishal)
 """
 
 from __future__ import annotations
@@ -46,11 +46,19 @@ ALIASES = {
     ("Rajbari", "গোয়ালান্দ-"): "Goalandaghat", ("Shariatpur", "জার্জিরা"): "Zanjira",
     ("Shariatpur", "ড্যামুডে"): "Damudya", ("Shariatpur", "নরিয়া"): "Naria", ("Tangail", "দেলদোয়ার"): "Delduar",
     ("Tangail", "ভূয়াপুর-"): "Bhuapur",
+    # Barishal division. "District/Name" = the folder sits under the wrong district on the site.
+    ("Pirojpur", "মঠবাড়িয়া"): "Mathbaria", ("Barishal", "বানরীপাড়া"): "Banaripara", ("Barishal", "স্বরুপকাটী"): "Pirojpur/Nesarabad",
+    ("Barishal", "দৌলত খাঁ"): "Bhola/Daulatkhan", ("Barishal", "দৌলতখাঁ-"): "Bhola/Daulatkhan", ("Bhola", "মনিপুরা"): "Manpura",
+    ("Barishal", "কলাপাড়া"): "Patuakhali/Kalapara", ("Jhalokati", "কলাপাড়া-CS"): "Patuakhali/Kalapara",
+    ("Barishal", "বাউফল-"): "Patuakhali/Bauphal", ("Barishal", "পটুয়াখালী -"): "Patuakhali/Patuakhali Sadar",
+    ("Barishal", "পাথরঘাটা"): "Barguna/Patharghata", ("Barguna", "পাথর ঘাটা"): "Patharghata",
+    ("Barishal", "নাজিরপুর (বাকেরগঞ্জ)"): "Pirojpur/Nazirpur", ("Barishal", "বাকরগঞ্জ-দিয়ারা"): "Bakerganj",
+    ("Barishal", "বাকরগঞ্জ-CS"): "Bakerganj", ("Patuakhali", "দুম\u200cকি-"): "Dumki", ("Patuakhali", "গোলাচিপা-"): "Galachipa",
 }
 
 
-def build_upazila_index(division: str) -> dict[str, list[tuple[str, str]]]:
-    dists = {d["id"]: d for d in _feats("districts") if d["division_id"] == division}
+def build_upazila_index(divisions: set[str]) -> dict[str, list[tuple[str, str]]]:
+    dists = {d["id"]: d for d in _feats("districts") if d["division_id"] in divisions}
     out: dict[str, list[tuple[str, str]]] = {d["name"]: [] for d in dists.values()}
     for u in _feats("upazilas"):
         if u["district_id"] in dists:
@@ -65,6 +73,9 @@ def match_upazila(index: dict[str, list[tuple[str, str]]], district: str, folder
     cands = index.get(district, [])
     alias = ALIASES.get((district, folder))
     if alias:
+        if "/" in alias:
+            district, alias = alias.split("/", 1)
+            cands = index.get(district, [])
         return next((i for key, i in cands if key == _key(alias)), None)
     k = _key(folder)
     if not k:
@@ -78,7 +89,7 @@ def match_upazila(index: dict[str, list[tuple[str, str]]], district: str, folder
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--division", default="3")
+    ap.add_argument("--division", default="3,1", help="comma separated app division ids")
     a = ap.parse_args()
     listing = json.loads((GIS / "mouzamap_index.json").read_text(encoding="utf-8"))
     dest = GIS / "mouzas.json"
@@ -90,7 +101,7 @@ def main() -> None:
     for m in mouzas:
         by_upazila[str(m["upazila_id"])].append(m)
 
-    index = build_upazila_index(a.division)
+    index = build_upazila_index({d.strip() for d in a.division.split(",")})
     groups: dict[tuple[str, str, str], list[dict]] = collections.defaultdict(list)
     unmatched: collections.Counter[tuple[str, str]] = collections.Counter()
     skipped = 0
