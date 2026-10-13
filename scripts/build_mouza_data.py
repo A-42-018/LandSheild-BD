@@ -34,6 +34,7 @@ import http.cookiejar
 import json
 import re
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections import Counter
@@ -173,10 +174,14 @@ def build(portal: Portal, divisions: list[str]) -> dict[str, object]:
                 for m in portal.post("/getAdminByCode", level="forMauza", division_code=div, district_code=dcode, thana_code=tcode):  # type: ignore[union-attr]
                     jl_prefix, _, en = m["name_en"].partition("-")
                     _, _, bn = m["name_bn"].partition("-")
-                    geo = portal.post(
-                        "/getGeomByCode", level="forMauza", tableName=m["m_code"].lower(),
-                        mauzaVal=m["code"], plotOrLanduse="plot",
-                    )
+                    try:
+                        geo = portal.post(
+                            "/getGeomByCode", level="forMauza", tableName=m["m_code"].lower(),
+                            mauzaVal=m["code"], plotOrLanduse="plot",
+                        )
+                    except urllib.error.HTTPError as e:  # the portal 500s on a few mouzas (no plot table); keep the mouza without plots
+                        print(f"  ! {m['code']} {m['name_en']}: HTTP {e.code}, listed without plots")
+                        geo = {}
                     plots = geo.get("plots", []) if isinstance(geo, dict) else []
                     jl = Counter(str(p["jl_no_en"]) for p in plots if p.get("jl_no_en")).most_common(1)
                     sheets: dict[tuple[str, str], int] = Counter()
@@ -226,7 +231,7 @@ def build(portal: Portal, divisions: list[str]) -> dict[str, object]:
 
 
 DLRS = "https://settlement.gov.bd"
-DLRS_SURVEY = {"আর. এস.": "RS", "বিআরএস": "BRS"}  # anything starting বিডিএস is BDS
+DLRS_SURVEY = {"আরএস": "RS", "বিআরএস": "BRS"}  # keys ignore dots and spaces; anything starting বিডিএস is BDS
 _BN_FOLD = str.maketrans("", "", " .")
 
 
@@ -296,7 +301,8 @@ def build_dlrs(portal: Dlrs, divisions: list[str]) -> list[dict[str, object]]:
     for div in divisions:
         for d in portal.post("/Khatian/getdistrictlistdivisionwise", divid=div):  # type: ignore[union-attr]
             for sv in portal.post("/Khatian/GetSurveyListDistrictWise", districtid=d["unitcod"], comcod=d["comcod"]):  # type: ignore[union-attr]
-                survey = "BDS" if sv["rsname"].startswith("বিডিএস") else DLRS_SURVEY.get(sv["rsname"], sv["rsname"])
+                rs = sv["rsname"].translate(_BN_FOLD)  # 'বি.আর.এস' and 'বিআরএস' are the same survey
+                survey = "BDS" if rs.startswith("বিডিএস") else DLRS_SURVEY.get(rs, sv["rsname"])
                 for t in portal.post("/Khatian/GetThanaListBySurvey", compcode=d["comcod"], rsno1=sv["rsnum"], districtid=d["unitcod"]):  # type: ignore[union-attr]
                     if not t.get("upazila"):
                         continue
