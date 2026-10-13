@@ -96,7 +96,11 @@ class ClaudeDocumentAIProvider:
         cache_dir: str | Path = "./storage/claude_cache",
         client: Any = None,
         fallback: Any = None,
+        base_url: str = "",
+        auth: str = "x-api-key",
     ) -> None:
+        self.base_url = base_url.strip()  # Anthropic-compatible gateway (empty = api.anthropic.com)
+        self.auth = auth.strip().lower()  # "x-api-key" (Anthropic) | "bearer" (gateways that take Authorization: Bearer)
         self.api_key = api_key
         self.model = model
         self.timeout_s = timeout_s
@@ -115,7 +119,10 @@ class ClaudeDocumentAIProvider:
             import anthropic  # noqa: PLC0415
         except ImportError as exc:
             raise _Fallback("no_sdk") from exc
-        self._client = anthropic.Anthropic(api_key=self.api_key, max_retries=0)
+        opts: dict[str, Any] = {"auth_token": self.api_key} if self.auth == "bearer" else {"api_key": self.api_key}
+        if self.base_url:
+            opts["base_url"] = self.base_url
+        self._client = anthropic.Anthropic(max_retries=0, **opts)
         return self._client
 
     def _cache_path(self, digest: str) -> Path:
@@ -154,7 +161,7 @@ class ClaudeDocumentAIProvider:
         resp = client.messages.create(
             model=self.model,
             max_tokens=1500,
-            temperature=0,
+            extra_body={"temperature": 0},  # newer SDKs dropped the named argument
             system=SYSTEM_PROMPT,
             tools=[TOOL],
             tool_choice={"type": "tool", "name": "submit_fields"},
@@ -190,7 +197,8 @@ class ClaudeDocumentAIProvider:
                     raise _Fallback("image_error") from None
                 except Exception as exc:  # SDK errors: timeout / connection / status
                     name = type(exc).__name__.lower()
-                    raise _Fallback("timeout" if "timeout" in name else "api_error") from None
+                    status = getattr(exc, "status_code", None)  # HTTP status only: never the body, key or text
+                    raise _Fallback("timeout" if "timeout" in name else f"api_error_{status}" if status else "api_error") from None
                 self.cache_dir.mkdir(parents=True, exist_ok=True)
                 cache.write_text(
                     json.dumps({"fields": {k: {"value": v[0], "confidence": v[1]} for k, v in raw.items()}}),

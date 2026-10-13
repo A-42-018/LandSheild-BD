@@ -1,4 +1,3 @@
-# ruff: noqa: E501
 """Rule-based Document-AI provider (P40): label patterns on OCR text, no ML, no guessing.
 
 confidence = mean OCR word confidence of the value tokens x pattern strength (patterns.py).
@@ -99,6 +98,22 @@ def _first(field: str, text: str, norm: str) -> tuple[str, float] | None:
     return None
 
 
+_UNIT_LABEL_LINE = re.compile(rf"^\W*{_label('area_unit')}\W*$", _FLAGS)
+_UNIT_ONLY_LINE = re.compile(rf"^\W*(?P<u>{P.UNIT_RE})\W*$", _FLAGS)
+
+
+def _unit_next_to_label(text: str) -> tuple[str, str] | None:
+    """(unit, raw) when a label line with no value has a bare unit word on the line before or after it."""
+    lines = text.splitlines()
+    for i, ln in enumerate(lines):
+        if not _UNIT_LABEL_LINE.match(ln):
+            continue
+        for j in (i - 1, i + 1):
+            if 0 <= j < len(lines) and (m := _UNIT_ONLY_LINE.match(lines[j])) and (u := _unit(m.group("u"))):
+                return u, m.group("u")
+    return None
+
+
 def _norm_word(t: str) -> str:
     return normalize.number(normalize.text(t)).strip(_PUNCT).casefold()
 
@@ -163,6 +178,13 @@ class RuleBasedDocumentAIProvider:
             if m and (u := _unit(m.group("u"))):
                 found["area_unit"] = (u, P.STRENGTH_INLINE)
                 found["area_unit#raw"] = (m.group("u"), P.STRENGTH_INLINE)
+
+        # unit printed on the line above/below its label (OCR reads a stylised value line out of order)
+        if "area_unit" not in found:
+            u = _unit_next_to_label(text)
+            if u:
+                found["area_unit"] = (u[0], P.STRENGTH_INLINE)
+                found["area_unit#raw"] = (u[1], P.STRENGTH_INLINE)
 
         fields: list[ExtractedField] = []
         for f in EXTRACTION_FIELDS:

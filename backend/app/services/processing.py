@@ -6,7 +6,9 @@ closed by then), runs OCR then Document-AI, and always ends in REVIEW_REQUIRED o
 """
 import logging
 from collections.abc import Callable
+from dataclasses import replace
 
+from ai.extraction import reread
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
@@ -14,7 +16,7 @@ from app.models.document import Document
 from app.models.enums import DocumentStatus
 from app.models.user import User
 from app.schemas.document import DocumentOut
-from app.services import audit
+from app.services import audit, record_assist
 from app.services.documents import _to_out
 from app.services.extraction import build_extraction
 from app.services.providers import Providers
@@ -82,6 +84,13 @@ def run_processing(
             file_type = doc.file_path.rsplit(".", 1)[-1]
             ocr = providers.ocr.recognize(data, file_type)
             result = providers.ai.extract(data, ocr)
+            try:  # best effort: check misread values against the land records, never fail the document
+                alts = reread.candidates(data, result.fields)
+                fields, notes = record_assist.apply(db, result.fields, alts)
+                if notes:
+                    result = replace(result, fields=fields, warnings=[*result.warnings, *notes])
+            except Exception:
+                logger.warning("record_assist_failed", extra={"id": document_id}, exc_info=True)
             doc.ocr_text = ocr.text
             doc.ocr_confidence = ocr.confidence
             doc.extraction_json = build_extraction(result, ocr)
