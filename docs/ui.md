@@ -151,7 +151,7 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 
 ## Shell (U3) — top strip, header, footer
 - Top strip (`components/TopStrip.tsx`, `bg-strip`, 13 px): demo notice left; text size A− / A / A+ (100 / 112.5 / 125 % on `<html>`, key `ls-text-size`, try/catch, applied before paint by `theme-init.js`) and language switch (বাংলা first) right.
-- Header (`features/landing/Navbar.tsx`): solid primary, 2 px accent rule, mark + wordmark + Bangla sub-line (`common.subLine`), service nav Home · Verify land · Parcel map · Mouza map (signed in); only routes that exist. Language switch moved to the strip; theme toggle moved into the account menu (signed in) and the footer bar.
+- Header (`features/landing/Navbar.tsx`): solid primary, 2 px accent rule, mark + wordmark + Bangla sub-line (`common.subLine`), service nav Home · Verify land · Parcel map (signed in); only routes that exist. Language switch moved to the strip; theme toggle moved into the account menu (signed in) and the footer bar.
 - Footer (`bg-strip`, white text, accent top rule): Services · About · Help · Legal; unbuilt pages are plain text. Contact is the placeholder support@landshield.demo.
 - Theme default = light (`lib/theme.ts`, `theme-init.js`).
 

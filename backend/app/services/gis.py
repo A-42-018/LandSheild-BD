@@ -1,9 +1,9 @@
 # ruff: noqa: E501
 """National admin-boundary data for the map (P61-P65). Read-only, file-backed, third-party/simplified.
 
-Files live in database/gis (built by scripts/build_gis_data.py). Unions and mouzas (JL no,
-survey sheets) come from database/gis/mouzas.json (built by scripts/build_mouza_data.py from
-map.land.gov.bd) and are served ONLY for the configured demo division.
+Files live in database/gis (built by scripts/build_gis_data.py). Unions and mouzas are read from
+an optional database/gis/mouzas.json (not shipped: no synthetic mouza data yet) and are served ONLY
+for the divisions in MOUZA_ENABLED_DIVISION_ID (empty by default, so both lists are empty).
 """
 
 import json

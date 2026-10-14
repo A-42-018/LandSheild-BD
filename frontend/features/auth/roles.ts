@@ -25,7 +25,6 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/track", labelKey: "nav.track", primary: true },
   { href: "/verify-document", labelKey: "nav.verifyDoc" },
   { href: "/map", labelKey: "nav.map", roles: ROLES, primary: true },
-  { href: "/mouza-map", labelKey: "nav.mouzaMap", roles: ROLES, primary: true },
   { href: "/officer", labelKey: "nav.dashboard", roles: REVIEW_UP },
   { href: "/officer/upload", labelKey: "nav.upload", roles: OFFICER_UP },
 ];

@@ -221,7 +221,7 @@ Known from `docs/acceptance.md`: Playwright specs, real-browser walk, `next buil
 - All data/areas/polygons are synthetic; no real government link
 - The bundled sample files return their stored result (labelled "Demo sample"); any other image or scanned PDF goes through real Tesseract OCR + rules (`OCR_PROVIDER=auto`, see `docs/ocr-setup.md`). Without Tesseract installed the job fails with OCR_UNAVAILABLE. Claude extraction is off unless ANTHROPIC_API_KEY is set
 - A khatian / porcha is approved into the archive only; it does not change ownership, ledger or mutations
-- Mouza maps have no data yet (database/gis/mouzas.json is empty) and only 7 of the 12 seeded parcels have a polygon
+- The mouza map page was removed (no synthetic mouza data); only the Division → District → Upazila map remains and only 7 of the 12 seeded parcels have a polygon
 - Fee/inheritance tools use illustrative rates
 - Mouza GIS is limited to the demo division
 - Postgres, Docker, Paddle/VLM OCR are not built

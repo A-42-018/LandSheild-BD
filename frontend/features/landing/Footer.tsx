@@ -18,7 +18,6 @@ export default function Footer() {
               <li><Link href="/verify" className={LINK}>{t("nav.verify")}</Link></li>
               <li><Link href="/tools" className={LINK}>{t("tools.title")}</Link></li>
               <li><Link href="/map" className={LINK}>{t("nav.map")}</Link></li>
-              <li><Link href="/mouza-map" className={LINK}>{t("nav.mouzaMap")}</Link></li>
               <li><Link href="/login" className={LINK}>{t("nav.login")}</Link></li>
             </ul>
           </div>
