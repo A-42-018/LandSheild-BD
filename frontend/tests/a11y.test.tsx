@@ -26,6 +26,22 @@ import { FaqPage, SitemapPage, TextPage } from "@/features/info/InfoPage";
 import ServicesPage from "@/features/services/ServicesPage";
 import WhatYouNeed from "@/features/services/WhatYouNeed";
 import FeedbackForm from "@/features/feedback/FeedbackForm";
+import CheckForm from "@/features/check/CheckForm";
+import VerifyDocumentView from "@/features/verify-document/VerifyDocumentView";
+import TrackView from "@/features/track/TrackView";
+import OfficerSignup from "@/features/officers/OfficerSignup";
+import ToolsHub from "@/features/tools/ToolsHub";
+import UnitConverter from "@/features/tools/UnitConverter";
+import FeeCalculator from "@/features/tools/FeeCalculator";
+import InheritanceCalculator from "@/features/tools/InheritanceCalculator";
+import ArchiveSearch from "@/features/archive/ArchiveSearch";
+import AuditLogs from "@/features/admin/AuditLogs";
+import MutationQueue from "@/features/mutation/MutationQueue";
+import UploadForm from "@/features/upload/UploadForm";
+import PublicVerifyView from "@/features/qr/PublicVerifyView";
+import FeedbackAdmin from "@/features/feedback/FeedbackAdmin";
+import NotFound from "../app/[locale]/not-found";
+import ErrorPage from "../app/[locale]/error";
 import OfficerShell from "@/features/officer/OfficerShell";
 
 vi.mock("@/i18n/navigation", () => ({
@@ -119,6 +135,9 @@ const ACTIVITY = {
 };
 
 function get(path: string): Promise<any> {
+  if (/^\/(archive\/search|mutations|admin\/audit-logs|feedback)/.test(path)) return Promise.resolve({ items: [], total: 0, open: 0, helpful: 0, not_helpful: 0, limit: 20, offset: 0, hits: [], pending: 0 });
+  if (path.startsWith("/public/verify/")) return Promise.resolve({ land_id: "LP-10240", district: "Dhaka", upazila: "Savar", mouza: "Ashulia", status: "ACTIVE", risk_level: "LOW", counts: { ownership_records: 2, transactions: 1, flagged_transactions: 0, open_alerts: 0, active_encumbrances: 0, pending_mutations: 0 }, last_verified_at: null });
+  if (path.startsWith("/public/seal/")) return Promise.reject(new Error("none"));
   if (path.startsWith("/officer/stats")) return Promise.resolve({ total_records: 7, pending_review: 3, high_risk: 1, verified: 7 });
   if (path.startsWith("/officer/queue")) return Promise.resolve(QUEUE);
   if (path.startsWith("/officer/activity")) return Promise.resolve(ACTIVITY);
@@ -138,6 +157,7 @@ const client = (role: string | null): ApiClient =>
   ({
     refresh: role ? vi.fn().mockResolvedValue({ user: mk(role) }) : vi.fn().mockRejectedValue(new Error("anon")),
     get: vi.fn(get),
+    request: vi.fn(get),
     blob: vi.fn().mockResolvedValue(new Blob(["x"], { type: "image/png" })),
   }) as unknown as ApiClient;
 
@@ -249,6 +269,22 @@ const CASES: Case[] = [
     ui: () => <main><FeedbackForm /></main>,
     ready: (m) => screen.findByRole("heading", { level: 1, name: m.feedback.title }),
   },
+  { name: "check", role: "CITIZEN", ui: () => <main><CheckForm /></main>, ready: (m) => screen.findAllByText(new RegExp(m.check.title)) },
+  { name: "verify-document", role: null, ui: () => <main><VerifyDocumentView /></main>, ready: (m) => screen.findAllByText(new RegExp(m.verifyDoc.title)) },
+  { name: "track", role: null, ui: () => <main><TrackView /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.track.title) }) },
+  { name: "officer-signup", role: null, ui: () => <main><OfficerSignup /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.officerSignup.title) }) },
+  { name: "tools-hub", role: null, ui: () => <main><ToolsHub /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.tools.title) }) },
+  { name: "tools-units", role: null, ui: () => <main><UnitConverter /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.tools.units.title) }) },
+  { name: "tools-fees", role: null, ui: () => <main><FeeCalculator /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.tools.fees.title) }) },
+  { name: "tools-inheritance", role: null, ui: () => <main><InheritanceCalculator /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.tools.faraid.title) }) },
+  { name: "officer-archive", role: "OFFICER", ui: () => <main><ArchiveSearch /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.archive.title) }) },
+  { name: "officer-audit-logs", role: "OFFICER", ui: () => <main><AuditLogs /></main>, ready: (m) => screen.findAllByText(new RegExp(m.admin.audit.title)) },
+  { name: "officer-mutations", role: "OFFICER", ui: () => <main><MutationQueue /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.mutation.title) }) },
+  { name: "officer-upload", role: "OFFICER", ui: () => <main><UploadForm /></main>, ready: (m) => screen.findAllByText(new RegExp(m.upload.title)) },
+  { name: "officer-feedback", role: "OFFICER", ui: () => <main><FeedbackAdmin /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.feedback.admin.title) }) },
+  { name: "public-verify", role: null, ui: () => <main><PublicVerifyView landId="LP-10240" /></main>, ready: (m) => screen.findAllByText(/LP-10240/) },
+  { name: "not-found", role: null, ui: () => <main><NotFound /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.errorPages.notFoundTitle) }) },
+  { name: "error-page", role: null, ui: () => <main><ErrorPage error={new Error("x")} reset={() => {}} /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.errorPages.errorTitle) }) },
 ];
 
 describe("axe — no violations on key pages (P54)", () => {

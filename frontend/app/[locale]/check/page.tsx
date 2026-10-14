@@ -1,13 +1,16 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import PageHeader from "@/components/PageHeader";
 import RequireRole from "@/features/auth/RequireRole";
 import WhatYouNeed from "@/features/services/WhatYouNeed";
 import CheckForm from "@/features/check/CheckForm";
 
-export default function CheckPage({ params: { locale } }: { params: { locale: string } }) {
+export default async function CheckPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
+  const t = await getTranslations({ locale });
   return (
-    <div className="mx-auto max-w-5xl p-3 sm:p-5">
-      <div className="mb-4"><WhatYouNeed service="check" /></div>
+    <div className="mx-auto flex max-w-5xl flex-col gap-4 p-3 sm:p-5">
+      <PageHeader title={t("nav.check")} purpose={t("page.checkPurpose")} />
+      <WhatYouNeed service="check" />
       <RequireRole>
         <CheckForm />
       </RequireRole>

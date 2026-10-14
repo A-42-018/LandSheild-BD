@@ -114,6 +114,37 @@ describe("VerifyForm", () => {
     expect(within(screen.getByRole("listbox")).getAllByRole("option")).toHaveLength(1);
   });
 
+  it("mouza combobox works from the keyboard: arrows move, Enter picks, Escape closes", async () => {
+    const get = vi.fn(async (url: string) => {
+      if (url.startsWith("/gis/search"))
+        return { hits: [{ level: "upazila", id: "77", name: "Sreepur", bn_name: "", path: "Dhaka / Gazipur" }] };
+      if (url.startsWith("/gis/mouzas"))
+        return { enabled: true, mouzas: [{ id: "a", name: "Barmi", bn_name: "", jl_no: "012" }, { id: "c", name: "Mawna", bn_name: "", jl_no: "005" }] };
+      throw new ApiError(404, "LAND_NOT_FOUND", "x");
+    });
+    wrap(client(get as any));
+    fill();
+    const input = screen.getByLabelText(new RegExp(en.verify.mouza)) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "" } });
+    await screen.findByRole("listbox");
+    fireEvent.keyDown(input, { key: "Enter" }); // nothing highlighted: not swallowed
+    expect(input.getAttribute("aria-activedescendant")).toBeNull();
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    const options = within(screen.getByRole("listbox")).getAllByRole("option");
+    expect(options[1]).toHaveAttribute("aria-selected", "true");
+    expect(input.getAttribute("aria-activedescendant")).toBe(options[1].id);
+    fireEvent.keyDown(input, { key: "ArrowUp" });
+    expect(options[0]).toHaveAttribute("aria-selected", "true");
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(input.value).toBe("Barmi");
+    expect(screen.queryByRole("listbox")).toBeNull();
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    fireEvent.keyDown(input, { key: "Escape" });
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
   it("shows the empty state on 404", async () => {
     const get = vi.fn().mockRejectedValue(new ApiError(404, "LAND_NOT_FOUND", "x"));
     wrap(client(get as any));

@@ -61,10 +61,29 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   const upazila = watch("upazila") as string;
   const mouzaNames = useMouzaSuggestions(district, upazila);
   const [mouzaOpen, setMouzaOpen] = useState(false);
+  const [mouzaActive, setMouzaActive] = useState(-1);
   const mouzaValue = watch("mouza") as string;
   const mouzaField = register("mouza");
   const typed = fold(mouzaValue ?? "");
   const mouzaMatches = mouzaNames.filter((o) => !typed || fold(o.value).includes(typed)).slice(0, 50);
+  const pickMouza = (value: string) => {
+    setValue("mouza", value, { shouldValidate: true });
+    setMouzaOpen(false);
+    setMouzaActive(-1);
+  };
+  const onMouzaKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const n = mouzaMatches.length;
+    if (e.key === "Escape") return setMouzaOpen(false);
+    if (!n || (e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "Enter")) return;
+    if (e.key === "Enter") {
+      if (!mouzaOpen || mouzaActive < 0) return; // closed or nothing highlighted: Enter submits the form as usual
+      e.preventDefault();
+      return pickMouza(mouzaMatches[mouzaActive].value);
+    }
+    e.preventDefault();
+    setMouzaOpen(true);
+    setMouzaActive((i) => (e.key === "ArrowDown" ? (i + 1) % n : (i <= 0 ? n : i) - 1));
+  };
   const err = (k?: { message?: string }) => (k?.message ? t(`errors.${k.message}`) : undefined);
 
   const m = useMutation({
@@ -142,18 +161,21 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
             role={mouzaNames.length ? "combobox" : undefined}
             aria-expanded={mouzaNames.length ? mouzaOpen && mouzaMatches.length > 0 : undefined}
             aria-controls={mouzaNames.length ? "mouza-suggestions" : undefined}
+            aria-autocomplete={mouzaNames.length ? "list" : undefined}
+            aria-activedescendant={mouzaOpen && mouzaActive >= 0 ? `mouza-opt-${mouzaActive}` : undefined}
             error={err(errors.mouza)}
             {...mouzaField}
             onChange={(e) => {
               mouzaField.onChange(e);
               setMouzaOpen(true);
+              setMouzaActive(-1);
             }}
             onFocus={() => setMouzaOpen(true)}
             onBlur={(e) => {
               mouzaField.onBlur(e);
               setMouzaOpen(false);
             }}
-            onKeyDown={(e) => e.key === "Escape" && setMouzaOpen(false)}
+            onKeyDown={onMouzaKey}
           />
           {mouzaOpen && mouzaMatches.length > 0 && (
             <ul
@@ -161,18 +183,18 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
               role="listbox"
               className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-auto rounded-md border border-line bg-surface py-1 shadow-lg"
             >
-              {mouzaMatches.map((o) => (
+              {mouzaMatches.map((o, i) => (
                 <li
                   key={o.value}
+                  id={`mouza-opt-${i}`}
                   role="option"
-                  aria-selected={o.value === mouzaValue}
+                  aria-selected={i === mouzaActive}
                   // mousedown (not click) so the input's blur doesn't close the list first
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    setValue("mouza", o.value, { shouldValidate: true });
-                    setMouzaOpen(false);
+                    pickMouza(o.value);
                   }}
-                  className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-sm text-ink hover:bg-primary/10"
+                  className={`flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-sm text-ink hover:bg-primary/10 ${i === mouzaActive ? "bg-primary/15" : ""}`}
                 >
                   <span className="truncate">{o.value}</span>
                   {o.label && <span className="shrink-0 text-xs text-ink-muted">{o.label}</span>}

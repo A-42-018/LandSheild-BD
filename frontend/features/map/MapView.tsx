@@ -358,9 +358,9 @@ export default function MapView() {
       <p className={`text-xs text-ink-muted ${PAD}`}>{t("map.gis.boundaryNote")}</p>
 
       {showParcels && (
-        <section className={`flex flex-col gap-3 pb-4 ${PAD}`} aria-label={t("map.listTitle")}>
+        <div className={`flex flex-col gap-3 pb-4 ${PAD}`}>
           {parcels}
-        </section>
+        </div>
       )}
     </div>
   );

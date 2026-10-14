@@ -19,6 +19,7 @@ export function safeNext(next: string | null): string {
 
 export default function LoginForm() {
   const t = useTranslations("auth");
+  const ti = useTranslations("auth.idle");
   const { login } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
@@ -62,6 +63,9 @@ export default function LoginForm() {
   return (
     <Card title={<h1 className="text-base font-semibold">{t("loginTitle")}</h1>} icon={<ShieldCheck />} variant="record">
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+        {params.get("expired") === "1" && (
+          <p role="status" className="rounded-md border border-line bg-primary-soft px-3 py-2 text-sm text-ink">{ti("expired")}</p>
+        )}
         <p className="text-ink-muted">{t("loginIntro")}</p>
         <Input
           label={t("email")}
@@ -96,7 +100,7 @@ export default function LoginForm() {
       </form>
       <p className="mt-4 text-sm">
         {t("officerPrompt")}{" "}
-        <Link href="/officer-signup" className="text-link underline-offset-2 hover:underline">{t("officerLink")}</Link>
+        <Link href="/officer-signup" className="text-link underline underline-offset-2">{t("officerLink")}</Link>
       </p>
       <aside aria-labelledby="demo-accounts" className="mt-5 rounded-md border border-line bg-surface-muted p-3 text-sm" data-testid="demo-accounts">
         <p id="demo-accounts" className="flex items-center gap-2 font-semibold text-ink">

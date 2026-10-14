@@ -75,7 +75,7 @@ export default function OfficerSignup() {
             <span className="text-ink-muted">{officePath(done)}</span>
           </p>
           <p className="text-sm text-ink-muted">{t("doneHint")}</p>
-          <Link href="/login" className="text-link underline-offset-2 hover:underline">{t("toLogin")}</Link>
+          <Link href="/login" className="text-link underline underline-offset-2">{t("toLogin")}</Link>
         </div>
       </Card>
     );
@@ -118,7 +118,7 @@ export default function OfficerSignup() {
         )}
         <Button type="submit" loading={submit.isPending} icon={<UserPlus />} className="w-full">{t("submit")}</Button>
         <p className="text-sm text-ink-muted">
-          {t("haveAccount")} <Link href="/login" className="text-link underline-offset-2 hover:underline">{t("toLogin")}</Link>
+          {t("haveAccount")} <Link href="/login" className="text-link underline underline-offset-2">{t("toLogin")}</Link>
         </p>
       </form>
     </Card>

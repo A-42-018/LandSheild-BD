@@ -72,7 +72,7 @@ export default function QueueTable() {
             options={QUEUE_FILTERS.map((f) => ({ value: f, label: t(`filter.${f}`) }))}
           />
           <form onSubmit={onSearch} role="search" className="flex flex-1 items-end gap-2">
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <Input label={t("search.label")} value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search.placeholder")} />
             </div>
             <Button type="submit" variant="primary" icon={<Search />}>{t("search.submit")}</Button>

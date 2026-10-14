@@ -52,7 +52,11 @@ export default function Table<T>({
 
   return (
     <div>
-      <div className={cn("overflow-x-auto rounded-lg border border-line bg-surface", stickyHeader && "max-h-[70vh] overflow-y-auto")}>
+      <div
+        // keyboard users must be able to scroll a wide table (WCAG 2.1.1): the region is a tab stop
+        {...(caption ? { role: "region", "aria-label": caption, tabIndex: 0 } : {})}
+        className={cn("overflow-x-auto rounded-lg border border-line bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50", stickyHeader && "max-h-[70vh] overflow-y-auto")}
+      >
         <table className={cn("w-full border-collapse text-left text-sm", !compact && "min-w-[32rem]")}>
           {caption && <caption className="sr-only">{caption}</caption>}
           <thead className={cn("bg-surface-muted text-ink", stickyHeader && "sticky top-0 z-10")}>

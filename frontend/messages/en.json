@@ -167,7 +167,15 @@
     "accountRejected": "Your officer account request was rejected.",
     "rejectReason": "Reason: {reason}",
     "officerPrompt": "Land office officer without an account?",
-    "officerLink": "Request an officer account"
+    "officerLink": "Request an officer account",
+    "idle": {
+      "title": "Still there?",
+      "body": "You will be signed out in {time} because there was no activity.",
+      "why": "Officer pages handle land records, so idle sessions end automatically.",
+      "stay": "Stay signed in",
+      "signOut": "Sign out now",
+      "expired": "You were signed out after a period of inactivity. Please sign in again."
+    }
   },
   "verify": {
     "title": "Verify Land",
@@ -343,7 +351,8 @@
     "officeLegend": "Land office (area) for this record",
     "ownOfficeOnly": "Records you upload are kept in this office only. You cannot upload for another area.",
     "pickOffice": "Choose the land office this record belongs to (required).",
-    "pickOfficeOptional": "Choose the land office this record belongs to."
+    "pickOfficeOptional": "Choose the land office this record belongs to.",
+    "purpose": "Upload a scanned deed or khatian. Text is read and a reviewer confirms every field."
   },
   "review": {
     "title": "Review extraction",
@@ -723,7 +732,8 @@
         "fraud_alert": "Risk alert",
         "verification_request": "Verification request",
         "feedback": "Feedback"
-      }
+      },
+      "purpose": "Who did what and when. Entries cannot be edited."
     },
     "console": {
       "title": "Administration",
@@ -893,7 +903,8 @@
     "emptyGraph": "No ownership connections recorded for this land.",
     "flaggedNote": "Flagged means the records need human review. It is not a final finding.",
     "backToResult": "Back to verification result",
-    "viewLink": "View ownership graph"
+    "viewLink": "View ownership graph",
+    "purpose": "Owners, plots and transfers linked to this plot."
   },
   "qr": {
     "title": "Share this verification",
@@ -1021,7 +1032,8 @@
     "larger": "Larger text",
     "glyphSmaller": "A−",
     "glyphNormal": "A",
-    "glyphLarger": "A+"
+    "glyphLarger": "A+",
+    "label": "Site notice and display settings"
   },
   "mutation": {
     "title": "e-Mutation applications",
@@ -1236,7 +1248,9 @@
     "resultPurpose": "Recorded details, history and risk indicators for this plot.",
     "publicPurpose": "A limited public summary of this plot, opened from a QR code.",
     "recordTabs": "Record sections",
-    "riskLevel": "Risk level"
+    "riskLevel": "Risk level",
+    "checkPurpose": "A checklist of red flags to review before you buy a plot.",
+    "verifyDocPurpose": "Check whether a copy of a deed matches the signed record."
   },
   "track": {
     "title": "Track a mutation application",
