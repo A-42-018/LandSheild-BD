@@ -25,7 +25,8 @@ import {
   UserCheck,
   type LucideIcon,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { intlLocale } from "@/lib/intl-locale";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import OfficerActions from "./OfficerActions";
@@ -229,6 +230,36 @@ export function Trust() {
           </li>
         ))}
       </ul>
+    </Band>
+  );
+}
+
+const NOTICES = [
+  { id: "n1", date: "2026-10-14" },
+  { id: "n2", date: "2026-10-12" },
+  { id: "n3", date: "2026-10-07" },
+  { id: "n4", date: "2026-10-06" },
+] as const;
+
+/** Dated demo notices (synthetic): what changed in the prototype. */
+export function NoticeBoard() {
+  const t = useTranslations("landing.notices");
+  const locale = useLocale();
+  const fmt = new Intl.DateTimeFormat(intlLocale(locale), { dateStyle: "long", timeZone: "UTC" });
+  return (
+    <Band id="notices-title" tone="soft">
+      <h2 id="notices-title" className={h2}>{t("title")}</h2>
+      <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
+      <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+        {NOTICES.map((n) => (
+          <li key={n.id} data-testid="notice-item" className="rounded-md border border-line bg-surface p-4">
+            <time dateTime={n.date} className="text-sm font-medium text-primary">{fmt.format(new Date(n.date))}</time>
+            <p className="mt-1 font-semibold text-ink">{t(`items.${n.id}.title`)}</p>
+            <p className="mt-1 text-sm text-ink-muted">{t(`items.${n.id}.body`)}</p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-4"><Link href="/services" className="text-link underline-offset-2 hover:underline">{t("services")}</Link></p>
     </Band>
   );
 }

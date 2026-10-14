@@ -558,6 +558,29 @@
       "title": "Citizen tools",
       "intro": "Free calculators for buying, selling and inheriting land.",
       "cta": "All tools"
+    },
+    "notices": {
+      "title": "Notice board",
+      "intro": "Sample notices about what changed in this prototype. They are synthetic, not official announcements.",
+      "services": "Read the citizen charter",
+      "items": {
+        "n1": {
+          "title": "Check before you buy lists khas land and acquisition",
+          "body": "Plots on khas land or under acquisition now show as a red flag."
+        },
+        "n2": {
+          "title": "Track a mutation without signing in",
+          "body": "Anyone can follow an application by its number."
+        },
+        "n3": {
+          "title": "Role-based access reviewed",
+          "body": "Sign-in roles and the four-eyes approval rule were checked on every page."
+        },
+        "n4": {
+          "title": "Citizen tools added",
+          "body": "Land unit converter, fee calculator and inheritance shares."
+        }
+      }
     }
   },
   "officer": {
@@ -1631,6 +1654,87 @@
         "tools": "Citizen tools",
         "information": "Information",
         "account": "Account"
+      }
+    }
+  },
+  "services": {
+    "title": "Citizen charter",
+    "purpose": "For each online service: what you need, what it costs, how long it takes, who is responsible and how to apply.",
+    "updated": "Last updated 14 Oct 2026",
+    "notice": "This is a demonstration. The offices, fees and times below describe how the prototype behaves; they are not commitments of any real government office.",
+    "whatYouNeed": "What you need",
+    "open": "Open this service",
+    "feeLink": "See also the fee calculator for registration and mutation fees (illustrative rates).",
+    "rows": {
+      "need": "Required details",
+      "fee": "Fee",
+      "time": "Time limit",
+      "office": "Responsible office",
+      "apply": "How to apply"
+    },
+    "items": {
+      "verify": {
+        "title": "Verify land record",
+        "who": "Signed-in citizens, reviewers, officers and administrators.",
+        "need": {
+          "n1": "District and upazila of the plot",
+          "n2": "Mouza name",
+          "n3": "Khatian number and dag number (digits only)"
+        },
+        "fee": "Free.",
+        "time": "The result appears within a few seconds.",
+        "office": "LandShield demo review team. The land office named in the record is shown on the result page.",
+        "apply": {
+          "n1": "Sign in.",
+          "n2": "Open Verify land and fill in the six fields.",
+          "n3": "Open the result and read the history and evidence tabs."
+        }
+      },
+      "check": {
+        "title": "Check before you buy",
+        "who": "Signed-in citizens, reviewers, officers and administrators.",
+        "need": {
+          "n1": "The same plot details as Verify land",
+          "n2": "The seller's name, if you know it"
+        },
+        "fee": "Free.",
+        "time": "The checklist appears within a few seconds.",
+        "office": "LandShield demo review team.",
+        "apply": {
+          "n1": "Sign in.",
+          "n2": "Open Check before you buy and enter the plot details.",
+          "n3": "Read each red flag and take it to a professional."
+        }
+      },
+      "track": {
+        "title": "Track mutation",
+        "who": "Anyone. No sign-in needed.",
+        "need": {
+          "n1": "The mutation (namjari) application number"
+        },
+        "fee": "Free.",
+        "time": "The status shows at once. How long the application takes depends on its office queue; each step date is shown.",
+        "office": "The land office that holds the application. It is named on the status page.",
+        "apply": {
+          "n1": "Open Track mutation.",
+          "n2": "Type the application number.",
+          "n3": "Read the four-step status and the dates."
+        }
+      },
+      "verifyDoc": {
+        "title": "Verify a document copy",
+        "who": "Anyone. No sign-in needed.",
+        "need": {
+          "n1": "A photo or PDF of the deed copy you were given (up to the size limit shown on the page)"
+        },
+        "fee": "Free.",
+        "time": "The answer appears within about a minute. The file is checked and discarded.",
+        "office": "LandShield demo review team.",
+        "apply": {
+          "n1": "Open Verify a document copy.",
+          "n2": "Upload the file.",
+          "n3": "Read whether it matches the signed record."
+        }
       }
     }
   }

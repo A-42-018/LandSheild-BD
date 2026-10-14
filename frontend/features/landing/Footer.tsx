@@ -15,6 +15,7 @@ export default function Footer() {
           <div>
             <p className={HEAD}>{t("footer.services")}</p>
             <ul className="flex flex-col gap-1.5">
+              <li><Link href="/services" className={LINK}>{t("services.title")}</Link></li>
               <li><Link href="/verify" className={LINK}>{t("nav.verify")}</Link></li>
               <li><Link href="/tools" className={LINK}>{t("tools.title")}</Link></li>
               <li><Link href="/map" className={LINK}>{t("nav.map")}</Link></li>

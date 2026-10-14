@@ -15,7 +15,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import Navbar from "@/features/landing/Navbar";
 import Footer from "@/features/landing/Footer";
 import Hero from "@/features/landing/Hero";
-import { HowItWorks, OfficerBand, ServiceTiles, Trust, WhatWeCheck } from "@/features/landing/Sections";
+import { HowItWorks, NoticeBoard, OfficerBand, ServiceTiles, Trust, WhatWeCheck } from "@/features/landing/Sections";
 import VerifyForm from "@/features/verify/VerifyForm";
 import ResultView from "@/features/result/ResultView";
 import ReportView from "@/features/report/ReportView";
@@ -23,6 +23,8 @@ import LoginForm from "@/features/auth/LoginForm";
 import ReviewView from "@/features/review/ReviewView";
 import DashboardView from "@/features/officer/DashboardView";
 import { FaqPage, SitemapPage, TextPage } from "@/features/info/InfoPage";
+import ServicesPage from "@/features/services/ServicesPage";
+import WhatYouNeed from "@/features/services/WhatYouNeed";
 import OfficerShell from "@/features/officer/OfficerShell";
 
 vi.mock("@/i18n/navigation", () => ({
@@ -167,6 +169,7 @@ const CASES: Case[] = [
         <main id="main">
           <Hero />
           <ServiceTiles />
+          <NoticeBoard />
           <WhatWeCheck />
           <HowItWorks />
           <OfficerBand />
@@ -227,6 +230,18 @@ const CASES: Case[] = [
     ),
     ready: (m) => screen.findByRole("heading", { level: 1, name: m.info[ns].title }),
   })),
+  {
+    name: "services",
+    role: null,
+    ui: () => <main><ServicesPage /></main>,
+    ready: (m) => screen.findByRole("heading", { level: 1, name: m.services.title }),
+  },
+  {
+    name: "what-you-need",
+    role: null,
+    ui: () => <main><WhatYouNeed service="track" /></main>,
+    ready: (m) => screen.findByRole("heading", { name: m.services.whatYouNeed }),
+  },
 ];
 
 describe("axe — no violations on key pages (P54)", () => {
