@@ -2,7 +2,6 @@
 import { RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button, Select } from "@/components/ui";
-import { Link } from "@/i18n/navigation";
 import PlaceSearch from "./PlaceSearch";
 import {
   ADMIN_LEVELS,
@@ -24,7 +23,7 @@ export interface SearchMenuProps {
   loading: boolean;
 }
 
-/** Map-only Division → District → Upazila menu. Unions, mouzas and survey sheets are on the mouza map page. */
+/** Map-only Division → District → Upazila menu. */
 export default function SearchMenu(p: SearchMenuProps) {
   const t = useTranslations("map.gis");
   const { sel } = p;
@@ -61,12 +60,6 @@ export default function SearchMenu(p: SearchMenuProps) {
         disabled={!sel.districtId}
         onChange={(e) => p.onChange(select(sel, "upazilaId", e.target.value))}
       />
-      <p className="text-xs text-ink-muted">
-        {t("mouzaHint")}{" "}
-        <Link href="/mouza-map" className="font-medium text-link underline underline-offset-2">
-          {t("mouzaLink")}
-        </Link>
-      </p>
       <Button
         type="button"
         variant="ghost"

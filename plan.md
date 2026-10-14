@@ -6,7 +6,7 @@
 
 ## STATE
 ```text
-Plan version : 122
+Plan version : 123
 RBAC audit (2026-10-07) ✅ — every route guard, page guard, nav item and API call checked per role (citizen/reviewer/officer/admin); live API probe 44/44. Fixed + pushed one commit each: four-eyes (uploader cannot approve, ADMIN exempt, SELF_APPROVAL_FORBIDDEN, shown up front via ExtractionOut.self_approval_blocked); review page dead-ends (UPLOADED: officer can start processing, reviewer sees waiting note; FAILED: reason + Reprocess); HIGH alert dismissal officer/admin only + reason required for any dismissal (ALERT_DISMISS_FORBIDDEN / REASON_REQUIRED, dashboard reason modal); /officer/activity scoped to document/mutation/alert events for reviewers (audit trail stays officer+); migration 0008 audit_logs.actor_role (role at the time; old rows backfilled with current role); landing reviewer CTA; stale officer e2e (F6 deed-no rule + four-eyes). "Last admin can be demoted" was a false finding (self-change is blocked, so the acting admin remains). Tests: backend 679 pass (8 skipped), vitest 407, e2e 20/20, tsc, ruff, i18n OK (1029).
 O1-O4 (2026-10-07) ✅ real OCR track — OCR_PROVIDER=auto: demo sample (exact SHA-256 in ai/mock_fixtures.json by_hash) -> PDF text layer (>= 50 chars) -> Tesseract; no silent mock (OCR_UNAVAILABLE 503 / OCR_TIMEOUT 504 -> job FAILED + documents.failure_code; verify-document answers 503). Tesseract: psm 6 -> 4 -> upscale retry (upscale is a RETRY only: first-step upscaling dropped deeds to 29 %), per-page timeout, multi-page + PAGES_TRUNCATED, normalize.py, extra BN label variants. Claude (ai/extraction/claude.py + validate.py): dormant without ANTHROPIC_API_KEY, fallback to rules on any failure, cache per sha256+model, daily cap; fake-client tests only, NEVER run against the real API. Extraction JSON + API: ocr_source / extractor / model / warnings; review page badges EN+BN. Eval (Tesseract+rules, demo off): deeds 60.0 % -> 85.4 % (73.3 % preprocess off); Bangla specimens CER 17.2 % -> 21.6 % (worse), parsed fields 90 %. docs/ocr-accuracy.md, README "How OCR works", Dockerfile tessdata_best (NOT built here), pyproject extra llm. Tests: backend 672 pass (8 skipped), ruff clean; vitest 398, tsc clean. NOT done: Claude accuracy (no key), 3-5 real-looking deeds, Docker build, real Render run.
 Competition  : LandTech 2026 · P3 Fraud & Double-Selling (P1/P2/P4/P5 supporting) · submit by 15 Oct (deadline 16 Oct)
@@ -23,6 +23,7 @@ S2-b (user): watch it; optional voice-over; upload (YouTube unlisted or Drive, "
 S1: ✅ (concept note PDF 3 p; only VIDEO_URL left).
 OPEN (carried): EN+BN evidence i18n for ACTIVE_LITIGATION/KHAS_LAND/UNDER_ACQUISITION/ACTIVE_MORTGAGE not done; real OCR (tesseract) path of verify-document untested; ML scoring skipped in plain dev venv; Docker image never built locally; `next build` not run. Ledger chain is only as strong as DB write access (anchoring head hash off-DB is a T1 idea).
 Citizen tools: C1 ✅ C2 ✅ C5 ✅; left C3 → C4 (backend) (cards in roadmap.md §5 "C —"); suggested pairing C1+C2 in one window.
+Next work    : E1 → E6 e-governance UI upgrade (section "E-GOV UPGRADE" below; audit 2026-10-14). E1 first.
 Next phase   : S2-b upload + VIDEO_URL (user) → S3 submit Round 1 🔒 (both skipped by request; user does them). Re-export the concept note PDF (scripts/export_concept_note.py, needs Chromium): its Bangla-OCR sentence changed.
 Carried over : reseed for demo password (Q17)
 ```
@@ -66,6 +67,43 @@ Carried over : reseed for demo password (Q17)
 | TBA | C3 | Land-tax status row in Check Before You Buy (0008) | Should | ⬜ |
 | TBA | C4 | Watch a plot: in-app change alerts (0009) | Should | ⬜ |
 | TBA | C5 | Inheritance share calculator (ফারায়েজ) | Should | ✅ |
+| Next | E1 | Fix broken basics: 404/error/loading, one container width, form fit, tab scrollbar | Must | ⬜ |
+| Next | E2 | Info pages: FAQ, accessibility, privacy, terms, data sources, sitemap + live footer links | Must | ⬜ |
+| Next | E3 | Citizen charter, "what you need" boxes, notice board | Should | ⬜ |
+| Next | E4 | Bangla place names/numerals + feedback/grievance form + "helpful?" prompt | Should | ⬜ |
+| Next | E5 | Accessibility pass on every route (axe, 125 %, 360 px, keyboard) | Must | ⬜ |
+| Next | E6 | Officer-side consistency + session-timeout warning | Could | ⬜ |
+
+## E-GOV UPGRADE (next work) — audit 2026-10-14
+Verdict: the "Formal Green" spec (roadmap §4) is in place — Bangla-first, light default, demo strip, text-size control, service-first hero, breadcrumbs + "data as of", icon+text statuses, 44 px targets, print styles. Still missing for a full e-governance portal: real info pages, error pages, service transparency, consistent layout, Bangla data. Rules: demo only — no Shapla emblem, no gov.bd wording, no real phone numbers; EN+BN parity for every new string.
+
+**E1 — Fix broken basics** [Must · S · frontend]
+- Add `app/[locale]/not-found.tsx`, `error.tsx`, `loading.tsx` (EN+BN, normal header/footer, link home). Today `/bn/<bad-url>` shows the bare English Next.js 404.
+- One container width (1200 px, roadmap §4.4) for header (now `max-w-[1600px]`), main + footer (`max-w-6xl`) and the narrower result page.
+- Verify form: shorter select placeholders (now cut off: "বিভাগ নির্বাচন ক…"), 2-col on tablet, submit button full width on mobile.
+- Result page tabs: remove the stray scrollbar.
+- Test: vitest, tsc, check:i18n; browser 1366 px + 375 px, no horizontal scroll.
+
+**E2 — Information pages** [Must · M · frontend + i18n]
+- New routes `/faq`, `/accessibility`, `/privacy`, `/terms`, `/data-sources`, `/sitemap`, each with `PageHeader` + "সর্বশেষ হালনাগাদ" date.
+- Footer (`features/landing/Footer.tsx`): turn the plain-text items into links.
+- Test: axe on each new page, check:i18n.
+
+**E3 — Service transparency** [Should · M · frontend]
+- `/services` citizen charter (সেবা প্রদান প্রতিশ্রুতি): table per service — required documents, fee (link to /tools/fees), time limit, responsible office, how to apply.
+- "What you need" box above each service form (verify, check, track, verify-document).
+- Landing: notice board band (dated demo notices, synthetic).
+
+**E4 — Bangla data + feedback** [Should · M · full-stack]
+- Bangla district/upazila/mouza names on result/report/QR pages (from existing mouza/upazila data); owner names in Bangla where the data has them; Bangla numerals in all tables/dates under `bn`.
+- `/feedback` grievance form → demo reference no.; status visible on `/track`.
+- "Was this page helpful?" on service pages.
+
+**E5 — Accessibility pass** [Must · S · QA]
+- axe on every route (extend `tests/a11y.test.tsx`), 125 % text at 360 px, keyboard-only map + mouza combobox; write results to `docs/ui.md`.
+
+**E6 — Officer side** [Could · S–M · frontend]
+- PageHeader on upload, audit-log, graph pages (left out in U7); office name in breadcrumb meta; session-timeout warning modal.
 
 ## KICKOFF PROMPT (paste in a new chat with the latest zip)
 ```text

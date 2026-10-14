@@ -83,7 +83,7 @@ describe("Navbar (UD3)", () => {
     expect(screen.getByRole("link", { name: en.nav.home })).not.toHaveAttribute("aria-current");
   });
 
-  it("service nav: Home for anonymous; Home, Verify land, Check before you buy, Parcel map, Mouza map when signed in", () => {
+  it("service nav: Home for anonymous; Home, Verify land, Check before you buy, Parcel map when signed in", () => {
     render(wrap(<Navbar />));
     const nav = screen.getByRole("navigation", { name: en.nav.main });
     expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.track]);
@@ -91,7 +91,7 @@ describe("Navbar (UD3)", () => {
     cleanup();
     render(wrap(<Navbar />));
     const nav2 = screen.getByRole("navigation", { name: en.nav.main });
-    expect(within(nav2).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.verify, en.nav.check, en.nav.track, en.nav.map, en.nav.mouzaMap]);
+    expect(within(nav2).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.verify, en.nav.check, en.nav.track, en.nav.map]);
   });
 
   it("theme toggle lives in the account menu (signed in), light | dark | system", () => {
@@ -186,7 +186,6 @@ describe("Footer (UD3)", () => {
     for (const h of [m.footer.services, m.footer.aboutTitle, m.footer.help, m.footer.legal]) expect(screen.getByText(h)).toBeInTheDocument();
     expect(screen.getByText(new RegExp("support@landshield.demo"))).toBeInTheDocument();
     expect(screen.getByRole("link", { name: m.nav.map })).toHaveAttribute("href", "/map");
-    expect(screen.getByRole("link", { name: m.nav.mouzaMap })).toHaveAttribute("href", "/mouza-map");
     expect(screen.getByRole("link", { name: m.nav.login })).toHaveAttribute("href", "/login");
     expect(screen.getByText(m.landing.disclaimer)).toBeInTheDocument();
     expect(screen.getByText(new RegExp(m.common.demoLabel.replace(/[.]/g, "\\.")))).toBeInTheDocument();

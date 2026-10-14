@@ -44,7 +44,7 @@ class SheetRef(BaseModel):
     sheet_no: str
     survey: str = ""  # e.g. RS, BS, CS (survey the sheet belongs to)
     plots: int = 0
-    url: str | None = None  # scan PDF on mouzamap.tech; fetched on demand by /gis/scan, not stored
+    url: str | None = None  # optional link to a map sheet
 
 
 class MouzaOut(BaseModel):

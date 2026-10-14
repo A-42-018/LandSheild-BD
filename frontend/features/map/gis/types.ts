@@ -153,7 +153,7 @@ export function select(sel: GisSelection, level: keyof GisSelection, id: string)
   }
 }
 
-/** Search-hit levels the parcel map uses (it stops at upazila; mouzas live on the mouza map page). */
+/** Search-hit levels the parcel map uses (it stops at upazila). */
 export const ADMIN_LEVELS: SearchHitDto["level"][] = ["division", "district", "upazila"];
 
 /** The menu selection a search hit stands for (its own level plus every parent). */
@@ -176,7 +176,7 @@ export function mouzasInUnion(list: MouzaDto[], unionId: string): MouzaDto[] {
   return unionId ? list.filter((m) => m.union_id === unionId) : list;
 }
 
-/** "RS 001" - survey and sheet number as printed on the mouza map. */
+/** "RS 001" - survey and sheet number as printed on a map sheet. */
 export function sheetRef(s: SheetRefDto): string {
   return s.survey ? `${s.survey} ${s.sheet_no}` : s.sheet_no;
 }
