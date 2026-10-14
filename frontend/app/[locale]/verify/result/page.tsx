@@ -13,7 +13,7 @@ export default function ResultPage({
   const raw = searchParams.land_id;
   const landId = (Array.isArray(raw) ? raw[0] : raw)?.trim() || undefined;
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto">
       <RequireRole>
         <ResultView landId={landId} />
       </RequireRole>

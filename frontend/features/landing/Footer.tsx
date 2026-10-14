@@ -10,7 +10,7 @@ export default function Footer() {
   const t = useTranslations();
   return (
     <footer className="mt-8 border-t-2 border-accent bg-strip text-sm text-white/90 print:hidden">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-8 sm:grid-cols-2 lg:grid-cols-4">
         <nav aria-label={t("landing.footerNav")} className="contents">
           <div>
             <p className={HEAD}>{t("footer.services")}</p>
@@ -47,11 +47,11 @@ export default function Footer() {
           </div>
         </nav>
       </div>
-      <div className="mx-auto max-w-6xl px-4 pb-4">
+      <div className="mx-auto max-w-[1200px] px-4 pb-4">
         <p>{t("landing.disclaimer")}</p>
       </div>
       <div className="border-t border-white/20">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs">
+        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs">
           <p>
             {t("common.demoLabel")} · {t("footer.version")} · {t("footer.updated")}
           </p>

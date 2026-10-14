@@ -23,7 +23,7 @@ export default function TopStrip() {
 
   return (
     <div className="bg-strip text-[13px] text-white/95 print:hidden" data-testid="top-strip">
-      <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-x-4 gap-y-0.5 px-4 py-0.5">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-x-4 gap-y-0.5 px-4 py-0.5">
         <p className="py-1">{t("notice")}</p>
         <div className="flex items-center gap-3">
           <div role="group" aria-label={t("textSize")} className="inline-flex items-center gap-0.5">
