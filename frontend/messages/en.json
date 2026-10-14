@@ -984,7 +984,7 @@
     "terms": "Terms",
     "licence": "MIT licence",
     "version": "Version 1.0 (demo)",
-    "updated": "Last updated 06 Oct 2026"
+    "updated": "Last updated 14 Oct 2026"
   },
   "strip": {
     "notice": "Demo e-governance prototype · Not a government website",
@@ -1459,5 +1459,179 @@
     "errorBody": "This page could not be loaded. Please try again.",
     "retry": "Try again",
     "goHome": "Go to the home page"
+  },
+  "info": {
+    "updated": "Last updated {date}",
+    "updatedDate": "14 Oct 2026",
+    "faq": {
+      "title": "Frequently asked questions",
+      "purpose": "Short answers about what LandShield BD does and does not do.",
+      "q1": {
+        "q": "What is LandShield BD?",
+        "a": "A demonstration web app that shows how digital land-record checks, document verification and risk indicators could work. It runs on synthetic sample data."
+      },
+      "q2": {
+        "q": "Is this an official government service?",
+        "a": "No. It is not a government system and its results are not official land records. It has no connection to any land office."
+      },
+      "q3": {
+        "q": "Which land records does it contain?",
+        "a": "Only invented parcels, owners and documents created for the demo. See the Data sources page for the full list."
+      },
+      "q4": {
+        "q": "How do I check a plot?",
+        "a": "Choose \"Verify land\", pick the district and upazila, then enter the mouza, khatian and dag number. You see the recorded details, history and risk indicators."
+      },
+      "q5": {
+        "q": "What does the risk level mean?",
+        "a": "It counts fixed consistency rules that did not match, for example a seller who is not the recorded owner. It points a reviewer to look closer; it is not a finding of fraud."
+      },
+      "q6": {
+        "q": "Can I rely on it before buying land?",
+        "a": "No. Use it only to learn what a check can show. Before any purchase, get official verification from the relevant authority and advice from a qualified lawyer."
+      },
+      "q7": {
+        "q": "Why does every document need human review?",
+        "a": "Text read from a scan can be wrong, especially in Bangla handwriting or poor images. An officer must confirm the extracted fields before a record is approved."
+      },
+      "q8": {
+        "q": "Do I need an account?",
+        "a": "No for the public pages: checking a copy, tracking a mutation, the tools and the map overview. Officers and reviewers sign in to work on records."
+      },
+      "q9": {
+        "q": "How do I change the language or text size?",
+        "a": "Use the language switch and the text-size buttons in the top bar. Your choice is remembered in this browser."
+      }
+    },
+    "accessibility": {
+      "title": "Accessibility statement",
+      "purpose": "What we have built in so far, what is still weak, and how to tell us.",
+      "s1": {
+        "title": "What is in place",
+        "body": "We aim to meet WCAG 2.1 level AA. These are the features you can use today:",
+        "items": {
+          "i1": "Bangla first, with English one click away",
+          "i2": "Text-size buttons and a light or dark theme in the top bar",
+          "i3": "Full keyboard use, a visible focus ring and a skip-to-content link",
+          "i4": "Touch targets of at least 44 px",
+          "i5": "Status shown by icon and text, never by colour alone",
+          "i6": "Print styles for reports"
+        }
+      },
+      "s2": {
+        "title": "Known gaps",
+        "body": "This is a student demo and has not had a full audit with assistive technology. Known gaps:",
+        "items": {
+          "i1": "The interactive map is mainly visual; the place menu and search give the same places as text",
+          "i2": "Charts have text summaries nearby but not full data tables everywhere",
+          "i3": "Bangla text from scanned documents may be misread by OCR",
+          "i4": "PDF reports have not been tested with screen readers"
+        }
+      },
+      "s3": {
+        "title": "Tell us about a problem",
+        "body": "If something does not work for you, email support@landshield.demo with the page address and what happened. This is a demo address with no guaranteed reply time."
+      }
+    },
+    "privacy": {
+      "title": "Privacy notice",
+      "purpose": "What this demo stores about you and why.",
+      "s1": {
+        "title": "What we store",
+        "body": "Public pages need no account and do not ask for personal details. Signed-in staff accounts and their work create these records:",
+        "items": {
+          "i1": "Account: name, email address, role and preferred language",
+          "i2": "Documents an officer uploads and the fields extracted from them",
+          "i3": "An audit log of who did what, in which role, and when"
+        }
+      },
+      "s2": {
+        "title": "Browser storage",
+        "body": "We keep only what the site needs to work:",
+        "items": {
+          "i1": "Your theme, text size and language",
+          "i2": "A flag that you signed in on this browser, and a sign-in cookie that scripts cannot read",
+          "i3": "No advertising or analytics trackers"
+        }
+      },
+      "s3": {
+        "title": "Third parties",
+        "body": "The map loads background tiles from OpenStreetMap, so that service can see your IP address and the area you view. Nothing else is sent to other companies."
+      },
+      "s4": {
+        "title": "Demo data",
+        "body": "All parcels, owners and documents are synthetic. Do not upload real documents or real personal data. The hosted demo may be reset at any time, which deletes everything stored in it."
+      }
+    },
+    "terms": {
+      "title": "Terms of use",
+      "purpose": "The conditions for using this demonstration.",
+      "s1": {
+        "title": "Demonstration only",
+        "body": "LandShield BD is a prototype built on synthetic data. It is not a government system and does not create, change or certify any real land record."
+      },
+      "s2": {
+        "title": "Please do not",
+        "body": "Use of the site is at your own risk. You agree not to:",
+        "items": {
+          "i1": "Rely on a result as legal proof of ownership or title",
+          "i2": "Upload real personal or confidential documents",
+          "i3": "Scrape, overload or probe the service or its data",
+          "i4": "Try to bypass sign-in, roles or rate limits"
+        }
+      },
+      "s3": {
+        "title": "No legal advice",
+        "body": "Risk indicators and checks help a person look closer. They are not a legal opinion. Consult the relevant authority or a qualified lawyer before acting on a land transaction."
+      },
+      "s4": {
+        "title": "Licence and warranty",
+        "body": "The source code is released under the MIT licence. Third-party data and fonts keep their own licences. The service is provided as is, without any warranty."
+      }
+    },
+    "dataSources": {
+      "title": "Data sources",
+      "purpose": "Where every dataset in this demo comes from.",
+      "s1": {
+        "title": "Land records",
+        "body": "All land, deed and person records are synthetic and invented for this demo. No khatian, deed, owner or plot data was read from any government land-record system."
+      },
+      "s2": {
+        "title": "Open data we use",
+        "body": "Third-party data is simplified and not official:",
+        "items": {
+          "i1": "Division, district and upazila boundaries: geoBoundaries (CC BY 4.0) through the bangladesh-geojson project (ODbL)",
+          "i2": "Map background tiles: OpenStreetMap contributors (ODbL)",
+          "i3": "Fonts: GNU FreeSans for generated PDFs"
+        }
+      },
+      "s3": {
+        "title": "Government portals",
+        "body": "The app and its scripts do not contact any government portal. An earlier version held data collected from such portals; it was removed and nothing from them remains."
+      },
+      "s4": {
+        "title": "Tools that read documents",
+        "body": "Text is read from uploads by Tesseract OCR. An optional AI model can help parse fields when it is switched on. In every case a human reviews the result before approval.",
+        "items": {
+          "i1": "Tesseract OCR (default)",
+          "i2": "Claude by Anthropic (optional, off unless a key is set)"
+        }
+      }
+    },
+    "sitemap": {
+      "title": "Site map",
+      "purpose": "Every public page in one list.",
+      "units": "Land unit converter",
+      "fees": "Fee calculator",
+      "inheritance": "Inheritance calculator",
+      "signup": "Officer sign-up",
+      "officerNote": "Officer and administrator pages open after sign-in and are not listed here.",
+      "groups": {
+        "services": "Services",
+        "tools": "Citizen tools",
+        "information": "Information",
+        "account": "Account"
+      }
+    }
   }
 }

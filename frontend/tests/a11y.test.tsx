@@ -22,6 +22,7 @@ import ReportView from "@/features/report/ReportView";
 import LoginForm from "@/features/auth/LoginForm";
 import ReviewView from "@/features/review/ReviewView";
 import DashboardView from "@/features/officer/DashboardView";
+import { FaqPage, SitemapPage, TextPage } from "@/features/info/InfoPage";
 import OfficerShell from "@/features/officer/OfficerShell";
 
 vi.mock("@/i18n/navigation", () => ({
@@ -216,6 +217,16 @@ const CASES: Case[] = [
     ),
     ready: () => screen.findByTestId("kpi-pending_review"),
   },
+  ...(["faq", "accessibility", "privacy", "terms", "dataSources", "sitemap"] as const).map((ns): Case => ({
+    name: `info-${ns}`,
+    role: null,
+    ui: () => (
+      <main>
+        {ns === "faq" ? <FaqPage /> : ns === "sitemap" ? <SitemapPage /> : <TextPage slug={ns === "dataSources" ? "data-sources" : ns} />}
+      </main>
+    ),
+    ready: (m) => screen.findByRole("heading", { level: 1, name: m.info[ns].title }),
+  })),
 ];
 
 describe("axe — no violations on key pages (P54)", () => {

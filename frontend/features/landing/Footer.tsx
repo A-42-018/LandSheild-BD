@@ -5,7 +5,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 const LINK = "rounded text-white/90 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
 const HEAD = "mb-2 font-semibold text-white";
 
-/** Footer (U3, roadmap 4.5 item 5): dark band, 4 columns. Only links to routes that exist; the rest is plain text. */
+/** Footer (U3, roadmap 4.5 item 5): dark band, 4 columns.  */
 export default function Footer() {
   const t = useTranslations();
   return (
@@ -25,23 +25,24 @@ export default function Footer() {
             <p className={HEAD}>{t("footer.aboutTitle")}</p>
             <ul className="flex flex-col gap-1.5">
               <li><Link href="/about" className={LINK}>{t("footer.howItWorks")}</Link></li>
-              <li>{t("footer.dataSources")}</li>
+              <li><Link href="/data-sources" className={LINK}>{t("footer.dataSources")}</Link></li>
               <li>{t("footer.disclaimerShort")}</li>
             </ul>
           </div>
           <div>
             <p className={HEAD}>{t("footer.help")}</p>
             <ul className="flex flex-col gap-1.5">
-              <li>{t("footer.faq")}</li>
-              <li>{t("footer.accessibility")}</li>
+              <li><Link href="/faq" className={LINK}>{t("footer.faq")}</Link></li>
+              <li><Link href="/accessibility" className={LINK}>{t("footer.accessibility")}</Link></li>
+              <li><Link href="/sitemap" className={LINK}>{t("info.sitemap.title")}</Link></li>
               <li>{t("footer.contact")}: support@landshield.demo</li>
             </ul>
           </div>
           <div>
             <p className={HEAD}>{t("footer.legal")}</p>
             <ul className="flex flex-col gap-1.5">
-              <li>{t("footer.privacy")}</li>
-              <li>{t("footer.terms")}</li>
+              <li><Link href="/privacy" className={LINK}>{t("footer.privacy")}</Link></li>
+              <li><Link href="/terms" className={LINK}>{t("footer.terms")}</Link></li>
               <li>{t("footer.licence")}</li>
             </ul>
           </div>
