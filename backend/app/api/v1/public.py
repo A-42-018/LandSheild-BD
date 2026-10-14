@@ -6,6 +6,12 @@ from app.core.config import Settings
 from app.core.db import get_db
 from app.core.errors import AppError
 from app.core.ratelimit import check_rate
+from app.schemas.feedback import (
+    FeedbackIn,
+    FeedbackReceipt,
+    PageRatingIn,
+    PublicFeedbackStatus,
+)
 from app.schemas.public import (
     DocumentVerifyBody,
     DocumentVerifyOut,
@@ -15,7 +21,8 @@ from app.schemas.public import (
     PublicSignature,
     PublicVerify,
 )
-from app.services import doc_verify, signing
+from app.services import audit, doc_verify, signing
+from app.services import feedback as feedback_svc
 from app.services import public as svc
 from app.services.upload_validation import MAX_UPLOAD_BYTES
 
@@ -119,3 +126,47 @@ def verify_document_fields(
     check_rate("verify-doc", ip, settings.verify_doc_rate_limit_per_min)
     response.headers["Cache-Control"] = "no-store"
     return doc_verify.compare(db, body.deed_no, body.fields)
+
+
+@router.post("/feedback", response_model=FeedbackReceipt, status_code=201)
+def submit_feedback(
+    body: FeedbackIn,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> FeedbackReceipt:
+    ip = request.client.host if request.client else "unknown"
+    check_rate("feedback", ip, settings.feedback_rate_limit_per_min)
+    response.headers["Cache-Control"] = "no-store"
+    row = feedback_svc.create(db, body)
+    audit.log(db, None, "FEEDBACK_SUBMIT", "feedback", row.id, new={"kind": row.kind}, ip=ip)
+    db.commit()
+    return FeedbackReceipt(
+        reference_no=row.reference_no, status=row.status, created_at=row.created_at
+    )
+
+
+@router.post("/page-rating", status_code=204)
+def rate_page(
+    body: PageRatingIn,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> None:
+    ip = request.client.host if request.client else "unknown"
+    check_rate("feedback", ip, settings.feedback_rate_limit_per_min)
+    feedback_svc.rate_page(db, body)
+
+
+@router.get("/feedback/{reference_no}", response_model=PublicFeedbackStatus)
+def feedback_status(
+    reference_no: str,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> PublicFeedbackStatus:
+    _guard(request, response, settings)
+    return feedback_svc.public_status(db, reference_no)

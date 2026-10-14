@@ -25,6 +25,7 @@ import DashboardView from "@/features/officer/DashboardView";
 import { FaqPage, SitemapPage, TextPage } from "@/features/info/InfoPage";
 import ServicesPage from "@/features/services/ServicesPage";
 import WhatYouNeed from "@/features/services/WhatYouNeed";
+import FeedbackForm from "@/features/feedback/FeedbackForm";
 import OfficerShell from "@/features/officer/OfficerShell";
 
 vi.mock("@/i18n/navigation", () => ({
@@ -241,6 +242,12 @@ const CASES: Case[] = [
     role: null,
     ui: () => <main><WhatYouNeed service="track" /></main>,
     ready: (m) => screen.findByRole("heading", { name: m.services.whatYouNeed }),
+  },
+  {
+    name: "feedback",
+    role: null,
+    ui: () => <main><FeedbackForm /></main>,
+    ready: (m) => screen.findByRole("heading", { level: 1, name: m.feedback.title }),
   },
 ];
 

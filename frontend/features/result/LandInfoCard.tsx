@@ -3,6 +3,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { Compass, Hash, Landmark, MapPin, Map as MapIcon, Ruler, ShieldCheck, Users, type LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui";
 import StatusBadge from "@/components/domain/StatusBadge";
+import { districtName, upazilaName } from "@/lib/geo";
+import { localDigits } from "@/lib/intl-locale";
 import { formatArea } from "./format";
 import type { LandInfo } from "./types";
 
@@ -18,11 +20,11 @@ export default function LandInfoCard({ land, chip }: { land: LandInfo; chip?: Re
   const unit = useUnitLabel();
   const rows: [string, React.ReactNode, LucideIcon][] = [
     [t("landId"), <span key="id" className="font-mono">{land.land_id}</span>, Hash],
-    [t("district"), land.district, MapPin],
-    [t("upazila"), land.upazila, MapPin],
+    [t("district"), districtName(land.district, locale), MapPin],
+    [t("upazila"), upazilaName(land.district, land.upazila, locale), MapPin],
     [t("mouza"), land.mouza, MapIcon],
-    [t("khatian"), land.khatian_no, Compass],
-    [t("dag"), land.dag_no, Compass],
+    [t("khatian"), localDigits(land.khatian_no, locale), Compass],
+    [t("dag"), localDigits(land.dag_no, locale), Compass],
     [t("area"), formatArea(land.area, land.area_unit, locale, unit(land.area_unit)), Ruler],
     [t("status"), <StatusBadge key="s" code={land.status} />, ShieldCheck],
   ];

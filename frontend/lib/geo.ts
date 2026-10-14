@@ -355,3 +355,13 @@ export const upazilasOf = (district: string): GeoOption[] =>
 
 /** Place names always show both scripts, e.g. "Dhaka (ঢাকা)", whatever the site language. */
 export const labelOf = (o: GeoOption, _locale?: string): string => o.bn ? `${o.en} (${o.bn})` : o.en;
+
+/** Display name of a district / upazila in the active locale (Bangla under `bn` when known, else the stored name). */
+export const districtName = (value: string, locale: string): string =>
+  locale === "bn" ? (DISTRICTS.find((d) => d.value === value)?.bn || value) : value;
+
+export const upazilaName = (district: string, value: string, locale: string): string => {
+  if (locale !== "bn") return value;
+  const hit = upazilasOf(district).find((u) => u.value === value) ?? DISTRICTS.flatMap((d) => d.upazilas).find((u) => u.value === value);
+  return hit?.bn || value;
+};

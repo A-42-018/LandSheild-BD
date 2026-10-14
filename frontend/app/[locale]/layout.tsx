@@ -6,6 +6,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { routing } from "@/i18n/routing";
 import Header from "@/components/Header";
 import Footer from "@/features/landing/Footer";
+import PageHelpful from "@/features/feedback/PageHelpful";
 import Providers from "@/features/Providers";
 import "../globals.css";
 
@@ -60,6 +61,7 @@ export default async function LocaleLayout({
           </div>
           <main id="main" className="mx-auto max-w-[1200px] px-4 py-8 print:max-w-none print:p-0">
             {children}
+            <PageHelpful />
           </main>
           <Footer />
           </Providers>

@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     auth_rate_limit_per_min: int = 10
     public_rate_limit_per_min: int = 60
     verify_doc_rate_limit_per_min: int = 10
+    feedback_rate_limit_per_min: int = 5
     upload_rate_limit_per_hour: int = 20  # per user (R4)
     cors_origins: str = "http://localhost:3000"
     storage_path: str = "./storage"

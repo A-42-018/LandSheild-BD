@@ -6,6 +6,7 @@ from app.api.v1 import (
     archive,
     auth,
     documents,
+    feedback,
     gis,
     health,
     lands,
@@ -33,6 +34,7 @@ api_router.include_router(documents.router)
 api_router.include_router(archive.router)
 api_router.include_router(mutations.router)
 api_router.include_router(officer.router)
+api_router.include_router(feedback.router)
 api_router.include_router(risk.router)
 api_router.include_router(verification.router)
 api_router.include_router(public.router)

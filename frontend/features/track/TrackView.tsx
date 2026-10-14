@@ -5,9 +5,11 @@ import { Check, CircleDashed, Clock, Minus, Search, Route, XCircle, type LucideI
 import { useMutation } from "@tanstack/react-query";
 import { Button, Card, Input } from "@/components/ui";
 import PageHeader from "@/components/PageHeader";
+import WhatYouNeed from "@/features/services/WhatYouNeed";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
 import { formatDate } from "@/features/result/format";
+import { FEEDBACK_REF, type PublicFeedbackStatus } from "@/features/feedback/types";
 import { MUTATION_NO, normaliseNo, type MutationStatusDto, type TrackStepState } from "./types";
 
 /** State = icon + text + colour (roadmap 4.2 rule 4), theme tokens only. */
@@ -53,6 +55,7 @@ export function Stepper({ data }: { data: MutationStatusDto }) {
 export default function TrackView() {
   const t = useTranslations("track");
   const tm = useTranslations("mutation");
+  const tf = useTranslations("feedback");
   const locale = useLocale();
   const { api } = useAuth();
   const [no, setNo] = useState("");
@@ -62,10 +65,14 @@ export default function TrackView() {
     mutationFn: (n) => api.request<MutationStatusDto>(`/public/mutation-status/${encodeURIComponent(n)}`, { anonymous: true }),
   });
 
+  const f = useMutation<PublicFeedbackStatus, ApiError, string>({
+    mutationFn: (n) => api.request<PublicFeedbackStatus>(`/public/feedback/${encodeURIComponent(n)}`, { anonymous: true }),
+  });
+
   const apiErr = (() => {
-    const e = m.error;
+    const e = m.error ?? f.error;
     if (!e) return null;
-    if (e.status === 404 || e.code === "MUTATION_NOT_FOUND") return "notFound";
+    if (e.status === 404 || e.code === "MUTATION_NOT_FOUND" || e.code === "FEEDBACK_NOT_FOUND") return "notFound";
     if (e.status === 429) return "rateLimited";
     if (e.code === "NETWORK_ERROR") return "network";
     return "generic";
@@ -74,18 +81,25 @@ export default function TrackView() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const n = normaliseNo(no);
-    const ok = MUTATION_NO.test(n);
+    const isFeedback = FEEDBACK_REF.test(n);
+    const ok = isFeedback || MUTATION_NO.test(n);
     setInvalid(!ok);
-    if (ok) m.mutate(n);
+    if (!ok) return;
+    m.reset();
+    f.reset();
+    if (isFeedback) f.mutate(n);
+    else m.mutate(n);
   };
 
   const d = m.data;
+  const fb = f.data;
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t("title")} purpose={t("purpose")} />
       <p role="note" className="rounded-md border border-line bg-surface-muted px-4 py-2 text-sm font-medium text-ink">
         {t("demoNote")}
       </p>
+      <WhatYouNeed service="track" />
       <Card title={t("formTitle")} icon={<Route />} accent="primary">
         <form onSubmit={submit} noValidate className="flex flex-col gap-4">
           <Input
@@ -103,12 +117,39 @@ export default function TrackView() {
               {t(`errors.${apiErr}`)}
             </p>
           )}
-          <Button type="submit" loading={m.isPending} icon={<Search />} className="w-full sm:w-auto">
+          <Button type="submit" loading={m.isPending || f.isPending} icon={<Search />} className="w-full sm:w-auto">
             {t("submit")}
           </Button>
         </form>
       </Card>
       <div aria-live="polite">
+        {fb && (
+          <Card title={<span className="font-mono">{fb.reference_no}</span>} variant="record" data-testid="feedback-status">
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+              <div>
+                <dt className="text-xs text-ink-muted">{t("kind")}</dt>
+                <dd className="font-medium text-ink">{tf(`kinds.${fb.kind}`)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-ink-muted">{t("status")}</dt>
+                <dd className="font-medium text-ink" data-testid="feedback-state">{tf(`status.${fb.status}`)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-ink-muted">{t("applied")}</dt>
+                <dd className="font-medium text-ink">{formatDate(fb.created_at, locale, "-")}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-ink-muted">{t("lastUpdate")}</dt>
+                <dd className="font-medium text-ink">{formatDate(fb.updated_at, locale, "-")}</dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="text-xs text-ink-muted">{t("response")}</dt>
+                <dd className="font-medium text-ink">{fb.response ?? t("noResponse")}</dd>
+              </div>
+            </dl>
+            <p className="mt-5 text-sm text-ink-muted">{t("feedbackPrivacy")}</p>
+          </Card>
+        )}
         {d && (
           <Card title={<span className="font-mono">{d.mutation_no}</span>} variant="record" data-testid="track-result">
             <dl className="mb-5 grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">

@@ -18,6 +18,6 @@ export const FAQ_IDS = ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"] as
 export const SITEMAP_GROUPS = [
   { id: "services", links: [["/services", "services.title"], ["/verify", "nav.verify"], ["/check", "nav.check"], ["/track", "nav.track"], ["/verify-document", "nav.verifyDoc"], ["/map", "nav.map"]] },
   { id: "tools", links: [["/tools", "tools.title"], ["/tools/units", "info.sitemap.units"], ["/tools/fees", "info.sitemap.fees"], ["/tools/inheritance", "info.sitemap.inheritance"]] },
-  { id: "information", links: [["/about", "nav.about"], ["/faq", "info.faq.title"], ["/accessibility", "info.accessibility.title"], ["/privacy", "info.privacy.title"], ["/terms", "info.terms.title"], ["/data-sources", "info.dataSources.title"], ["/sitemap", "info.sitemap.title"]] },
+  { id: "information", links: [["/about", "nav.about"], ["/faq", "info.faq.title"], ["/feedback", "feedback.title"], ["/accessibility", "info.accessibility.title"], ["/privacy", "info.privacy.title"], ["/terms", "info.terms.title"], ["/data-sources", "info.dataSources.title"], ["/sitemap", "info.sitemap.title"]] },
   { id: "account", links: [["/login", "nav.login"], ["/officer-signup", "info.sitemap.signup"]] },
 ] as const;

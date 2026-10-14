@@ -25,7 +25,7 @@ export interface AuditParams {
 }
 
 export const AUDIT_PAGE_SIZE = 20;
-export const AUDIT_ENTITIES = ["user", "document", "transaction", "fraud_alert", "verification_request"];
+export const AUDIT_ENTITIES = ["user", "document", "transaction", "fraud_alert", "verification_request", "feedback"];
 
 /* ---- P37 admin console ---- */
 export type RoleCode = "CITIZEN" | "REVIEWER" | "OFFICER" | "ADMIN";

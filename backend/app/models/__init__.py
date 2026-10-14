@@ -16,6 +16,7 @@ from app.models.enums import (
     TransactionType,
     VerificationStatus,
 )
+from app.models.feedback import Feedback
 from app.models.land_office import LandOffice, OfficerRequest
 from app.models.land_parcel import LandParcel
 from app.models.ledger import LedgerEntry
@@ -35,6 +36,7 @@ __all__ = [
     "DocumentStatus",
     "EncumbranceStatus",
     "EncumbranceType",
+    "Feedback",
     "FraudAlert",
     "LandEncumbrance",
     "LandOffice",

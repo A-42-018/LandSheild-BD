@@ -34,6 +34,7 @@ export default function Footer() {
             <p className={HEAD}>{t("footer.help")}</p>
             <ul className="flex flex-col gap-1.5">
               <li><Link href="/faq" className={LINK}>{t("footer.faq")}</Link></li>
+              <li><Link href="/feedback" className={LINK}>{t("feedback.title")}</Link></li>
               <li><Link href="/accessibility" className={LINK}>{t("footer.accessibility")}</Link></li>
               <li><Link href="/sitemap" className={LINK}>{t("info.sitemap.title")}</Link></li>
               <li>{t("footer.contact")}: support@landshield.demo</li>

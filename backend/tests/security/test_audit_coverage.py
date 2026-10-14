@@ -19,6 +19,9 @@ AUDIT = {
     ("POST", f"{P}/auth/refresh"): None,  # session plumbing: runs on every page load, would drown the log
     ("POST", f"{P}/public/verify-document"): None,  # F4b: anonymous read-only comparison, nothing written
     ("POST", f"{P}/public/verify-document/fields"): None,  # F4b: same, JSON mode
+    ("POST", f"{P}/public/feedback"): "FEEDBACK_SUBMIT",
+    ("POST", f"{P}/public/page-rating"): None,  # anonymous one-click rating, stored as its own row; would drown the log
+    ("PATCH", f"{P}/feedback/{{feedback_id}}"): "FEEDBACK_UPDATE",
     ("POST", f"{P}/verification"): "VERIFICATION_CREATE",
     ("POST", f"{P}/documents/upload"): "DOCUMENT_UPLOAD",
     ("POST", f"{P}/documents/{{document_id}}/process"): "DOCUMENT_PROCESS",
@@ -164,6 +167,19 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     _audited(env, "OFFICER_REQUEST_REJECT", lambda: env.post(
         f"{P}/admin/officer-requests/{rid[1]}/reject", json={"reason": "Not verified"}, headers=adm))  # fmt: skip
     mark("POST", f"{P}/admin/officer-requests/{{request_id}}/reject")
+
+    fb = _audited(env, "FEEDBACK_SUBMIT", lambda: env.post(f"{P}/public/feedback", json={
+        "kind": "GRIEVANCE", "subject": "Audit subject", "message": "Audit message body"}))  # fmt: skip
+    mark("POST", f"{P}/public/feedback")
+    before = _ids(env)
+    assert env.post(f"{P}/public/page-rating", json={"page": "/faq", "helpful": True}).status_code == 204
+    mark("POST", f"{P}/public/page-rating")
+    assert _ids(env) == before, "page ratings must not write audit rows"
+    fid = env.get(f"{P}/feedback", headers=off).json()["items"][0]["id"]
+    assert fb.json()["reference_no"]
+    _audited(env, "FEEDBACK_UPDATE", lambda: env.patch(
+        f"{P}/feedback/{fid}", json={"status": "IN_REVIEW"}, headers=off))  # fmt: skip
+    mark("PATCH", f"{P}/feedback/{{feedback_id}}")
 
     assert ran == set(AUDIT), f"write routes with no scenario: {set(AUDIT) - ran}"
 

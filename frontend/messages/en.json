@@ -596,7 +596,8 @@
       "audit": "Audit log",
       "admin": "Administration",
       "mutations": "Mutations",
-      "archive": "Archive search"
+      "archive": "Archive search",
+      "feedback": "Feedback and grievance"
     },
     "kpi": {
       "title": "Key figures",
@@ -685,7 +686,9 @@
         "RISK_ALERT_UPDATE": "Risk alert updated",
         "VERIFICATION_CREATE": "Verification requested",
         "USER_CREATE": "User created",
-        "USER_UPDATE": "User updated"
+        "USER_UPDATE": "User updated",
+        "FEEDBACK_SUBMIT": "Feedback submitted",
+        "FEEDBACK_UPDATE": "Feedback handled"
       }
     },
     "purpose": "Queue, alerts and key figures for the demo records."
@@ -718,7 +721,8 @@
         "document": "Document",
         "transaction": "Transaction",
         "fraud_alert": "Risk alert",
-        "verification_request": "Verification request"
+        "verification_request": "Verification request",
+        "feedback": "Feedback"
       }
     },
     "console": {
@@ -1239,8 +1243,8 @@
     "purpose": "See where a mutation (namjari) application stands. No sign-in needed.",
     "demoNote": "Demo data. This is not an official government service.",
     "formTitle": "Find your application",
-    "number": "Mutation number",
-    "numberHint": "Format MUT-2026-0001, as shown on your application.",
+    "number": "Mutation number or feedback reference",
+    "numberHint": "Format MUT-2026-0001 for a mutation, or FB-2026-00001 for a feedback reference.",
     "submit": "Track status",
     "status": "Status",
     "office": "AC Land office",
@@ -1273,7 +1277,12 @@
       "network": "We couldn't reach the server. Check your connection and try again.",
       "generic": "We couldn't load this status. Please try again."
     },
-    "example": "MUT-2026-0001"
+    "example": "MUT-2026-0001",
+    "kind": "Type",
+    "lastUpdate": "Last updated",
+    "response": "Reply",
+    "noResponse": "No reply yet.",
+    "feedbackPrivacy": "Only the type, status, dates and our reply are shown. Your message and contact details are not available here."
   },
   "archive": {
     "title": "Archive search",
@@ -1735,6 +1744,76 @@
           "n2": "Upload the file.",
           "n3": "Read whether it matches the signed record."
         }
+      }
+    }
+  },
+  "feedback": {
+    "title": "Feedback and grievance",
+    "purpose": "Tell us what is wrong, what works and what to improve. You get a reference number to follow up.",
+    "demoNote": "Demo service. Do not write real personal or confidential details.",
+    "formTitle": "Send your message",
+    "kind": "Type",
+    "kinds": {
+      "GRIEVANCE": "Grievance (complaint)",
+      "FEEDBACK": "Feedback",
+      "SUGGESTION": "Suggestion"
+    },
+    "subject": "Subject",
+    "message": "Your message",
+    "messageHint": "{count} characters left",
+    "email": "Email (optional)",
+    "emailHint": "Only if you want a reply. It is never shown on the tracking page.",
+    "submit": "Send",
+    "errors": {
+      "subject": "Enter a subject of at least 3 characters.",
+      "message": "Write at least 10 characters.",
+      "email": "Enter a valid email address or leave it empty.",
+      "rateLimited": "Too many messages. Please wait a minute and try again.",
+      "network": "We couldn't reach the server. Check your connection and try again.",
+      "generic": "We couldn't send your message. Please try again."
+    },
+    "receipt": {
+      "title": "Message received",
+      "body": "Thank you. Your message was recorded with this reference number:",
+      "ref": "Reference number",
+      "keep": "Write it down: it is the only way to check the status later.",
+      "trackLink": "Check the status on the tracking page"
+    },
+    "status": {
+      "RECEIVED": "Received",
+      "IN_REVIEW": "Under review",
+      "RESOLVED": "Resolved",
+      "CLOSED": "Closed"
+    },
+    "helpful": {
+      "label": "Page feedback",
+      "question": "Was this page helpful?",
+      "yes": "Yes",
+      "no": "No",
+      "thanks": "Thank you for your feedback.",
+      "more": "Tell us more",
+      "failed": "We couldn't save your answer. Please try again."
+    },
+    "admin": {
+      "title": "Feedback and grievances",
+      "purpose": "Messages sent by the public. Set a status and write a reply that the sender sees on the tracking page.",
+      "summary": "{open} open · page ratings: {helpful} helpful, {notHelpful} not helpful",
+      "filter": "Status",
+      "all": "All",
+      "empty": "No messages yet.",
+      "handle": "Handle",
+      "cancel": "Cancel",
+      "save": "Save",
+      "contact": "Contact",
+      "reply": "Reply shown to the sender",
+      "replyHint": "Do not include personal details. Anyone with the reference number can read this reply.",
+      "cols": {
+        "ref": "Reference",
+        "kind": "Type",
+        "subject": "Subject",
+        "received": "Received",
+        "status": "Status",
+        "action": "Action"
       }
     }
   }

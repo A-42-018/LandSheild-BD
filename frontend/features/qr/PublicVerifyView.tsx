@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CircleSlash, ShieldCheck, ShieldX, type LucideIcon } from "lucide-react";
+import { districtName, upazilaName } from "@/lib/geo";
 import { Card, EmptyState, ErrorState, LoadingState } from "@/components/ui";
 import PageHeader from "@/components/PageHeader";
 import RiskBadge from "@/components/domain/RiskBadge";
@@ -81,11 +82,11 @@ export default function PublicVerifyView({ landId }: { landId: string }) {
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             <div>
               <dt className="text-xs text-ink-muted">{t("publicVerify.district")}</dt>
-              <dd className="font-medium text-ink">{d.district}</dd>
+              <dd className="font-medium text-ink">{districtName(d.district, locale)}</dd>
             </div>
             <div>
               <dt className="text-xs text-ink-muted">{t("publicVerify.upazila")}</dt>
-              <dd className="font-medium text-ink">{d.upazila}</dd>
+              <dd className="font-medium text-ink">{upazilaName(d.district, d.upazila, locale)}</dd>
             </div>
             <div>
               <dt className="text-xs text-ink-muted">{t("publicVerify.mouza")}</dt>
