@@ -96,7 +96,7 @@ export function ServiceTiles() {
   return (
     <Band id="services-title" tone="surface">
       <h2 id="services-title" className={h2}>{t("title")}</h2>
-      <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3">
         {SERVICES.filter((s) => s.key !== "track" || FLAGS.track).map(({ key, href, icon: I }) => (
           <li key={key}>
             <Link
@@ -125,7 +125,7 @@ export function CitizenTools() {
     <Band id="tools-title" tone="muted">
       <h2 id="tools-title" className={h2}>{t("title")}</h2>
       <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
-      <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <ul className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3">
         {TOOL_TILES.map(({ key, href, icon: I }) => (
           <li key={key}>
             <Link href={href} data-testid="tool-tile" className="flex h-full min-h-11 items-start gap-3 rounded-md border border-line bg-surface p-4 transition-colors hover:border-primary hover:bg-primary-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
