@@ -23,7 +23,7 @@ S2-b (user): watch it; optional voice-over; upload (YouTube unlisted or Drive, "
 S1: ✅ (concept note PDF 3 p; only VIDEO_URL left).
 OPEN (carried): EN+BN evidence i18n for ACTIVE_LITIGATION/KHAS_LAND/UNDER_ACQUISITION/ACTIVE_MORTGAGE not done; real OCR (tesseract) path of verify-document untested; ML scoring skipped in plain dev venv; Docker image never built locally; `next build` not run. Ledger chain is only as strong as DB write access (anchoring head hash off-DB is a T1 idea).
 Citizen tools: C1 ✅ C2 ✅ C5 ✅; left C3 → C4 (backend) (cards in roadmap.md §5 "C —"); suggested pairing C1+C2 in one window.
-Next work    : E1 → E6 e-governance UI upgrade (section "E-GOV UPGRADE" below; audit 2026-10-14). E1 first.
+Next work    : E2 → E6 e-governance UI upgrade (section "E-GOV UPGRADE" below). E1 ✅ (2026-10-14): localized not-found (+ catch-all)/error/loading, 1200 px container for strip/header/main/footer/result page, verify placeholders "Select", 2-col tablet form, tab scrollbar fixed. vitest 432, tsc, i18n OK (1127); checked 1366 + 375 px, no horizontal scroll; result-page tabs not visually checked (needs login).
 Next phase   : S2-b upload + VIDEO_URL (user) → S3 submit Round 1 🔒 (both skipped by request; user does them). Re-export the concept note PDF (scripts/export_concept_note.py, needs Chromium): its Bangla-OCR sentence changed.
 Carried over : reseed for demo password (Q17)
 ```
@@ -67,7 +67,7 @@ Carried over : reseed for demo password (Q17)
 | TBA | C3 | Land-tax status row in Check Before You Buy (0008) | Should | ⬜ |
 | TBA | C4 | Watch a plot: in-app change alerts (0009) | Should | ⬜ |
 | TBA | C5 | Inheritance share calculator (ফারায়েজ) | Should | ✅ |
-| Next | E1 | Fix broken basics: 404/error/loading, one container width, form fit, tab scrollbar | Must | ⬜ |
+| Next | E1 | Fix broken basics: 404/error/loading, one container width, form fit, tab scrollbar | Must | ✅ |
 | Next | E2 | Info pages: FAQ, accessibility, privacy, terms, data sources, sitemap + live footer links | Must | ⬜ |
 | Next | E3 | Citizen charter, "what you need" boxes, notice board | Should | ⬜ |
 | Next | E4 | Bangla place names/numerals + feedback/grievance form + "helpful?" prompt | Should | ⬜ |

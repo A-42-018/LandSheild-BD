@@ -178,9 +178,9 @@
     "mouza": "Mouza",
     "khatian": "Khatian No.",
     "dag": "Dag No.",
-    "selectDivision": "Select division",
-    "selectDistrict": "Select district",
-    "selectUpazila": "Select upazila",
+    "selectDivision": "Select",
+    "selectDistrict": "Select",
+    "selectUpazila": "Select",
     "numericHint": "Digits only, e.g. 1245 or ১২৪৫",
     "submit": "Verify",
     "searching": "Processing…",
@@ -1451,5 +1451,13 @@
   "area": {
     "legend": "Filter records by area",
     "all": "All"
+  },
+  "errorPages": {
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The page you are looking for does not exist or has moved.",
+    "errorTitle": "Something went wrong",
+    "errorBody": "This page could not be loaded. Please try again.",
+    "retry": "Try again",
+    "goHome": "Go to the home page"
   }
 }

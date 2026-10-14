@@ -98,9 +98,9 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
         onSubmit={handleSubmit((v) => m.mutate(v))}
         noValidate
         aria-label={compact ? t("title") : undefined}
-        className={compact ? "grid grid-cols-2 items-start gap-3 lg:grid-cols-7" : "grid grid-cols-1 items-start gap-4 md:grid-cols-3"}
+        className={compact ? "grid grid-cols-2 items-start gap-3 lg:grid-cols-7" : "grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3"}
       >
-        {!compact && <p className="text-ink-muted md:col-span-3">{t("intro")}</p>}
+        {!compact && <p className="text-ink-muted sm:col-span-2 lg:col-span-3">{t("intro")}</p>}
         <Select
           label={t("division")}
           placeholder={t("selectDivision")}
@@ -210,11 +210,11 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
           type="submit"
           loading={m.isPending}
           icon={<Search />}
-          className={compact ? "mt-6 w-full" : "w-full md:col-span-3"}
+          className={compact ? "mt-6 w-full" : "w-full sm:col-span-2 lg:col-span-3"}
         >
           {m.isPending ? t("searching") : t("submit")}
         </Button>
-        {!compact && <p className="text-xs text-ink-muted md:col-span-3">{t("demoNote")}</p>}
+        {!compact && <p className="text-xs text-ink-muted sm:col-span-2 lg:col-span-3">{t("demoNote")}</p>}
       </form>
   );
 

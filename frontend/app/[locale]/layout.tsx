@@ -58,7 +58,7 @@ export default async function LocaleLayout({
           <div className="contents print:hidden">
             <Header />
           </div>
-          <main id="main" className="mx-auto max-w-6xl px-4 py-8 print:max-w-none print:p-0">
+          <main id="main" className="mx-auto max-w-[1200px] px-4 py-8 print:max-w-none print:p-0">
             {children}
           </main>
           <Footer />
