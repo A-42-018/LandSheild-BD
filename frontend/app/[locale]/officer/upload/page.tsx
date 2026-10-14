@@ -1,13 +1,16 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import RequireRole from "@/features/auth/RequireRole";
 import { OFFICER_UP } from "@/features/auth/roles";
+import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import UploadForm from "@/features/upload/UploadForm";
 
-export default function UploadPage({ params: { locale } }: { params: { locale: string } }) {
+export default async function UploadPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
+  const t = await getTranslations({ locale });
   return (
-    <div className="mx-auto max-w-xl">
+    <div className="mx-auto flex max-w-xl flex-col gap-4">
       <RequireRole roles={OFFICER_UP}>
+        <OfficerPageHeader title={t("upload.title")} purpose={t("upload.purpose")} />
         <UploadForm />
       </RequireRole>
     </div>

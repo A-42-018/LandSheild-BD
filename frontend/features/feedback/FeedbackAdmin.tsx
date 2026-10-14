@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { MessageSquare } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button, Card, ErrorState, LoadingState, Modal, Select, Table, type Column } from "@/components/ui";
-import PageHeader from "@/components/PageHeader";
+import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import { ApiError } from "@/lib/api";
 import { localDigits } from "@/lib/intl-locale";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -55,7 +55,7 @@ export default function FeedbackAdmin() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title={t("title")} purpose={t("purpose")} crumbs={[{ label: te("officerCrumb"), href: "/officer" }]} />
+      <OfficerPageHeader title={t("title")} purpose={t("purpose")} />
       {q.isPending && <LoadingState />}
       {q.isError && <ErrorState onRetry={() => q.refetch()} />}
       {q.data && (

@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { FileCheck2, Zap } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
-import PageHeader from "@/components/PageHeader";
+import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { Badge, Card, ErrorState, LoadingState, Table, Tabs, type Column } from "@/components/ui";
 import { formatArea, formatDate } from "@/features/result/format";
@@ -80,7 +80,7 @@ export default function MutationQueue() {
 
   return (
     <div className="flex flex-col gap-4">
-    <PageHeader title={t("title")} purpose={t("purpose")} crumbs={[{ label: te("officerCrumb"), href: "/officer" }]} />
+    <OfficerPageHeader title={t("title")} purpose={t("purpose")} />
     <Card icon={<FileCheck2 />} accent="primary">
       <div className="mb-4">
         <AreaFilter value={area} onChange={(a) => { setArea(a); setPage(1); }} />

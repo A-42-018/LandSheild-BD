@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Archive, ClipboardList, FileCheck2, LayoutDashboard, MessageSquare, ScrollText, ShieldCheck, Upload, type LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Button } from "@/components/ui";
+import IdleTimeout from "@/features/auth/IdleTimeout";
 import { useAuth } from "@/features/auth/AuthContext";
 import { ADMIN_ONLY, hasRole, OFFICER_UP, REVIEW_UP, type Role } from "@/features/auth/roles";
 
@@ -74,6 +75,7 @@ export default function OfficerShell({ children }: { children: ReactNode }) {
         </nav>
       </aside>
       <div className="min-w-0 flex-1">{children}</div>
+      <IdleTimeout />
     </div>
   );
 }

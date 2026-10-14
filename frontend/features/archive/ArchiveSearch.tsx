@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Archive, RotateCcw, Search } from "lucide-react";
 import { ApiError } from "@/lib/api";
-import PageHeader from "@/components/PageHeader";
+import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import { Button, Card, ErrorState, Input, LoadingState, Select, Table, type Column } from "@/components/ui";
 import { ARCHIVE_PAGE_SIZE, SURVEYS, type ArchiveHit, type ArchiveParams } from "./types";
 import { useArchive } from "./useArchive";
@@ -52,7 +52,7 @@ export default function ArchiveSearch() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title={t("title")} purpose={t("purpose")} crumbs={[{ label: te("officerCrumb"), href: "/officer" }]} />
+      <OfficerPageHeader title={t("title")} purpose={t("purpose")} />
       <Card icon={<Archive />} accent="primary">
         <div className="flex flex-col gap-4">
           <form

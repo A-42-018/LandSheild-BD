@@ -23,7 +23,7 @@ S2-b (user): watch it; optional voice-over; upload (YouTube unlisted or Drive, "
 S1: ✅ (concept note PDF 3 p; only VIDEO_URL left).
 OPEN (carried): EN+BN evidence i18n for ACTIVE_LITIGATION/KHAS_LAND/UNDER_ACQUISITION/ACTIVE_MORTGAGE not done; real OCR (tesseract) path of verify-document untested; ML scoring skipped in plain dev venv; Docker image never built locally; `next build` not run. Ledger chain is only as strong as DB write access (anchoring head hash off-DB is a T1 idea).
 Citizen tools: C1 ✅ C2 ✅ C5 ✅; left C3 → C4 (backend) (cards in roadmap.md §5 "C —"); suggested pairing C1+C2 in one window.
-Next work    : E6 e-governance UI upgrade (section "E-GOV UPGRADE" below). E1 ✅ (2026-10-14); E2 ✅ (/faq, /accessibility, /privacy, /terms, /data-sources, /sitemap + live footer links, axe cases); E3 ✅ (/services citizen charter, "what you need" boxes on verify/check/track/verify-document, landing notice board); E4 ✅ (Bangla district/upazila names + digits on result/QR, /feedback + FB- reference on /track, "helpful?" prompt, officer /officer/feedback, migration 0012; owner and mouza names stay as stored: no Bangla data); E5 ✅ (real-browser axe at 360 px + 125 % text on 31 routes x EN/BN, keyboard specs, mouza combobox arrow keys, landmark/heading/link/table fixes; results in docs/ui.md): localized not-found (+ catch-all)/error/loading, 1200 px container for strip/header/main/footer/result page, verify placeholders "Select", 2-col tablet form, tab scrollbar fixed. vitest 432, tsc, i18n OK (1127); checked 1366 + 375 px, no horizontal scroll; result-page tabs not visually checked (needs login).
+Next work    : none from the E-GOV list (E1-E6 done 2026-10-14). Open: C3, C4, S2-b, S3 (user).
 Next phase   : S2-b upload + VIDEO_URL (user) → S3 submit Round 1 🔒 (both skipped by request; user does them). Re-export the concept note PDF (scripts/export_concept_note.py, needs Chromium): its Bangla-OCR sentence changed.
 Carried over : reseed for demo password (Q17)
 ```
@@ -72,7 +72,7 @@ Carried over : reseed for demo password (Q17)
 | Next | E3 | Citizen charter, "what you need" boxes, notice board | Should | ✅ |
 | Next | E4 | Bangla place names/numerals + feedback/grievance form + "helpful?" prompt | Should | ✅ |
 | Next | E5 | Accessibility pass on every route (axe, 125 %, 360 px, keyboard) | Must | ✅ |
-| Next | E6 | Officer-side consistency + session-timeout warning | Could | ⬜ |
+| Next | E6 | Officer-side consistency + session-timeout warning | Could | ✅ |
 
 ## E-GOV UPGRADE (next work) — audit 2026-10-14
 Verdict: the "Formal Green" spec (roadmap §4) is in place — Bangla-first, light default, demo strip, text-size control, service-first hero, breadcrumbs + "data as of", icon+text statuses, 44 px targets, print styles. Still missing for a full e-governance portal: real info pages, error pages, service transparency, consistent layout, Bangla data. Rules: demo only — no Shapla emblem, no gov.bd wording, no real phone numbers; EN+BN parity for every new string.

@@ -1,7 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api";
-import PageHeader from "@/components/PageHeader";
+import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { ErrorState, LoadingState } from "@/components/ui";
 import DocumentPreview from "./DocumentPreview";
@@ -45,10 +45,9 @@ export default function ReviewView({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader
+      <OfficerPageHeader
         title={t("title")}
         purpose={t("purpose")}
-        crumbs={[{ label: te("officerCrumb"), href: "/officer" }]}
         meta={[
           <span key="s" data-testid="review-status">
             <StatusBadge code={d.processing_status} />
