@@ -60,7 +60,7 @@ describe("LoginForm", () => {
     const hint = screen.getByTestId("demo-accounts");
     expect(hint).toHaveTextContent(en.auth.demoTitle);
     expect(hint).not.toHaveTextContent("LandShield2026");
-    fireEvent.click(screen.getByRole("button", { name: "reviewer@demo.landshield.test" }));
+    fireEvent.click(screen.getByRole("button", { name: /reviewer@demo\.landshield\.test/ }));
     expect(screen.getByLabelText(/Email/)).toHaveValue("reviewer@demo.landshield.test");
     expect(screen.getByText(en.auth.notice)).toBeInTheDocument();
   });

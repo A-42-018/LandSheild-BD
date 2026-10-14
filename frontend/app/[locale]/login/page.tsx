@@ -7,9 +7,7 @@ import { LoadingState } from "@/components/ui";
 export default function LoginPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-4">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/logo-mark.svg" alt="" width={48} height={48} className="mx-auto h-12 w-12" />
+    <div className="mx-auto flex max-w-5xl flex-col gap-4">
       <Suspense fallback={<LoadingState />}>
         <LoginForm />
       </Suspense>
