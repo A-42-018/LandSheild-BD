@@ -5,7 +5,7 @@ import OfficerSignup from "@/features/officers/OfficerSignup";
 export default function OfficerSignupPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-4">
+    <div className="mx-auto flex max-w-5xl flex-col gap-4">
       <OfficerSignup />
     </div>
   );

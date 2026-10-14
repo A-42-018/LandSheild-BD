@@ -1,5 +1,5 @@
 "use client";
-import { LogIn, LogOut, User } from "lucide-react";
+import { LogIn, LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -16,6 +16,11 @@ const ICON_BTN =
  * Anonymous → link to sign in. Signed in → opens a panel with name + role, the pages that are
  * not in the header bar (role-filtered) and Sign out.
  */
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0] ?? "?") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+}
+
 export default function UserMenu() {
   const t = useTranslations();
   const { status, user, logout } = useAuth();
@@ -41,8 +46,12 @@ export default function UserMenu() {
 
   if (status === "anonymous") {
     return (
-      <Link href="/login" aria-label={t("nav.login")} title={t("nav.login")} className={ICON_BTN}>
-        <LogIn aria-hidden="true" className="h-5 w-5" />
+      <Link
+        href="/login"
+        className="inline-flex h-10 items-center gap-2 rounded-md border border-white/60 px-4 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+      >
+        <LogIn aria-hidden="true" className="h-4 w-4" />
+        {t("nav.login")}
       </Link>
     );
   }
@@ -63,16 +72,22 @@ export default function UserMenu() {
         onClick={() => setOpen((o) => !o)}
         className={ICON_BTN}
       >
-        <User aria-hidden="true" className="h-5 w-5" />
+        <span aria-hidden="true" className="text-sm font-semibold leading-none">{initials(user.name)}</span>
       </button>
       <div
         id="account-menu"
         hidden={!open}
-        className="absolute inset-x-4 top-full z-50 mt-2 md:inset-x-auto md:right-0 md:w-64 rounded-lg border border-line bg-surface p-2 text-ink shadow-raised"
+        className="absolute inset-x-4 top-full z-50 mt-2 md:inset-x-auto md:right-0 md:w-72 rounded-xl border border-line bg-surface p-2 text-ink shadow-raised"
       >
-        <div className="flex items-center justify-between gap-2 border-b border-line px-2 pb-2 pt-1">
-          <span className="truncate text-sm font-semibold">{user.name}</span>
-          <Badge tone="pending">{t(`roles.${user.role}`)}</Badge>
+        <div className="flex items-center gap-3 border-b border-line px-2 pb-3 pt-2">
+          <span aria-hidden="true" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-fg">
+            {initials(user.name)}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">{user.name}</p>
+            <p className="truncate text-xs text-ink-muted">{user.email}</p>
+            <Badge tone="pending" className="mt-1">{t(`roles.${user.role}`)}</Badge>
+          </div>
         </div>
         {more.length > 0 && (
           <ul className="my-1 space-y-0.5">

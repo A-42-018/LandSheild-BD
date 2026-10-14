@@ -1,4 +1,4 @@
-import { forwardRef, useId, type InputHTMLAttributes } from "react";
+import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from "react";
 import { AlertCircle } from "lucide-react";
 import { cn } from "./cn";
 
@@ -6,10 +6,12 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   hint?: string;
   error?: string;
+  /** Control rendered inside the right edge of the field (e.g. a show-password toggle). */
+  endAdornment?: ReactNode;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, hint, error, id, className, required, ...rest },
+  { label, hint, error, id, className, required, endAdornment, ...rest },
   ref,
 ) {
   const auto = useId();
@@ -24,6 +26,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         {label}
         {required && <span aria-hidden="true" className="text-critical"> *</span>}
       </label>
+      <div className="relative">
       <input
         ref={ref}
         id={inputId}
@@ -37,10 +40,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           error
             ? "border-critical focus:border-critical focus:ring-critical/30"
             : "border-line focus:border-primary focus:ring-primary/30",
+          endAdornment ? "pr-11" : "",
+          "w-full",
           className,
         )}
         {...rest}
       />
+      {endAdornment && <div className="absolute inset-y-0 right-1 flex items-center">{endAdornment}</div>}
+      </div>
       {hint && <p id={hintId} className="text-xs text-ink-muted">{hint}</p>}
       {error && (
         <p id={errorId} role="alert" className="flex items-center gap-1 text-xs text-critical">

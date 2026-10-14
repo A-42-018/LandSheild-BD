@@ -29,7 +29,9 @@
     "account": "Account menu",
     "check": "Check before you buy",
     "verifyDoc": "Verify a document copy",
-    "track": "Track mutation"
+    "track": "Track mutation",
+    "profile": "Account",
+    "signup": "Sign up"
   },
   "errors": {
     "generic": "We couldn't process this document. Please check the file and try again.",
@@ -175,7 +177,9 @@
       "stay": "Stay signed in",
       "signOut": "Sign out now",
       "expired": "You were signed out after a period of inactivity. Please sign in again."
-    }
+    },
+    "citizenPrompt": "Don't have an account?",
+    "citizenLink": "Create a citizen account"
   },
   "verify": {
     "title": "Verify Land",
@@ -1830,5 +1834,43 @@
         "action": "Action"
       }
     }
+  },
+  "citizenSignup": {
+    "title": "Create a citizen account",
+    "intro": "Sign up to verify land records. Officer and reviewer accounts are issued separately.",
+    "name": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "required": "This field is required.",
+    "emailInvalid": "Enter a valid email address.",
+    "passwordShort": "Password must be at least 8 characters.",
+    "submit": "Create account",
+    "haveAccount": "Already have an account?",
+    "toLogin": "Sign in",
+    "officerPrompt": "Land office officer?",
+    "officerLink": "Request an officer account",
+    "doneTitle": "Account created",
+    "doneBody": "Your citizen account is ready. You can now sign in.",
+    "errors": {
+      "emailTaken": "An account with this email already exists.",
+      "rateLimited": "Too many attempts. Please wait a minute and try again.",
+      "invalid": "Please check the details and try again.",
+      "generic": "Could not create the account. Please try again."
+    }
+  },
+  "authShell": {
+    "switcher": "Account options",
+    "tabLogin": "Sign in",
+    "tabSignup": "Citizen sign up",
+    "tabOfficer": "Officer request",
+    "showPassword": "Show",
+    "hidePassword": "Hide",
+    "panelTitle": "Know the land before you buy",
+    "panelBody": "One secure account for citizens, reviewers and land office officers.",
+    "p1": "Look up recorded owners, mutations and cases for any plot.",
+    "p2": "Every result links to the evidence behind it.",
+    "p3": "Officer and reviewer access is role-based and audited.",
+    "notice": "Demo e-governance prototype. Not a government website."
   }
 }

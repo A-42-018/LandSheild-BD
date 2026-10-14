@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Archive, ClipboardList, FileCheck2, LayoutDashboard, MessageSquare, ScrollText, ShieldCheck, Upload, type LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
-import { Button } from "@/components/ui";
+import { Badge, Button } from "@/components/ui";
 import IdleTimeout from "@/features/auth/IdleTimeout";
 import { useAuth } from "@/features/auth/AuthContext";
 import { ADMIN_ONLY, hasRole, OFFICER_UP, REVIEW_UP, type Role } from "@/features/auth/roles";
@@ -50,8 +50,19 @@ export default function OfficerShell({ children }: { children: ReactNode }) {
       </div>
       <aside
         id="officer-sidebar"
-        className={`${open ? "block" : "hidden"} w-full shrink-0 self-start rounded-md border border-line bg-surface py-2 lg:sticky lg:top-4 lg:block lg:w-60`}
+        className={`${open ? "block" : "hidden"} w-full shrink-0 self-start rounded-xl border border-line bg-surface py-2 shadow-sm lg:sticky lg:top-4 lg:block lg:w-60`}
       >
+        {user && (
+          <div className="mx-2 mb-2 flex items-center gap-3 rounded-lg bg-surface-muted p-3">
+            <span aria-hidden="true" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-fg">
+              {user.name.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-ink">{user.name}</p>
+              <Badge tone="pending">{t(`roles.${user.role}`)}</Badge>
+            </div>
+          </div>
+        )}
         <nav aria-label={t("officer.nav.label")}>
           <ul className="flex flex-col">
             {items.map((i) => {
@@ -63,7 +74,7 @@ export default function OfficerShell({ children }: { children: ReactNode }) {
                     href={i.href}
                     aria-current={active ? "page" : undefined}
                     onClick={() => setOpen(false)}
-                    className={`flex min-h-11 items-center gap-2 border-l-4 px-4 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent ${active ? "border-primary bg-primary-soft font-semibold text-primary" : "border-transparent font-medium text-ink hover:bg-surface-muted"}`}
+                    className={`flex min-h-11 items-center gap-2 mx-2 rounded-md border-l-4 px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent ${active ? "border-primary bg-primary-soft font-semibold text-primary" : "border-transparent font-medium text-ink hover:bg-surface-muted"}`}
                   >
                     <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
                     {t(i.labelKey)}

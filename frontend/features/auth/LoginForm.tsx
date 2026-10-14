@@ -3,11 +3,13 @@ import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, Info, LogIn, ShieldCheck } from "lucide-react";
-import { Link, useRouter } from "@/i18n/navigation";
-import { Button, Card, Input } from "@/components/ui";
+import { AlertCircle, Info, LogIn } from "lucide-react";
+import { useRouter } from "@/i18n/navigation";
+import { Badge, Button, Input } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "./AuthContext";
+import AuthShell from "./AuthShell";
+import PasswordInput from "./PasswordInput";
 import { hasRole, REVIEW_UP } from "./roles";
 
 /** Seeded demo users (README "Demo accounts"); the password is never shown in the UI. */
@@ -20,6 +22,7 @@ export function safeNext(next: string | null): string {
 export default function LoginForm() {
   const t = useTranslations("auth");
   const ti = useTranslations("auth.idle");
+  const tr = useTranslations("roles");
   const { login } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
@@ -61,12 +64,15 @@ export default function LoginForm() {
   }
 
   return (
-    <Card title={<h1 className="text-base font-semibold">{t("loginTitle")}</h1>} icon={<ShieldCheck />} variant="record">
+    <AuthShell mode="login">
+      <div>
+        <h1 className="text-heading-2 text-ink">{t("loginTitle")}</h1>
+        <p className="mt-1 text-ink-muted">{t("loginIntro")}</p>
+      </div>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         {params.get("expired") === "1" && (
           <p role="status" className="rounded-md border border-line bg-primary-soft px-3 py-2 text-sm text-ink">{ti("expired")}</p>
         )}
-        <p className="text-ink-muted">{t("loginIntro")}</p>
         <Input
           label={t("email")}
           type="email"
@@ -76,9 +82,8 @@ export default function LoginForm() {
           onChange={(e) => setEmail(e.target.value)}
           error={touched && !email.trim() ? t("emailRequired") : undefined}
         />
-        <Input
+        <PasswordInput
           label={t("password")}
-          type="password"
           autoComplete="current-password"
           required
           value={password}
@@ -98,27 +103,28 @@ export default function LoginForm() {
           {t("submit")}
         </Button>
       </form>
-      <p className="mt-4 text-sm">
-        {t("officerPrompt")}{" "}
-        <Link href="/officer-signup" className="text-link underline underline-offset-2">{t("officerLink")}</Link>
-      </p>
-      <aside aria-labelledby="demo-accounts" className="mt-5 rounded-md border border-line bg-surface-muted p-3 text-sm" data-testid="demo-accounts">
+      <aside aria-labelledby="demo-accounts" className="rounded-lg border border-line bg-surface-muted p-3 text-sm" data-testid="demo-accounts">
         <p id="demo-accounts" className="flex items-center gap-2 font-semibold text-ink">
           <Info aria-hidden="true" className="h-4 w-4 text-ink-muted" />
           {t("demoTitle")}
         </p>
         <p className="mt-1 text-ink-muted">{t("demoHint")}</p>
-        <ul className="mt-2 flex flex-col gap-1 font-mono text-xs text-ink">
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
           {DEMO_ACCOUNTS.map((e) => (
             <li key={e}>
-              <button type="button" onClick={() => setEmail(e)} className="rounded py-1 text-left text-link underline-offset-2 hover:underline">
-                {e}
+              <button
+                type="button"
+                onClick={() => setEmail(e)}
+                className="flex min-h-11 w-full flex-col items-start gap-1 rounded-md border border-line bg-surface px-3 py-2 text-left transition-colors hover:border-primary/50 hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
+                <Badge tone="pending">{tr(e.split("@")[0].toUpperCase())}</Badge>
+                <span className="break-all font-mono text-xs text-link">{e}</span>
               </button>
             </li>
           ))}
         </ul>
       </aside>
-      <p className="mt-4 text-xs text-ink-muted">{t("notice")}</p>
-    </Card>
+      <p className="text-xs text-ink-muted">{t("notice")}</p>
+    </AuthShell>
   );
 }
