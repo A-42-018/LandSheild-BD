@@ -7,10 +7,21 @@ const box = "mt-6 rounded-xl border border-line bg-surface p-6 shadow-card";
 export default function AboutPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
   const t = useTranslations("about");
+  const tc = useTranslations("common");
   return (
     <article className="max-w-3xl">
       <h1 className="text-3xl font-bold text-primary">{t("title")}</h1>
       <p className="mt-2 text-ink-muted">{t("intro")}</p>
+      <figure className="mt-6 overflow-hidden rounded-xl border border-line bg-white shadow-card">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/logo-new.jpg"
+          alt={tc("appName")}
+          width={1408}
+          height={768}
+          className="mx-auto h-auto w-full max-w-xl"
+        />
+      </figure>
       <section aria-labelledby="about-purpose" className={box}>
         <h2 id="about-purpose" className="text-xl font-semibold text-ink">
           {t("purpose.title")}
