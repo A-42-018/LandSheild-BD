@@ -26,3 +26,4 @@ scripts/.tamper_demo.json
 docs/video/*.mp4
 docs/video/*.webm
 ai/tessdata/
+*.egg-info/
