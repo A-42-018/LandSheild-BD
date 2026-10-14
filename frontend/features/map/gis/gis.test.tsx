@@ -161,15 +161,13 @@ describe("national map", () => {
     await waitFor(() => expect(canvas()).toHaveAttribute("data-admin-level", "division"));
   });
 
-  it("the menu stops at upazila and links to the mouza map", async () => {
+  it("the menu stops at upazila", async () => {
     wrap(route(EMPTY));
     fireEvent.change(await screen.findByLabelText(en.map.gis.division), { target: { value: "4" } });
     fireEvent.change(await screen.findByLabelText(en.map.gis.district), { target: { value: "55" } });
     fireEvent.change(await screen.findByLabelText(en.map.gis.upazila), { target: { value: "273" } });
     const menu = screen.getByTestId("gis-menu");
     expect(within(menu).getAllByRole("combobox")).toHaveLength(3);
-    expect(within(menu).queryByLabelText(en.mouza.union)).toBeNull();
-    expect(within(menu).getByRole("link", { name: en.map.gis.mouzaLink })).toHaveAttribute("href", "/mouza-map");
   });
 
   it("search lists divisions, districts and upazilas only (no unions or mouzas)", async () => {

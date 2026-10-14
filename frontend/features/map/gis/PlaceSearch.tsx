@@ -15,7 +15,7 @@ export interface PlaceSearchProps {
   scopeNote?: string;
 }
 
-/** Place name / JL no. search (English or Bangla) used by the parcel map and the mouza map. */
+/** Place name / JL no. search (English or Bangla) used by the parcel map. */
 export default function PlaceSearch({ onPick, placeholder, noneText, levels, scopeNote }: PlaceSearchProps) {
   const t = useTranslations("map.gis");
   const id = useId();

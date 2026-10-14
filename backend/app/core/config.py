@@ -27,7 +27,6 @@ class Settings(BaseSettings):
     public_rate_limit_per_min: int = 60
     verify_doc_rate_limit_per_min: int = 10
     upload_rate_limit_per_hour: int = 20  # per user (R4)
-    scan_rate_limit_per_min: int = 20  # mouza map scan downloads, per user
     cors_origins: str = "http://localhost:3000"
     storage_path: str = "./storage"
     # auto = demo fixture -> pdf-text -> tesseract; also tesseract | mock (tests)
@@ -50,7 +49,7 @@ class Settings(BaseSettings):
     ml_scoring: str = "on"  # on | off (P49); missing model/scikit-learn -> skipped with a log
     ml_model_path: str = ""  # empty = models/iforest.joblib at the repo root
     tesseract_lang: str = "ben+eng"
-    mouza_enabled_division_id: str = "4,3,1,5,6"  # GIS demo scope (P61); comma separated, 4 = Khulna, 3 = Dhaka, 1 = Barishal, 5 = Rajshahi, 6 = Rangpur, '' = off
+    mouza_enabled_division_id: str = ""  # mouza lists need a dataset that is not bundled (synthetic-data-only rule); '' = off
     gis_data_dir: str = ""  # empty = <repo>/database/gis
     signing_key: str = ""  # base64 32-byte Ed25519 seed (F4a); wins over the key file
     signing_key_path: str = ""  # empty = <STORAGE_PATH>/signing/ed25519.pem (auto-created in dev)
