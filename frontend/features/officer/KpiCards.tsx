@@ -46,7 +46,7 @@ export default function KpiCards() {
   const s: OfficerStats = q.data;
   const intact = s.ledger_status === "INTACT";
   return (
-    <ul aria-label={t("title")} className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <ul aria-label={t("title")} className="grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-3">
       {KPIS.map(({ key, chip, Icon }) => (
         <li key={key}>
           <div className={TILE} data-testid={`kpi-${key}`}>
