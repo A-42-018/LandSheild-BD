@@ -15,7 +15,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import Navbar from "@/features/landing/Navbar";
 import Footer from "@/features/landing/Footer";
 import Hero from "@/features/landing/Hero";
-import { HowItWorks, NoticeBoard, OfficerBand, ServiceTiles, Trust, WhatWeCheck } from "@/features/landing/Sections";
+import { HowItWorks, NoticeBoard, ServiceTiles, Trust, WhatWeCheck } from "@/features/landing/Sections";
 import VerifyForm from "@/features/verify/VerifyForm";
 import ResultView from "@/features/result/ResultView";
 import ReportView from "@/features/report/ReportView";
@@ -193,13 +193,12 @@ const CASES: Case[] = [
           <NoticeBoard />
           <WhatWeCheck />
           <HowItWorks />
-          <OfficerBand />
           <Trust />
         </main>
         <Footer />
       </>
     ),
-    ready: (m) => screen.findByRole("link", { name: m.landing.ctaUpload }),
+    ready: (m) => screen.findByRole("button", { name: m.nav.account }),
   },
   {
     name: "verify",
