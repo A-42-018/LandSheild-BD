@@ -123,6 +123,32 @@
     border-color: rgb(var(--primary) / 0.35);
     box-shadow: 0 2px 4px rgb(var(--shadow) / 0.06), 0 22px 44px -18px rgb(var(--shadow) / 0.35);
   }
+  /* Landing section heading: short green→gold accent bar under the H2 (matches the header's gold). */
+  .section-title::after {
+    content: "";
+    display: block;
+    width: 2.75rem;
+    height: 3px;
+    margin-top: 0.65rem;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, rgb(var(--primary)), #D6B25C);
+  }
+  /* Tinted rounded panel that groups a whole section (What we check, Trust) to break up the long scroll. */
+  .section-panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid rgb(var(--primary) / 0.12);
+    background:
+      radial-gradient(36rem 16rem at 100% 0%, rgb(214 178 92 / 0.10), transparent 70%),
+      linear-gradient(160deg, rgb(var(--primary-soft) / 0.85), rgb(var(--surface) / 0.55));
+  }
+  :root.dark .section-panel {
+    border-color: rgb(var(--line) / 0.8);
+    background:
+      radial-gradient(36rem 16rem at 100% 0%, rgb(214 178 92 / 0.07), transparent 70%),
+      linear-gradient(160deg, rgb(var(--primary-soft) / 0.9), rgb(var(--surface) / 0.6));
+  }
   /* Tinted icon tile used across landing sections. */
   .icon-tile {
     display: inline-flex;

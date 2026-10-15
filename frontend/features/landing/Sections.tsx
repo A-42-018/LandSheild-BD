@@ -68,15 +68,30 @@ const TRUST: [string, LucideIcon][] = [
   ["noLegal", Scale],
 ];
 
-const h2 = "text-2xl font-bold tracking-tight text-ink sm:text-[1.75rem]";
+const h2 = "section-title text-2xl font-bold tracking-tight text-ink sm:text-[1.75rem]";
 const icon = "h-5 w-5 shrink-0 text-ink-muted";
 const focus = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
-/** Landing section: one page background throughout, sections separated by a thin rule and spacing (no alternating colour bands). */
-function Band({ id, children }: { id: string; children: ReactNode }) {
+/** Landing section, separated by a thin rule that fades at both ends. `panel` groups the section in a tinted rounded panel. */
+function Band({ id, panel, children }: { id: string; panel?: boolean; children: ReactNode }) {
   return (
-    <section aria-labelledby={id} className="border-t border-line py-8 sm:py-12">
-      {children}
+    <section
+      aria-labelledby={id}
+      className="relative py-10 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-line before:to-transparent sm:py-14"
+    >
+      {panel ? <div className="section-panel p-5 sm:p-8">{children}</div> : children}
     </section>
+  );
+}
+
+/** "More" link under a section: green text with an arrow that slides on hover. */
+function MoreLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <p className="mt-6">
+      <Link href={href} className={`group inline-flex items-center gap-1.5 rounded-md font-semibold text-primary underline-offset-4 hover:underline ${focus}`}>
+        {children}
+        <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+      </Link>
+    </p>
   );
 }
 
@@ -119,7 +134,7 @@ export function CitizenTools() {
   return (
     <Band id="tools-title">
       <h2 id="tools-title" className={h2}>{t("title")}</h2>
-      <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
+      <p className="mt-3 max-w-3xl text-ink-muted">{t("intro")}</p>
       <ul className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
         {TOOL_TILES.map(({ key, href, icon: I }) => (
           <li key={key}>
@@ -133,7 +148,7 @@ export function CitizenTools() {
           </li>
         ))}
       </ul>
-      <p className="mt-4"><Link href="/tools" className="text-link underline-offset-2 hover:underline">{t("cta")}</Link></p>
+      <MoreLink href="/tools">{t("cta")}</MoreLink>
     </Band>
   );
 }
@@ -141,9 +156,9 @@ export function CitizenTools() {
 export function WhatWeCheck() {
   const t = useTranslations("landing.checks");
   return (
-    <Band id="checks-title">
+    <Band id="checks-title" panel>
       <h2 id="checks-title" className={h2}>{t("title")}</h2>
-      <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
+      <p className="mt-3 max-w-3xl text-ink-muted">{t("intro")}</p>
       <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {CHECKS.map(([k, I]) => (
           <li key={k} data-testid="check-item" className="glass-card flex items-center gap-3 p-3.5 text-ink">
@@ -189,7 +204,7 @@ export function HowItWorks() {
 export function Trust() {
   const t = useTranslations("landing.trust");
   return (
-    <Band id="trust-title">
+    <Band id="trust-title" panel>
       <h2 id="trust-title" className={h2}>{t("title")}</h2>
       <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {TRUST.map(([k, I]) => (
@@ -221,7 +236,7 @@ export function NoticeBoard() {
   return (
     <Band id="notices-title">
       <h2 id="notices-title" className={h2}>{t("title")}</h2>
-      <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
+      <p className="mt-3 max-w-3xl text-ink-muted">{t("intro")}</p>
       <ul className="mt-6 grid gap-4 sm:grid-cols-2">
         {NOTICES.map((n) => (
           <li key={n.id} data-testid="notice-item" className="glass-card border-l-4 !border-l-primary p-4">
@@ -231,7 +246,7 @@ export function NoticeBoard() {
           </li>
         ))}
       </ul>
-      <p className="mt-4"><Link href="/services" className="text-link underline-offset-2 hover:underline">{t("services")}</Link></p>
+      <MoreLink href="/services">{t("services")}</MoreLink>
     </Band>
   );
 }
