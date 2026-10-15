@@ -28,7 +28,7 @@ export default function AuthShell({ mode, children }: { mode: AuthMode; children
   const t = useTranslations("authShell");
   return (
     <div className="glass-card mx-auto grid w-full max-w-5xl overflow-hidden !rounded-[22px] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-      <aside className="auth-panel relative flex flex-col justify-between gap-8 overflow-hidden p-6 text-white/95 sm:p-8 lg:min-h-[40rem]">
+      <aside className="auth-panel relative flex flex-col justify-between gap-8 overflow-hidden p-6 text-white/95 sm:p-8 lg:min-h-[54rem]">
         <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-gold" viewBox="0 0 400 640" preserveAspectRatio="xMidYMid slice" fill="none">
           <path d={PANEL_RINGS} stroke="currentColor" strokeOpacity="0.08" />
         </svg>
