@@ -56,7 +56,7 @@ export default function ReportView({ id }: { id: string }) {
     const code = `report.disclaimer.${r.disclaimer_code}`;
     body = (
       <div className="report-sections flex flex-col gap-4">
-        <Card title={t("report.summary")} icon={<ClipboardCheck />} accent="primary" data-testid="report-summary">
+        <Card title={t("report.summary")} icon={<ClipboardCheck />} data-testid="report-summary">
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             <div>
               <dt className="text-xs text-ink-muted">{t("report.overallStatus")}</dt>
@@ -102,8 +102,8 @@ export default function ReportView({ id }: { id: string }) {
           <p className="mt-2 text-sm text-ink-muted">{t("risk.disclaimer")}</p>
         </Card>
         <p className="border-t border-line pt-3 text-xs text-ink-muted" data-testid="report-footer">{t("report.generatedFooter")}</p>
-        <div className="flex flex-wrap items-center gap-4 print:hidden">
-          <Button icon={<Download />} onClick={() => window.print()}>{t("report.print")}</Button>
+        <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center gap-4 border-t border-line bg-surface/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:rounded-card sm:border sm:shadow-glass print:hidden">
+          <Button size="lg" icon={<Download />} onClick={() => window.print()}>{t("report.print")}</Button>
           <Link href={`/verify/result?land_id=${encodeURIComponent(r.land_id)}`} className="text-sm font-medium text-link underline">
             {t("report.backToResult")}
           </Link>
@@ -117,13 +117,13 @@ export default function ReportView({ id }: { id: string }) {
     <div className="report flex flex-col gap-4">
       <Breadcrumb crumbs={[{ label: t("nav.verify"), href: "/verify" }]} />
       {/* Letter-style header (roadmap 4.8): mark, title, ref no, date, signed QR. */}
-      <header data-testid="report-letterhead" className="flex items-start justify-between gap-4 border-b-[3px] border-primary pb-4">
+      <header data-testid="report-letterhead" className="glass-card flex items-start justify-between gap-4 border-b-[3px] border-b-primary px-5 py-4 print:rounded-none print:px-0">
         <div className="flex items-start gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/logo-mark.svg" alt="" width={48} height={48} className="h-12 w-12 shrink-0" />
           <div>
             <p className="text-sm font-semibold text-ink-muted">{t("common.appName")}</p>
-            <h1 className="text-[1.875rem] font-bold leading-tight text-ink sm:text-[2rem]">{t("report.title")}</h1>
+            <h1 className="font-bold leading-tight text-ink">{t("report.title")}</h1>
             {r0 && (
               <dl className="mt-1 flex flex-wrap gap-x-4 text-sm text-ink-muted">
                 <div className="flex gap-1">
@@ -144,7 +144,7 @@ export default function ReportView({ id }: { id: string }) {
           </div>
         )}
       </header>
-      <p role="note" className="flex items-center gap-2 rounded-lg border border-review/30 bg-review-soft px-4 py-2 text-sm font-medium text-ink">
+      <p role="note" className="glass-card flex items-center gap-2 border-l-[3px] border-l-review px-4 py-2 text-sm font-medium text-ink print:hidden">
         <Info aria-hidden="true" className="h-4 w-4 shrink-0 text-review" />
         {t("common.demoLabel")}
       </p>

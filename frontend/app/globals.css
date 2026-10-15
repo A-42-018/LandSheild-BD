@@ -283,6 +283,7 @@
   .report section, .report li, .report tr { break-inside: avoid; }
   .report h1 { break-after: avoid; }
   .report .shadow-card { box-shadow: none; }
+  .glass-card, .section-panel { background: #fff !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   .page-hero, .page-hero * { color: #0E1F36 !important; background: none !important; box-shadow: none !important; border-color: #d5ded9 !important; }
   .page-hero::after { display: none; }
   .report .overflow-x-auto { overflow: visible; }
