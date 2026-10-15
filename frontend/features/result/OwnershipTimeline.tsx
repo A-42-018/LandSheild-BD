@@ -1,6 +1,6 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
-import { History } from "lucide-react";
+import { Check, Circle, History } from "lucide-react";
 import { Badge, Card, EmptyState } from "@/components/ui";
 import { formatDate } from "./format";
 import type { OwnershipEntry } from "./types";
@@ -19,14 +19,16 @@ export default function OwnershipTimeline({ entries }: { entries: OwnershipEntry
           {entries.map((e, i) => (
             <li
               key={`${e.owner.name}-${e.start_date ?? i}-${i}`}
-              className={`relative border-l-2 pb-5 pl-5 last:pb-0 ${e.is_current ? "border-verified" : "border-line"}`}
+              className={`relative ms-4 border-l-2 border-dashed pb-5 ps-7 last:pb-0 ${e.is_current ? "border-verified/50" : "border-line"}`}
             >
               <span
                 aria-hidden="true"
-                className={`absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-surface ring-2 ${
-                  e.is_current ? "bg-verified ring-verified/40" : "bg-pending ring-line"
+                className={`absolute -left-[17px] top-0 inline-flex h-8 w-8 items-center justify-center rounded-xl border-2 bg-surface ${
+                  e.is_current ? "border-verified text-verified" : "border-line text-pending"
                 }`}
-              />
+              >
+                {e.is_current ? <Check className="h-4 w-4" /> : <Circle className="h-3 w-3" />}
+              </span>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold text-ink">{e.owner.name}</span>
                 {e.is_current && <Badge tone="verified">{t("current")}</Badge>}

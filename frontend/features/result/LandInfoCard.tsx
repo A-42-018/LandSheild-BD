@@ -40,7 +40,7 @@ export default function LandInfoCard({ land, chip }: { land: LandInfo; chip?: Re
         </div>
         {chip && <div className="scale-110 origin-right" data-testid="record-chip">{chip}</div>}
       </div>
-      <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {rows.map(([k, v, Icon]) => (
           <div key={k} className="rounded-xl border border-line/70 bg-surface/60 p-3">
             <dt className="flex items-center gap-2 text-xs text-ink-muted">
@@ -50,7 +50,7 @@ export default function LandInfoCard({ land, chip }: { land: LandInfo; chip?: Re
             <dd className="mt-1 ps-9 font-medium text-ink">{v}</dd>
           </div>
         ))}
-        <div className="rounded-xl border border-line/70 bg-surface/60 p-3 sm:col-span-2">
+        <div className="rounded-xl border border-line/70 bg-surface/60 p-3 sm:col-span-2 lg:col-span-4">
           <dt className="flex items-center gap-2 text-xs text-ink-muted">
             <span aria-hidden="true" className="icon-tile !h-7 !w-7 !rounded-lg"><Users className="h-3.5 w-3.5" /></span>
             {t("currentOwners")}

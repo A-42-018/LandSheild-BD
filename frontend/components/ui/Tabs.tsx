@@ -51,7 +51,10 @@ export default function Tabs({ tabs, value, defaultValue, onValueChange, label, 
   // Phones: keep the active tab visible inside the horizontally scrolling row.
   useEffect(() => {
     const el = refs.current[current];
-    if (el && typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "nearest", inline: "nearest" });
+    const row = el?.parentElement;
+    if (!el || !row || row.scrollWidth <= row.clientWidth) return;
+    // Scroll the tab row only (scrollIntoView would also scroll the page).
+    row.scrollLeft = el.offsetLeft - (row.clientWidth - el.offsetWidth) / 2;
   }, [current]);
 
   const segmented = variant === "segmented";
