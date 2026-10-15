@@ -24,16 +24,16 @@ export default function PageHelpful() {
       .catch(() => setState("failed"));
 
   return (
-    <section aria-label={t("label")} className="mt-8 flex flex-wrap items-center gap-3 border-t border-line pt-4 print:hidden" data-testid="page-helpful">
+    <section aria-label={t("label")} className="glass-card mt-8 flex flex-wrap items-center gap-3 px-4 py-3 print:hidden" data-testid="page-helpful">
       {state === "sent" ? (
         <p role="status" className="text-ink">
           {t("thanks")} <Link href="/feedback" className="text-link underline underline-offset-2">{t("more")}</Link>
         </p>
       ) : (
         <>
-          <p className="font-medium text-ink">{t("question")}</p>
-          <Button variant="secondary" size="sm" icon={<ThumbsUp />} onClick={() => send(true)}>{t("yes")}</Button>
-          <Button variant="secondary" size="sm" icon={<ThumbsDown />} onClick={() => send(false)}>{t("no")}</Button>
+          <p className="mr-auto font-medium text-ink">{t("question")}</p>
+          <Button variant="secondary" size="sm" className="!rounded-full" icon={<ThumbsUp />} onClick={() => send(true)}>{t("yes")}</Button>
+          <Button variant="secondary" size="sm" className="!rounded-full" icon={<ThumbsDown />} onClick={() => send(false)}>{t("no")}</Button>
           {state === "failed" && <p role="alert" className="text-sm text-critical">{t("failed")}</p>}
         </>
       )}
