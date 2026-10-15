@@ -234,6 +234,12 @@
     animation: skeleton-shimmer 1.4s ease-in-out infinite;
   }
   @keyframes skeleton-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+  /* Scroll reveal (components/Reveal.tsx) and toast entrance; both frozen by the global reduced-motion rule. */
+  .reveal { transition: opacity 0.5s ease, transform 0.5s ease; }
+  .reveal[data-reveal="hidden"] { opacity: 0; transform: translateY(14px); }
+  .reveal[data-reveal="shown"] { opacity: 1; transform: none; }
+  .toast-in { animation: toast-in 0.25s ease-out; }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   /* Tinted icon tile used across landing sections. */
   .icon-tile {
     display: inline-flex;

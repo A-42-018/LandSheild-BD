@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ToastProvider } from "@/components/ui/Toast";
 import { AuthProvider } from "./auth/AuthContext";
 import { applyTheme, readTheme } from "@/lib/theme";
 
@@ -19,7 +20,7 @@ export default function Providers({ children }: { children: ReactNode }) {
   }, []);
   return (
     <QueryClientProvider client={qc}>
-      <AuthProvider>{children}</AuthProvider>
+      <AuthProvider><ToastProvider>{children}</ToastProvider></AuthProvider>
     </QueryClientProvider>
   );
 }

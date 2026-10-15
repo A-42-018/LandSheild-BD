@@ -688,7 +688,8 @@
         "underReview": "Mark under review",
         "escalate": "Escalate",
         "dismiss": "Dismiss"
-      }
+      },
+      "updated": "Alert updated."
     },
     "activity": {
       "title": "Recent activity",
