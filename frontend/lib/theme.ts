@@ -40,29 +40,3 @@ export function applyTheme(mode: ThemeMode): boolean {
   document.documentElement.classList.toggle("dark", dark);
   return dark;
 }
-
-/* ---- Text size (U3): A- / A / A+, stored like the theme (try/catch), applied as <html> font-size ---- */
-export const TEXT_SIZE_KEY = "ls-text-size";
-export const TEXT_SIZES = [100, 112.5, 125] as const;
-export type TextSize = (typeof TEXT_SIZES)[number];
-
-export function readTextSize(): TextSize {
-  try {
-    const v = Number(window.localStorage.getItem(TEXT_SIZE_KEY));
-    return (TEXT_SIZES as readonly number[]).includes(v) ? (v as TextSize) : 100;
-  } catch {
-    return 100;
-  }
-}
-
-export function saveTextSize(size: TextSize): void {
-  try {
-    window.localStorage.setItem(TEXT_SIZE_KEY, String(size));
-  } catch {
-    /* storage blocked: lasts for this page view only */
-  }
-}
-
-export function applyTextSize(size: TextSize): void {
-  document.documentElement.style.fontSize = size === 100 ? "" : `${size}%`;
-}

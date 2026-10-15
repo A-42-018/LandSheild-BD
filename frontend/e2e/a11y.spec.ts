@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { expectNoHorizontalScroll, signIn, type DemoRole } from "./fixtures";
 
 // E5: real-browser axe (colour contrast + landmarks included) on every route, EN + BN, at the
-// narrowest supported width (360 px) with the largest text-size setting (125 %).
+// narrowest supported width (360 px).
 const axePath = join(process.cwd(), "node_modules/axe-core/axe.min.js");
 
 const PUBLIC = [
@@ -21,7 +21,6 @@ test.use({ viewport: { width: 360, height: 800 } });
 
 async function audit(page: Page, path: string, loc: string) {
   await page.addInitScript(() => {
-    window.localStorage.setItem("ls-text-size", "125");
     window.localStorage.setItem("ls-theme", "light");
   });
   await page.goto(`/${loc}${path ? `/${path}` : ""}`);
