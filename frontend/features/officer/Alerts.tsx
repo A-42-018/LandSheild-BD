@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AlertOctagon, AlertTriangle, BellRing, Info } from "lucide-react";
 import { ApiError } from "@/lib/api";
 import { Link } from "@/i18n/navigation";
-import { Badge, Button, Card, EmptyState, ErrorState, LoadingState } from "@/components/ui";
+import { Badge, Button, Card, EmptyState, ErrorState, LoadingState, useToast } from "@/components/ui";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { RISK_TONE } from "@/components/domain/RiskBadge";
 import EvidenceList from "@/features/risk/EvidenceList";
@@ -32,6 +32,10 @@ export default function Alerts() {
   const q = useAlerts();
   const m = useAlertStatus();
   const { user } = useAuth();
+  const toast = useToast();
+  useEffect(() => {
+    if (m.isSuccess) toast("success", t("updated"));
+  }, [m.isSuccess, m.submittedAt]);
   const [dismissing, setDismissing] = useState<AlertItem | null>(null);
   // backend: a HIGH alert can only be dismissed by an officer/admin (ALERT_DISMISS_FORBIDDEN)
   const canDismiss = (a: AlertItem) => a.severity !== "HIGH" || hasRole(user?.role, OFFICER_UP);

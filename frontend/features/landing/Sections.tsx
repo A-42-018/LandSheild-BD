@@ -26,6 +26,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import Reveal from "@/components/Reveal";
 import ArtCard from "@/components/ArtCard";
 import { intlLocale } from "@/lib/intl-locale";
 import type { ReactNode } from "react";
@@ -79,7 +80,7 @@ function Band({ id, panel, children }: { id: string; panel?: boolean; children: 
       aria-labelledby={id}
       className="relative py-10 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-line before:to-transparent sm:py-14"
     >
-      {panel ? <div className="section-panel p-5 sm:p-8">{children}</div> : children}
+      <Reveal>{panel ? <div className="section-panel p-5 sm:p-8">{children}</div> : children}</Reveal>
     </section>
   );
 }

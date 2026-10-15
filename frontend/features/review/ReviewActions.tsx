@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api";
-import { Button } from "@/components/ui";
+import { Button, useToast } from "@/components/ui";
 import RejectModal from "./RejectModal";
 import { useReviewActions } from "./useReviewActions";
 import type { ExtractionOut } from "./types";
@@ -18,6 +18,14 @@ export default function ReviewActions({
 }) {
   const t = useTranslations("review");
   const [rejecting, setRejecting] = useState(false);
+  const toast = useToast();
+  const { approve: ap, reject: rj } = actions;
+  useEffect(() => {
+    if (ap.isSuccess) toast("success", t("decision.APPROVED"));
+  }, [ap.isSuccess]);
+  useEffect(() => {
+    if (rj.isSuccess) toast("success", t("decision.REJECTED"));
+  }, [rj.isSuccess]);
   const status = data.processing_status;
 
   if (status === "APPROVED" || status === "REJECTED") {
