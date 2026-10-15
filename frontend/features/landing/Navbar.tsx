@@ -9,7 +9,7 @@ const COLS = Array.from({ length: 22 }, (_, i) => i);
 function HeaderArt() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-      <svg className="absolute inset-y-0 left-0 h-full w-[46rem] max-w-full text-[#D6B25C]" viewBox="0 0 736 64" preserveAspectRatio="xMinYMid slice" fill="none">
+      <svg className="absolute inset-y-0 left-0 h-full w-[46rem] max-w-full text-gold" viewBox="0 0 736 64" preserveAspectRatio="xMinYMid slice" fill="none">
         <path d="M-10,58L120,6M60,70L210,-8M150,66L260,10L330,40M-10,24L90,40L180,22M240,64L300,30L420,52M380,-4L470,40L560,18" stroke="currentColor" strokeOpacity="0.16" strokeWidth="1" />
         <path d="M30,-6L70,70M200,-6L230,70M320,-6L300,70" stroke="currentColor" strokeOpacity="0.3" className="text-white/[0.17]" strokeWidth="1" />
       </svg>

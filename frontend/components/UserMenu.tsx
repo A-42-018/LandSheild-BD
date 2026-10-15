@@ -8,7 +8,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { activeNavHref, navItemsFor } from "@/features/auth/roles";
 
 const ICON_BTN =
-  "inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[#D6B25C]/60 bg-black/20 text-[#F1D88C] transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
+  "inline-flex h-11 w-11 items-center justify-center rounded-lg border border-gold/60 bg-black/20 text-gold-soft transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
 
 /**
  * Right-most header control (UD10 sketch): a user icon.

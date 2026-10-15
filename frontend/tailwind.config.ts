@@ -46,10 +46,6 @@ const config: Config = {
         "brand-deep-2": c("brand-deep-2"),
         gold: { DEFAULT: c("gold"), strong: c("gold-strong"), soft: c("gold-soft") },
       },
-      backgroundImage: {
-        "brand-gradient": "linear-gradient(135deg, rgb(var(--grad-from)) 0%, rgb(var(--grad-to)) 100%)",
-        "brand-gradient-soft": "linear-gradient(180deg, rgb(var(--grad-soft-from)) 0%, rgb(var(--grad-soft-to)) 100%)",
-      },
       borderRadius: { md: "4px", lg: "6px", xl: "8px", "2xl": "8px", card: "14px", panel: "20px", hero: "24px" },
       boxShadow: {
         card: "none", // border-based cards (U1)

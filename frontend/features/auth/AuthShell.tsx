@@ -34,21 +34,21 @@ export default function AuthShell({ mode, children }: { mode: AuthMode; children
           <path d="M400,120C300,170 250,260 260,360C270,470 200,560 0,600V640H400Z" fill="currentColor" fillOpacity="0.16" />
           <path d="M400,250C330,300 320,390 330,470C340,560 260,610 120,640H400Z" fill="currentColor" fillOpacity="0.12" />
         </svg>
-        <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-[#D6B25C]" viewBox="0 0 400 640" preserveAspectRatio="xMidYMid slice" fill="none">
+        <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-gold" viewBox="0 0 400 640" preserveAspectRatio="xMidYMid slice" fill="none">
           <path d={PANEL_RINGS} stroke="currentColor" strokeOpacity="0.12" />
         </svg>
         <div className="relative flex items-center gap-4 lg:flex-col lg:items-start">
           <ShieldArt className="h-16 w-14 shrink-0 drop-shadow-[0_8px_16px_rgb(0_0_0/0.35)] sm:h-20 sm:w-[4.5rem] lg:h-24 lg:w-[5.25rem]" />
           <div>
             <h2 className="text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.75rem]">{t("panelTitle")}</h2>
-            <span aria-hidden="true" className="mt-3 hidden h-[3px] w-12 rounded-full bg-gradient-to-r from-[#D6B25C] to-[#D6B25C]/30 lg:block" />
+            <span aria-hidden="true" className="mt-3 hidden h-[3px] w-12 rounded-full bg-gradient-to-r from-gold to-gold/30 lg:block" />
             <p className="mt-3 hidden leading-relaxed text-white/80 sm:block">{t("panelBody")}</p>
           </div>
         </div>
         <ul className="relative hidden flex-col gap-3 lg:flex">
           {POINTS.map(({ icon: Icon, key }) => (
             <li key={key} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.06] p-3 backdrop-blur-sm">
-              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-[#F1D88C]">
+              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-gold-soft">
                 <Icon aria-hidden="true" className="h-4 w-4" />
               </span>
               <span className="text-sm leading-relaxed text-white/90">{t(key)}</span>
