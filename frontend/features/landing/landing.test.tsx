@@ -62,6 +62,6 @@ describe("landing sections (U5)", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(en.about.title);
     for (const h of [en.about.purpose.title, en.about.limits.title, en.about.demo.title, en.about.notice.title])
       expect(screen.getByRole("heading", { level: 2, name: h })).toBeInTheDocument();
-    expect(screen.getAllByRole("listitem")).toHaveLength(4);
+    expect(screen.getAllByRole("listitem")).toHaveLength(5); // 4 limits + the Home breadcrumb
   });
 });

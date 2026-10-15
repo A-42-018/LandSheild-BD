@@ -1247,6 +1247,7 @@
     "disclaimer": "Demo data only. This is an indicator, not a legal finding; confirm with the registry office."
   },
   "page": {
+    "onThisPage": "On this page",
     "breadcrumb": "Breadcrumb",
     "dataAsOf": "Data as of {date}",
     "ref": "Ref {ref}",
