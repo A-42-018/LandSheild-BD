@@ -37,7 +37,7 @@ export default function AuthShell({ mode, children }: { mode: AuthMode; children
           <div>
             <h2 className="text-[1.5rem] [text-shadow:0_2px_12px_rgb(0_0_0/0.45)] font-bold leading-tight tracking-tight sm:text-[1.75rem]">{t("panelTitle")}</h2>
             <span aria-hidden="true" className="mt-3 hidden h-[3px] w-12 rounded-full bg-gradient-to-r from-gold to-gold/30 lg:block" />
-            <p className="mt-3 hidden leading-relaxed text-white/80 sm:block">{t("panelBody")}</p>
+            <p className="mt-3 hidden leading-relaxed text-white/80 sm:block lg:hidden">{t("panelBody")}</p>
           </div>
         </div>
         <ul className="relative hidden flex-col gap-3 lg:flex">

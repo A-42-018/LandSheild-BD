@@ -199,7 +199,7 @@
         radial-gradient(28rem 20rem at 10% 0%, rgb(127 224 176 / 0.16), transparent 70%),
         url("/landing/farmer-768.webp");
       background-size: cover, cover, cover;
-      background-position: center, center, 55% 30%;
+      background-position: center, center, 55% 0%;
     }
   }
   /* Horizontal scroller with soft fade edges (tab rows on phones). */
