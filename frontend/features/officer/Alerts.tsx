@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { BellRing } from "lucide-react";
+import { AlertOctagon, AlertTriangle, BellRing, Info } from "lucide-react";
 import { ApiError } from "@/lib/api";
 import { Link } from "@/i18n/navigation";
 import { Badge, Button, Card, EmptyState, ErrorState, LoadingState } from "@/components/ui";
@@ -15,6 +15,8 @@ import DismissModal from "./DismissModal";
 import { useAlertStatus, useAlerts } from "./useOfficerData";
 import { ALERT_STATUSES, type AlertItem, type AlertStatus } from "./types";
 
+const SEV_ICON = { HIGH: AlertOctagon, MEDIUM: AlertTriangle, INFO: Info } as const;
+const SEV_TILE = { HIGH: "bg-critical-soft text-critical", MEDIUM: "bg-review-soft text-review", INFO: "bg-pending-soft text-pending" } as const;
 const ACTION_KEY: Record<AlertStatus, string> = {
   OPEN: "reopen",
   UNDER_REVIEW: "underReview",
@@ -48,8 +50,13 @@ export default function Alerts() {
       ) : (
         <ul aria-label={t("title")} className="flex flex-col gap-3">
           {q.data.items.map((a) => (
-            <li key={a.id} data-testid={`alert-${a.id}`} className={`rounded-xl border border-l-4 border-line bg-surface p-3 shadow-card ${a.severity === "HIGH" ? "border-l-critical" : a.severity === "MEDIUM" ? "border-l-review" : "border-l-pending"}`}>
+            <li key={a.id} data-testid={`alert-${a.id}`} className={`glass-card border-l-[4px] p-3 ${a.severity === "HIGH" ? "border-l-critical" : a.severity === "MEDIUM" ? "border-l-review" : "border-l-pending"}`}>
               <div className="flex flex-wrap items-center gap-2">
+                {(() => {
+                  const k = (["HIGH", "MEDIUM", "INFO"].includes(a.severity) ? a.severity : "INFO") as keyof typeof SEV_ICON;
+                  const SevIcon = SEV_ICON[k];
+                  return <span aria-hidden="true" className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ${SEV_TILE[k]}`}><SevIcon className="h-4 w-4" /></span>;
+                })()}
                 <Link href={`/verify/result?land_id=${a.land_id}`} className="font-medium text-primary underline">
                   {a.land_id}
                 </Link>
