@@ -115,8 +115,8 @@ export default function ReviewView({ id }: { id: string }) {
         ))}
       </div>
       <div
-        className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,var(--split))_auto_minmax(0,1fr)] xl:gap-0"
-        style={{ "--split": `${split}fr` } as React.CSSProperties}
+        className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,var(--split))_auto_minmax(0,var(--rest))] xl:gap-0"
+        style={{ "--split": `${split}fr`, "--rest": `${100 - split}fr` } as React.CSSProperties}
         data-testid="review-columns"
       >
         <div className={`min-w-0 xl:pr-4 ${pane === "doc" ? "" : "max-md:hidden"}`}>
