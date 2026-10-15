@@ -3,6 +3,25 @@ import { createRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { Badge, Button, Card, Input, Select } from "./index";
 
+describe("UI v2 core", () => {
+  it("Card is a glass card by default and a section panel with tone=panel", () => {
+    const { rerender } = render(<Card title="T">x</Card>);
+    expect(screen.getByText("x").closest("section")).toHaveClass("glass-card");
+    rerender(<Card title="T" tone="panel">x</Card>);
+    expect(screen.getByText("x").closest("section")).toHaveClass("section-panel");
+  });
+  it("Button gold + lg + fullWidthOnMobile", () => {
+    render(<Button variant="gold" size="lg" fullWidthOnMobile>Go</Button>);
+    const b = screen.getByRole("button", { name: "Go" });
+    expect(b).toHaveClass("btn-gold", "min-h-12", "w-full");
+  });
+  it("Badge is a pill and can show a status dot", () => {
+    const { container } = render(<Badge tone="verified" dot>OK</Badge>);
+    expect(screen.getByText("OK")).toHaveClass("rounded-full");
+    expect(container.querySelector("span > span[aria-hidden]")).not.toBeNull();
+  });
+});
+
 describe("Button", () => {
   it("has an accessible name and defaults to type=button", () => {
     render(<Button>Save</Button>);

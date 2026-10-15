@@ -19,7 +19,7 @@ export default function PasswordInput(props: Omit<InputProps, "type" | "endAdorn
           onClick={() => setShown((s) => !s)}
           aria-label={shown ? t("hidePassword") : t("showPassword")}
           aria-pressed={shown}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink-muted hover:bg-surface-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
         >
           {shown ? <EyeOff aria-hidden="true" className="h-4 w-4" /> : <Eye aria-hidden="true" className="h-4 w-4" />}
         </button>
