@@ -179,3 +179,16 @@ describe("Footer (UD3)", () => {
     expect(screen.getByText(new RegExp(m.common.demoLabel.replace(/[.]/g, "\\.")))).toBeInTheDocument();
   });
 });
+
+import PageHeaderCmp from "@/components/PageHeader";
+describe("PageHeader v2", () => {
+  it("renders the hero band by default and a plain header for variant=plain", () => {
+    const { container, rerender } = render(
+      <NextIntlClientProvider locale="en" messages={en}><PageHeaderCmp title="T" meta={["Ref 1"]} /></NextIntlClientProvider>,
+    );
+    expect(container.querySelector(".page-hero")).not.toBeNull();
+    expect(screen.getByTestId("page-meta")).toHaveTextContent("Ref 1");
+    rerender(<NextIntlClientProvider locale="en" messages={en}><PageHeaderCmp variant="plain" title="T" /></NextIntlClientProvider>);
+    expect(container.querySelector(".page-hero")).toBeNull();
+  });
+});
