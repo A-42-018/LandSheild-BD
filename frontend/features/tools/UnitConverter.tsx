@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Copy } from "lucide-react";
 import { Button, Input, Select } from "@/components/ui";
 import { intlLocale } from "@/lib/intl-locale";
+import { TapeMeasureArt } from "@/features/landing/Illustrations";
 import ToolShell from "./ToolShell";
 import { parseNum } from "./num";
 import { convertAll, REGIONS, UNITS, type Region, type Unit } from "./units";
@@ -23,7 +24,7 @@ export default function UnitConverter() {
   const text = out ? UNITS.map((u) => `${t(`names.${u}`)}: ${fmt(out[u])}`).join("\n") : "";
 
   return (
-    <ToolShell title={t("title")} purpose={t("purpose")}>
+    <ToolShell title={t("title")} purpose={t("purpose")} art={<TapeMeasureArt />}>
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Input label={t("value")} inputMode="decimal" value={raw} onChange={(e) => { setTouched(true); setRaw(e.target.value); }} error={bad ? t("invalid") : undefined} />
@@ -32,6 +33,7 @@ export default function UnitConverter() {
         </div>
         {out && (
           <>
+            <div className="glass-card overflow-x-auto !rounded-card">
             <table className="w-full text-left text-sm" data-testid="unit-table">
               <caption className="sr-only">{t("results")}</caption>
               <thead className="bg-surface-muted"><tr><th scope="col" className="border border-line px-3 py-2">{t("unit")}</th><th scope="col" className="border border-line px-3 py-2 text-right">{t("amount")}</th></tr></thead>
@@ -44,6 +46,7 @@ export default function UnitConverter() {
                 ))}
               </tbody>
             </table>
+            </div>
             <div className="flex items-center gap-3">
               <Button variant="secondary" icon={<Copy />} onClick={() => { void navigator.clipboard?.writeText(text); setCopied(true); }}>{t("copy")}</Button>
               <span role="status" className="text-sm text-ink-muted">{copied ? t("copied") : ""}</span>
