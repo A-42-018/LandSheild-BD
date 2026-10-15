@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { EmptyState, ErrorState, LoadingState, Tabs } from "@/components/ui";
 import PageHeader from "@/components/PageHeader";
+import { PlotSearchArt } from "@/features/landing/Illustrations";
 import RiskBadge from "@/components/domain/RiskBadge";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
@@ -77,7 +78,7 @@ export default function ResultView({ landId }: { landId?: string }) {
   );
 
   const banner = (
-    <p role="note" className="flex items-center gap-2 rounded-lg border border-review/30 bg-review-soft px-4 py-2 text-sm font-medium text-ink">
+    <p role="note" className="glass-card flex items-center gap-2 border-l-[3px] border-l-review px-4 py-2 text-sm font-medium text-ink">
       <Info aria-hidden="true" className="h-4 w-4 shrink-0 text-review" />
       {t("common.demoLabel")}
     </p>
@@ -105,6 +106,7 @@ export default function ResultView({ landId }: { landId?: string }) {
       <>
         <LandInfoCard land={land.data} chip={risk.data ? <RiskBadge level={risk.data.risk_level} /> : undefined} />
         <Tabs
+          sticky
           label={t("page.recordTabs")}
           tabs={[
             { id: "ownership", label: t("result.tabOwnership"), content: tabPanel(own, () => <OwnershipTimeline entries={own.data?.entries ?? []} />, lerr) },
@@ -127,8 +129,10 @@ export default function ResultView({ landId }: { landId?: string }) {
           ]}
         />
         <p className="text-sm text-ink-muted">{t("risk.disclaimer")}</p>
-        <GenerateReportButton landId={land.data.land_id} />
-        <div>{back}</div>
+        <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:rounded-card sm:border sm:shadow-glass print:hidden">
+          <GenerateReportButton landId={land.data.land_id} />
+          {back}
+        </div>
       </>
     );
   }
@@ -145,6 +149,7 @@ export default function ResultView({ landId }: { landId?: string }) {
       <PageHeader
         title={t("result.title")}
         purpose={t("page.resultPurpose")}
+        art={<PlotSearchArt />}
         crumbs={[{ label: t("nav.verify"), href: "/verify" }]}
         meta={meta}
       />

@@ -25,10 +25,10 @@ export default function EvidenceList({ evidence }: { evidence: Evidence[] }) {
           <li
             key={`${e.code}-${i}`}
             data-code={e.code}
-            className={`flex items-start gap-3 rounded-lg border border-l-4 border-line bg-surface px-3 py-2 ${EDGE[sk]}`}
+            className={`glass-card flex flex-wrap items-start gap-3 border-l-[3px] px-3 py-3 ${EDGE[sk]}`}
           >
             <Badge tone={sev} icon={<Icon />}>{t(`risk.severity.${["HIGH", "MEDIUM", "INFO"].includes(e.severity) ? e.severity : "INFO"}`)}</Badge>
-            <span className="text-sm text-ink">{known ? text : `${text} (${e.code})`}</span>
+            <span className="min-w-0 flex-1 basis-48 text-sm text-ink">{known ? text : `${text} (${e.code})`}</span>
           </li>
         );
       })}
