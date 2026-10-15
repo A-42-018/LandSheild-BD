@@ -1,17 +1,20 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import PageHeader from "@/components/PageHeader";
+import { StateCard } from "@/components/ui";
+import { LostPlotArt } from "@/features/landing/Illustrations";
 
 export default function NotFound() {
   const t = useTranslations("errorPages");
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title={t("notFoundTitle")} purpose={t("notFoundBody")} />
-      <p>
-        <Link href="/" className="inline-flex min-h-11 items-center text-link underline underline-offset-2">
+    <StateCard
+      art={<LostPlotArt />}
+      title={t("notFoundTitle")}
+      body={t("notFoundBody")}
+      actions={
+        <Link href="/" className="btn-gold inline-flex min-h-12 items-center rounded-xl px-5 font-semibold">
           {t("goHome")}
         </Link>
-      </p>
-    </div>
+      }
+    />
   );
 }

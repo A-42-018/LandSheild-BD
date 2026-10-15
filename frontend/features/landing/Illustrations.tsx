@@ -312,5 +312,47 @@ export function ShieldArt({ className }: { className?: string }) {
   );
 }
 
+/** 404 / error: a map pin over an empty, dashed plot outline. */
+export function LostPlotArt({ className }: { className?: string }) {
+  return (
+    <Art className={className}>
+      <defs>
+        <linearGradient id="lp-ground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#E6F2ED" /><stop offset="1" stopColor="#B9DCCB" /></linearGradient>
+        <linearGradient id="lp-pin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#F1D88C" /><stop offset="1" stopColor="#C9952F" /></linearGradient>
+        <Blur id="lp-blur" />
+      </defs>
+      <Shadow id="lp-blur" cx={70} cy={98} rx={40} />
+      <path d="M18,74L70,52L122,74L70,96Z" fill="#7FB89B" transform="translate(0 5)" />
+      <path d="M18,74L70,52L122,74L70,96Z" fill="url(#lp-ground)" />
+      <path d="M34,74L70,59L106,74L70,89Z" fill="none" stroke="#2F8C6F" strokeWidth="1.6" strokeDasharray="4 3" />
+      <path d="M70,76m-3,0a3,1.4 0 1 0 6,0a3,1.4 0 1 0 -6,0" fill="#0E1F36" opacity="0.25" />
+      <path d={pin(70, 76, 13)} fill="#8A6417" transform="translate(2 2)" opacity="0.55" />
+      <path d={pin(70, 76, 13)} fill="url(#lp-pin)" />
+      <circle cx="70" cy="55.5" r="5" fill="#FFF8E0" />
+      <path d="M62,34L66,38M78,34L74,38M70,30V35" stroke="#D6B25C" strokeWidth="2" strokeLinecap="round" />
+    </Art>
+  );
+}
+
+/** Empty list / no result: an open folder with a magnifier. */
+export function EmptyArt({ className }: { className?: string }) {
+  return (
+    <Art className={className}>
+      <defs>
+        <linearGradient id="em-back" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#94C8B5" /><stop offset="1" stopColor="#5FAA90" /></linearGradient>
+        <linearGradient id="em-front" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#E6F2ED" /><stop offset="1" stopColor="#B9DCCB" /></linearGradient>
+        <Blur id="em-blur" />
+      </defs>
+      <Shadow id="em-blur" cx={66} cy={96} rx={42} />
+      <path d="M22,36H52L60,45H112V88H22Z" fill="url(#em-back)" />
+      <rect x="32" y="40" width="70" height="30" rx="3" fill="#FFFFFF" />
+      <path d="M40,50H92M40,58H80" stroke="#B9DCCB" strokeWidth="3" strokeLinecap="round" />
+      <path d="M22,58H116L108,90H22Z" fill="url(#em-front)" stroke="#FFFFFF" strokeOpacity="0.7" />
+      <circle cx="98" cy="66" r="12" fill="#FFFFFF" fillOpacity="0.55" stroke="#C9952F" strokeWidth="4" />
+      <path d="M107,75L118,86" stroke="#C9952F" strokeWidth="5" strokeLinecap="round" />
+    </Art>
+  );
+}
+
 export const SERVICE_ART = { verify: PlotSearchArt, check: ChecklistArt, track: RouteArt, verifyDoc: DeedArt } as const;
 export const TOOL_ART = { units: TapeMeasureArt, fees: FeeCalculatorArt, faraid: ScaleArt } as const;
