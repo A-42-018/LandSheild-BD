@@ -20,7 +20,7 @@ export default function Footer() {
       <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-gold" viewBox="0 0 1440 360" preserveAspectRatio="xMidYMid slice" fill="none">
         <path d={RINGS} stroke="currentColor" strokeOpacity="0.1" />
       </svg>
-      <div className="relative mx-auto grid max-w-[1200px] grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 lg:grid-cols-[1.5fr_repeat(4,1fr)]">
+      <div className="relative mx-auto grid max-w-[75rem] grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 lg:grid-cols-[1.5fr_repeat(4,1fr)]">
         <div className="col-span-2 lg:col-span-1">
           <Link href="/" className="inline-flex items-center gap-2.5 rounded-md text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -71,14 +71,14 @@ export default function Footer() {
           </div>
         </nav>
       </div>
-      <div className="relative mx-auto max-w-[1200px] px-4 pb-6">
+      <div className="relative mx-auto max-w-[75rem] px-4 pb-6">
         <p className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4 leading-relaxed text-white/80 backdrop-blur-sm">
           <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-gold-strong" />
           <span>{t("landing.disclaimer")}</span>
         </p>
       </div>
       <div className="relative border-t border-gold/25 bg-black/20">
-        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-white/60">
+        <div className="mx-auto flex max-w-[75rem] flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-white/60">
           <p>
             {t("common.demoLabel")} · {t("footer.updated")}
           </p>

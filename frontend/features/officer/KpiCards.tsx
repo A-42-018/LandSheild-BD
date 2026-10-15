@@ -11,7 +11,7 @@ import { intlLocale } from "@/lib/intl-locale";
 
 type NumKey = "total_records" | "pending_review" | "high_risk" | "verified" | "open_alerts" | "pending_mutations" | "active_encumbrances";
 
-/** Glass tiles (UI v2): icon chip carries the status colour; 2 columns on phones, 4 from 1024 px. */
+/** Glass tiles (UI v2): icon chip carries the status colour; the grid fills by rem width, so it also holds when the browser font size is raised. */
 const KPIS: { key: NumKey; chip: string; Icon: LucideIcon }[] = [
   { key: "total_records", chip: "bg-primary-soft text-primary", Icon: Database },
   { key: "pending_review", chip: "bg-review-soft text-review", Icon: Hourglass },
@@ -21,7 +21,7 @@ const KPIS: { key: NumKey; chip: string; Icon: LucideIcon }[] = [
   { key: "pending_mutations", chip: "bg-primary-soft text-primary", Icon: FileClock },
   { key: "active_encumbrances", chip: "bg-critical-soft text-critical", Icon: Gavel },
 ];
-const TILE = "glass-card flex h-full flex-col items-start gap-3 p-4 sm:flex-row sm:items-center";
+const TILE = "glass-card flex h-full min-w-0 flex-col items-start gap-3 p-4";
 
 function Chip({ cls, Icon }: { cls: string; Icon: LucideIcon }) {
   return (
@@ -46,12 +46,12 @@ export default function KpiCards() {
   const s: OfficerStats = q.data;
   const intact = s.ledger_status === "INTACT";
   return (
-    <ul aria-label={t("title")} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <ul aria-label={t("title")} className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,10.5rem),1fr))] gap-3">
       {KPIS.map(({ key, chip, Icon }) => (
         <li key={key}>
           <div className={TILE} data-testid={`kpi-${key}`}>
             <Chip cls={chip} Icon={Icon} />
-            <div className="min-w-0">
+            <div className="min-w-0 [overflow-wrap:normal]">
               <p className="text-sm text-ink-muted">{t(key)}</p>
               <p className="font-display text-3xl font-bold leading-tight text-ink">{fmt.format(s[key] ?? 0)}</p>
             </div>
@@ -61,7 +61,7 @@ export default function KpiCards() {
       <li>
         <div className={TILE} data-testid="kpi-ledger" data-state={s.ledger_status}>
           <Chip cls={intact ? "bg-verified-soft text-verified" : "bg-critical-soft text-critical"} Icon={intact ? Link2 : Link2Off} />
-          <div className="min-w-0">
+          <div className="min-w-0 [overflow-wrap:normal]">
             <p className="text-sm text-ink-muted">{t("ledger")}</p>
             <p className={`font-display text-2xl font-bold ${intact ? "text-verified" : "text-critical"}`}>
               {intact ? t("ledgerIntact") : t("ledgerBroken")}
