@@ -117,9 +117,9 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
         onSubmit={handleSubmit((v) => m.mutate(v))}
         noValidate
         aria-label={compact ? t("title") : undefined}
-        className={compact ? "grid grid-cols-2 items-start gap-3 lg:grid-cols-4" : "grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3"}
+        className={compact ? "grid grid-cols-2 items-start gap-3 lg:grid-cols-4" : "grid grid-cols-1 items-start gap-4 sm:grid-cols-2"}
       >
-        {!compact && <p className="text-ink-muted sm:col-span-2 lg:col-span-3">{t("intro")}</p>}
+        {!compact && <p className="text-ink-muted sm:col-span-2">{t("intro")}</p>}
         <Select
           label={t("division")}
           placeholder={t("selectDivision")}
@@ -181,7 +181,7 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
             <ul
               id="mouza-suggestions"
               role="listbox"
-              className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-auto rounded-md border border-line bg-surface py-1 shadow-lg"
+              className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-auto rounded-xl border border-line bg-surface py-1 shadow-lift"
             >
               {mouzaMatches.map((o, i) => (
                 <li
@@ -230,19 +230,20 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
         )}
         <Button
           type="submit"
+          size="lg"
           loading={m.isPending}
           icon={<Search />}
-          className={compact ? "mt-6 w-full lg:col-span-2" : "w-full sm:col-span-2 lg:col-span-3"}
+          className={compact ? "mt-6 w-full lg:col-span-2" : "w-full sm:col-span-2"}
         >
           {m.isPending ? t("searching") : t("submit")}
         </Button>
-        {!compact && <p className="text-xs text-ink-muted sm:col-span-2 lg:col-span-3">{t("demoNote")}</p>}
+        {!compact && <p className="text-xs text-ink-muted sm:col-span-2">{t("demoNote")}</p>}
       </form>
   );
 
   if (compact) return form;
   return (
-    <Card title={t("title")} icon={<SearchCheck />} accent="primary">
+    <Card title={t("title")} icon={<SearchCheck />}>
       {form}
     </Card>
   );

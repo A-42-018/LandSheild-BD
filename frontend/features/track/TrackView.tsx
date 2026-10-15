@@ -4,8 +4,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { Check, CircleDashed, Clock, Minus, Search, Route, XCircle, type LucideIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { Button, Card, Input } from "@/components/ui";
-import PageHeader from "@/components/PageHeader";
-import WhatYouNeed from "@/features/services/WhatYouNeed";
+import ServiceLayout from "@/components/ServiceLayout";
+import { RouteArt } from "@/features/landing/Illustrations";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
 import { formatDate } from "@/features/result/format";
@@ -33,10 +33,10 @@ export function Stepper({ data }: { data: MutationStatusDto }) {
         return (
           <li key={s.step} data-testid={`step-${s.step}`} data-state={s.state} className="flex gap-3" aria-current={s.state === "current" ? "step" : undefined}>
             <div className="flex flex-col items-center">
-              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 ${cls}`}>
+              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 ${cls}`}>
                 <Icon aria-hidden="true" className="h-5 w-5" />
               </span>
-              {!last && <span aria-hidden="true" className="my-1 w-0.5 flex-1 bg-line" />}
+              {!last && <span aria-hidden="true" className="my-1 w-0 flex-1 border-l-2 border-dashed border-primary/30" />}
             </div>
             <div className={last ? "pb-0" : "pb-5"}>
               <p className="font-semibold text-ink">{label}</p>
@@ -94,13 +94,11 @@ export default function TrackView() {
   const d = m.data;
   const fb = f.data;
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title={t("title")} purpose={t("purpose")} />
-      <p role="note" className="rounded-md border border-line bg-surface-muted px-4 py-2 text-sm font-medium text-ink">
+    <ServiceLayout service="track" title={t("title")} purpose={t("purpose")} art={<RouteArt />}>
+      <p role="note" className="glass-card px-4 py-2 text-sm font-medium text-ink">
         {t("demoNote")}
       </p>
-      <WhatYouNeed service="track" />
-      <Card title={t("formTitle")} icon={<Route />} accent="primary">
+      <Card title={t("formTitle")} icon={<Route />}>
         <form onSubmit={submit} noValidate className="flex flex-col gap-4">
           <Input
             label={t("number")}
@@ -117,7 +115,7 @@ export default function TrackView() {
               {t(`errors.${apiErr}`)}
             </p>
           )}
-          <Button type="submit" loading={m.isPending || f.isPending} icon={<Search />} className="w-full sm:w-auto">
+          <Button type="submit" size="lg" fullWidthOnMobile loading={m.isPending || f.isPending} icon={<Search />}>
             {t("submit")}
           </Button>
         </form>
@@ -180,6 +178,6 @@ export default function TrackView() {
           </Card>
         )}
       </div>
-    </div>
+    </ServiceLayout>
   );
 }
