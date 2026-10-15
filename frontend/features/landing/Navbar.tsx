@@ -9,7 +9,7 @@ const COLS = Array.from({ length: 22 }, (_, i) => i);
 function HeaderArt() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-      <svg className="absolute inset-y-0 left-0 h-full w-[46rem] max-w-full text-[#D6B25C]" viewBox="0 0 736 64" preserveAspectRatio="xMinYMid slice" fill="none">
+      <svg className="absolute inset-y-0 left-0 h-full w-[46rem] max-w-full text-gold" viewBox="0 0 736 64" preserveAspectRatio="xMinYMid slice" fill="none">
         <path d="M-10,58L120,6M60,70L210,-8M150,66L260,10L330,40M-10,24L90,40L180,22M240,64L300,30L420,52M380,-4L470,40L560,18" stroke="currentColor" strokeOpacity="0.16" strokeWidth="1" />
         <path d="M30,-6L70,70M200,-6L230,70M320,-6L300,70" stroke="currentColor" strokeOpacity="0.3" className="text-white/[0.17]" strokeWidth="1" />
       </svg>
@@ -36,7 +36,7 @@ export default function Navbar() {
     <>
       <header className="header-glass sticky top-0 z-[1500] text-white">
         <HeaderArt />
-        <div className="relative mx-auto flex min-h-16 max-w-[1200px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
+        <div className="relative mx-auto flex min-h-16 max-w-[75rem] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
           <Link
             href="/"
             className="mr-2 flex items-center gap-2.5 rounded-md text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
@@ -45,7 +45,7 @@ export default function Navbar() {
             <img src="/brand/logo-mark.svg" alt="" width={64} height={64} className="h-10 w-10 object-contain drop-shadow-[0_2px_6px_rgb(0_0_0/0.45)]" />
             <span className="flex flex-col leading-tight">
               <span className="font-display text-[1.2rem] font-extrabold uppercase leading-none tracking-[0.045em]">{t("appName")}</span>
-              <span className="mt-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#E9DDB4]/85" lang="bn" aria-hidden="true">{t("subLine")}</span>
+              <span className="mt-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#E9DDB4]/85" lang="bn" aria-hidden="true">{t("subLine")}</span>
             </span>
           </Link>
           <HeaderMenu

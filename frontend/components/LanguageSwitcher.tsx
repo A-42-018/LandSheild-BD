@@ -35,10 +35,10 @@ export default function LanguageSwitcher({ variant = "default" }: { variant?: "d
           aria-current={l === locale ? "true" : undefined}
           className={
             header
-              ? "inline-flex h-full min-w-10 items-center justify-center px-2.5 text-sm font-semibold first:rounded-l-md last:rounded-r-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F4A35]/60 " +
+              ? "inline-flex h-full min-w-10 items-center justify-center px-2.5 text-sm font-semibold first:rounded-l-md last:rounded-r-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-deep-2/60 " +
                 (l === locale ? "bg-[#E8F1EC] text-[#0B3D2C]" : "text-slate-500 hover:text-[#0B3D2C]")
               : strip
-              ? "inline-flex min-h-8 items-center rounded px-2 text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 " +
+              ? "inline-flex min-h-8 items-center rounded px-2 text-[0.8125rem] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 " +
                 (l === locale ? "bg-white/20 text-white underline underline-offset-4" : "text-white/90 hover:text-white")
               : "inline-flex min-h-11 min-w-11 items-center justify-center rounded px-2.5 py-1 text-sm font-semibold tracking-wide focus-visible:outline-none focus-visible:ring-2 " +
             (onBrand

@@ -35,16 +35,8 @@
     --gold: 214 178 92;
     --gold-strong: 233 201 111;
     --gold-soft: 241 216 140;
-    /* Flat: gradients / glass kept only so old classes keep working (all solid values). */
-    --grad-from: 0 106 78;
-    --grad-to: 0 106 78;
-    --grad-soft-from: 244 247 245;
-    --grad-soft-to: 244 247 245;
     --header-from: 0 106 78;
     --header-to: 0 106 78;
-    --glass-from: 0 106 78;
-    --glass-to: 0 106 78;
-    --glass-a: 1;
   }
   :root.dark {
     color-scheme: dark;
@@ -76,15 +68,8 @@
     --gold: 214 178 92;
     --gold-strong: 233 201 111;
     --gold-soft: 241 216 140;
-    --grad-from: 0 86 63;
-    --grad-to: 0 86 63;
-    --grad-soft-from: 9 14 26;
-    --grad-soft-to: 9 14 26;
     --header-from: 0 86 63;
     --header-to: 0 86 63;
-    --glass-from: 0 86 63;
-    --glass-to: 0 86 63;
-    --glass-a: 1;
   }
   body { @apply bg-surface-muted text-ink antialiased; }
   /* Headings use the display face (Plus Jakarta Sans); Bangla glyphs fall back to Noto Sans Bengali via the stack. Body stays Inter. */

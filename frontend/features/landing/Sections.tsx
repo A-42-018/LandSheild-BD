@@ -103,7 +103,7 @@ export function ServiceTiles() {
   return (
     <Band id="services-title">
       <h2 id="services-title" className={h2}>{t("title")}</h2>
-      <ul className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
+      <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
         {SERVICES.filter((s) => s.key !== "track" || FLAGS.track).map(({ key, href, icon }) => (
           <li key={key}>
             <ArtCard href={href} testId="service-tile" icon={icon} art={SERVICE_ART[key]} title={t(`${key}.title`)} desc={t(`${key}.desc`)} />
@@ -121,7 +121,7 @@ export function CitizenTools() {
     <Band id="tools-title">
       <h2 id="tools-title" className={h2}>{t("title")}</h2>
       <p className="mt-3 max-w-3xl text-ink-muted">{t("intro")}</p>
-      <ul className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
+      <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
         {TOOL_TILES.map(({ key, href, icon }) => (
           <li key={key} className="sm:last:col-span-2 sm:last:mx-auto sm:last:w-[calc(50%-0.625rem)]">
             <ArtCard href={href} testId="tool-tile" icon={icon} art={TOOL_ART[key]} title={tt(`${key}.title`)} desc={tt(`${key}.desc`)} />
