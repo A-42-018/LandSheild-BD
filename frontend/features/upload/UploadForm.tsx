@@ -18,6 +18,7 @@ import {
   type UploadErrorCode,
 } from "./validation";
 import { EXTRACTION_READY } from "@/features/review/types";
+import StalledActions from "@/features/review/StalledActions";
 import { TERMINAL_STATUSES, type DocumentUploadOut } from "./types";
 import { Link } from "@/i18n/navigation";
 import OfficeCascade from "@/features/officers/OfficeCascade";
@@ -104,6 +105,7 @@ function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
         </div>
       )}
       {busy && status !== "UPLOADED" && !q.isError && <p className="text-sm text-ink-muted">{t("polling")}</p>}
+      {status === "FAILED" && <StalledActions id={doc.id} status="FAILED" failureCode={q.data?.failure_code ?? doc.failure_code} />}
       {!busy && status !== "FAILED" && (
         <Link
           href={`/officer/review/${doc.id}`}

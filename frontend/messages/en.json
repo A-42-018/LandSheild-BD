@@ -469,7 +469,13 @@
     },
     "failed": {
       "OCR_UNAVAILABLE": "Text recognition is not available on this server right now. Please try again later.",
-      "OCR_TIMEOUT": "Reading this document took too long. Try a smaller or clearer file."
+      "OCR_TIMEOUT": "Reading this document took too long. Try a smaller or clearer file.",
+      "OCR_FAILED": "Text recognition stopped on this document. Try again, or upload a clearer scan.",
+      "IMAGE_DECODE_FAILED": "This image could not be opened. Upload a JPG, PNG or PDF that opens on your computer.",
+      "TESSERACT_NOT_INSTALLED": "Text recognition is not installed on this server. Contact the administrator.",
+      "TESSERACT_LANG_MISSING": "The Bangla or English reading data is missing on this server. Contact the administrator.",
+      "PROCESSING_ERROR": "Something went wrong while reading this document. Try again.",
+      "codeLabel": "Error code:"
     },
     "panes": {
       "label": "Review panes",
