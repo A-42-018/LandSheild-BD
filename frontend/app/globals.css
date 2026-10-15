@@ -204,6 +204,14 @@
       radial-gradient(28rem 20rem at 10% 0%, rgb(127 224 176 / 0.18), transparent 70%),
       linear-gradient(165deg, #0F4A35 0%, #0B3D2C 55%, #08301F 100%);
   }
+  /* Horizontal scroller with soft fade edges (tab rows on phones). */
+  .scroll-fade {
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+  }
+  .scroll-fade::-webkit-scrollbar { display: none; }
+  @media (min-width: 1024px) { .scroll-fade { -webkit-mask-image: none; mask-image: none; } }
   /* Tinted icon tile used across landing sections. */
   .icon-tile {
     display: inline-flex;

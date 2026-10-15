@@ -59,7 +59,7 @@ export default function Modal({ open, onClose, title, children, footer, classNam
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-brand-deep/60 backdrop-blur-sm sm:items-center sm:p-4"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
@@ -69,11 +69,12 @@ export default function Modal({ open, onClose, title, children, footer, classNam
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={onKeyDown}
-        className={cn("w-full max-w-lg rounded-lg border border-line bg-surface p-5 shadow-raised", className)}
+        className={cn("max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-panel border border-line bg-surface p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-lift sm:rounded-panel sm:pb-5", className)}
       >
+        <div aria-hidden="true" className="mx-auto -mt-2 mb-3 h-1 w-10 rounded-full bg-line sm:hidden" />
         <div className="mb-4 flex items-start justify-between gap-4 border-b border-line pb-3">
           <h2 id={titleId} className="text-lg font-semibold text-ink">{title}</h2>
-          <button type="button" aria-label={t("close")} onClick={onClose} className="inline-flex h-11 w-11 items-center justify-center rounded-md text-ink-muted hover:bg-primary-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+          <button type="button" aria-label={t("close")} onClick={onClose} className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-ink-muted hover:bg-primary-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
         </div>

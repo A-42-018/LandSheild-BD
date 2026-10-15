@@ -97,3 +97,16 @@ describe("states", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(bn.errors.generic);
   });
 });
+
+describe("UI v2 Tabs/Modal", () => {
+  it("segmented variant keeps tab semantics", () => {
+    wrap(<Tabs variant="segmented" label="x" tabs={[{ id: "a", label: "A", content: "pa" }, { id: "b", label: "B", content: "pb" }]} />);
+    expect(screen.getByRole("tablist").parentElement).toHaveAttribute("data-variant", "segmented");
+    fireEvent.click(screen.getByRole("tab", { name: "B" }));
+    expect(screen.getByRole("tab", { name: "B" })).toHaveAttribute("aria-selected", "true");
+  });
+  it("Modal has a drag handle for the phone bottom sheet", () => {
+    wrap(<Modal open onClose={() => {}} title="T">body</Modal>);
+    expect(screen.getByRole("dialog")).toHaveClass("rounded-t-panel");
+  });
+});
