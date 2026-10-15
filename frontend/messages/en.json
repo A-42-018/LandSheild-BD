@@ -356,7 +356,13 @@
     "ownOfficeOnly": "Records you upload are kept in this office only. You cannot upload for another area.",
     "pickOffice": "Choose the land office this record belongs to (required).",
     "pickOfficeOptional": "Choose the land office this record belongs to.",
-    "purpose": "Upload a scanned deed or khatian. Text is read and a reviewer confirms every field."
+    "purpose": "Upload a scanned deed or khatian. Text is read and a reviewer confirms every field.",
+    "steps": {
+      "label": "Progress",
+      "uploaded": "Uploaded",
+      "ocr": "OCR",
+      "review": "Review"
+    }
   },
   "review": {
     "title": "Review extraction",
@@ -464,7 +470,13 @@
     "failed": {
       "OCR_UNAVAILABLE": "Text recognition is not available on this server right now. Please try again later.",
       "OCR_TIMEOUT": "Reading this document took too long. Try a smaller or clearer file."
-    }
+    },
+    "panes": {
+      "label": "Review panes",
+      "doc": "Document",
+      "fields": "Fields"
+    },
+    "splitter": "Resize the document and fields panes"
   },
   "landing": {
     "disclaimerTitle": "Disclaimer",

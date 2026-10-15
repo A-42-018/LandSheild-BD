@@ -2,7 +2,7 @@
 import { useId, useRef, useState, type DragEvent } from "react";
 import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, CheckCircle2, FileText, Play, UploadCloud } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, CircleDashed, FileText, Play, ScanLine, UploadCloud, UserCheck } from "lucide-react";
 import { Button, Card, Input, Select } from "@/components/ui";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { ApiError } from "@/lib/api";
@@ -17,6 +17,7 @@ import {
   validateFile,
   type UploadErrorCode,
 } from "./validation";
+import { EXTRACTION_READY } from "@/features/review/types";
 import { TERMINAL_STATUSES, type DocumentUploadOut } from "./types";
 import { Link } from "@/i18n/navigation";
 import OfficeCascade from "@/features/officers/OfficeCascade";
@@ -35,16 +36,30 @@ function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
     onSettled: () => qc.invalidateQueries({ queryKey: ["document", doc.id] }),
   });
   const busy = !TERMINAL_STATUSES.includes(status);
+  const ocrDone = EXTRACTION_READY.includes(status);
+  const steps = [
+    { key: "uploaded", Icon: UploadCloud, done: true },
+    { key: "ocr", Icon: ScanLine, done: ocrDone },
+    { key: "review", Icon: UserCheck, done: status === "APPROVED" || status === "REJECTED" },
+  ];
   return (
     <div className="flex flex-col gap-3" data-testid="upload-result">
+      <ol aria-label={t("steps.label")} className="grid grid-cols-3 gap-2" data-testid="upload-steps">
+        {steps.map(({ key, Icon, done }) => (
+          <li key={key} data-done={done} className={`flex flex-col items-center gap-1 rounded-xl border p-2 text-center text-xs font-medium ${done ? "border-verified/40 bg-verified-soft/60 text-verified" : "border-line bg-surface/60 text-ink-muted"}`}>
+            <span aria-hidden="true">{done ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}</span>
+            {t(`steps.${key}`)}
+          </li>
+        ))}
+      </ol>
       <p
         role="status"
-        className="flex items-center gap-2 rounded-md border border-verified/40 bg-verified/10 px-3 py-2 font-medium text-ink"
+        className="glass-card flex items-center gap-2 border-l-[4px] border-l-verified px-3 py-2 font-medium text-ink"
       >
         <CheckCircle2 aria-hidden="true" className="h-5 w-5 shrink-0 text-verified" />
         <span>{doc.duplicate ? t("duplicate") : t("uploaded")}</span>
       </p>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg border border-line bg-surface-muted p-3 text-sm">
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-xl border border-line/70 bg-surface/60 p-3 text-sm">
         <dt className="text-ink-muted">{t("statusLabel")}</dt>
         <dd data-testid="doc-status">
           <StatusBadge code={status} />
@@ -193,7 +208,7 @@ export default function UploadForm() {
   }
 
   return (
-    <Card title={t("title")} icon={<UploadCloud />} accent="primary">
+    <Card title={t("title")} icon={<UploadCloud />}>
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         <p className="text-ink-muted">{t("intro")}</p>
 
@@ -206,13 +221,13 @@ export default function UploadForm() {
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
           className={cn(
-            "flex flex-col items-center gap-2 rounded-xl border-2 border-dashed p-8 text-center transition-colors",
+            "glass-card flex flex-col items-center gap-2 border-2 border-dashed p-8 text-center transition-colors",
             "focus-within:ring-2 focus-within:ring-primary",
-            dragging ? "border-primary bg-primary-soft" : "border-primary/40 bg-primary-soft/40 hover:bg-primary-soft/70",
+            dragging ? "border-primary bg-primary-soft" : "border-primary/40 hover:border-primary",
             shownError && "border-critical",
           )}
         >
-          <span aria-hidden="true" className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft text-primary">
+          <span aria-hidden="true" className="icon-tile !h-12 !w-12 !rounded-xl">
             <UploadCloud className="h-6 w-6" />
           </span>
           <label htmlFor={fileId} className="cursor-pointer font-medium text-primary underline">

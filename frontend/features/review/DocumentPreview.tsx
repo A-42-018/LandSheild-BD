@@ -29,7 +29,7 @@ export default function DocumentPreview({ id, fileType }: { id: string; fileType
           {t("preview.reset")}
         </Button>
       </div>
-      <div className="max-h-[70vh] min-h-[16rem] overflow-auto rounded-xl border border-line bg-surface-muted shadow-card">
+      <div className="max-h-[70vh] min-h-[16rem] overflow-auto glass-card !rounded-card">
         {file.loading && <LoadingState />}
         {file.error && <ErrorState message={t("preview.error")} onRetry={file.retry} />}
         {file.url && !isPdf && (
