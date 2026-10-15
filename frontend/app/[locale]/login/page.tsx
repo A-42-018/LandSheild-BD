@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
-import Backdrop from "@/features/landing/Backdrop";
 import LoginForm from "@/features/auth/LoginForm";
 import { LoadingState } from "@/components/ui";
 
@@ -9,7 +8,6 @@ export default function LoginPage({ params: { locale } }: { params: { locale: st
   setRequestLocale(locale);
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:pt-2">
-      <Backdrop />
       <Suspense fallback={<LoadingState />}>
         <LoginForm />
       </Suspense>
