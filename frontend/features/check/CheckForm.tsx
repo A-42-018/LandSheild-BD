@@ -56,9 +56,9 @@ export default function CheckForm() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card title={t("title")} icon={<ListChecks />} accent="primary">
-        <form onSubmit={handleSubmit((v) => m.mutate(v))} noValidate className="grid grid-cols-1 items-start gap-4 md:grid-cols-3">
-          <p className="text-ink-muted md:col-span-3">{t("intro")}</p>
+      <Card title={t("title")} icon={<ListChecks />}>
+        <form onSubmit={handleSubmit((v) => m.mutate(v))} noValidate className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+          <p className="text-ink-muted md:col-span-2">{t("intro")}</p>
           <Select
             label={tv("division")}
             placeholder={tv("selectDivision")}
@@ -97,16 +97,16 @@ export default function CheckForm() {
             <Input label={tv("khatian")} required inputMode="numeric" autoComplete="off" hint={tv("numericHint")} error={err(errors.khatian)} {...register("khatian")} />
             <Input label={tv("dag")} required inputMode="numeric" autoComplete="off" hint={tv("numericHint")} error={err(errors.dag)} {...register("dag")} />
           </div>
-          <div className="md:col-span-3"><Input label={t("seller")} autoComplete="off" hint={t("sellerHint")} error={err(errors.seller)} {...register("seller")} /></div>
+          <div className="md:col-span-2"><Input label={t("seller")} autoComplete="off" hint={t("sellerHint")} error={err(errors.seller)} {...register("seller")} /></div>
           {apiErr && (
-            <p role="alert" className="text-sm text-critical md:col-span-3">
+            <p role="alert" className="text-sm text-critical md:col-span-2">
               {t(`errors.${apiErr}`)}
             </p>
           )}
-          <Button type="submit" loading={m.isPending} icon={<Search />} className="w-full md:col-span-3">
+          <Button type="submit" size="lg" loading={m.isPending} icon={<Search />} className="w-full md:col-span-2">
             {m.isPending ? t("checking") : t("submit")}
           </Button>
-          <p className="text-xs text-ink-muted md:col-span-3">{tv("demoNote")}</p>
+          <p className="text-xs text-ink-muted md:col-span-2">{tv("demoNote")}</p>
         </form>
       </Card>
       <div aria-live="polite">{m.data && <CheckResult data={m.data} />}</div>
