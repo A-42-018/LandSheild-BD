@@ -142,7 +142,7 @@ export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
   return (
     <div className="flex min-w-0 flex-col gap-4" data-testid="extraction-panel">
       {data.has_low_confidence && (
-        <div role="alert" data-testid="low-confidence-banner" className="rounded-xl border border-review bg-review-soft p-4 text-sm shadow-card">
+        <div role="alert" data-testid="low-confidence-banner" className="glass-card border-l-[4px] border-l-review p-4 text-sm">
           <p className="flex items-center gap-2 font-semibold text-review">
             <AlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0" />
             <span>{te("lowConfidence")}</span>
@@ -153,7 +153,7 @@ export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
         </div>
       )}
       <EngineBadge data={data} />
-      <Card title={t("fieldsTitle")} icon={<ListChecks />} accent="primary">
+      <Card title={t("fieldsTitle")} icon={<ListChecks />}>
         <dl className="divide-y divide-line">
           {data.fields.map((f) => (
             <FieldRow
