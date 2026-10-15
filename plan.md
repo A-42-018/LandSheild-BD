@@ -23,7 +23,8 @@ S2-b (user): watch it; optional voice-over; upload (YouTube unlisted or Drive, "
 S1: ✅ (concept note PDF 3 p; only VIDEO_URL left).
 OPEN (carried): EN+BN evidence i18n for ACTIVE_LITIGATION/KHAS_LAND/UNDER_ACQUISITION/ACTIVE_MORTGAGE not done; real OCR (tesseract) path of verify-document untested; ML scoring skipped in plain dev venv; Docker image never built locally; `next build` not run. Ledger chain is only as strong as DB write access (anchoring head hash off-DB is a T1 idea).
 Citizen tools: C1 ✅ C2 ✅ C5 ✅; left C3 → C4 (backend) (cards in roadmap.md §5 "C —"); suggested pairing C1+C2 in one window.
-Next work    : none from the E-GOV list (E1-E6 done 2026-10-14). Open: C3, C4, S2-b, S3 (user).
+UI v2 (2026-10-15) 🟡 — landing, header, footer, sign-in/sign-up/officer-request redesigned (branch ui-header-landing-polish, pushed); whole-site roadmap R0-R12 in section "UI REDESIGN V2" below. Answer V2.7 decisions first.
+Next work    : R0 (UI REDESIGN V2). Also open: C3, C4, S2-b, S3 (user).
 Next phase   : S2-b upload + VIDEO_URL (user) → S3 submit Round 1 🔒 (both skipped by request; user does them). Re-export the concept note PDF (scripts/export_concept_note.py, needs Chromium): its Bangla-OCR sentence changed.
 Carried over : reseed for demo password (Q17)
 ```
@@ -73,6 +74,19 @@ Carried over : reseed for demo password (Q17)
 | Next | E4 | Bangla place names/numerals + feedback/grievance form + "helpful?" prompt | Should | ✅ |
 | Next | E5 | Accessibility pass on every route (axe, 125 %, 360 px, keyboard) | Must | ✅ |
 | Next | E6 | Officer-side consistency + session-timeout warning | Could | ✅ |
+| V2 | R0 | Tokens + utilities (brand colours, radii, fluid type, blur fallback) | Must | ⬜ |
+| V2 | R1a/b | Core components v2 (Card/Button/Badge · Input/Select/Tabs/Modal) | Must | ⬜ |
+| V2 | R2 | PageHero band + PageHeader v2 + backdrop on public pages | Must | ⬜ |
+| V2 | R3 | System states: 404, error, loading skeletons, empty | Must | ⬜ |
+| V2 | R4a/b | Service pages (verify, check, track · verify-document, feedback) | Must | ⬜ |
+| V2 | R5a/b/c | Result + report (summary/risk · tables → cards · report, QR, check result) | Must | ⬜ |
+| V2 | R6 | Tools hub + calculators | Should | ⬜ |
+| V2 | R7 | Hubs + reading pages (charter, sitemap, about, FAQ, legal) | Should | ⬜ |
+| V2 | R8a-d | Officer workspace (shell+KPIs · queue/alerts · review/upload · mutations/admin) | Should | ⬜ |
+| V2 | R9 | Map + graph (glass overlays, mobile bottom sheet) | Could | ⬜ |
+| V2 | R10 | Motion + feedback (reveal, shimmer, toasts) | Could | ⬜ |
+| V2 | R11 | Responsive + a11y + performance QA gate 🔒 | Must | ⬜ |
+| V2 | R12 | Cleanup (hex → tokens, dead classes, docs/ui.md v2) | Should | ⬜ |
 
 ## E-GOV UPGRADE (next work) — audit 2026-10-14
 Verdict: the "Formal Green" spec (roadmap §4) is in place — Bangla-first, light default, demo strip, text-size control, service-first hero, breadcrumbs + "data as of", icon+text statuses, 44 px targets, print styles. Still missing for a full e-governance portal: real info pages, error pages, service transparency, consistent layout, Bangla data. Rules: demo only — no Shapla emblem, no gov.bd wording, no real phone numbers; EN+BN parity for every new string.
@@ -104,6 +118,210 @@ Verdict: the "Formal Green" spec (roadmap §4) is in place — Bangla-first, lig
 
 **E6 — Officer side** [Could · S–M · frontend]
 - PageHeader on upload, audit-log, graph pages (left out in U7); office name in breadcrumb meta; session-timeout warning modal.
+
+## UI REDESIGN V2 — whole site in the landing + sign-in style (roadmap 2026-10-15)
+Goal: every page looks and behaves like the new landing page (`/`) and sign-in pages (`/login`, `/signup`, `/officer-signup`), and works well from a 320 px phone up to a 2560 px monitor. Today only those pages, the header and the footer use the new style; every inner page still uses the flat U1–U7 look (bordered white cards, flat grey tabs, plain tables) — checked 2026-10-15 on `/track`, `/services`, `/tools/fees` and the officer area.
+Rules for this track: no route, `data-testid`, aria or i18n-key renames without updating tests (RULES 2); EN+BN parity for any new string; demo only (no gov emblem/wording); one phase = one commit on a topic branch, never on `remove-scraped-data`; budget per phase stays RULES 1 (≤ 6 files, ≤ ~200 LOC) — big phases are already split into a/b/c.
+
+### V2.1 Design language (source of truth = what is live on `/` and `/login`)
+| Element | Now lives in | Rule for every page |
+|---|---|---|
+| Deep green brand surface | `.header-glass`, `.auth-panel`, `.hero-banner` (globals.css) — gradient #0A3527 → #0F4A35 | Header, footer, page hero bands, sign-in panel, officer sidebar header. White text only on this surface. |
+| Gold accent | #D6B25C / #E9C96F / #F1D88C, `.btn-gold`, active nav underline | One gold touch per view: active nav, accent bar under H1/H2, primary CTA on dark surfaces. Never body text on light surfaces (contrast). |
+| Page background | `features/landing/Backdrop.tsx` (contours + plot grid, fades out) | Public pages: backdrop at the top. Officer area: plain `surface-muted` (dense data, no decoration). |
+| Glass card | `.glass-card`, `.glass-card-link` (14 px radius, translucent surface, soft lifted shadow, hover lift) | Default container for every card, form, table wrapper, notice and modal. Replaces `rounded-lg border border-line bg-surface`. |
+| Section panel | `.section-panel` (20 px radius, tinted green + gold glow) | Groups a whole section (e.g. result "Evidence", FAQ group). Max one or two per page. |
+| Icon tile | `.icon-tile` (40 px tinted square) | Every list/feature icon. Lucide icon inside, never bare. |
+| 3D illustrations | `features/landing/Illustrations.tsx` (Plot, Checklist, Route, Deed, TapeMeasure, FeeCalculator, Scale, Shield) | One per service page hero + empty/error states. Reuse; new ones only where no fit exists (see V2.5). |
+| Headings | Plus Jakarta Sans (H1/H2 via `font-display`), `.section-title` accent bar | H1 once per page in the page hero; H2 = section titles with accent bar; H3 Inter semibold. |
+| Body | Inter; Bangla = Noto Sans Bengali | Unchanged. Line length 60–75 ch for reading pages. |
+| Radius scale | 8 (inputs/buttons) · 14 (cards) · 20–22 (panels, auth card) · 24 (hero banner) | Tailwind `rounded-2xl` is capped at 8 px in tailwind.config.ts → add named radii in R0. |
+| Motion | hover lift 3 px, 200–300 ms, illustration rise; all off under `prefers-reduced-motion` (global rule) | No motion that carries meaning; no parallax. |
+
+### V2.2 Page templates (every route maps to one)
+| Template | Layout | Routes |
+|---|---|---|
+| **A · Service page** | Compact green **page hero band** (breadcrumb, H1, purpose, small 3D illustration on the right, gold accent) → two columns ≥ 1024 px: form in a glass card (7/12) + sticky "What you need" glass card (5/12). Below 1024: "What you need" collapses into a `<details>` above the form. Submit = 48 px full-width on phones. | `/verify`, `/check`, `/track`, `/verify-document`, `/tools/units`, `/tools/fees`, `/tools/inheritance`, `/feedback` |
+| **B · Result / report** | Summary header glass card (record id, location, big risk badge, "data as of", actions: report, QR, share) → section tabs as a segmented pill bar that turns into a sticky horizontal-scroll chip row on phones → each section a glass card; tables in glass wrappers that become stacked "key: value" cards < 640 px. Print stays flat (no glass, no backdrop). | `/verify/result`, `/check` (result state), `/report/[id]`, `/v/[landId]` (public QR), `/verify/graph` |
+| **C · Hub** | Page hero band → grid of `ArtCard`s (same component as landing services/tools). | `/tools`, `/services` (charter: one glass card per service with a "what it costs / how long / who" icon-tile row), `/sitemap` |
+| **D · Reading page** | Page hero band → 70 ch column; desktop ≥ 1280: sticky table of contents on the left; FAQ as accordion glass cards; "Last updated" chip. | `/about`, `/faq`, `/accessibility`, `/privacy`, `/terms`, `/data-sources` |
+| **E · Workspace (officer)** | Light content area (no backdrop) · sidebar: deep-green header block with office name + glass nav items with gold active bar · KPI tiles = glass cards with icon tiles · tables in glass wrappers with sticky header · review = two panes with sticky glass action bar. Below 1024: sidebar becomes the existing overlay menu pattern (like the header panel); tables → cards < 640. | `/officer`, `/officer/review/[id]`, `/officer/upload`, `/officer/mutations`, `/officer/mutations/[id]`, `/officer/admin`, `/officer/audit-logs`, `/officer/archive`, `/officer/feedback` |
+| **F · Map / graph canvas** | Full-width canvas, floating glass panels (search, legend, details). Phones: details become a bottom sheet (drag handle, 40/90 % snap), legend behind a button. | `/map`, `/verify/graph` canvas |
+| **G · System states** | Centred glass card with a 3D illustration, H1, one line, one primary + one secondary action. | `not-found.tsx`, `[...rest]`, `error.tsx`, `loading.tsx` (skeletons), `EmptyState`, `ErrorState`, `LoadingState`, `RequireRole` "not allowed" |
+| **Done** | — | `/` (landing), `/login`, `/signup`, `/officer-signup`, header, footer |
+
+### V2.3 Responsive system (applies to every phase)
+- **Breakpoints:** 320 · 360 · 375/390/414 (phones) · 600 · 768 (tablet portrait, `md`) · 1024 (`lg`, tablet landscape / small laptop) · 1120 (header menu switch, keep) · 1280 · 1440 · 1920+. Container stays 1200 px max (E1); on ≥ 1920 the backdrop and hero band stretch, content does not.
+- **Fluid type:** H1 `clamp(1.75rem, 1.2rem + 2.2vw, 2.6rem)`, H2 `clamp(1.375rem, 1.1rem + 1vw, 1.75rem)`; Bangla keeps its own sizes/line heights (`:lang(bn)` rules in globals.css).
+- **Grids:** cards `1 col < 640 · 2 cols ≥ 640 · 3 cols ≥ 1024` (services/tools hubs keep 2 + centred odd card); forms 1 col < 768, 2 col ≥ 768 for short fields (E1 rule), long fields always full width.
+- **Touch:** 44 px minimum targets (already global), 48 px primary buttons, 8 px gap between tappable items, no hover-only information.
+- **Tables:** < 640 px every data table renders as stacked cards (`Table` gets a `stackOnMobile` prop — one implementation, used everywhere); ≥ 640 horizontal scroll with sticky first column only when > 5 columns.
+- **Sticky UI:** header 64 px; page-level action bars (review approve/reject, result actions) sticky bottom on phones with `padding-bottom: env(safe-area-inset-bottom)`.
+- **Viewport units:** use `dvh` for full-height panels (map, auth card on phones) so mobile browser bars do not cut content.
+- **Landscape phones (≤ 480 px tall):** page hero band shrinks to title only; bottom sheets max 85 % height.
+- **Zoom / text size:** layout must hold at 200 % zoom and 125 % OS text at 360 px (E5 rule) — no fixed heights on text containers, illustrations hide below 360 px when space is short.
+- **Long Bangla strings:** test with BN for every phase; buttons/tabs wrap to 2 lines instead of truncating; never `whitespace-nowrap` on translated text except nav links ≥ 1120 px.
+- **Dark mode:** every new surface uses tokens; the deep green surfaces stay the same in both themes; check each phase in dark.
+- **Performance:** `backdrop-filter` only on cards above the backdrop/photo; add `@supports not (backdrop-filter: blur(1px))` fallback to a solid surface; max ~12 blurred elements per screen (low-end Android); photos as WebP with an 800 px mobile file (as `/landing/hero-*`); illustrations stay inline SVG (no requests); no layout shift (reserve illustration boxes).
+- **Print:** report and result pages print flat and light (existing `@media print` block) — glass, backdrop, hero bands hidden.
+
+### V2.4 Phases
+| # | Phase | Pri | Size | Depends |
+|---|---|---|---|---|
+| R0 | Tokens + utilities (brand colours, radii, fluid type, blur fallback) | Must | S | — |
+| R1a / R1b | Core components v2 (Card/Button/Badge · Input/Select/Tabs/Modal) | Must | M | R0 |
+| R2 | PageHero band + PageHeader v2 + backdrop on public pages | Must | S | R0 |
+| R3 | System states (404, error, loading skeletons, empty, not-allowed) | Must | S | R1a, R2 |
+| R4a / R4b | Service pages (verify, check, track · verify-document, feedback) | Must | M | R1, R2 |
+| R5a / R5b / R5c | Result + report (summary/risk · tables → cards · report, QR, check result) | Must | L | R1, R4 |
+| R6 | Tools hub + calculators | Should | S | R1, R2 |
+| R7 | Hubs + reading pages (services charter, sitemap, about, FAQ, legal) | Should | M | R2 |
+| R8a / R8b / R8c / R8d | Officer workspace (shell+KPIs · queue/alerts/charts · review+upload · mutations/admin/audit/archive) | Should | L | R1 |
+| R9 | Map + graph (glass overlays, mobile bottom sheet) | Could | M | R1 |
+| R10 | Motion + feedback (reveal on scroll, skeleton shimmer, toasts) | Could | S | R1 |
+| R11 🔒 | Responsive + a11y + performance QA gate | Must | M | all |
+| R12 | Cleanup (dead tokens/classes, docs/ui.md v2) | Should | S | R11 |
+
+**R0 — Tokens + utilities** [Must · S · frontend]
+- Files: `frontend/app/globals.css`, `frontend/tailwind.config.ts`, `docs/ui.md`.
+- Add CSS variables `--brand-deep` (10 53 39), `--brand-deep-2` (15 74 53), `--gold` (214 178 92), `--gold-strong` (233 201 111), `--gold-soft` (241 216 140); Tailwind colours `brand-deep`, `brand-deep-2`, `gold`, `gold-strong`, `gold-soft` (same `rgb(var(--x) / <alpha-value>)` pattern).
+- Named radii `rounded-card` 14 px, `rounded-panel` 20 px, `rounded-hero` 24 px; shadows `shadow-glass`, `shadow-lift`.
+- Fluid H1/H2 sizes (V2.3) in the base layer; `@supports not (backdrop-filter…)` fallback for `.glass-card`, `.hero-banner` text panels.
+- Do NOT yet replace the hex values already in Navbar/HeaderNav/HeaderMenu/Footer/AuthShell/Hero — that is R12 (keeps R0 inside budget).
+- Test: vitest (ui-regression), tsc, visual diff `/` and `/login` unchanged (screenshots before/after at 375 + 1280).
+
+**R1a — Card, Button, Badge v2** [Must · M · frontend]
+- Files: `components/ui/Card.tsx`, `Button.tsx`, `Badge.tsx`, `ui.test.tsx`, `ui-b.test.tsx`.
+- Card: default = glass (`glass-card rounded-card`), title row with `icon-tile`, optional `tone="panel"` → `.section-panel`; keep `variant="record"` accents as a 3 px left bar; `as` prop unchanged.
+- Button: sizes `md` 44 px / `lg` 48 px, `variant="gold"` (`.btn-gold`) for dark surfaces, soft coloured shadow on primary, `fullWidthOnMobile` prop.
+- Badge: pill (rounded-full), tones unchanged, optional leading dot/icon (status never colour-only).
+- Test: vitest ui suites, tsc; spot-check `/services`, `/track`, `/officer` (they consume Card) at 375 + 1280, light + dark.
+
+**R1b — Input, Select, Tabs, Modal v2** [Must · M · frontend]
+- Files: `components/ui/Input.tsx`, `Select.tsx`, `Tabs.tsx`, `Modal.tsx`, `features/auth/PasswordInput.tsx`, `ui-b.test.tsx`.
+- Inputs/selects: 48 px on touch, 8 px radius, `bg-surface` on glass, focus = 3 px green glow ring + border-primary, error state with icon + text, hint row; select placeholder never cut (E1 note).
+- Tabs: two variants — `segmented` (the sign-in pill switch, for 2–4 options) and `underline` (default, for content tabs); on phones the tab row scrolls horizontally with fade edges, active tab scrolled into view; keyboard behaviour unchanged.
+- Modal: glass panel 20 px radius, dimmed blurred scrim (same as header menu scrim); < 640 px = bottom sheet (full width, rounded top, drag handle, safe-area padding); focus trap + Escape unchanged.
+- Test: vitest ui + auth suites, axe on `/login` and one modal (dismiss modal on `/officer`).
+
+**R2 — PageHero band + PageHeader v2** [Must · S · frontend]
+- Files: `components/PageHeader.tsx`, new `components/PageHero.tsx`, `app/[locale]/layout.tsx` (or a public layout group), `globals.css`.
+- PageHero: deep-green rounded band (like the auth panel/hero banner, 20 px radius, contours + gold accent), breadcrumb (white/75 links, gold separator), H1, purpose, meta chips ("Data as of", "Ref", "Last updated"), optional `art` slot for an `Illustrations` component (hidden < 360 px), optional `actions` slot.
+- PageHeader keeps its API (title, purpose, crumbs, meta) and renders PageHero → all E1–E6 pages that already use PageHeader upgrade at once; officer pages pass `variant="plain"` (light, no band).
+- Backdrop: render once for public routes (not `/officer/*`, not `/map`), not per page; remove the per-page `<Backdrop />` on landing/login/signup/officer-signup in the same phase.
+- Test: vitest (header, landing, info), tsc, i18n; screenshots `/services`, `/faq`, `/track` 360/768/1280, BN.
+
+**R3 — System states** [Must · S · frontend]
+- Files: `app/[locale]/not-found.tsx`, `error.tsx`, `loading.tsx`, `components/ui/EmptyState.tsx`, `ErrorState.tsx`, `LoadingState.tsx`.
+- 404/error: Template G with a new small "lost plot" illustration (map pin over an empty plot) — add to Illustrations.tsx only if file budget allows, else reuse `RouteArt`/`PlotSearchArt`.
+- Loading: skeletons shaped like the target layout (hero band + 2 cards) with a subtle shimmer (off under reduced motion) instead of a spinner; keep the 300 ms delay (commit b3b4943).
+- Empty/Error: glass card, icon tile, one-line reason, action button.
+- Test: vitest, tsc; visit `/bn/does-not-exist`, force an error state, throttle network for loading.
+
+**R4a — Service pages: verify, check, track** [Must · M · frontend]
+- Files: `features/verify/VerifyForm.tsx`, `features/check/CheckForm.tsx`, `features/track/TrackView.tsx`, `features/services/WhatYouNeed.tsx`, the 3 page files only if layout props change.
+- Template A: PageHero with `PlotSearchArt` / `ChecklistArt` / `RouteArt`; form in glass card; "What you need" as sticky right column ≥ 1024, `<details>` above the form < 1024; mouza combobox list in a glass popover; track stepper = icon tiles joined by the dashed connector from "How it works".
+- Test: verify/check/track vitest, tsc, i18n; 360 px BN form fit (no cut placeholders), keyboard-only combobox.
+
+**R4b — Service pages: verify-document, feedback** [Must · S · frontend]
+- Files: `features/verify-document/VerifyDocumentView.tsx`, `features/feedback/FeedbackForm.tsx`, `features/feedback/PageHelpful.tsx`.
+- Upload dropzone = dashed glass area with `DeedArt`, file chip after choose, result banner (MATCH / ALTERED) as a large status card with icon + text.
+- "Was this page helpful?" becomes a slim glass bar with two pill buttons; thank-you state inline.
+- Test: vitest, tsc; phone camera/file picker on 375 px.
+
+**R5a — Result: summary + risk** [Must · M · frontend]
+- Files: `features/result/ResultView.tsx`, `LandInfoCard.tsx`, `features/risk/RiskCard.tsx`, `EvidenceList.tsx`.
+- Summary header card (Template B): land id, location, owner, big risk badge (icon + level + score), "data as of", action buttons (report, QR) — stacks on phones, actions become a sticky bottom bar.
+- Risk card: level colour as a left band + icon tile, evidence items as expandable glass rows (rule, points, why, source).
+- Section tabs → `Tabs variant="underline"` sticky under the header on desktop, scrollable chips on phones.
+- Test: result + risk vitest, tsc; LP-10001…LP-10500 levels and Doc1→Doc2 HIGH 70 unchanged (RULES 2); 360/768/1280, BN, dark.
+
+**R5b — Result tables → responsive** [Must · M · frontend]
+- Files: `components/ui/Table.tsx` (`stackOnMobile`), `features/result/TransactionsTable.tsx`, `MutationTable.tsx`, `EncumbranceTable.tsx`, `OwnershipTimeline.tsx`.
+- Tables in glass wrappers, sticky header, zebra off, row hover tint; < 640 px stacked cards with label/value pairs; timeline = vertical line with icon-tile nodes (same language as the track stepper).
+- Test: result vitest + ui tests, tsc; 320 px no horizontal scroll.
+
+**R5c — Report, public QR, check result** [Must · M · frontend]
+- Files: `features/report/ReportView.tsx`, `DocumentConsistencyCard.tsx`, `features/qr/PublicVerifyView.tsx`, `QrCard.tsx`, `features/check/CheckResult.tsx`.
+- Report: on screen = Template B; print = existing flat A4 (verify `@media print` still hides glass/backdrop/hero band).
+- Public QR page (opened from a phone camera, so mobile-first): signature status as a big card (valid/invalid with icon), record summary, open case / pending mutation counts as icon-tile chips.
+- Check result: red-flag list as glass rows with severity icon tiles; overall verdict card on top.
+- Test: report/qr/check vitest, tsc; print preview A4; open `/v/<id>` at 360 px.
+
+**R6 — Tools** [Should · S · frontend]
+- Files: `features/tools/ToolShell.tsx`, `ToolsHub.tsx`, `UnitConverter.tsx`, `FeeCalculator.tsx`, `InheritanceCalculator.tsx`.
+- Hub uses `ArtCard` + `TOOL_ART` (export ArtCard from `features/landing/Sections.tsx` into `components/ArtCard.tsx` first — counts as one file).
+- Calculators: inputs left, live result panel right (≥ 1024) / below (< 1024) as a `.section-panel`; big result number in display font; fee breakdown as a mini table that stacks on phones; inheritance shares as a horizontal bar per heir (icon + text + fraction, not colour only).
+- Test: tools vitest (units/fees/faraid logic untouched), tsc, i18n.
+
+**R7 — Hubs + reading pages** [Should · M · frontend]
+- Files: `features/services/ServicesPage.tsx`, `features/info/InfoPage.tsx`, `features/info/pages.ts` (structure only), `app/[locale]/about/page.tsx`, `app/[locale]/sitemap/page.tsx`.
+- Charter: one glass card per service — header with icon tile + name, 4 icon-tile facts (documents, fee, time, office), numbered "how to apply", CTA button.
+- Reading pages: Template D (70 ch, sticky TOC ≥ 1280, FAQ accordion, "Last updated" chip). About page: replace the boxed logo image with the hero-banner photo style or the shield art.
+- Test: info/services vitest, tsc, i18n, axe on each route.
+
+**R8a — Officer shell + dashboard top** [Should · M · frontend]
+- Files: `features/officer/OfficerShell.tsx`, `OfficerPageHeader.tsx`, `KpiCards.tsx`, `DashboardView.tsx`.
+- Sidebar: deep-green header block (office, role badge), nav items with icon tiles, gold active bar, collapsible to icons at 1024–1279, overlay panel < 1024 (reuse header-menu pattern + scrim).
+- KPI tiles: glass cards, icon tile, big number in display font, trend/subtext; 2 cols phone, 4 cols ≥ 1024, 8 tiles stay.
+- Test: officer vitest, tsc; role check as reviewer/officer/admin (demo accounts) at 375/1024/1440.
+
+**R8b — Queue, alerts, activity, charts** [Should · M · frontend]
+- Files: `features/officer/QueueTable.tsx`, `Alerts.tsx`, `Activity.tsx`, `Charts.tsx`, `ChartCanvas.tsx`, `DismissModal.tsx`.
+- Queue and alerts as glass tables (stack on phones); HIGH alerts with a red left band + icon tile; activity as a timeline; charts use brand colours from tokens (primary/gold/neutral) with legends that are text, not colour only.
+- Test: officer vitest, tsc; dark mode charts readable.
+
+**R8c — Review + upload** [Should · M · frontend]
+- Files: `features/review/ReviewView.tsx`, `ReviewActions.tsx`, `ExtractionPanel.tsx`, `DocumentPreview.tsx`, `features/upload/UploadForm.tsx`.
+- Review: two panes (document preview / extracted fields) with a draggable divider ≥ 1280, tabs (Document | Fields) on phones; sticky glass action bar (Approve / Reject) with safe-area padding; confidence shown as icon + percentage chip.
+- Upload: dropzone like R4b, progress steps (Uploaded → OCR → Review) as the stepper.
+- Test: review + upload vitest (four-eyes rules unchanged), tsc; 375 px review flow end-to-end.
+
+**R8d — Mutations, admin, audit, archive, feedback admin** [Should · M · frontend]
+- Files: `features/mutation/MutationQueue.tsx`, `MutationDetail.tsx`, `features/admin/AdminView.tsx`, `UsersPanel.tsx`, `features/admin/AuditLogs.tsx`, `features/archive/ArchiveSearch.tsx`.
+- All on Template E; mutation detail state machine as the stepper; admin panels as glass cards with segmented tabs; audit log table stacks on phones; archive search bar like the landing search style.
+- Test: mutation/admin/audit/archive vitest, tsc.
+
+**R9 — Map + graph** [Could · M · frontend]
+- Files: `features/map/MapView.tsx`, `ParcelList.tsx`, `popup.ts`, `globals.css` (leaflet popup block), `features/graph/GraphView.tsx`, `GraphLegend.tsx`.
+- Floating glass search/legend panels; parcel details as a bottom sheet < 768; Leaflet popups use the glass card + deep-green title bar; 44 px map controls (already) restyled; graph controls in a glass toolbar.
+- Test: map/graph vitest, tsc; touch pan/zoom on 375 px, keyboard map (E5).
+
+**R10 — Motion + feedback** [Could · S · frontend]
+- Files: new `components/Reveal.tsx` (IntersectionObserver fade/slide, one client component), `globals.css`, `features/landing/Sections.tsx`, a toast helper if any page needs one.
+- Cards fade/slide in once; "How it works" connector draws on view; success/error toasts for officer actions. Everything disabled under `prefers-reduced-motion`; no motion on first paint (no CLS).
+- Test: vitest, tsc; reduced-motion emulation.
+
+**R11 🔒 — QA gate** [Must · M · QA]
+- Files: `frontend/e2e/visual.spec.ts` (new), `frontend/e2e/mobile.spec.ts` (extend), `frontend/tests/a11y.test.tsx`, `docs/ui.md`.
+- Playwright screenshot matrix: every public route × {360, 768, 1024, 1440} × {EN, BN} × {light, dark}; officer routes × {375, 1280} as reviewer + admin. Store baselines; fail on unexpected horizontal scroll (`scrollWidth > innerWidth`).
+- axe on every route (extend E5 suite); keyboard-only pass of header menu, tabs, modals, combobox, map.
+- Lighthouse mobile on `/`, `/verify`, `/verify/result`: LCP < 2.5 s, CLS < 0.05, TBT < 200 ms; no new network requests for decoration.
+- Real-device check list: iPhone SE (375), a 360 px Android (Chrome), iPad portrait/landscape, 1366 laptop, 1920 desktop; Safari (backdrop-filter `-webkit-`), Firefox, Brave auto-dark.
+- Contrast table for every new surface (white on deep green, gold on deep green, ink on glass over backdrop/photo) ≥ 4.5 : 1 → `docs/ui.md`.
+- Gate: all green before R12; full regression (backend + vitest + e2e) like Q1.
+
+**R12 — Cleanup** [Should · S · frontend]
+- Files: `globals.css`, `tailwind.config.ts`, `features/landing/Navbar.tsx`, `components/HeaderNav.tsx`, `components/HeaderMenu.tsx`, `features/auth/AuthShell.tsx` (+ Footer/Hero if budget allows, else R12-b).
+- Replace remaining hex classes (`text-[#D6B25C]` etc.) with R0 tokens; remove dead tokens (`--grad-*`, `--glass-*`, `brand-gradient`) once nothing uses them; update `docs/ui.md` to "Design v2" (tokens, templates, do/don't, screenshots).
+- Test: full vitest, tsc, i18n, `next build`.
+
+### V2.5 Assets needed
+- Illustrations to add (inline SVG, same style): "lost plot" (404), "empty folder/search" (empty states), "upload tray" (dropzones), "officer desk/stamp" (officer dashboard empty), "signature seal" (QR verify). Reuse existing ones everywhere else.
+- Photos (optional, from the user, like `public/landing/hero-*`): one per major area at most (verify, officer). The current hero photo shows the old UI on its laptop screen — a regenerated version with a blank or new-UI screen would remove the need to mask it.
+
+### V2.6 Order and timing (one phase ≈ one working window)
+1. Foundation: R0 → R1a → R1b → R2 → R3 (the whole site already looks ~60 % new after R2 because PageHeader/Card are shared).
+2. Citizen journey: R4a → R4b → R5a → R5b → R5c → R6 → R7.
+3. Officer side: R8a → R8b → R8c → R8d.
+4. Extras: R9, R10 (skip if time is short).
+5. Gate + tidy: R11 🔒 → R12.
+
+### V2.7 Decisions to confirm before R0
+- Backdrop on all public pages (recommended) or only landing + auth?
+- Officer sidebar: deep-green header block + light nav (recommended, dense data stays calm) or fully deep-green sidebar?
+- Page hero band on every service page (recommended) or plain PageHeader with accent bar only?
+- Header nav items: keep current set, or add "Deed verification" + "Resources" like the earlier reference image (changes header tests)?
 
 ## KICKOFF PROMPT (paste in a new chat with the latest zip)
 ```text
