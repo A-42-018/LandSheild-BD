@@ -146,7 +146,8 @@ describe("source hygiene (both themes)", () => {
   const files = ["components", "features", "app"].flatMap((d) => walk(resolve(ROOT, d)));
 
   it("no solid text-white / text-black outside the always-dark header, strip, footer and map overlay", () => {
-    const allowed = /(Navbar|TopStrip|Footer|HeaderNav|HeaderMenu|UserMenu|ThemeToggle|LanguageSwitcher|MapView)\.tsx$/;
+    // Hero: text sits on the always-dark photo banner.
+    const allowed = /(Navbar|TopStrip|Footer|HeaderNav|HeaderMenu|UserMenu|ThemeToggle|LanguageSwitcher|MapView|landing\/Hero)\.tsx$/;
     const bad = files.filter((f) => !allowed.test(f)).filter((f) => /\btext-(white|black)\b(?!\/)/.test(readFileSync(f, "utf8")));
     expect(bad).toEqual([]);
   });

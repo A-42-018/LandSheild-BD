@@ -191,4 +191,126 @@ export function DeedArt({ className }: { className?: string }) {
   );
 }
 
+/** Land unit converter: a gridded isometric plot with a measured parcel and a tape measure. */
+export function TapeMeasureArt({ className }: { className?: string }) {
+  return (
+    <Art className={className}>
+      <defs>
+        <Blur id="ua-b" />
+        <linearGradient id="ua-top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#B7E4C4" /><stop offset="1" stopColor="#4FAE7A" /></linearGradient>
+        <linearGradient id="ua-case" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FFD86B" /><stop offset="1" stopColor="#E09A12" /></linearGradient>
+      </defs>
+      <Shadow id="ua-b" cx={68} cy={106} rx={58} />
+      <path d="M8,74L74,100V108L8,82Z" fill="#2A6B47" />
+      <path d="M74,100L128,74V82L74,108Z" fill="#348457" />
+      <path d="M8,74L62,50L128,74L74,100Z" fill="url(#ua-top)" />
+      <path d="M48,74.7L66,66.7L88,75.3L70,83.3Z" fill="#F2D27A" opacity="0.9" />
+      <path d="M48,74.7L66,66.7L88,75.3L70,83.3Z" fill="none" stroke="#B8860B" strokeWidth="1.2" strokeDasharray="3 2" />
+      <path d="M26,66L92,92M44,58L110,84M30,82.7L84,58.7M52,91.3L106,67.3" stroke="#FFFFFF" strokeOpacity="0.6" strokeWidth="1" />
+      {/* tape */}
+      <path d="M14,77L80,47" stroke="#F2C94C" strokeWidth="7" strokeLinecap="round" />
+      <path d="M14,77L80,47" stroke="#7A5A00" strokeWidth="3.5" strokeDasharray="0.8 4.2" />
+      <path d="M12,74.5L16,80" stroke="#7A5A00" strokeWidth="2" strokeLinecap="round" />
+      {/* case */}
+      <rect x="77" y="20" width="36" height="34" rx="10" fill="#9C6510" />
+      <rect x="74" y="17" width="36" height="34" rx="10" fill="url(#ua-case)" />
+      <circle cx="92" cy="34" r="9.5" fill="#3A2A08" />
+      <circle cx="92" cy="34" r="6.5" fill="#F5E2A8" />
+      <circle cx="92" cy="34" r="2.2" fill="#3A2A08" />
+      <rect x="99" y="13" width="9" height="6" rx="2" fill="#2E3A4E" />
+      <path d="M79,24A12,12 0 0 1 88,19.5" fill="none" stroke="#FFFFFF" strokeOpacity="0.7" strokeWidth="2.2" strokeLinecap="round" />
+    </Art>
+  );
+}
+
+/** Registration and mutation fee calculator: a calculator with a banknote and a coin stack. */
+export function FeeCalculatorArt({ className }: { className?: string }) {
+  const keys = [0, 1, 2].flatMap((r) => [0, 1, 2].map((c) => ({ x: 47 + c * 12, y: 42 + r * 11 })));
+  const goldSide = "#9C6B12";
+  return (
+    <Art className={className}>
+      <defs>
+        <Blur id="fa-b" />
+        <linearGradient id="fa-body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#34496F" /><stop offset="1" stopColor="#14223B" /></linearGradient>
+        <linearGradient id="fa-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FBE29A" /><stop offset="1" stopColor="#C8921C" /></linearGradient>
+        <linearGradient id="fa-note" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#A6DDB8" /><stop offset="1" stopColor="#4FA875" /></linearGradient>
+      </defs>
+      <Shadow id="fa-b" cx={70} cy={104} rx={46} />
+      <g transform="rotate(-14 40 60)">
+        <rect x="14" y="46" width="48" height="28" rx="3" fill="url(#fa-note)" stroke="#2F7D52" strokeWidth="0.8" />
+        <rect x="18" y="50" width="40" height="20" rx="2" fill="none" stroke="#FFFFFF" strokeOpacity="0.55" />
+        <circle cx="38" cy="60" r="6" fill="#2F7D52" opacity="0.55" />
+      </g>
+      <rect x="43" y="11" width="52" height="84" rx="8" fill="#0B1526" />
+      <rect x="40" y="8" width="52" height="84" rx="8" fill="url(#fa-body)" />
+      <rect x="46" y="15" width="40" height="18" rx="3" fill="#CFEBD9" />
+      <rect x="62" y="21" width="20" height="3" rx="1.5" fill="#2F6B4F" /><rect x="70" y="26.5" width="12" height="3" rx="1.5" fill="#2F6B4F" />
+      {keys.map(({ x, y }) => <rect key={`${x}-${y}`} x={x} y={y} width="9" height="8" rx="2" fill="#E3E9F1" />)}
+      <rect x="47" y="75" width="21" height="8" rx="2" fill="#E3E9F1" />
+      <rect x="71" y="75" width="9" height="8" rx="2" fill="url(#fa-gold)" />
+      <path d="M44,16A6,6 0 0 1 49,11" fill="none" stroke="#FFFFFF" strokeOpacity="0.35" strokeWidth="2" strokeLinecap="round" />
+      {/* coin stack */}
+      <Disk cx={108} cy={92} r={13} top="#E8B847" rim="url(#fa-gold)" side={goldSide} />
+      <Disk cx={108} cy={85} r={13} top="#E8B847" rim="url(#fa-gold)" side={goldSide} />
+      <Disk cx={108} cy={78} r={13} top="#E8B847" rim="url(#fa-gold)" side={goldSide} />
+    </Art>
+  );
+}
+
+/** Inheritance share calculator: a balance scale holding a house and a share of a pie. */
+export function ScaleArt({ className }: { className?: string }) {
+  return (
+    <Art className={className}>
+      <defs>
+        <Blur id="sa-b" />
+        <linearGradient id="sa-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FBE29A" /><stop offset="1" stopColor="#B9840F" /></linearGradient>
+        <linearGradient id="sa-pan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#F5D27A" /><stop offset="1" stopColor="#A87410" /></linearGradient>
+      </defs>
+      <Shadow id="sa-b" cx={70} cy={104} rx={44} />
+      <g transform="translate(-9 -8) scale(1.13)">
+      <path d="M52,102H88L82,93H58Z" fill="#9E6C0C" />
+      <rect x="54" y="99" width="32" height="4" rx="2" fill="#7E560A" />
+      <rect x="66" y="22" width="8" height="72" rx="2.5" fill="url(#sa-gold)" />
+      <path d="M26,32L114,32" stroke="url(#sa-gold)" strokeWidth="6.5" strokeLinecap="round" />
+      <circle cx="70" cy="21" r="5.5" fill="url(#sa-gold)" stroke="#9E6C0C" strokeWidth="0.8" />
+      <path d="M30,34L20,66M30,34L40,66M110,34L100,66M110,34L120,66" stroke="#8A6A1C" strokeWidth="1.6" />
+      {/* left pan: house */}
+      <path d="M23,55H37V65H23Z" fill="#F4F7FA" stroke="#C3CDD9" strokeWidth="0.6" />
+      <path d="M21,56L30,47L39,56Z" fill="#2F8C6F" />
+      <rect x="28" y="59" width="4" height="6" fill="#2F6B4F" />
+      {/* right pan: pie share */}
+      <circle cx="110" cy="57" r="8" fill="#2F8C6F" />
+      <path d="M110,57L110,49A8,8 0 0 1 117.6,59.5Z" fill="#E9C46A" />
+      <path d="M14,66H46A16,8 0 0 1 14,66Z" fill="url(#sa-pan)" />
+      <path d="M94,66H126A16,8 0 0 1 94,66Z" fill="url(#sa-pan)" />
+      <path d="M14,66H46M94,66H126" stroke="#FFF1C2" strokeOpacity="0.8" strokeWidth="1.2" />
+      </g>
+    </Art>
+  );
+}
+
+/** Sign-in panel mark: a glassy 3D shield with a check, for use on the deep green auth panel. */
+export function ShieldArt({ className }: { className?: string }) {
+  const outer = "M40,6L70,16V42C70,62 56,76 40,84C24,76 10,62 10,42V16Z";
+  const inner = "M40,13L64,21V42C64,58 53,69 40,76C27,69 16,58 16,42V21Z";
+  return (
+    <svg viewBox="0 0 80 92" aria-hidden="true" focusable="false" className={className}>
+      <defs>
+        <linearGradient id="sh-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#7FE0B0" /><stop offset="1" stopColor="#13865B" /></linearGradient>
+        <linearGradient id="sh-in" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFFFFF" stopOpacity="0.35" /><stop offset="1" stopColor="#FFFFFF" stopOpacity="0.05" /></linearGradient>
+        <filter id="sh-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" /></filter>
+      </defs>
+      <ellipse cx="42" cy="88" rx="22" ry="3" fill="#000000" opacity="0.3" filter="url(#sh-blur)" />
+      <path d={outer} transform="translate(3 3)" fill="#0A4A33" />
+      <path d={outer} fill="url(#sh-face)" />
+      <path d={inner} fill="url(#sh-in)" stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth="1.2" />
+      <path d="M40,6L70,16V42C70,62 56,76 40,84Z" fill="#000000" opacity="0.08" />
+      <path d="M28,44L37,53L54,34" fill="none" stroke="#0A4A33" strokeOpacity="0.35" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" transform="translate(1 2)" />
+      <path d="M28,44L37,53L54,34" fill="none" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M19,24L38,17.5" stroke="#FFFFFF" strokeOpacity="0.7" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export const SERVICE_ART = { verify: PlotSearchArt, check: ChecklistArt, track: RouteArt, verifyDoc: DeedArt } as const;
+export const TOOL_ART = { units: TapeMeasureArt, fees: FeeCalculatorArt, faraid: ScaleArt } as const;
