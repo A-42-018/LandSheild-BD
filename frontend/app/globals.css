@@ -76,6 +76,8 @@
     --glass-a: 1;
   }
   body { @apply bg-surface-muted text-ink antialiased; }
+  /* Headings use the display face (Plus Jakarta Sans); Bangla glyphs fall back to Noto Sans Bengali via the stack. Body stays Inter. */
+  h1, h2 { @apply font-display; }
   h1 { @apply text-heading-1; }
   h2 { @apply text-heading-2; }
   h3 { @apply text-heading-3; }
