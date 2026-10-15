@@ -11,7 +11,7 @@ import { intlLocale } from "@/lib/intl-locale";
 
 type NumKey = "total_records" | "pending_review" | "high_risk" | "verified" | "open_alerts" | "pending_mutations" | "active_encumbrances";
 
-/** Flat tiles (roadmap 4.8): white, 1 px border; only the small icon chip carries status colour. */
+/** Glass tiles (UI v2): icon chip carries the status colour; 2 columns on phones, 4 from 1024 px. */
 const KPIS: { key: NumKey; chip: string; Icon: LucideIcon }[] = [
   { key: "total_records", chip: "bg-primary-soft text-primary", Icon: Database },
   { key: "pending_review", chip: "bg-review-soft text-review", Icon: Hourglass },
@@ -21,11 +21,11 @@ const KPIS: { key: NumKey; chip: string; Icon: LucideIcon }[] = [
   { key: "pending_mutations", chip: "bg-primary-soft text-primary", Icon: FileClock },
   { key: "active_encumbrances", chip: "bg-critical-soft text-critical", Icon: Gavel },
 ];
-const TILE = "flex h-full items-center gap-3 rounded-md border border-line bg-surface p-4";
+const TILE = "glass-card flex h-full flex-col items-start gap-3 p-4 sm:flex-row sm:items-center";
 
 function Chip({ cls, Icon }: { cls: string; Icon: LucideIcon }) {
   return (
-    <span aria-hidden="true" className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${cls}`}>
+    <span aria-hidden="true" className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${cls}`}>
       <Icon className="h-5 w-5" />
     </span>
   );
@@ -46,14 +46,14 @@ export default function KpiCards() {
   const s: OfficerStats = q.data;
   const intact = s.ledger_status === "INTACT";
   return (
-    <ul aria-label={t("title")} className="grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-3">
+    <ul aria-label={t("title")} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {KPIS.map(({ key, chip, Icon }) => (
         <li key={key}>
           <div className={TILE} data-testid={`kpi-${key}`}>
             <Chip cls={chip} Icon={Icon} />
             <div className="min-w-0">
               <p className="text-sm text-ink-muted">{t(key)}</p>
-              <p className="text-2xl font-bold text-ink">{fmt.format(s[key] ?? 0)}</p>
+              <p className="font-display text-3xl font-bold leading-tight text-ink">{fmt.format(s[key] ?? 0)}</p>
             </div>
           </div>
         </li>
@@ -63,7 +63,7 @@ export default function KpiCards() {
           <Chip cls={intact ? "bg-verified-soft text-verified" : "bg-critical-soft text-critical"} Icon={intact ? Link2 : Link2Off} />
           <div className="min-w-0">
             <p className="text-sm text-ink-muted">{t("ledger")}</p>
-            <p className={`text-2xl font-bold ${intact ? "text-verified" : "text-critical"}`}>
+            <p className={`font-display text-2xl font-bold ${intact ? "text-verified" : "text-critical"}`}>
               {intact ? t("ledgerIntact") : t("ledgerBroken")}
             </p>
             <p className="text-xs text-ink-muted">{t("ledgerEntries", { count: s.ledger_entries })}</p>

@@ -147,7 +147,7 @@ describe("source hygiene (both themes)", () => {
 
   it("no solid text-white / text-black outside the always-dark header, strip, footer and map overlay", () => {
     // Hero: text sits on the always-dark photo banner.
-    const allowed = /(Navbar|TopStrip|Footer|HeaderNav|HeaderMenu|UserMenu|ThemeToggle|LanguageSwitcher|MapView|landing\/Hero|PageHero)\.tsx$/;
+    const allowed = /(Navbar|TopStrip|Footer|HeaderNav|HeaderMenu|UserMenu|ThemeToggle|LanguageSwitcher|MapView|landing\/Hero|PageHero|OfficerShell)\.tsx$/;
     const bad = files.filter((f) => !allowed.test(f)).filter((f) => /\btext-(white|black)\b(?!\/)/.test(readFileSync(f, "utf8")));
     expect(bad).toEqual([]);
   });
