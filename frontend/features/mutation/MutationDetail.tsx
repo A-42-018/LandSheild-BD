@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { CheckCircle2, CircleDashed, FileCheck2, XCircle, Zap } from "lucide-react";
+import { Check, CheckCircle2, CircleDashed, FileCheck2, XCircle, Zap } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
 import StatusBadge from "@/components/domain/StatusBadge";
@@ -90,13 +90,13 @@ export default function MutationDetail({ id }: { id: string }) {
         </p>
       </Card>
 
-      <Card title={t("checklist")} accent="primary">
+      <Card title={t("checklist")}>
         {m.checklist ? (
           <ul className="flex flex-col gap-2" data-testid="mutation-checklist">
             {CHECK_CODES.map((c) => {
               const v = m.checklist?.[c] ?? "NOT_CHECKED";
               return (
-                <li key={c} className="flex items-center gap-2 text-sm">
+                <li key={c} className="flex items-center gap-2 rounded-xl border border-line/70 bg-surface/60 px-3 py-2 text-sm">
                   {CHECK_ICON[v] ?? CHECK_ICON.NOT_CHECKED}
                   <span className="flex-1">{t(`checks.${c}`)}</span>
                   <span className="font-semibold">{t(`checkStatus.${v in CHECK_ICON ? v : "NOT_CHECKED"}`)}</span>
@@ -136,10 +136,13 @@ export default function MutationDetail({ id }: { id: string }) {
       )}
 
       <Card title={t("timeline")}>
-        <ol className="flex flex-col gap-2 text-sm" data-testid="mutation-timeline">
+        <ol className="flex flex-col text-sm" data-testid="mutation-timeline">
           {timeline.map((e) => (
-            <li key={e.key} className="flex justify-between gap-4 border-b border-line pb-1">
-              <span>{t(`events.${e.key}`)}</span>
+            <li key={e.key} className="relative ms-3 flex flex-wrap justify-between gap-x-4 border-l-2 border-dashed border-primary/30 pb-4 ps-6 last:border-transparent last:pb-0">
+              <span aria-hidden="true" className="absolute -left-[13px] top-0 inline-flex h-6 w-6 items-center justify-center rounded-lg border border-primary/30 bg-surface text-primary">
+                <Check className="h-3.5 w-3.5" />
+              </span>
+              <span className="font-medium text-ink">{t(`events.${e.key}`)}</span>
               <span className="text-ink-muted">{dt(e.at)}</span>
             </li>
           ))}

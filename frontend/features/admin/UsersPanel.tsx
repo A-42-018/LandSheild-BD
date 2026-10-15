@@ -132,7 +132,7 @@ export default function UsersPanel() {
           onSubmit={apply}
           role="search"
           aria-label={t("filters")}
-          className="grid grid-cols-1 gap-3 rounded-lg border border-line bg-surface-muted p-3 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid grid-cols-1 gap-3 glass-card p-3 sm:grid-cols-2 lg:grid-cols-4"
         >
           <Input label={tc("search")} value={draft.q} onChange={(e) => setDraft({ ...draft, q: e.target.value })} />
           <Select

@@ -14,6 +14,7 @@ export default function AdminView() {
     <div className="flex flex-col gap-4">
       <OfficerPageHeader title={t("title")} purpose={t("purpose")} />
       <Tabs
+        variant="segmented"
         label={t("tabsLabel")}
         tabs={[
           { id: "users", label: t("tabs.users"), content: <UsersPanel /> },
