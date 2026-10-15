@@ -9,6 +9,7 @@ import type { RiskAssessment } from "./types";
 
 const BAR: Record<string, string> = { LOW: "bg-verified", MEDIUM: "bg-review", HIGH: "bg-critical" };
 const TEXT: Record<string, string> = { LOW: "text-verified", MEDIUM: "text-review", HIGH: "text-critical" };
+const TILE: Record<string, string> = { LOW: "bg-verified-soft text-verified", MEDIUM: "bg-review-soft text-review", HIGH: "bg-critical-soft text-critical" };
 const ACCENT = { LOW: "verified", MEDIUM: "review", HIGH: "critical" } as const;
 
 export default function RiskCard({ risk }: { risk: RiskAssessment }) {
@@ -27,8 +28,11 @@ export default function RiskCard({ risk }: { risk: RiskAssessment }) {
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-3">
+          <span aria-hidden="true" className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${TILE[risk.risk_level] ?? "bg-pending-soft text-pending"}`}>
+            <ShieldAlert className="h-6 w-6" />
+          </span>
           <span className="text-sm text-ink-muted">{t("risk.score")}</span>
-          <span data-testid="risk-score" className={`text-4xl font-bold ${TEXT[risk.risk_level] ?? "text-ink"}`}>
+          <span data-testid="risk-score" className={`font-display text-4xl font-bold ${TEXT[risk.risk_level] ?? "text-ink"}`}>
             {score}
             <span className="text-sm font-normal text-ink-muted"> / 100</span>
           </span>
@@ -47,7 +51,7 @@ export default function RiskCard({ risk }: { risk: RiskAssessment }) {
           <span aria-hidden="true" className="absolute inset-y-0 left-[60%] w-px bg-ink/40" />
         </div>
         {mlScore !== null && (
-          <div data-testid="risk-ml" className="rounded-lg border border-primary/20 bg-primary-soft px-3 py-2 text-sm text-ink">
+          <div data-testid="risk-ml" className="rounded-xl border border-primary/20 bg-primary-soft px-3 py-2 text-sm text-ink">
             <p>{t("risk.ml.line", { percent: Math.round(mlScore * 100) })}</p>
             <p>{t("risk.ml.points", { points: mlPoints })}</p>
           </div>
