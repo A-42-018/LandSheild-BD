@@ -1,13 +1,14 @@
-# Backend image with real OCR (Tesseract + tessdata_best Bangla/English). Build context = repo root.
+# Backend image with real OCR (Tesseract + standard tessdata Bangla/English). Build context = repo root.
 # Default engine = Tesseract + rules, no API key needed. Claude is optional: set ANTHROPIC_API_KEY.
 FROM python:3.12-slim
 
-# tessdata_best (LSTM, more accurate than the apt "fast" models) replaces the distro ben/eng data
+# Standard tessdata (LSTM, integer) replaces the distro ben/eng data. tessdata_best was ~2x slower and,
+# on the free 0.1-CPU instance, pushed one page past OCR_TIMEOUT_S. With ANTHROPIC_API_KEY set, Claude reads the page image itself.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends tesseract-ocr curl ca-certificates libglib2.0-0 \
  && TD="$(ls -d /usr/share/tesseract-ocr/*/tessdata | head -1)" \
  && for l in ben eng; do \
-      curl -fsSL -o "$TD/$l.traineddata" "https://github.com/tesseract-ocr/tessdata_best/raw/main/$l.traineddata"; \
+      curl -fsSL -o "$TD/$l.traineddata" "https://github.com/tesseract-ocr/tessdata/raw/main/$l.traineddata"; \
     done \
  && apt-get purge -y --auto-remove curl \
  && rm -rf /var/lib/apt/lists/*
@@ -24,7 +25,10 @@ RUN pip install --no-cache-dir -e "./backend[llm]" \
  && pip install --no-cache-dir opencv-python-headless numpy pymupdf pytesseract pillow
 
 ENV PYTHONPATH=/app:/app/backend OCR_PROVIDER=auto DOCUMENT_AI_PROVIDER=auto DEMO_FIXTURES=on \
-    TESSERACT_LANG=ben+eng ML_SCORING=off PREPROCESS=on STORAGE_PATH=/app/storage DATABASE_URL=sqlite:////app/landshield.db
+    TESSERACT_LANG=ben+eng ML_SCORING=off PREPROCESS=on STORAGE_PATH=/app/storage DATABASE_URL=sqlite:////app/landshield.db \
+    OMP_THREAD_LIMIT=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OPENCV_FOR_THREADS_NUM=1
+# One thread each for Tesseract / numpy / OpenCV: they size their pools to the HOST core count, and on a
+# CPU-quota container (Render free = 0.1 CPU) the extra threads thrash and one OCR pass took > 120 s.
 
 WORKDIR /app/backend
 EXPOSE 10000

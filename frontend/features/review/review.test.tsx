@@ -87,7 +87,7 @@ describe("ReviewView", () => {
     expect(screen.getByTestId("field-mouza").querySelector("[data-band]")).toHaveAttribute("data-band", "low");
     expect(screen.getByTestId("field-mouza")).toHaveTextContent("60%");
     expect(screen.getByTestId("review-columns").className).toContain("grid-cols-1"); // stacks on mobile
-    expect(screen.getByTestId("review-columns").className).toContain("xl:grid-cols-[minmax(0,var(--split))_auto_minmax(0,1fr)]"); // resizable two panes
+    expect(screen.getByTestId("review-columns").className).toContain("xl:grid-cols-[minmax(0,var(--split))_auto_minmax(0,var(--rest))]"); // resizable two panes
     expect(screen.getByTestId("doc-preview")).toBeInTheDocument();
   });
 
