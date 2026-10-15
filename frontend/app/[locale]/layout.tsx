@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_Bengali } from "next/font/google";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
@@ -42,11 +41,9 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const messages = await getMessages();
   const t = await getTranslations({ locale, namespace: "common" });
-  // Server-side copy of the saved theme (cookie written by lib/theme.ts) so the class survives language switches without a light flash.
-  const dark = cookies().get("ls-theme")?.value === "dark";
 
   return (
-    <html lang={locale} className={`${inter.variable} ${bengali.variable}${dark ? " dark" : ""}`} suppressHydrationWarning>
+    <html lang={locale} className={`${inter.variable} ${bengali.variable}`} suppressHydrationWarning>
       <head>
         <script src="/theme-init.js" />
       </head>

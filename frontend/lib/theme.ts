@@ -13,20 +13,10 @@ export function readTheme(): ThemeMode {
 }
 
 export function saveTheme(mode: ThemeMode): void {
-  saveThemeCookie(mode);
   try {
     window.localStorage.setItem(THEME_KEY, mode);
   } catch {
     /* storage blocked: the choice only lasts for this page view */
-  }
-}
-
-/** Mirror of the choice in a cookie so the server can render <html class="dark"> and a language switch never repaints light. */
-function saveThemeCookie(mode: ThemeMode): void {
-  try {
-    document.cookie = `${THEME_KEY}=${mode}; path=/; max-age=31536000; SameSite=Lax`;
-  } catch {
-    /* cookies blocked: localStorage + theme-init.js still apply the theme */
   }
 }
 

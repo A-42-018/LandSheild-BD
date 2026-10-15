@@ -10,9 +10,12 @@ export default function Providers({ children }: { children: ReactNode }) {
   const [qc] = useState(
     () => new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } } }),
   );
-  // Switching language loads a new <html> without the classes theme-init.js set on the first load: re-apply the saved choice.
+  // Switching language loads a new <html> without the classes theme-init.js set on the first load: re-apply the saved theme.
   useIsoLayoutEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("theme-switching"); // no colour fade while the page repaints in the saved theme
     applyTheme(readTheme());
+    window.setTimeout(() => root.classList.remove("theme-switching"), 150);
   }, []);
   return (
     <QueryClientProvider client={qc}>

@@ -194,3 +194,8 @@ body { overflow-wrap: break-word; }
   content: counter(sec) ". ";
 }
 :lang(bn) .report-sections > section > div:first-child > span:last-child::before { content: counter(sec, bengali) ". "; }
+
+/* Set by Providers for two frames after a page swap (e.g. language switch) so cards do not fade from light to dark. */
+.theme-switching, .theme-switching *, .theme-switching *::before, .theme-switching *::after {
+  transition: none !important;
+}
