@@ -29,6 +29,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { intlLocale } from "@/lib/intl-locale";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
+import { SERVICE_ART } from "./Illustrations";
 
 /** Services whose route is not built yet stay hidden until their F-phase lands (track = F2c, now live). */
 export const FLAGS = { track: true } as const;
@@ -67,8 +68,9 @@ const TRUST: [string, LucideIcon][] = [
   ["noLegal", Scale],
 ];
 
-const h2 = "text-2xl font-bold text-ink";
+const h2 = "text-2xl font-bold tracking-tight text-ink sm:text-[1.75rem]";
 const icon = "h-5 w-5 shrink-0 text-ink-muted";
+const focus = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 /** Landing section: one page background throughout, sections separated by a thin rule and spacing (no alternating colour bands). */
 function Band({ id, children }: { id: string; children: ReactNode }) {
   return (
@@ -83,23 +85,29 @@ export function ServiceTiles() {
   return (
     <Band id="services-title">
       <h2 id="services-title" className={h2}>{t("title")}</h2>
-      <ul className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3">
-        {SERVICES.filter((s) => s.key !== "track" || FLAGS.track).map(({ key, href, icon: I }) => (
-          <li key={key}>
-            <Link
-              href={href}
-              data-testid="service-tile"
-              className="flex h-full min-h-11 items-start gap-3 rounded-md border border-line bg-surface p-4 transition-colors hover:border-primary hover:bg-primary-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            >
-              <I aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
-              <span className="flex-1">
-                <span className="block font-semibold text-ink">{t(`${key}.title`)}</span>
-                <span className="mt-1 block text-sm text-ink-muted">{t(`${key}.desc`)}</span>
-              </span>
-              <ArrowRight aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            </Link>
-          </li>
-        ))}
+      <ul className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
+        {SERVICES.filter((s) => s.key !== "track" || FLAGS.track).map(({ key, href, icon: I }) => {
+          const ArtFor = SERVICE_ART[key];
+          return (
+            <li key={key}>
+              <Link
+                href={href}
+                data-testid="service-tile"
+                className={`glass-card glass-card-link group relative flex h-full min-h-[8rem] items-start gap-3 p-5 pr-[7.5rem] sm:min-h-[8.75rem] sm:pr-[10rem] ${focus}`}
+              >
+                <I aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
+                <span className="flex-1">
+                  <span className="flex items-center gap-1.5 text-[1.0625rem] font-semibold text-ink">
+                    {t(`${key}.title`)}
+                    <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 -translate-x-1 text-primary opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" />
+                  </span>
+                  <span className="mt-1 block text-sm leading-relaxed text-ink-muted">{t(`${key}.desc`)}</span>
+                </span>
+                <ArtFor className="pointer-events-none absolute -top-5 right-1 h-[7.5rem] w-[7.5rem] drop-shadow-sm transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:-top-7 sm:right-2 sm:h-[9.5rem] sm:w-[10rem]" />
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </Band>
   );
@@ -112,11 +120,11 @@ export function CitizenTools() {
     <Band id="tools-title">
       <h2 id="tools-title" className={h2}>{t("title")}</h2>
       <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
-      <ul className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3">
+      <ul className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
         {TOOL_TILES.map(({ key, href, icon: I }) => (
           <li key={key}>
-            <Link href={href} data-testid="tool-tile" className="flex h-full min-h-11 items-start gap-3 rounded-md border border-line bg-surface p-4 transition-colors hover:border-primary hover:bg-primary-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
-              <I aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
+            <Link href={href} data-testid="tool-tile" className={`glass-card glass-card-link flex h-full min-h-11 items-start gap-3 p-4 ${focus}`}>
+              <span className="icon-tile"><I aria-hidden="true" className="h-5 w-5" /></span>
               <span className="flex-1">
                 <span className="block font-semibold text-ink">{tt(`${key}.title`)}</span>
                 <span className="mt-1 block text-sm text-ink-muted">{tt(`${key}.desc`)}</span>
@@ -136,11 +144,11 @@ export function WhatWeCheck() {
     <Band id="checks-title">
       <h2 id="checks-title" className={h2}>{t("title")}</h2>
       <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
-      <ul className="mt-5 grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {CHECKS.map(([k, I]) => (
-          <li key={k} data-testid="check-item" className="flex items-start gap-3 border-b border-line pb-3 text-ink">
-            <I aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <span>{t(`items.${k}`)}</span>
+          <li key={k} data-testid="check-item" className="glass-card flex items-center gap-3 p-3.5 text-ink">
+            <span className="icon-tile"><I aria-hidden="true" className="h-5 w-5" /></span>
+            <span className="font-medium">{t(`items.${k}`)}</span>
           </li>
         ))}
       </ul>
@@ -153,14 +161,14 @@ export function HowItWorks() {
   return (
     <Band id="how-title">
       <h2 id="how-title" className={h2}>{t("title")}</h2>
-      <ol className="mt-6 grid gap-5 lg:grid-cols-5 lg:gap-4">
+      <ol className="mt-7 grid gap-5 lg:grid-cols-5 lg:gap-4">
         {STEPS.map(([k, I], i) => (
           <li
             key={k}
             data-testid="how-step"
-            className="relative flex gap-3 lg:flex-col lg:before:absolute lg:before:left-12 lg:before:right-0 lg:before:top-5 lg:before:h-px lg:before:bg-line lg:last:before:hidden"
+            className="relative flex gap-3 lg:flex-col lg:before:absolute lg:before:left-14 lg:before:right-2 lg:before:top-5 lg:before:border-t-2 lg:before:border-dashed lg:before:border-primary/30 lg:last:before:hidden"
           >
-            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-fg">
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-hover font-bold text-primary-fg shadow-[0_6px_16px_-6px_rgb(var(--primary)/0.7)] ring-4 ring-primary/10">
               <span className="sr-only">{t("step", { n: i + 1 })}: </span>
               <span aria-hidden="true">{i + 1}</span>
             </span>
@@ -183,10 +191,10 @@ export function Trust() {
   return (
     <Band id="trust-title">
       <h2 id="trust-title" className={h2}>{t("title")}</h2>
-      <ul className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-5">
+      <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {TRUST.map(([k, I]) => (
-          <li key={k} data-testid="trust-item" className="flex items-start gap-3 lg:flex-col lg:gap-2">
-            <I aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+          <li key={k} data-testid="trust-item" className="glass-card flex items-start gap-3 p-4 lg:flex-col">
+            <span className="icon-tile"><I aria-hidden="true" className="h-5 w-5" /></span>
             <div>
               <h3 className="font-semibold text-ink">{t(`items.${k}.title`)}</h3>
               <p className="mt-1 text-sm text-ink-muted">{t(`items.${k}.desc`)}</p>
@@ -214,10 +222,10 @@ export function NoticeBoard() {
     <Band id="notices-title">
       <h2 id="notices-title" className={h2}>{t("title")}</h2>
       <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
-      <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+      <ul className="mt-6 grid gap-4 sm:grid-cols-2">
         {NOTICES.map((n) => (
-          <li key={n.id} data-testid="notice-item" className="rounded-md border border-line bg-surface p-4">
-            <time dateTime={n.date} className="text-sm font-medium text-primary">{fmt.format(new Date(n.date))}</time>
+          <li key={n.id} data-testid="notice-item" className="glass-card border-l-4 !border-l-primary p-4">
+            <time dateTime={n.date} className="inline-block rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-semibold text-primary">{fmt.format(new Date(n.date))}</time>
             <p className="mt-1 font-semibold text-ink">{t(`items.${n.id}.title`)}</p>
             <p className="mt-1 text-sm text-ink-muted">{t(`items.${n.id}.body`)}</p>
           </li>

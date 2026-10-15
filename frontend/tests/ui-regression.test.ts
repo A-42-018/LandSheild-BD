@@ -154,7 +154,8 @@ describe("source hygiene (both themes)", () => {
   it("no hard-coded hex colours in JSX components (map/graph data modules excluded)", () => {
     const bad = files
       .filter((f) => f.endsWith(".tsx"))
-      .filter((f) => !/MapCanvas\.tsx$/.test(f))
+      // MapCanvas: map data colours. Illustrations: fixed-palette landing artwork, identical in both themes on purpose.
+      .filter((f) => !/(MapCanvas|landing\/Illustrations)\.tsx$/.test(f))
       .filter((f) => /["'`]#[0-9a-fA-F]{3,8}["'`]/.test(readFileSync(f, "utf8")));
     expect(bad).toEqual([]);
   });
