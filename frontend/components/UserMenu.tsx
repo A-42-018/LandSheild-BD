@@ -8,7 +8,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { activeNavHref, navItemsFor } from "@/features/auth/roles";
 
 const ICON_BTN =
-  "inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/30 bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
+  "inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[#D6B25C]/60 bg-black/20 text-[#F1D88C] transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
 
 /**
  * Right-most header control (UD10 sketch): a user icon.
@@ -47,7 +47,7 @@ export default function UserMenu() {
     return (
       <Link
         href="/login"
-        className="inline-flex h-10 items-center gap-2 rounded-md border border-white/60 px-4 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+        className="btn-gold inline-flex h-10 items-center gap-2 rounded-lg px-4 text-sm font-bold uppercase tracking-[0.06em] transition-[filter] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
       >
         <LogIn aria-hidden="true" className="h-4 w-4" />
         {t("nav.login")}
