@@ -69,16 +69,10 @@ const TRUST: [string, LucideIcon][] = [
 
 const h2 = "text-2xl font-bold text-ink";
 const icon = "h-5 w-5 shrink-0 text-ink-muted";
-const TONE = {
-  surface: "bg-surface shadow-[0_0_0_100vmax_rgb(var(--surface))]",
-  muted: "",
-  soft: "bg-primary-soft shadow-[0_0_0_100vmax_rgb(var(--primary-soft))]",
-};
-
-/** Full-bleed section band inside the centred <main>: background extends to the viewport edges without horizontal scroll. */
-function Band({ id, tone, children }: { id: string; tone: keyof typeof TONE; children: ReactNode }) {
+/** Landing section: one page background throughout, sections separated by a thin rule and spacing (no alternating colour bands). */
+function Band({ id, children }: { id: string; children: ReactNode }) {
   return (
-    <section aria-labelledby={id} className={`py-8 [clip-path:inset(0_-100vmax)] sm:py-12 ${TONE[tone]}`}>
+    <section aria-labelledby={id} className="border-t border-line py-8 sm:py-12">
       {children}
     </section>
   );
@@ -87,7 +81,7 @@ function Band({ id, tone, children }: { id: string; tone: keyof typeof TONE; chi
 export function ServiceTiles() {
   const t = useTranslations("landing.services");
   return (
-    <Band id="services-title" tone="surface">
+    <Band id="services-title">
       <h2 id="services-title" className={h2}>{t("title")}</h2>
       <ul className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3">
         {SERVICES.filter((s) => s.key !== "track" || FLAGS.track).map(({ key, href, icon: I }) => (
@@ -115,7 +109,7 @@ export function CitizenTools() {
   const t = useTranslations("landing.tools");
   const tt = useTranslations("tools");
   return (
-    <Band id="tools-title" tone="muted">
+    <Band id="tools-title">
       <h2 id="tools-title" className={h2}>{t("title")}</h2>
       <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
       <ul className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-3">
@@ -139,7 +133,7 @@ export function CitizenTools() {
 export function WhatWeCheck() {
   const t = useTranslations("landing.checks");
   return (
-    <Band id="checks-title" tone="muted">
+    <Band id="checks-title">
       <h2 id="checks-title" className={h2}>{t("title")}</h2>
       <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
       <ul className="mt-5 grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -157,7 +151,7 @@ export function WhatWeCheck() {
 export function HowItWorks() {
   const t = useTranslations("landing.how");
   return (
-    <Band id="how-title" tone="surface">
+    <Band id="how-title">
       <h2 id="how-title" className={h2}>{t("title")}</h2>
       <ol className="mt-6 grid gap-5 lg:grid-cols-5 lg:gap-4">
         {STEPS.map(([k, I], i) => (
@@ -187,7 +181,7 @@ export function HowItWorks() {
 export function Trust() {
   const t = useTranslations("landing.trust");
   return (
-    <Band id="trust-title" tone="muted">
+    <Band id="trust-title">
       <h2 id="trust-title" className={h2}>{t("title")}</h2>
       <ul className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-5">
         {TRUST.map(([k, I]) => (
@@ -217,7 +211,7 @@ export function NoticeBoard() {
   const locale = useLocale();
   const fmt = new Intl.DateTimeFormat(intlLocale(locale), { dateStyle: "long", timeZone: "UTC" });
   return (
-    <Band id="notices-title" tone="soft">
+    <Band id="notices-title">
       <h2 id="notices-title" className={h2}>{t("title")}</h2>
       <p className="mt-2 max-w-3xl text-ink-muted">{t("intro")}</p>
       <ul className="mt-5 grid gap-3 sm:grid-cols-2">
