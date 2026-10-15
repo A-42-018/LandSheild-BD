@@ -19,7 +19,7 @@ const ICONS: Record<ThemeMode, JSX.Element> = {
   ),
 };
 
-export default function ThemeToggle({ variant = "default" }: { variant?: "default" | "onBrand" }) {
+export default function ThemeToggle({ variant = "default" }: { variant?: "default" | "onBrand" | "icon" }) {
   const t = useTranslations("theme");
   const onBrand = variant === "onBrand";
   const [mode, setMode] = useState<ThemeMode>("light");
@@ -51,6 +51,24 @@ export default function ThemeToggle({ variant = "default" }: { variant?: "defaul
     saveTheme(m);
     applyTheme(m);
   };
+
+  if (variant === "icon") {
+    const isDark = mode === "dark" || (mode === "system" && sysDark);
+    const next: ThemeMode = isDark ? "light" : "dark";
+    return (
+      <button
+        type="button"
+        aria-label={t(isDark ? "toLight" : "toDark")}
+        title={t(isDark ? "toLight" : "toDark")}
+        onClick={() => choose(next)}
+        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/30 bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {ICONS[isDark ? "light" : "dark"]}
+        </svg>
+      </button>
+    );
+  }
 
   return (
     <div role="group" aria-label={t("label")} className={`inline-flex rounded-lg border p-0.5 ${onBrand ? "border-white/30 bg-white/10" : "border-line bg-surface"}`}>

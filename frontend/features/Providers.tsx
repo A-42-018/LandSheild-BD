@@ -1,12 +1,20 @@
 "use client";
-import { useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./auth/AuthContext";
+import { applyTextSize, applyTheme, readTextSize, readTheme } from "@/lib/theme";
+
+const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 export default function Providers({ children }: { children: ReactNode }) {
   const [qc] = useState(
     () => new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } } }),
   );
+  // Switching language loads a new <html> without the classes theme-init.js set on the first load: re-apply the saved choice.
+  useIsoLayoutEffect(() => {
+    applyTheme(readTheme());
+    applyTextSize(readTextSize());
+  }, []);
   return (
     <QueryClientProvider client={qc}>
       <AuthProvider>{children}</AuthProvider>

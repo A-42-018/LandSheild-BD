@@ -75,7 +75,7 @@ export function LandRecordsPanel() {
     { key: "dag_no", header: t("cols.dag") },
     { key: "area", header: t("cols.area"), sortable: true, render: (r) => `${num.format(r.area)} ${r.area_unit}` },
     { key: "status", header: t("cols.status"), sortable: true, render: (r) => (LAND_STATUSES.includes(r.status) ? ts(r.status) : r.status) },
-    { key: "updated_at", header: t("cols.updated"), sortable: true, render: (r) => formatDateTime(r.updated_at, locale, "—") },
+    { key: "updated_at", header: t("cols.updated"), sortable: true, className: "whitespace-nowrap", render: (r) => formatDateTime(r.updated_at, locale, "—") },
   ];
   const sort: SortState = { key: s.params.sort, dir: s.params.order };
 
@@ -125,7 +125,7 @@ export function DocumentsPanel() {
     { key: "processing_status", header: t("cols.status"), sortable: true, render: (d) => (DOC_STATUSES.includes(d.processing_status) ? ts(d.processing_status) : d.processing_status) },
     { key: "ocr_confidence", header: t("cols.confidence"), sortable: true, render: (d) => (d.ocr_confidence == null ? "—" : `${Math.round(d.ocr_confidence * 100)}%`) },
     { key: "uploaded_by", header: t("cols.uploader"), render: (d) => d.uploaded_by ?? "—" },
-    { key: "created_at", header: t("cols.created"), sortable: true, render: (d) => formatDateTime(d.created_at, locale, "—") },
+    { key: "created_at", header: t("cols.created"), sortable: true, className: "whitespace-nowrap", render: (d) => formatDateTime(d.created_at, locale, "—") },
   ];
   const sort: SortState = { key: s.params.sort, dir: s.params.order };
 

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Badge } from "@/components/ui";
-import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "@/features/auth/AuthContext";
 import { activeNavHref, navItemsFor } from "@/features/auth/roles";
 
@@ -62,7 +61,7 @@ export default function UserMenu() {
   const more = all.filter((i) => !i.primary);
 
   return (
-    <div ref={root} className="md:relative">
+    <div ref={root} className="min-[1120px]:relative">
       <button
         type="button"
         aria-expanded={open}
@@ -77,7 +76,7 @@ export default function UserMenu() {
       <div
         id="account-menu"
         hidden={!open}
-        className="absolute inset-x-4 top-full z-50 mt-2 md:inset-x-auto md:right-0 md:w-72 rounded-xl border border-line bg-surface p-2 text-ink shadow-raised"
+        className="absolute inset-x-4 top-full z-50 mt-2 min-[1120px]:inset-x-auto min-[1120px]:right-0 min-[1120px]:w-72 rounded-xl border border-line bg-surface p-2 text-ink shadow-raised"
       >
         <div className="flex items-center gap-3 border-b border-line px-2 pb-3 pt-2">
           <span aria-hidden="true" className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-fg">
@@ -106,10 +105,7 @@ export default function UserMenu() {
             ))}
           </ul>
         )}
-        <div className="flex items-center justify-between gap-2 border-t border-line px-2 py-2">
-          <span className="text-sm text-ink-muted">{t("theme.label")}</span>
-          <ThemeToggle />
-        </div>
+        <div className="border-t border-line" />
         <button
           type="button"
           onClick={() => void logout()}

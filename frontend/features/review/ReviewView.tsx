@@ -55,11 +55,11 @@ export default function ReviewView({ id }: { id: string }) {
           `${t("docType")}: ${d.document_type}${d.land_id ? ` · ${d.land_id}` : ""}`,
         ]}
       />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-0" data-testid="review-columns">
-        <div className="min-w-0 lg:border-r lg:border-line lg:pr-6">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:gap-0" data-testid="review-columns">
+        <div className="min-w-0 xl:border-r xl:border-line xl:pr-6">
           <DocumentPreview id={id} fileType={d.file_type} />
         </div>
-        <div className="min-w-0 lg:pl-6">{body}</div>
+        <div className="min-w-0 xl:pl-6">{body}</div>
       </div>
     </div>
   );

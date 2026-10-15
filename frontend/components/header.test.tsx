@@ -44,35 +44,32 @@ describe("activeNavHref", () => {
 });
 
 describe("Navbar (UD3)", () => {
-  it("has brand link, main nav, top strip with text size + language switch (no theme toggle for anonymous)", () => {
+  it("has brand link, main nav, language switch and a single light/dark button; no top strip", () => {
     render(wrap(<Navbar />));
     expect(screen.getByRole("link", { name: en.common.appName })).toHaveAttribute("href", "/");
     expect(screen.getByRole("navigation", { name: en.nav.main })).toBeInTheDocument();
-    expect(screen.getByTestId("top-strip")).toHaveTextContent(en.strip.notice);
-    expect(screen.getByRole("group", { name: en.strip.textSize })).toBeInTheDocument();
-    expect(screen.queryByRole("group", { name: en.theme.label })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("top-strip")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: en.strip.textSize })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("button", { name: en.theme.toDark })).toBeInTheDocument();
   });
 
-  it("strip language switch lists বাংলা first, then English", () => {
+  it("language switch lists EN then BN inside the header", () => {
     render(wrap(<Navbar />));
     const lang = screen.getByRole("navigation", { name: en.common.language });
-    expect(within(lang).getAllByRole("link").map((a) => a.textContent)).toEqual(["বাংলা", "English"]);
+    expect(within(lang).getAllByRole("link").map((a) => a.textContent)).toEqual(["EN", "BN"]);
   });
 
-  it("text size A+ / A- / A set <html> font-size and store it; A resets", () => {
-    document.documentElement.style.fontSize = "";
+  it("theme button toggles light and dark and stores the choice", () => {
+    window.localStorage.clear();
+    document.documentElement.classList.remove("dark");
     render(wrap(<Navbar />));
-    fireEvent.click(screen.getByRole("button", { name: en.strip.larger }));
-    expect(document.documentElement.style.fontSize).toBe("112.5%");
-    expect(window.localStorage.getItem("ls-text-size")).toBe("112.5");
-    fireEvent.click(screen.getByRole("button", { name: en.strip.larger }));
-    expect(document.documentElement.style.fontSize).toBe("125%");
-    expect(screen.getByRole("button", { name: en.strip.larger })).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: en.strip.smaller }));
-    expect(document.documentElement.style.fontSize).toBe("112.5%");
-    fireEvent.click(screen.getByRole("button", { name: en.strip.normal }));
-    expect(document.documentElement.style.fontSize).toBe("");
+    fireEvent.click(screen.getByRole("button", { name: en.theme.toDark }));
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(window.localStorage.getItem("ls-theme")).toBe("dark");
+    fireEvent.click(screen.getByRole("button", { name: en.theme.toLight }));
+    expect(document.documentElement.classList.contains("dark")).toBe(false);
+    expect(window.localStorage.getItem("ls-theme")).toBe("light");
   });
 
   it("marks only the current page link", () => {
@@ -92,15 +89,6 @@ describe("Navbar (UD3)", () => {
     render(wrap(<Navbar />));
     const nav2 = screen.getByRole("navigation", { name: en.nav.main });
     expect(within(nav2).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.verify, en.nav.check, en.nav.track, en.nav.map]);
-  });
-
-  it("theme toggle lives in the account menu (signed in), light | dark | system", () => {
-    auth = { status: "authenticated", user: { name: "C", role: "CITIZEN" }, logout };
-    render(wrap(<Navbar />));
-    fireEvent.click(screen.getByRole("button", { name: en.nav.account }));
-    const group = screen.getByRole("group", { name: en.theme.label });
-    expect(within(group).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual([en.theme.light, en.theme.dark, en.theme.system]);
-    expect(within(group).getByRole("button", { name: en.theme.light })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("theme default is light when nothing is stored (dark only by explicit choice)", () => {

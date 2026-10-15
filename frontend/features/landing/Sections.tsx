@@ -29,7 +29,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { intlLocale } from "@/lib/intl-locale";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
-import OfficerActions from "./OfficerActions";
 
 /** Services whose route is not built yet stay hidden until their F-phase lands (track = F2c, now live). */
 export const FLAGS = { track: true } as const;
@@ -59,12 +58,6 @@ const STEPS: [string, LucideIcon][] = [
   ["review", UserCheck],
   ["risk", ShieldAlert],
   ["report", QrCode],
-];
-const OFFICER: [string, LucideIcon][] = [
-  ["upload", Upload],
-  ["queue", ClipboardList],
-  ["mutation", ClipboardCheck],
-  ["audit", ScrollText],
 ];
 const TRUST: [string, LucideIcon][] = [
   ["human", UserCheck],
@@ -187,29 +180,6 @@ export function HowItWorks() {
           </li>
         ))}
       </ol>
-    </Band>
-  );
-}
-
-export function OfficerBand() {
-  const t = useTranslations("landing.officer");
-  return (
-    <Band id="officer-title" tone="soft">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h2 id="officer-title" className={h2}>{t("title")}</h2>
-          <p className="mt-2 text-ink-muted">{t("body")}</p>
-          <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
-            {OFFICER.map(([k, I]) => (
-              <li key={k} data-testid="officer-item" className="flex items-center gap-2 text-ink">
-                <I aria-hidden="true" className={icon} />
-                {t(`items.${k}`)}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <OfficerActions />
-      </div>
     </Band>
   );
 }

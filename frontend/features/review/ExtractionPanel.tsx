@@ -64,10 +64,10 @@ function FieldRow({
   return (
     <div
       data-testid={`field-${f.field}`}
-      className="flex flex-col gap-1 border-l-4 py-2 pl-3 data-[band=high]:border-l-verified data-[band=medium]:border-l-review data-[band=low]:border-l-critical sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+      className="flex flex-col gap-1 border-l-4 py-2 pl-3 data-[band=high]:border-l-verified data-[band=medium]:border-l-review data-[band=low]:border-l-critical "
       data-band={band}
     >
-      <dt className="text-sm text-ink-muted sm:w-2/5 sm:pt-1">{label}</dt>
+      <dt className="text-xs font-medium uppercase tracking-wide text-ink-muted">{label}</dt>
       <dd className="flex min-w-0 flex-1 flex-col gap-1">
         {editing ? (
           <form
@@ -97,7 +97,7 @@ function FieldRow({
           </form>
         ) : (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
               <span className={f.value ? "break-words text-ink" : "text-ink-muted"} data-testid={`value-${f.field}`}>
                 {f.value ? f.value : t("valueNotFound")}
               </span>
