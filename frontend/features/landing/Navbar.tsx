@@ -44,8 +44,8 @@ export default function Navbar() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/brand/logo-mark.svg" alt="" width={64} height={64} className="h-10 w-10 object-contain drop-shadow-[0_2px_6px_rgb(0_0_0/0.45)]" />
             <span className="flex flex-col leading-tight">
-              <span className="text-lg font-extrabold uppercase tracking-wide">{t("appName")}</span>
-              <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/80" lang="bn" aria-hidden="true">{t("subLine")}</span>
+              <span className="font-display text-[1.2rem] font-extrabold uppercase leading-none tracking-[0.045em]">{t("appName")}</span>
+              <span className="mt-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#E9DDB4]/85" lang="bn" aria-hidden="true">{t("subLine")}</span>
             </span>
           </Link>
           <HeaderMenu

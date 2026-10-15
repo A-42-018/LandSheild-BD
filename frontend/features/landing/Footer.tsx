@@ -25,7 +25,7 @@ export default function Footer() {
           <Link href="/" className="inline-flex items-center gap-2.5 rounded-md text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/brand/logo-mark.svg" alt="" width={64} height={64} className="h-10 w-10 object-contain drop-shadow-[0_2px_6px_rgb(0_0_0/0.45)]" />
-            <span className="text-base font-extrabold uppercase tracking-wide">{t("common.appName")}</span>
+            <span className="font-display text-[1.1rem] font-extrabold uppercase tracking-[0.045em]">{t("common.appName")}</span>
           </Link>
           <p className="mt-3 max-w-xs leading-relaxed text-white/75">{t("footer.tagline")}</p>
           <p className="mt-4 inline-flex items-center rounded-full border border-[#D6B25C]/40 bg-black/20 px-3 py-1 text-xs font-medium text-[#F1D88C]">

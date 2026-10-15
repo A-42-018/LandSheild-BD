@@ -59,6 +59,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-inter)", "var(--font-bengali)", "system-ui", "sans-serif"],
         bn: ["var(--font-bengali)", "var(--font-inter)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "var(--font-inter)", "var(--font-bengali)", "system-ui", "sans-serif"],
       },
     },
   },
