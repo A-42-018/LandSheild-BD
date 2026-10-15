@@ -40,6 +40,7 @@ import MutationQueue from "@/features/mutation/MutationQueue";
 import UploadForm from "@/features/upload/UploadForm";
 import PublicVerifyView from "@/features/qr/PublicVerifyView";
 import FeedbackAdmin from "@/features/feedback/FeedbackAdmin";
+import { EmptyState, ErrorState, LoadingState, Modal, StateCard } from "@/components/ui";
 import NotFound from "../app/[locale]/not-found";
 import ErrorPage from "../app/[locale]/error";
 import OfficerShell from "@/features/officer/OfficerShell";
@@ -250,6 +251,26 @@ const CASES: Case[] = [
     ),
     ready: (m) => screen.findByRole("heading", { level: 1, name: m.info[ns].title }),
   })),
+  {
+    name: "system-states",
+    role: null,
+    ui: () => (
+      <main>
+        <h1>States</h1>
+        <EmptyState title="Nothing here" />
+        <ErrorState message="Failed" onRetry={() => {}} />
+        <LoadingState />
+        <StateCard headingLevel={2} title="Lost" body="Not found" />
+      </main>
+    ),
+    ready: () => screen.findByText("Nothing here"),
+  },
+  {
+    name: "modal",
+    role: null,
+    ui: () => <main><h1>Page</h1><Modal open onClose={() => {}} title="Confirm">Body</Modal></main>,
+    ready: () => screen.findByRole("dialog"),
+  },
   {
     name: "services",
     role: null,

@@ -52,3 +52,23 @@ test.describe("mobile viewport (375 px)", () => {
   });
   });
 });
+
+test.describe("UI v2 mobile patterns (375 px)", () => {
+  test("track page: What you need collapses above the form; Bangla form fits", async ({ page }) => {
+    await page.goto("/bn/track");
+    const need = page.getByTestId("what-you-need").locator("details");
+    await expect(need).not.toHaveAttribute("open", "");
+    await need.locator("summary").click();
+    await expect(need).toHaveAttribute("open", "");
+    await expectNoHorizontalScroll(page);
+  });
+  test("tables stack into label/value cards", async ({ page }) => {
+    await signIn(page, "citizen");
+    await page.goto("/en/verify/result?land_id=LP-10100");
+    await page.getByRole("tab", { name: "Transactions" }).click();
+    const cell = page.locator("td[data-label]").first();
+    await expect(cell).toBeVisible();
+    expect(await cell.evaluate((el) => getComputedStyle(el).display)).toBe("flex");
+    await expectNoHorizontalScroll(page);
+  });
+});

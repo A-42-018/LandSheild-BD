@@ -1,3 +1,48 @@
+# Design v2 (UI REDESIGN V2, 2026-10-15)
+
+Source of truth = the landing page `/` and the sign-in pages. Every inner page now uses the same language; older sections below describe the earlier flat U1–U7 look and stay for history.
+
+## Tokens (`globals.css`, `tailwind.config.ts`)
+| Token | Value | Use |
+|---|---|---|
+| `brand-deep` / `brand-deep-2` | `10 53 39` / `15 74 53` | header, footer, page hero band, sign-in panel, officer sidebar header (same in both themes) |
+| `gold`, `gold-strong`, `gold-soft` | `214 178 92`, `233 201 111`, `241 216 140` | ONE gold touch per view: active nav, accent bar under H1/H2, primary CTA on dark surfaces. Never body text on light surfaces |
+| `rounded-card` / `rounded-panel` / `rounded-hero` | 14 / 20 / 24 px | cards / panels and hero band / landing banner |
+| `shadow-glass`, `shadow-lift` | soft + lifted | resting and hover glass cards |
+| `.glass-card`, `.section-panel`, `.icon-tile`, `.page-hero`, `.scroll-fade`, `.skeleton`, `.reveal` | utilities | glass container, tinted section, icon square, deep-green band, fading scroller, shimmer, scroll reveal |
+| H1 / H2 | `clamp(1.75rem, 1.2rem + 2.2vw, 2.6rem)` / `clamp(1.375rem, 1.1rem + 1vw, 1.75rem)` | fluid headings; Bangla keeps its own rules |
+
+## Components
+- `Card` glass by default, `tone="panel"` = section panel, icon in a tile, accent/record = 3 px left bar.
+- `Button` sizes sm / md 44 px / lg 48 px, `variant="gold"`, `fullWidthOnMobile`. `Badge` is a pill with optional dot.
+- `Input`/`Select` 48 px on phones, 3 px focus glow. `Tabs` `variant="underline" | "segmented"`, fading scroll edges, `sticky`. `Modal` = bottom sheet < 640 px.
+- `Table` stacks into label/value cards < 640 px (`stackOnMobile`, pure CSS, same markup). Note: `display:block` on the table drops table semantics in Safari/VoiceOver on phones; the label is repeated per cell via `data-label`.
+- `PageHeader` renders `PageHero` (hero band, breadcrumb, meta chips, art, actions); `variant="plain"` for the officer area. `ServiceLayout` = Template A (form 7/12 + sticky "What you need"; collapsible `<details>` below 1024 px). `StateCard` = Template G (404, error). `ArtCard` shared by landing and tools hub. `Reveal`, `ToastProvider/useToast`, `Skeleton`.
+- One `PublicBackdrop` in the locale layout (not on `/officer/*`, `/map`).
+
+## Templates
+A service pages (verify, check, track, verify-document) · B result/report/public QR · C hubs (tools, services) · D reading pages (70 ch, sticky TOC ≥ 1280) · E officer workspace (deep-green header block sidebar, icon rail 1024–1279, drawer < 1024) · F map/graph (floating glass panels) · G system states.
+
+## Contrast of the new surfaces (WCAG, needs ≥ 4.5 : 1; computed 2026-10-15)
+| Pair | Ratio |
+|---|---|
+| white on deep green `#0A3527` | 13.5 : 1 |
+| white on deep green 2 `#0F4A35` | 10.2 : 1 |
+| white 85 % on deep (hero purpose line) | 7.9 : 1 |
+| white 75 % on deep (breadcrumb) | 6.5 : 1 |
+| gold `#D6B25C` on deep | 6.7 : 1 |
+| gold-soft `#F1D88C` on deep | 9.6 : 1 |
+| ink on glass card (light) | 15.0 : 1 |
+| ink-muted on glass card (light) | 6.1 : 1 |
+| primary on glass card | 6.0 : 1 |
+| `.btn-gold` text `#1A2A1F` on `#CFA548` | 6.5 : 1 |
+
+## QA gate (R11)
+- Overflow matrix run against the dev servers (18 public + 5 citizen routes, reviewer/admin officer routes) at 320 / 360 / 768 / 1024 / 1440 px × EN/BN × light/dark (dark at 360 and 1024): after fixing the landing service cards at 320 px (grid column `min-w-0`) **no horizontal scroll anywhere**. `frontend/e2e/visual.spec.ts` repeats this in Playwright (`VISUAL_FULL=1` for the whole matrix; screenshots attached, no committed baselines).
+- axe (`tests/a11y.test.tsx`): all routes of the E5 suite + system states + modal, EN and BN: no violations.
+- NOT run here: Lighthouse mobile (LCP / CLS / TBT), real devices (iPhone SE, Android, iPad, Safari, Firefox, Brave auto-dark), `next build`. Do these before the final demo.
+- Not done: parcel details as a bottom sheet on the map (Leaflet popup kept).
+
 # UI theme (UD1) + core components (UD2)
 
 Colours are CSS variables holding `R G B` channels (`app/globals.css`), mapped in `tailwind.config.ts`
