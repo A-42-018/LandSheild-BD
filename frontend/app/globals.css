@@ -296,9 +296,9 @@
   color: rgb(var(--ink));
   box-shadow: 0 2px 8px rgb(var(--ink) / 0.08);
 }
-.leaflet-container .leaflet-popup-content-wrapper { border-radius: 6px; border: 1px solid rgb(var(--line)); }
+.leaflet-container .leaflet-popup-content-wrapper { border-radius: 14px; border: 1px solid rgb(var(--line)); overflow: hidden; box-shadow: 0 14px 34px -16px rgb(var(--shadow) / 0.45); }
 .leaflet-container .leaflet-popup-content { margin: 0; min-width: 12rem; }
-.ls-popup strong { display: block; padding: 0.5rem 0.75rem; color: #fff; background: rgb(var(--header-from)); border-radius: 5px 5px 0 0; }
+.ls-popup strong { display: block; padding: 0.55rem 0.75rem; color: #fff; background: rgb(var(--brand-deep)); border-bottom: 2px solid rgb(var(--gold)); }
 .ls-popup dl { display: grid; grid-template-columns: auto 1fr; gap: 0.15rem 0.75rem; margin: 0; padding: 0.6rem 0.75rem; font-size: 0.8125rem; }
 .ls-popup dt { color: rgb(var(--ink-muted)); }
 .ls-popup dd { margin: 0; font-weight: 500; }

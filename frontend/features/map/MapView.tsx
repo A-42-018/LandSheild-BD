@@ -30,7 +30,7 @@ import { useParcelMap } from "./useMap";
 // Leaflet only loads when the map is on screen (and only in the browser).
 const MapCanvas = lazy(() => import("./MapCanvas"));
 
-const GLASS = "border border-line bg-surface shadow-card"; // flat overlay panel (roadmap 4.8)
+const GLASS = "border border-line/80 bg-surface/90 shadow-glass backdrop-blur-md"; // floating glass overlay panel (UI v2)
 const GLASS_FIELDS =
   "[&_label]:text-xs [&_input:not([type=checkbox])]:py-1.5 [&_select]:py-1.5 [&_button]:py-1.5 [&_button]:text-sm";
 
@@ -56,6 +56,12 @@ export default function MapView() {
   const [showBoundaries, setShowBoundaries] = useState(true);
   const [showParcels, setShowParcels] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(false); // phones only; the legend is always shown from 640 px
+
+  // Phones: start with the search menu closed so the map is visible first.
+  useEffect(() => {
+    if (typeof window.matchMedia === "function" && window.matchMedia("(max-width: 639px)").matches) setMenuOpen(false);
+  }, []);
 
   // Esc leaves fullscreen; the page behind does not scroll
   useEffect(() => {
@@ -180,7 +186,7 @@ export default function MapView() {
         <h1 className="text-xl font-semibold text-ink">{t("map.title")}</h1>
         <p
           role="note"
-          className="rounded-lg border border-line bg-surface-muted px-3 py-1 text-sm font-medium text-ink"
+          className="glass-card px-3 py-1 text-sm font-medium text-ink"
         >
           {t("common.demoLabel")}
         </p>
@@ -269,11 +275,11 @@ export default function MapView() {
           {menuOpen && (
             <div
               id="gis-menu-panel"
-              className={`flex flex-col overflow-hidden rounded-md text-ink ${GLASS}`}
+              className={`flex flex-col overflow-hidden rounded-card text-ink ${GLASS}`}
             >
-              <div className="flex items-center gap-2 bg-primary px-3 py-2 text-primary-fg">
+              <div className="flex items-center gap-2 border-b-2 border-gold bg-brand-deep px-3 py-2 text-primary-fg">
                 <Search aria-hidden="true" className="h-4 w-4 shrink-0" />
-                <h2 className="text-sm font-semibold text-primary-fg">{t("map.gis.menuTitle")}</h2>
+                <h2 className="text-sm font-semibold text-white/100">{t("map.gis.menuTitle")}</h2>
               </div>
               <div className={`flex flex-col gap-3 overflow-y-auto p-3 text-sm ${GLASS_FIELDS}`}>
               <SearchMenu
@@ -319,10 +325,25 @@ export default function MapView() {
             </div>
           )}
         </aside>
-        <section
-          aria-label={t("map.legendTitle")}
-          className={`absolute bottom-9 right-2 z-[1000] flex max-w-[15rem] flex-col gap-1 rounded-md p-2.5 text-xs text-ink ${GLASS}`}
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className={`absolute bottom-9 right-2 z-[1000] !text-ink sm:hidden ${GLASS} ${legendOpen ? "hidden" : ""}`}
+          aria-expanded={legendOpen}
+          aria-controls="map-legend"
+          onClick={() => setLegendOpen(true)}
         >
+          {t("map.legendTitle")}
+        </Button>
+        <section
+          id="map-legend"
+          aria-label={t("map.legendTitle")}
+          className={`absolute bottom-9 right-2 z-[1000] max-w-[15rem] flex-col gap-1 rounded-card p-2.5 text-xs text-ink sm:flex ${legendOpen ? "flex" : "hidden"} ${GLASS}`}
+        >
+          <button type="button" onClick={() => setLegendOpen(false)} className="self-end text-xs font-medium text-link underline sm:hidden">
+            {t("common.close")}
+          </button>
           <span className="text-sm font-semibold">{t("map.legendTitle")}</span>
           {showBoundaries &&
             (["division", "district", "upazila"] as const).map((lvl) => (
