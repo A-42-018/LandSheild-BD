@@ -9,7 +9,7 @@ import { activeNavHref, navItemsFor } from "@/features/auth/roles";
 const PILL =
   "relative flex min-h-12 w-full items-center whitespace-nowrap rounded-lg px-4 text-sm font-semibold uppercase tracking-[0.06em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 " +
   "after:absolute after:bottom-3 after:left-0 after:top-3 after:w-[3px] after:rounded-full after:transition-opacity " +
-  "min-[1120px]:inline-flex min-[1120px]:min-h-11 min-[1120px]:w-auto min-[1120px]:rounded-md min-[1120px]:px-3 min-[1120px]:text-[13.5px] " +
+  "min-[1120px]:inline-flex min-[1120px]:min-h-11 min-[1120px]:w-auto min-[1120px]:rounded-md min-[1120px]:px-3 min-[1120px]:text-[0.84rem] " +
   "min-[1120px]:after:bottom-1.5 min-[1120px]:after:left-3 min-[1120px]:after:right-3 min-[1120px]:after:top-auto min-[1120px]:after:h-0.5 min-[1120px]:after:w-auto";
 
 /** Header bar links (UD10 sketch: Home, Parcel Map). The remaining pages live in the user menu. */

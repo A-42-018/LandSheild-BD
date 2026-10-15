@@ -36,7 +36,7 @@ export default function Navbar() {
     <>
       <header className="header-glass sticky top-0 z-[1500] text-white">
         <HeaderArt />
-        <div className="relative mx-auto flex min-h-16 max-w-[1200px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
+        <div className="relative mx-auto flex min-h-16 max-w-[75rem] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
           <Link
             href="/"
             className="mr-2 flex items-center gap-2.5 rounded-md text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
@@ -45,7 +45,7 @@ export default function Navbar() {
             <img src="/brand/logo-mark.svg" alt="" width={64} height={64} className="h-10 w-10 object-contain drop-shadow-[0_2px_6px_rgb(0_0_0/0.45)]" />
             <span className="flex flex-col leading-tight">
               <span className="font-display text-[1.2rem] font-extrabold uppercase leading-none tracking-[0.045em]">{t("appName")}</span>
-              <span className="mt-1 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#E9DDB4]/85" lang="bn" aria-hidden="true">{t("subLine")}</span>
+              <span className="mt-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#E9DDB4]/85" lang="bn" aria-hidden="true">{t("subLine")}</span>
             </span>
           </Link>
           <HeaderMenu
