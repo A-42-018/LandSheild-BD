@@ -4,9 +4,13 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
 import { activeNavHref, navItemsFor } from "@/features/auth/roles";
 
-// Uppercase text links; the active one is gold with a gold underline (reference header).
+// Below 1120px: full-width rows in the drop-down panel, active row has a gold side bar.
+// From 1120px: uppercase text links in the bar, active one gold with a gold underline (reference header).
 const PILL =
-  "relative inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-3 py-1.5 text-[13.5px] font-semibold uppercase tracking-[0.06em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 after:absolute after:inset-x-3 after:bottom-1.5 after:h-0.5 after:rounded-full after:transition-opacity";
+  "relative flex min-h-12 w-full items-center whitespace-nowrap rounded-lg px-4 text-sm font-semibold uppercase tracking-[0.06em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 " +
+  "after:absolute after:bottom-3 after:left-0 after:top-3 after:w-[3px] after:rounded-full after:transition-opacity " +
+  "min-[1120px]:inline-flex min-[1120px]:min-h-11 min-[1120px]:w-auto min-[1120px]:rounded-md min-[1120px]:px-3 min-[1120px]:text-[13.5px] " +
+  "min-[1120px]:after:bottom-1.5 min-[1120px]:after:left-3 min-[1120px]:after:right-3 min-[1120px]:after:top-auto min-[1120px]:after:h-0.5 min-[1120px]:after:w-auto";
 
 /** Header bar links (UD10 sketch: Home, Parcel Map). The remaining pages live in the user menu. */
 export default function HeaderNav() {
@@ -20,7 +24,7 @@ export default function HeaderNav() {
   return (
     <nav
       aria-label={t("nav.main")}
-      className="flex flex-col items-stretch gap-1 min-[1120px]:flex-1 min-[1120px]:flex-row min-[1120px]:items-center min-[1120px]:justify-center min-[1120px]:gap-2"
+      className="flex flex-col items-stretch gap-0.5 min-[1120px]:flex-1 min-[1120px]:flex-row min-[1120px]:items-center min-[1120px]:justify-center min-[1120px]:gap-2"
     >
       {items.map((i) => {
         const isActive = i.href === active;
@@ -31,8 +35,8 @@ export default function HeaderNav() {
             aria-current={isActive ? "page" : undefined}
             className={`${PILL} ${
               isActive
-                ? "text-[#E9C96F] after:bg-[#D6B25C] after:opacity-100"
-                : "text-white/90 after:bg-white/50 after:opacity-0 hover:text-white hover:after:opacity-100"
+                ? "bg-white/[0.07] text-[#E9C96F] after:bg-[#D6B25C] after:opacity-100 min-[1120px]:bg-transparent"
+                : "text-white/90 after:bg-white/50 after:opacity-0 hover:bg-white/[0.05] hover:text-white min-[1120px]:hover:bg-transparent min-[1120px]:hover:after:opacity-100"
             }`}
           >
             {t(i.labelKey)}
