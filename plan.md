@@ -6,7 +6,7 @@
 
 ## STATE
 ```text
-Plan version : 123
+Plan version : 124
 RBAC audit (2026-10-07) ✅ — every route guard, page guard, nav item and API call checked per role (citizen/reviewer/officer/admin); live API probe 44/44. Fixed + pushed one commit each: four-eyes (uploader cannot approve, ADMIN exempt, SELF_APPROVAL_FORBIDDEN, shown up front via ExtractionOut.self_approval_blocked); review page dead-ends (UPLOADED: officer can start processing, reviewer sees waiting note; FAILED: reason + Reprocess); HIGH alert dismissal officer/admin only + reason required for any dismissal (ALERT_DISMISS_FORBIDDEN / REASON_REQUIRED, dashboard reason modal); /officer/activity scoped to document/mutation/alert events for reviewers (audit trail stays officer+); migration 0008 audit_logs.actor_role (role at the time; old rows backfilled with current role); landing reviewer CTA; stale officer e2e (F6 deed-no rule + four-eyes). "Last admin can be demoted" was a false finding (self-change is blocked, so the acting admin remains). Tests: backend 679 pass (8 skipped), vitest 407, e2e 20/20, tsc, ruff, i18n OK (1029).
 O1-O4 (2026-10-07) ✅ real OCR track — OCR_PROVIDER=auto: demo sample (exact SHA-256 in ai/mock_fixtures.json by_hash) -> PDF text layer (>= 50 chars) -> Tesseract; no silent mock (OCR_UNAVAILABLE 503 / OCR_TIMEOUT 504 -> job FAILED + documents.failure_code; verify-document answers 503). Tesseract: psm 6 -> 4 -> upscale retry (upscale is a RETRY only: first-step upscaling dropped deeds to 29 %), per-page timeout, multi-page + PAGES_TRUNCATED, normalize.py, extra BN label variants. Claude (ai/extraction/claude.py + validate.py): dormant without ANTHROPIC_API_KEY, fallback to rules on any failure, cache per sha256+model, daily cap; fake-client tests only, NEVER run against the real API. Extraction JSON + API: ocr_source / extractor / model / warnings; review page badges EN+BN. Eval (Tesseract+rules, demo off): deeds 60.0 % -> 85.4 % (73.3 % preprocess off); Bangla specimens CER 17.2 % -> 21.6 % (worse), parsed fields 90 %. docs/ocr-accuracy.md, README "How OCR works", Dockerfile tessdata_best (NOT built here), pyproject extra llm. Tests: backend 672 pass (8 skipped), ruff clean; vitest 398, tsc clean. NOT done: Claude accuracy (no key), 3-5 real-looking deeds, Docker build, real Render run.
 Competition  : LandTech 2026 · P3 Fraud & Double-Selling (P1/P2/P4/P5 supporting) · submit by 15 Oct (deadline 16 Oct)
@@ -23,8 +23,8 @@ S2-b (user): watch it; optional voice-over; upload (YouTube unlisted or Drive, "
 S1: ✅ (concept note PDF 3 p; only VIDEO_URL left).
 OPEN (carried): EN+BN evidence i18n for ACTIVE_LITIGATION/KHAS_LAND/UNDER_ACQUISITION/ACTIVE_MORTGAGE not done; real OCR (tesseract) path of verify-document untested; ML scoring skipped in plain dev venv; Docker image never built locally; `next build` not run. Ledger chain is only as strong as DB write access (anchoring head hash off-DB is a T1 idea).
 Citizen tools: C1 ✅ C2 ✅ C5 ✅; left C3 → C4 (backend) (cards in roadmap.md §5 "C —"); suggested pairing C1+C2 in one window.
-UI v2 (2026-10-15) 🟡 — landing, header, footer, sign-in/sign-up/officer-request redesigned (branch ui-header-landing-polish, pushed); whole-site roadmap R0-R12 in section "UI REDESIGN V2" below. Answer V2.7 decisions first.
-Next work    : R0 (UI REDESIGN V2). Also open: C3, C4, S2-b, S3 (user).
+UI v2 (2026-10-15) 🟡 — landing, header, footer, sign-in/sign-up/officer-request done; R-phases in "UI REDESIGN V2" (V2.7 decisions: recommended defaults taken). Progress: R0 ✅.
+Next work    : R1a (UI REDESIGN V2). Also open: C3, C4, S2-b, S3 (user).
 Next phase   : S2-b upload + VIDEO_URL (user) → S3 submit Round 1 🔒 (both skipped by request; user does them). Re-export the concept note PDF (scripts/export_concept_note.py, needs Chromium): its Bangla-OCR sentence changed.
 Carried over : reseed for demo password (Q17)
 ```
@@ -74,7 +74,7 @@ Carried over : reseed for demo password (Q17)
 | Next | E4 | Bangla place names/numerals + feedback/grievance form + "helpful?" prompt | Should | ✅ |
 | Next | E5 | Accessibility pass on every route (axe, 125 %, 360 px, keyboard) | Must | ✅ |
 | Next | E6 | Officer-side consistency + session-timeout warning | Could | ✅ |
-| V2 | R0 | Tokens + utilities (brand colours, radii, fluid type, blur fallback) | Must | ⬜ |
+| V2 | R0 | Tokens + utilities (brand colours, radii, fluid type, blur fallback) | Must | ✅ |
 | V2 | R1a/b | Core components v2 (Card/Button/Badge · Input/Select/Tabs/Modal) | Must | ⬜ |
 | V2 | R2 | PageHero band + PageHeader v2 + backdrop on public pages | Must | ⬜ |
 | V2 | R3 | System states: 404, error, loading skeletons, empty | Must | ⬜ |
