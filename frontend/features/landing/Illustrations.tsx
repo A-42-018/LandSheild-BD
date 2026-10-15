@@ -289,5 +289,28 @@ export function ScaleArt({ className }: { className?: string }) {
   );
 }
 
+/** Sign-in panel mark: a glassy 3D shield with a check, for use on the deep green auth panel. */
+export function ShieldArt({ className }: { className?: string }) {
+  const outer = "M40,6L70,16V42C70,62 56,76 40,84C24,76 10,62 10,42V16Z";
+  const inner = "M40,13L64,21V42C64,58 53,69 40,76C27,69 16,58 16,42V21Z";
+  return (
+    <svg viewBox="0 0 80 92" aria-hidden="true" focusable="false" className={className}>
+      <defs>
+        <linearGradient id="sh-face" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#7FE0B0" /><stop offset="1" stopColor="#13865B" /></linearGradient>
+        <linearGradient id="sh-in" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFFFFF" stopOpacity="0.35" /><stop offset="1" stopColor="#FFFFFF" stopOpacity="0.05" /></linearGradient>
+        <filter id="sh-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" /></filter>
+      </defs>
+      <ellipse cx="42" cy="88" rx="22" ry="3" fill="#000000" opacity="0.3" filter="url(#sh-blur)" />
+      <path d={outer} transform="translate(3 3)" fill="#0A4A33" />
+      <path d={outer} fill="url(#sh-face)" />
+      <path d={inner} fill="url(#sh-in)" stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth="1.2" />
+      <path d="M40,6L70,16V42C70,62 56,76 40,84Z" fill="#000000" opacity="0.08" />
+      <path d="M28,44L37,53L54,34" fill="none" stroke="#0A4A33" strokeOpacity="0.35" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" transform="translate(1 2)" />
+      <path d="M28,44L37,53L54,34" fill="none" stroke="#FFFFFF" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M19,24L38,17.5" stroke="#FFFFFF" strokeOpacity="0.7" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export const SERVICE_ART = { verify: PlotSearchArt, check: ChecklistArt, track: RouteArt, verifyDoc: DeedArt } as const;
 export const TOOL_ART = { units: TapeMeasureArt, fees: FeeCalculatorArt, faraid: ScaleArt } as const;

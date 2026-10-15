@@ -182,6 +182,13 @@
       background-position: center, center, 70% 40%;
     }
   }
+  /* Sign-in / sign-up brand panel: same deep green as the header, with a soft highlight. */
+  .auth-panel {
+    background-color: #0A3527;
+    background-image:
+      radial-gradient(28rem 20rem at 10% 0%, rgb(127 224 176 / 0.18), transparent 70%),
+      linear-gradient(165deg, #0F4A35 0%, #0B3D2C 55%, #08301F 100%);
+  }
   /* Tinted icon tile used across landing sections. */
   .icon-tile {
     display: inline-flex;
