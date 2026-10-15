@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { CircleSlash, ShieldCheck, ShieldX, type LucideIcon } from "lucide-react";
+import { CircleSlash, Hash, ShieldCheck, ShieldX, type LucideIcon } from "lucide-react";
 import { districtName, upazilaName } from "@/lib/geo";
 import { Card, EmptyState, ErrorState, LoadingState } from "@/components/ui";
+import { ShieldArt } from "@/features/landing/Illustrations";
 import PageHeader from "@/components/PageHeader";
 import RiskBadge from "@/components/domain/RiskBadge";
 import StatusBadge from "@/components/domain/StatusBadge";
@@ -15,10 +16,10 @@ import { intlLocale } from "@/lib/intl-locale";
 
 /** Status = icon + text + colour (roadmap 4.2 rule 4), theme tokens only. */
 const SIG_STYLE: Record<string, [string, LucideIcon]> = {
-  VALID: ["border-verified/40 bg-verified-soft text-verified", ShieldCheck],
-  INVALID: ["border-critical/40 bg-critical-soft text-critical", ShieldX],
-  UNSIGNED: ["border-line bg-pending-soft text-pending", CircleSlash],
-  NOT_FOUND: ["border-line bg-pending-soft text-pending", CircleSlash],
+  VALID: ["border-l-verified bg-verified-soft/70 text-verified", ShieldCheck],
+  INVALID: ["border-l-critical bg-critical-soft/70 text-critical", ShieldX],
+  UNSIGNED: ["border-l-pending bg-pending-soft/70 text-pending", CircleSlash],
+  NOT_FOUND: ["border-l-pending bg-pending-soft/70 text-pending", CircleSlash],
 };
 
 function SignatureChip({ deedId, hash12 }: { deedId: string; hash12: string }) {
@@ -32,10 +33,10 @@ function SignatureChip({ deedId, hash12 }: { deedId: string; hash12: string }) {
       role="status"
       data-testid="signature-chip"
       data-state={state}
-      className={`flex items-start gap-2 rounded-md border px-4 py-2 text-sm font-medium ${cls}`}
+      className={`glass-card flex items-center gap-4 border-l-[4px] px-5 py-4 text-base font-semibold ${cls}`}
     >
-      <Icon aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-      <span>{t(`sig.${state}`)}</span>
+      <Icon aria-hidden="true" className="h-10 w-10 shrink-0" />
+      <span className="text-ink">{t(`sig.${state}`)}</span>
     </p>
   );
 }
@@ -115,9 +116,12 @@ export default function PublicVerifyView({ landId }: { landId: string }) {
         <Card title={t("publicVerify.countsTitle")} data-testid="public-counts">
           <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {counts.map(([k, v]) => (
-              <div key={k}>
-                <dt className="text-xs text-ink-muted">{t(`publicVerify.${k}`)}</dt>
-                <dd className="text-xl font-semibold text-ink">{new Intl.NumberFormat(intlLocale(locale)).format(v)}</dd>
+              <div key={k} className="rounded-xl border border-line/70 bg-surface/60 p-3">
+                <dt className="flex items-center gap-2 text-xs text-ink-muted">
+                  <span aria-hidden="true" className="icon-tile !h-7 !w-7 !rounded-lg"><Hash className="h-3.5 w-3.5" /></span>
+                  {t(`publicVerify.${k}`)}
+                </dt>
+                <dd className="mt-1 font-display text-2xl font-bold text-ink">{new Intl.NumberFormat(intlLocale(locale)).format(v)}</dd>
               </div>
             ))}
           </dl>
@@ -138,11 +142,12 @@ export default function PublicVerifyView({ landId }: { landId: string }) {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
+        art={<ShieldArt />}
         title={t("publicVerify.title")}
         purpose={t("page.publicPurpose")}
         meta={q.data ? [t("page.dataAsOf", { date: formatDateTime(q.data.last_verified_at, locale, t("publicVerify.neverVerified")) })] : []}
       />
-      <p role="note" className="rounded-md border border-line bg-surface-muted px-4 py-2 text-sm font-medium text-ink">
+      <p role="note" className="glass-card px-4 py-2 text-sm font-medium text-ink">
         {t("common.demoLabel")}
       </p>
       {seal ? <SignatureChip deedId={seal.d} hash12={seal.h} /> : null}
