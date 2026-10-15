@@ -3,8 +3,8 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { contours } from "./Backdrop";
 
-const LINK = "rounded text-white/80 underline-offset-4 transition-colors hover:text-white hover:underline hover:decoration-[#D6B25C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
-const HEAD = "mb-3 text-xs font-bold uppercase tracking-[0.12em] text-[#E9C96F]";
+const LINK = "rounded text-white/80 underline-offset-4 transition-colors hover:text-white hover:underline hover:decoration-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
+const HEAD = "mb-3 text-xs font-bold uppercase tracking-[0.12em] text-gold-strong";
 const LIST = "flex flex-col gap-2";
 
 const RINGS = contours([
@@ -16,8 +16,8 @@ const RINGS = contours([
 export default function Footer() {
   const t = useTranslations();
   return (
-    <footer className="header-glass relative mt-12 overflow-hidden border-b-0 shadow-none border-t border-t-[#D6B25C]/55 text-sm text-white/80 print:hidden">
-      <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-[#D6B25C]" viewBox="0 0 1440 360" preserveAspectRatio="xMidYMid slice" fill="none">
+    <footer className="header-glass relative mt-12 overflow-hidden border-b-0 shadow-none border-t border-t-gold/55 text-sm text-white/80 print:hidden">
+      <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-gold" viewBox="0 0 1440 360" preserveAspectRatio="xMidYMid slice" fill="none">
         <path d={RINGS} stroke="currentColor" strokeOpacity="0.1" />
       </svg>
       <div className="relative mx-auto grid max-w-[1200px] grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 lg:grid-cols-[1.5fr_repeat(4,1fr)]">
@@ -28,7 +28,7 @@ export default function Footer() {
             <span className="font-display text-[1.1rem] font-extrabold uppercase tracking-[0.045em]">{t("common.appName")}</span>
           </Link>
           <p className="mt-3 max-w-xs leading-relaxed text-white/75">{t("footer.tagline")}</p>
-          <p className="mt-4 inline-flex items-center rounded-full border border-[#D6B25C]/40 bg-black/20 px-3 py-1 text-xs font-medium text-[#F1D88C]">
+          <p className="mt-4 inline-flex items-center rounded-full border border-gold/40 bg-black/20 px-3 py-1 text-xs font-medium text-gold-soft">
             {t("footer.version")}
           </p>
         </div>
@@ -73,11 +73,11 @@ export default function Footer() {
       </div>
       <div className="relative mx-auto max-w-[1200px] px-4 pb-6">
         <p className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4 leading-relaxed text-white/80 backdrop-blur-sm">
-          <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[#E9C96F]" />
+          <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-gold-strong" />
           <span>{t("landing.disclaimer")}</span>
         </p>
       </div>
-      <div className="relative border-t border-[#D6B25C]/25 bg-black/20">
+      <div className="relative border-t border-gold/25 bg-black/20">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-white/60">
           <p>
             {t("common.demoLabel")} · {t("footer.updated")}

@@ -35,7 +35,7 @@ export default function HeaderNav() {
             aria-current={isActive ? "page" : undefined}
             className={`${PILL} ${
               isActive
-                ? "bg-white/[0.07] text-[#E9C96F] after:bg-[#D6B25C] after:opacity-100 min-[1120px]:bg-transparent"
+                ? "bg-white/[0.07] text-gold-strong after:bg-gold after:opacity-100 min-[1120px]:bg-transparent"
                 : "text-white/90 after:bg-white/50 after:opacity-0 hover:bg-white/[0.05] hover:text-white min-[1120px]:hover:bg-transparent min-[1120px]:hover:after:opacity-100"
             }`}
           >

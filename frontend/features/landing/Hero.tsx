@@ -11,7 +11,7 @@ export default function Hero() {
           <h1 id="hero-title" className="text-[2rem] font-bold leading-tight tracking-tight text-white drop-shadow-[0_2px_12px_rgb(0_0_0/0.35)] sm:text-[2.6rem]">
             {t("home.title")}
           </h1>
-          <span aria-hidden="true" className="mt-4 block h-[3px] w-14 rounded-full bg-gradient-to-r from-[#D6B25C] to-[#D6B25C]/30" />
+          <span aria-hidden="true" className="mt-4 block h-[3px] w-14 rounded-full bg-gradient-to-r from-gold to-gold/30" />
           <p className="mt-4 text-[1.0625rem] leading-relaxed text-white/85">{t("home.intro")}</p>
         </div>
       </div>

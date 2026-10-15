@@ -31,7 +31,7 @@ export default function HeaderMenu({ controls }: { controls: ReactNode }) {
         aria-label={open ? t("menuClose") : t("menuOpen")}
         onClick={() => setOpen((o) => !o)}
         className={`ml-auto inline-flex h-11 w-11 items-center justify-center rounded-lg border text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 min-[1120px]:hidden ${
-          open ? "border-[#D6B25C]/60 bg-black/25" : "border-white/25 bg-black/15 hover:bg-black/25"
+          open ? "border-gold/60 bg-black/25" : "border-white/25 bg-black/15 hover:bg-black/25"
         }`}
       >
         {open ? <X aria-hidden="true" className="h-5 w-5" /> : <Menu aria-hidden="true" className="h-5 w-5" />}
@@ -45,7 +45,7 @@ export default function HeaderMenu({ controls }: { controls: ReactNode }) {
       <div
         id="site-menu"
         data-open={open}
-        className={`${open ? "flex" : "hidden"} absolute inset-x-0 top-[calc(100%+1px)] flex-col gap-2 border-b border-[#D6B25C]/40 bg-[#0A3527] px-4 pb-4 pt-2 shadow-[0_18px_40px_-12px_rgb(0_0_0/0.6)] min-[1120px]:static min-[1120px]:flex min-[1120px]:flex-1 min-[1120px]:flex-row min-[1120px]:flex-nowrap min-[1120px]:items-center min-[1120px]:gap-4 min-[1120px]:border-0 min-[1120px]:bg-transparent min-[1120px]:p-0 min-[1120px]:shadow-none`}
+        className={`${open ? "flex" : "hidden"} absolute inset-x-0 top-[calc(100%+1px)] flex-col gap-2 border-b border-gold/40 bg-brand-deep px-4 pb-4 pt-2 shadow-[0_18px_40px_-12px_rgb(0_0_0/0.6)] min-[1120px]:static min-[1120px]:flex min-[1120px]:flex-1 min-[1120px]:flex-row min-[1120px]:flex-nowrap min-[1120px]:items-center min-[1120px]:gap-4 min-[1120px]:border-0 min-[1120px]:bg-transparent min-[1120px]:p-0 min-[1120px]:shadow-none`}
       >
         <HeaderNav />
         <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-4 min-[1120px]:gap-3 min-[1120px]:border-0 min-[1120px]:pt-0">
