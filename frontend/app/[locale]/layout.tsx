@@ -45,6 +45,8 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className={`${inter.variable} ${bengali.variable}`} suppressHydrationWarning>
       <head>
+        {/* Tells the browser the page handles dark mode itself (class + CSS color-scheme), so Chromium/Brave "auto dark mode" does not re-darken the light theme. */}
+        <meta name="color-scheme" content="light dark" />
         <script src="/theme-init.js" />
       </head>
       <body className={locale === "bn" ? "font-bn" : "font-sans"}>
