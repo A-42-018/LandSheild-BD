@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans_Bengali } from "next/font/google";
+import { Inter, Noto_Sans_Bengali, Plus_Jakarta_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
@@ -11,6 +11,8 @@ import Providers from "@/features/Providers";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+// Wordmark / display face: sturdy geometric sans for the brand name (Latin only; Bangla falls back to Noto Sans Bengali).
+const display = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-display", display: "swap" });
 const bengali = Noto_Sans_Bengali({
   subsets: ["bengali"],
   variable: "--font-bengali",
@@ -43,7 +45,7 @@ export default async function LocaleLayout({
   const t = await getTranslations({ locale, namespace: "common" });
 
   return (
-    <html lang={locale} className={`${inter.variable} ${bengali.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`${inter.variable} ${bengali.variable} ${display.variable}`} suppressHydrationWarning>
       <head>
         {/* Tells the browser the page handles dark mode itself (class + CSS color-scheme), so Chromium/Brave "auto dark mode" does not re-darken the light theme. */}
         <meta name="color-scheme" content="light dark" />

@@ -61,7 +61,7 @@ export default function ThemeToggle({ variant = "default" }: { variant?: "defaul
         aria-label={t(isDark ? "toLight" : "toDark")}
         title={t(isDark ? "toLight" : "toDark")}
         onClick={() => choose(next)}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/30 bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-black/25 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.08)] transition-colors hover:bg-black/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           {ICONS[isDark ? "light" : "dark"]}
