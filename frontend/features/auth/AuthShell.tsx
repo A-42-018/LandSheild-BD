@@ -22,32 +22,27 @@ const POINTS = [
 
 const PANEL_RINGS = contours([{ cx: 360, cy: 120, rings: 7, step: 26, seed: 2.2 }]);
 
-/** Shared frame for sign in / sign up / officer request, matching the landing look: one glass card with a deep green brand panel
- *  (wave, contours, 3D shield) and the form side with segmented tabs. On phones the panel shrinks to a short banner above the form. */
+/** Shared frame for sign in / sign up / officer request, matching the landing look: one glass card with a brand panel
+ *  (farmer photo under a deep-green scrim, faint contours, 3D shield) and the form side with segmented tabs. On phones the panel shrinks to a short banner above the form. */
 export default function AuthShell({ mode, children }: { mode: AuthMode; children: ReactNode }) {
   const t = useTranslations("authShell");
   return (
     <div className="glass-card mx-auto grid w-full max-w-5xl overflow-hidden !rounded-[22px] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-      <aside className="auth-panel relative flex flex-col justify-between gap-8 overflow-hidden p-6 text-white/95 sm:p-8 lg:min-h-[40rem]">
-        {/* decorative: soft lighter wave and faint contour rings */}
-        <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-[#3FBF8A]" viewBox="0 0 400 640" preserveAspectRatio="none">
-          <path d="M400,120C300,170 250,260 260,360C270,470 200,560 0,600V640H400Z" fill="currentColor" fillOpacity="0.16" />
-          <path d="M400,250C330,300 320,390 330,470C340,560 260,610 120,640H400Z" fill="currentColor" fillOpacity="0.12" />
-        </svg>
+      <aside className="auth-panel relative flex flex-col justify-between gap-8 overflow-hidden p-6 text-white/95 sm:p-8 lg:min-h-[54rem]">
         <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-gold" viewBox="0 0 400 640" preserveAspectRatio="xMidYMid slice" fill="none">
-          <path d={PANEL_RINGS} stroke="currentColor" strokeOpacity="0.12" />
+          <path d={PANEL_RINGS} stroke="currentColor" strokeOpacity="0.08" />
         </svg>
         <div className="relative flex items-center gap-4 lg:flex-col lg:items-start">
           <ShieldArt className="h-16 w-14 shrink-0 drop-shadow-[0_8px_16px_rgb(0_0_0/0.35)] sm:h-20 sm:w-[4.5rem] lg:h-24 lg:w-[5.25rem]" />
           <div>
-            <h2 className="text-[1.5rem] font-bold leading-tight tracking-tight sm:text-[1.75rem]">{t("panelTitle")}</h2>
+            <h2 className="text-[1.5rem] [text-shadow:0_2px_12px_rgb(0_0_0/0.45)] font-bold leading-tight tracking-tight sm:text-[1.75rem]">{t("panelTitle")}</h2>
             <span aria-hidden="true" className="mt-3 hidden h-[3px] w-12 rounded-full bg-gradient-to-r from-gold to-gold/30 lg:block" />
-            <p className="mt-3 hidden leading-relaxed text-white/80 sm:block">{t("panelBody")}</p>
+            <p className="mt-3 hidden leading-relaxed text-white/80 sm:block lg:hidden">{t("panelBody")}</p>
           </div>
         </div>
         <ul className="relative hidden flex-col gap-3 lg:flex">
           {POINTS.map(({ icon: Icon, key }) => (
-            <li key={key} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.06] p-3 backdrop-blur-sm">
+            <li key={key} className="flex items-start gap-3 rounded-xl border border-white/15 bg-[#0A3527]/55 p-3 shadow-[0_8px_24px_-12px_rgb(0_0_0/0.6)] backdrop-blur-md">
               <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-gold-soft">
                 <Icon aria-hidden="true" className="h-4 w-4" />
               </span>

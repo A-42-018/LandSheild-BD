@@ -182,12 +182,27 @@
       background-position: center, center, 70% 40%;
     }
   }
-  /* Sign-in / sign-up brand panel: same deep green as the header, with a soft highlight. */
+  /* Sign-in / sign-up brand panel: farmer photo under a deep-green scrim (dark at top for the title, darker at the
+     bottom for the points), so the text stays readable while the face and the phone in his hand show through. */
   .auth-panel {
     background-color: #0A3527;
     background-image:
-      radial-gradient(28rem 20rem at 10% 0%, rgb(127 224 176 / 0.18), transparent 70%),
-      linear-gradient(165deg, #0F4A35 0%, #0B3D2C 55%, #08301F 100%);
+      linear-gradient(90deg, rgb(10 53 39 / 0.92) 0%, rgb(10 53 39 / 0.7) 55%, rgb(10 53 39 / 0.45) 100%),
+      url("/landing/farmer-480.webp");
+    background-size: cover, cover;
+    background-position: center, 50% 18%;
+  }
+  @media (min-width: 1024px) {
+    /* Photo sits in the middle band: solid green above it (title), figure fades in below ~200px, points card zone darkens at the bottom. */
+    .auth-panel {
+      background-image:
+        linear-gradient(180deg, #0A3527 0, #0A3527 175px, rgb(10 53 39 / 0.6) 225px, rgb(10 53 39 / 0) 290px, rgb(10 53 39 / 0) calc(100% - 300px), rgb(8 48 31 / 0.85) calc(100% - 190px), #08301F 100%),
+        radial-gradient(28rem 20rem at 10% 0%, rgb(127 224 176 / 0.16), transparent 70%),
+        url("/landing/farmer-768.webp");
+      background-size: 100% 100%, 100% 100%, 100% auto;
+      background-position: 0 0, 0 0, 50% 150px;
+      background-repeat: no-repeat;
+    }
   }
   /* Horizontal scroller with soft fade edges (tab rows on phones). */
   .scroll-fade {
