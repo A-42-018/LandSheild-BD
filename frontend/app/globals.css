@@ -151,6 +151,37 @@
       radial-gradient(36rem 16rem at 100% 0%, rgb(214 178 92 / 0.07), transparent 70%),
       linear-gradient(160deg, rgb(var(--primary-soft) / 0.9), rgb(var(--surface) / 0.6));
   }
+  /* Landing hero: photo banner. Deep green gradient (header colour) carries the white text; photo shows on the right.
+     Phones: smaller photo, gradient rises from the bottom and the text sits below the subject. */
+  .hero-banner {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    background-color: #0A3527;
+    background-image:
+      linear-gradient(0deg, #0A3527 0%, rgb(10 53 39 / 0.94) 38%, rgb(10 53 39 / 0.35) 62%, rgb(10 53 39 / 0) 80%),
+      url("/landing/hero-800.webp");
+    background-size: cover, cover;
+    background-position: center, 78% 0%;
+    box-shadow: 0 24px 50px -24px rgb(0 0 0 / 0.55);
+  }
+  .hero-banner::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 3px;
+    background: linear-gradient(90deg, #D6B25C, rgb(214 178 92 / 0.2) 70%, transparent);
+  }
+  @media (min-width: 768px) {
+    .hero-banner {
+      background-image:
+        linear-gradient(90deg, #0A3527 0%, rgb(10 53 39 / 0.96) 38%, rgb(10 53 39 / 0.84) 52%, rgb(10 53 39 / 0.25) 70%, rgb(10 53 39 / 0) 90%),
+        linear-gradient(0deg, rgb(10 53 39 / 0.35), transparent 40%),
+        url("/landing/hero-1456.webp");
+      background-size: cover, cover, cover;
+      background-position: center, center, 70% 40%;
+    }
+  }
   /* Tinted icon tile used across landing sections. */
   .icon-tile {
     display: inline-flex;
