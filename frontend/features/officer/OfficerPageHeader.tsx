@@ -24,6 +24,7 @@ export default function OfficerPageHeader({
   const office = user?.office ? (locale === "bn" ? user.office.name_bn : user.office.name_en) : null;
   return (
     <PageHeader
+      variant="plain"
       title={title}
       purpose={purpose}
       crumbs={crumbs ?? (root ? [] : [{ label: te("officerCrumb"), href: "/officer" }])}

@@ -26,6 +26,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import Reveal from "@/components/Reveal";
+import ArtCard from "@/components/ArtCard";
 import { intlLocale } from "@/lib/intl-locale";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
@@ -78,7 +80,7 @@ function Band({ id, panel, children }: { id: string; panel?: boolean; children: 
       aria-labelledby={id}
       className="relative py-10 before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-line before:to-transparent sm:py-14"
     >
-      {panel ? <div className="section-panel p-5 sm:p-8">{children}</div> : children}
+      <Reveal>{panel ? <div className="section-panel p-5 sm:p-8">{children}</div> : children}</Reveal>
     </section>
   );
 }
@@ -95,28 +97,6 @@ function MoreLink({ href, children }: { href: string; children: ReactNode }) {
   );
 }
 
-type ArtComponent = (p: { className?: string }) => JSX.Element;
-
-/** Glass card with an icon, title, description and a 3D-style illustration on the right (Online services, Citizen tools). */
-function ArtCard({ href, testId, icon: I, art: ArtFor, title, desc }: { href: string; testId: string; icon: LucideIcon; art: ArtComponent; title: string; desc: string }) {
-  return (
-    <Link
-      href={href}
-      data-testid={testId}
-      className={`glass-card glass-card-link group relative flex h-full min-h-[8rem] items-start gap-3 p-5 pr-[7.5rem] sm:min-h-[8.75rem] sm:pr-[10rem] ${focus}`}
-    >
-      <I aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
-      <span className="flex-1">
-        <span className="flex items-center gap-1.5 text-[1.0625rem] font-semibold text-ink">
-          {title}
-          <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 -translate-x-1 text-primary opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" />
-        </span>
-        <span className="mt-1 block text-sm leading-relaxed text-ink-muted">{desc}</span>
-      </span>
-      <ArtFor className="pointer-events-none absolute -top-5 right-1 h-[7.5rem] w-[7.5rem] drop-shadow-sm transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:-top-7 sm:right-2 sm:h-[9.5rem] sm:w-[10rem]" />
-    </Link>
-  );
-}
 
 export function ServiceTiles() {
   const t = useTranslations("landing.services");

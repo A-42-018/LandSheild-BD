@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button, EmptyState, ErrorState, LoadingState } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
+import PageHeader from "@/components/PageHeader";
+import { ShieldArt } from "@/features/landing/Illustrations";
 import { ApiError } from "@/lib/api";
 import GraphCanvas from "./GraphCanvas";
 import GraphDetail from "./GraphDetail";
@@ -49,7 +51,7 @@ export default function GraphView({ landId }: { landId?: string }) {
     body = (
       <>
         <GraphLegend />
-        <div role="group" aria-label={t("graph.viewSwitch")} className="flex gap-2">
+        <div role="group" aria-label={t("graph.viewSwitch")} className="glass-card flex w-fit gap-2 p-1.5">
           <Button size="sm" variant={mode === "graph" ? "primary" : "secondary"} aria-pressed={mode === "graph"} onClick={() => setMode("graph")}>
             {t("graph.viewGraph")}
           </Button>
@@ -78,8 +80,12 @@ export default function GraphView({ landId }: { landId?: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold text-ink">{t("graph.title")}</h1>
-      <p role="note" className="rounded-lg border border-line bg-surface-muted px-4 py-2 text-sm font-medium text-ink">
+      <PageHeader
+        title={t("graph.title")}
+        art={<ShieldArt />}
+        crumbs={landId ? [{ label: t("nav.verify"), href: "/verify" }, { label: t("result.title"), href: `/verify/result?land_id=${enc}` }] : [{ label: t("nav.verify"), href: "/verify" }]}
+      />
+      <p role="note" className="glass-card px-4 py-2 text-sm font-medium text-ink">
         {t("common.demoLabel")}
       </p>
       {body}

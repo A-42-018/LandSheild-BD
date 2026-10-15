@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api";
-import { Button } from "@/components/ui";
+import { Button, useToast } from "@/components/ui";
 import RejectModal from "./RejectModal";
 import { useReviewActions } from "./useReviewActions";
 import type { ExtractionOut } from "./types";
@@ -18,11 +18,19 @@ export default function ReviewActions({
 }) {
   const t = useTranslations("review");
   const [rejecting, setRejecting] = useState(false);
+  const toast = useToast();
+  const { approve: ap, reject: rj } = actions;
+  useEffect(() => {
+    if (ap.isSuccess) toast("success", t("decision.APPROVED"));
+  }, [ap.isSuccess]);
+  useEffect(() => {
+    if (rj.isSuccess) toast("success", t("decision.REJECTED"));
+  }, [rj.isSuccess]);
   const status = data.processing_status;
 
   if (status === "APPROVED" || status === "REJECTED") {
     return (
-      <p role="status" data-testid="decision-banner" className="rounded-lg border border-line bg-surface p-4 text-sm text-ink">
+      <p role="status" data-testid="decision-banner" className="glass-card p-4 text-sm font-medium text-ink">
         {t(`decision.${status}`)}
       </p>
     );
@@ -43,11 +51,12 @@ export default function ReviewActions({
   return (
     <section
       aria-label={t("actions.title")}
-      className="sticky bottom-0 z-10 flex flex-col gap-2 rounded-md border border-line bg-surface p-3 shadow-[0_-2px_8px_rgb(0_0_0/0.06)]"
+      className="glass-card sticky bottom-0 z-10 flex flex-col gap-2 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lift"
       data-testid="review-actions"
     >
       <div className="flex flex-wrap gap-2">
         <Button
+          size="lg"
           onClick={() => approve.mutate()}
           disabled={invalid || ownUpload || busy}
           loading={approve.isPending}

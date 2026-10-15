@@ -6,13 +6,14 @@ import { useMutation } from "@tanstack/react-query";
 import { Button, Card, Input, Select } from "@/components/ui";
 import PageHeader from "@/components/PageHeader";
 import { Link } from "@/i18n/navigation";
+import { ScaleArt } from "@/features/landing/Illustrations";
 import { ApiError } from "@/lib/api";
 import { localDigits } from "@/lib/intl-locale";
 import { useAuth } from "@/features/auth/AuthContext";
 import { FEEDBACK_KINDS, type FeedbackKind, type FeedbackReceipt } from "./types";
 
 const AREA =
-  "min-h-32 rounded-md border border-line bg-surface px-3 py-2 text-ink transition-colors hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
+  "min-h-32 rounded-xl border border-line bg-surface px-3 py-2 text-ink transition-colors hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-[3px] focus:ring-primary/25";
 
 export default function FeedbackForm() {
   const t = useTranslations("feedback");
@@ -48,12 +49,12 @@ export default function FeedbackForm() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <PageHeader title={t("title")} purpose={t("purpose")} />
-      <p role="note" className="rounded-md border border-line bg-surface-muted px-4 py-2 text-sm font-medium text-ink">
+      <PageHeader title={t("title")} purpose={t("purpose")} art={<ScaleArt />} />
+      <p role="note" className="glass-card px-4 py-2 text-sm font-medium text-ink">
         {t("demoNote")}
       </p>
       {done ? (
-        <Card title={t("receipt.title")} icon={<CheckCircle2 />} accent="primary" data-testid="feedback-receipt">
+        <Card title={t("receipt.title")} icon={<CheckCircle2 />} accent="verified" data-testid="feedback-receipt">
           <p className="text-ink-muted">{t("receipt.body")}</p>
           <p className="mt-3 text-sm text-ink-muted">{t("receipt.ref")}</p>
           <p className="font-mono text-2xl font-bold text-ink" data-testid="feedback-ref">{done.reference_no}</p>
@@ -63,7 +64,7 @@ export default function FeedbackForm() {
           </p>
         </Card>
       ) : (
-        <Card title={t("formTitle")} icon={<MessageSquare />} accent="primary">
+        <Card title={t("formTitle")} icon={<MessageSquare />}>
           <form onSubmit={submit} noValidate className="flex flex-col gap-4">
             <Select
               label={t("kind")}
@@ -94,7 +95,7 @@ export default function FeedbackForm() {
             </div>
             <Input type="email" label={t("email")} hint={t("emailHint")} autoComplete="off" value={email} error={errors.email} onChange={(e) => setEmail(e.target.value)} />
             {apiErr && <p role="alert" className="text-sm text-critical">{t(`errors.${apiErr}`)}</p>}
-            <Button type="submit" loading={m.isPending} icon={<Send />} className="w-full sm:w-auto">{t("submit")}</Button>
+            <Button type="submit" size="lg" fullWidthOnMobile loading={m.isPending} icon={<Send />}>{t("submit")}</Button>
           </form>
         </Card>
       )}

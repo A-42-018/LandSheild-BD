@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Printer } from "lucide-react";
 import { Button, Input, Select } from "@/components/ui";
 import { intlLocale } from "@/lib/intl-locale";
+import { ScaleArt } from "@/features/landing/Illustrations";
 import ToolShell from "./ToolShell";
 import { EMPTY, faraid, fracStr, toNum, validate, type Heirs, type Result } from "./faraid";
 import { parseNum } from "./num";
@@ -34,7 +35,7 @@ export default function InheritanceCalculator() {
   };
 
   return (
-    <ToolShell title={t("title")} purpose={t("purpose")} notice={t("disclaimer")}>
+    <ToolShell title={t("title")} purpose={t("purpose")} notice={t("disclaimer")} art={<ScaleArt />}>
       <div className="flex flex-col gap-4">
         <fieldset className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <legend className="mb-1 text-sm font-medium text-ink">{t("heirs")}</legend>
@@ -62,6 +63,7 @@ export default function InheritanceCalculator() {
 
         {res && (
           <>
+            <div className="glass-card overflow-x-auto !rounded-card">
             <table className="w-full text-left text-sm" data-testid="faraid-table">
               <caption className="sr-only">{t("results")}</caption>
               <thead className="bg-surface-muted"><tr>
@@ -76,6 +78,9 @@ export default function InheritanceCalculator() {
                     <th scope="row" className="border border-line px-3 py-2 font-medium">
                       {t(`heir.${s.heir}`)}{s.count > 1 ? ` × ${frac(s.count)}` : ""}
                       {s.count > 1 && <span className="block text-xs font-normal text-ink-muted">{t("each", { share: fracText(s.each) })}</span>}
+                      <span aria-hidden="true" className="mt-1.5 block h-1.5 w-full max-w-48 overflow-hidden rounded-full bg-primary-soft">
+                        <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.round(toNum(s.total) * 100)}%` }} />
+                      </span>
                     </th>
                     <td className="border border-line px-3 py-2 text-right tabular-nums">{fracText(s.total)}</td>
                     <td className="border border-line px-3 py-2 text-right tabular-nums">{pf.format(toNum(s.total))}</td>
@@ -89,6 +94,7 @@ export default function InheritanceCalculator() {
                 ))}
               </tbody>
             </table>
+            </div>
             <ul className="list-disc space-y-1 pl-5 text-sm text-ink-muted" data-testid="faraid-notes">
               {res.awl && <li>{t("notes.awl")}</li>}
               {res.radd && <li>{t("notes.radd")}</li>}

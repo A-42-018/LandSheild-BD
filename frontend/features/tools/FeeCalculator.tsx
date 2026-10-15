@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Printer } from "lucide-react";
 import { Button, Input, Select } from "@/components/ui";
 import { intlLocale } from "@/lib/intl-locale";
+import { FeeCalculatorArt } from "@/features/landing/Illustrations";
 import ToolShell from "./ToolShell";
 import { calcFees, FEE_CONFIG, LOCATIONS, TRANSFERS, type Location, type Transfer } from "./fees";
 import { parseNum } from "./num";
@@ -23,7 +24,7 @@ export default function FeeCalculator() {
   const basis = (k: "percent" | "fixed", r: number) => (k === "percent" ? t("basisPercent", { rate: nf.format(r) }) : t("basisFixed"));
 
   return (
-    <ToolShell title={t("title")} purpose={t("purpose")} notice={t("disclaimer", { date: FEE_CONFIG.as_of })}>
+    <ToolShell title={t("title")} purpose={t("purpose")} notice={t("disclaimer", { date: FEE_CONFIG.as_of })} art={<FeeCalculatorArt />}>
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Input label={t("value")} inputMode="decimal" value={raw} onChange={(e) => { setTouched(true); setRaw(e.target.value); }} error={bad ? t("invalid") : undefined} hint={t("valueHint")} />
@@ -32,6 +33,11 @@ export default function FeeCalculator() {
         </div>
         {res && raw.trim() !== "" && (
           <>
+            <div aria-hidden="true" className="section-panel p-5">
+              <p className="text-sm text-ink-muted">{t("total")}</p>
+              <p className="font-display text-3xl font-bold text-primary sm:text-4xl">{money(res.total)}</p>
+            </div>
+            <div className="glass-card overflow-x-auto !rounded-card">
             <table className="w-full text-left text-sm" data-testid="fee-table">
               <caption className="sr-only">{t("results")}</caption>
               <thead className="bg-surface-muted"><tr>
@@ -53,6 +59,7 @@ export default function FeeCalculator() {
                 </tr>
               </tbody>
             </table>
+            </div>
             <p role="note" className="text-sm text-ink">{t("official")}</p>
             <div className="print:hidden"><Button variant="secondary" icon={<Printer />} onClick={() => window.print()}>{t("print")}</Button></div>
           </>

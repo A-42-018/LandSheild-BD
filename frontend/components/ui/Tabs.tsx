@@ -18,9 +18,11 @@ export interface TabsProps {
   className?: string;
   /** "underline" (default, content tabs) or "segmented" (pill switch for 2-4 options). */
   variant?: "underline" | "segmented";
+  /** Keep the tab row pinned under the header while the panel scrolls (result page). */
+  sticky?: boolean;
 }
 
-export default function Tabs({ tabs, value, defaultValue, onValueChange, label, className, variant = "underline" }: TabsProps) {
+export default function Tabs({ tabs, value, defaultValue, onValueChange, label, className, variant = "underline", sticky }: TabsProps) {
   const base = useId();
   const [inner, setInner] = useState(defaultValue ?? tabs.find((x) => !x.disabled)?.id ?? "");
   const current = value ?? inner;
@@ -49,7 +51,10 @@ export default function Tabs({ tabs, value, defaultValue, onValueChange, label, 
   // Phones: keep the active tab visible inside the horizontally scrolling row.
   useEffect(() => {
     const el = refs.current[current];
-    if (el && typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "nearest", inline: "nearest" });
+    const row = el?.parentElement;
+    if (!el || !row || row.scrollWidth <= row.clientWidth) return;
+    // Scroll the tab row only (scrollIntoView would also scroll the page).
+    row.scrollLeft = el.offsetLeft - (row.clientWidth - el.offsetWidth) / 2;
   }, [current]);
 
   const segmented = variant === "segmented";
@@ -63,6 +68,7 @@ export default function Tabs({ tabs, value, defaultValue, onValueChange, label, 
         onKeyDown={onKeyDown}
         className={cn(
           "scroll-fade flex gap-1 overflow-x-auto overflow-y-hidden",
+          sticky && "sticky top-16 z-10 bg-surface-muted/90 backdrop-blur-sm",
           segmented ? "w-full rounded-xl bg-primary-soft p-1 sm:w-fit" : "border-b border-line",
         )}
       >

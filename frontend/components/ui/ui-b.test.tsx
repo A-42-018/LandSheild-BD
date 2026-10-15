@@ -3,7 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 import bn from "../../messages/bn.json";
 import en from "../../messages/en.json";
-import { EmptyState, ErrorState, LoadingState, Modal, Table, Tabs } from "./index";
+import { EmptyState, ErrorState, LoadingState, Modal, StateCard, Table, Tabs } from "./index";
 
 const wrap = (ui: React.ReactNode, locale: "en" | "bn" = "en") =>
   render(
@@ -108,5 +108,37 @@ describe("UI v2 Tabs/Modal", () => {
   it("Modal has a drag handle for the phone bottom sheet", () => {
     wrap(<Modal open onClose={() => {}} title="T">body</Modal>);
     expect(screen.getByRole("dialog")).toHaveClass("rounded-t-panel");
+  });
+});
+
+describe("UI v2 system states", () => {
+  it("StateCard shows heading, body and actions", () => {
+    wrap(<StateCard title="Lost" body="Not here" actions={<button>Home</button>} />);
+    expect(screen.getByRole("heading", { level: 1, name: "Lost" })).toBeInTheDocument();
+    expect(screen.getByText("Not here")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Home" })).toBeInTheDocument();
+  });
+  it("LoadingState renders skeleton bars behind the status label", () => {
+    const { container } = wrap(<LoadingState />);
+    expect(container.querySelectorAll(".skeleton").length).toBeGreaterThan(1);
+  });
+});
+
+import { ToastProvider, useToast } from "./Toast";
+describe("Toast + Reveal", () => {
+  it("shows a success toast in a live region and can be closed", () => {
+    const Btn = () => {
+      const toast = useToast();
+      return <button onClick={() => toast("success", "Saved!")}>go</button>;
+    };
+    wrap(<ToastProvider><Btn /></ToastProvider>);
+    fireEvent.click(screen.getByText("go"));
+    expect(screen.getByRole("status")).toHaveTextContent("Saved!");
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(screen.queryByText("Saved!")).toBeNull();
+  });
+  it("useToast is a no-op without a provider", () => {
+    const Btn = () => <button onClick={() => useToast()("error", "x")}>go</button>;
+    expect(() => wrap(<Btn />)).not.toThrow();
   });
 });

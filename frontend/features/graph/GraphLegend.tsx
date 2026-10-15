@@ -8,7 +8,7 @@ export default function GraphLegend() {
   const t = useTranslations("graph");
   const L = useGraphLabels();
   return (
-    <section aria-label={t("legendTitle")} className="rounded-lg border border-line bg-surface p-3">
+    <section aria-label={t("legendTitle")} className="glass-card p-3">
       <h2 className="mb-2 text-sm font-semibold text-ink">{t("legendTitle")}</h2>
       <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-ink">
         {COLUMN_ORDER.map((type) => (

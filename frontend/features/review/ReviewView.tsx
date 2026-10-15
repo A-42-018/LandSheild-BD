@@ -1,4 +1,5 @@
 "use client";
+import { useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
@@ -10,12 +11,56 @@ import StalledActions from "./StalledActions";
 import { EXTRACTION_READY, IN_PROGRESS } from "./types";
 import { useDocumentStatus, useExtraction } from "./useReviewData";
 
+/** Draggable divider (≥ 1280 px): pointer drag or arrow keys change the document pane width (35–70 %). */
+function Splitter({ value, onChange, label }: { value: number; onChange: (v: number) => void; label: string }) {
+  const clamp = (v: number) => Math.min(70, Math.max(35, v));
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    const grid = e.currentTarget.parentElement;
+    if (!grid) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const move = (ev: globalThis.PointerEvent) => {
+      const r = grid.getBoundingClientRect();
+      onChange(clamp(((ev.clientX - r.left) / r.width) * 100));
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === "ArrowLeft") onChange(clamp(value - 3));
+    else if (e.key === "ArrowRight") onChange(clamp(value + 3));
+    else return;
+    e.preventDefault();
+  };
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label={label}
+      aria-valuemin={35}
+      aria-valuemax={70}
+      aria-valuenow={Math.round(value)}
+      tabIndex={0}
+      onPointerDown={onPointerDown}
+      onKeyDown={onKey}
+      className="group hidden w-3 cursor-col-resize touch-none items-stretch justify-center xl:flex"
+    >
+      <span className="w-px bg-line transition-colors group-hover:bg-primary group-focus-visible:bg-primary" />
+    </div>
+  );
+}
+
 export default function ReviewView({ id }: { id: string }) {
   const t = useTranslations("review");
   const te = useTranslations("errors");
   const doc = useDocumentStatus(id);
   const status = doc.data?.processing_status;
   const ext = useExtraction(id, status);
+  const [split, setSplit] = useState(46);
+  const [pane, setPane] = useState<"doc" | "fields">("fields");
 
   if (doc.isLoading) return <LoadingState />;
   if (doc.isError || !doc.data) {
@@ -31,7 +76,7 @@ export default function ReviewView({ id }: { id: string }) {
     body = <StalledActions id={id} status={status} failureCode={d?.failure_code} />;
   } else if (status && IN_PROGRESS.includes(status)) {
     body = (
-      <div role="status" data-testid="processing-state" className="rounded-xl border border-line bg-surface p-6 text-center text-ink-muted shadow-card">
+      <div role="status" data-testid="processing-state" className="glass-card p-6 text-center text-ink-muted">
         {t("processing")}
       </div>
     );
@@ -55,11 +100,30 @@ export default function ReviewView({ id }: { id: string }) {
           `${t("docType")}: ${d.document_type}${d.land_id ? ` · ${d.land_id}` : ""}`,
         ]}
       />
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:gap-0" data-testid="review-columns">
-        <div className="min-w-0 xl:border-r xl:border-line xl:pr-6">
+      <div role="tablist" aria-label={t("panes.label")} className="grid grid-cols-2 gap-1 rounded-xl bg-primary-soft p-1 md:hidden">
+        {(["fields", "doc"] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            role="tab"
+            aria-selected={pane === k}
+            onClick={() => setPane(k)}
+            className={`min-h-11 rounded-lg px-3 text-sm font-semibold ${pane === k ? "bg-surface text-primary shadow-raised" : "text-ink-muted"}`}
+          >
+            {t(`panes.${k}`)}
+          </button>
+        ))}
+      </div>
+      <div
+        className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,var(--split))_auto_minmax(0,1fr)] xl:gap-0"
+        style={{ "--split": `${split}fr` } as React.CSSProperties}
+        data-testid="review-columns"
+      >
+        <div className={`min-w-0 xl:pr-4 ${pane === "doc" ? "" : "max-md:hidden"}`}>
           <DocumentPreview id={id} fileType={d.file_type} />
         </div>
-        <div className="min-w-0 xl:pl-6">{body}</div>
+        <Splitter value={split} onChange={setSplit} label={t("splitter")} />
+        <div className={`min-w-0 xl:pl-4 ${pane === "fields" ? "" : "max-md:hidden"}`}>{body}</div>
       </div>
     </div>
   );

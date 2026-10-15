@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import Header from "@/components/Header";
+import PublicBackdrop from "@/features/landing/PublicBackdrop";
 import Footer from "@/features/landing/Footer";
 import PageHelpful from "@/features/feedback/PageHelpful";
 import Providers from "@/features/Providers";
@@ -63,6 +64,7 @@ export default async function LocaleLayout({
           <div className="contents print:hidden">
             <Header />
           </div>
+          <PublicBackdrop />
           <main id="main" className="mx-auto max-w-[1200px] px-4 py-8 print:max-w-none print:p-0">
             {children}
             <PageHelpful />

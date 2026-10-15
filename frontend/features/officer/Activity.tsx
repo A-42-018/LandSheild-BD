@@ -26,10 +26,10 @@ export default function Activity() {
       ) : q.data.items.length === 0 ? (
         <EmptyState title={t("empty")} />
       ) : (
-        <ul aria-label={t("title")} className="flex flex-col divide-y divide-line">
+        <ul aria-label={t("title")} className="flex flex-col">
           {q.data.items.map((a) => (
-            <li key={a.id} className="relative flex flex-col gap-0.5 py-2 pl-6 first:pt-0 last:pb-0">
-              <CircleDot aria-hidden="true" className="absolute left-0 top-2.5 h-4 w-4 text-primary" />
+            <li key={a.id} className="relative ms-3 flex flex-col gap-0.5 border-l-2 border-dashed border-primary/30 pb-4 ps-6 last:border-transparent last:pb-0">
+              <span aria-hidden="true" className="absolute -left-[13px] top-0 inline-flex h-6 w-6 items-center justify-center rounded-lg border border-primary/30 bg-surface text-primary"><CircleDot className="h-3.5 w-3.5" /></span>
               <span className="text-sm font-medium text-ink">
                 {KNOWN_ACTIONS.includes(a.action) ? t(`actions.${a.action}`) : a.action}
               </span>

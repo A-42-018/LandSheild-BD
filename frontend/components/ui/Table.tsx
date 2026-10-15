@@ -36,10 +36,12 @@ export interface TableProps<T> {
   stickyHeader?: boolean;
   /** Let the table shrink to the screen instead of scrolling sideways below 32rem; for tables whose columns wrap. */
   compact?: boolean;
+  /** Below 640 px each row becomes a stacked "label: value" card (default). Pure CSS, same markup; pass false to keep a scrolling table. */
+  stackOnMobile?: boolean;
 }
 
 export default function Table<T>({
-  columns, rows, rowKey, caption, sort, onSortChange, page, pageSize, total, onPageChange, emptyText, stickyHeader = false, compact = false,
+  columns, rows, rowKey, caption, sort, onSortChange, page, pageSize, total, onPageChange, emptyText, stickyHeader = false, compact = false, stackOnMobile = true,
 }: TableProps<T>) {
   const t = useTranslations("table");
   const paged = page !== undefined && pageSize !== undefined && total !== undefined && onPageChange;
@@ -55,11 +57,15 @@ export default function Table<T>({
       <div
         // keyboard users must be able to scroll a wide table (WCAG 2.1.1): the region is a tab stop
         {...(caption ? { role: "region", "aria-label": caption, tabIndex: 0 } : {})}
-        className={cn("overflow-x-auto rounded-lg border border-line bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50", stickyHeader && "max-h-[70vh] overflow-y-auto")}
+        className={cn(
+          "glass-card overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+          stackOnMobile && "max-sm:border-0 max-sm:bg-transparent max-sm:bg-none max-sm:shadow-none max-sm:backdrop-blur-none",
+          stickyHeader && "max-h-[70vh] overflow-y-auto",
+        )}
       >
-        <table className={cn("w-full border-collapse text-left text-sm", !compact && "min-w-[32rem]")}>
+        <table className={cn("w-full border-collapse text-left text-sm", !compact && (stackOnMobile ? "sm:min-w-[32rem]" : "min-w-[32rem]"), stackOnMobile && "max-sm:block")}>
           {caption && <caption className="sr-only">{caption}</caption>}
-          <thead className={cn("bg-surface-muted text-ink", stickyHeader && "sticky top-0 z-10")}>
+          <thead className={cn("bg-primary-soft/70 text-ink", stickyHeader && "sticky top-0 z-10", stackOnMobile && "max-sm:sr-only")}>
             <tr>
               {columns.map((c) => {
                 const active = sort?.key === c.key;
@@ -89,11 +95,25 @@ export default function Table<T>({
               })}
             </tr>
           </thead>
-          <tbody>
+          <tbody className={cn(stackOnMobile && "max-sm:flex max-sm:flex-col max-sm:gap-3")}>
             {rows.map((row) => (
-              <tr key={rowKey(row)} className="border-t border-line hover:bg-surface-muted">
+              <tr
+                key={rowKey(row)}
+                className={cn(
+                  "border-t border-line/70 transition-colors hover:bg-primary-soft/50",
+                  stackOnMobile && "max-sm:glass-card max-sm:block max-sm:border max-sm:p-3 max-sm:hover:bg-transparent",
+                )}
+              >
                 {columns.map((c) => (
-                  <td key={c.key} className={cn("px-3 py-2 text-ink", c.className)}>
+                  <td
+                    key={c.key}
+                    data-label={c.header}
+                    className={cn(
+                      "px-3 py-2 text-ink",
+                      stackOnMobile && "max-sm:flex max-sm:items-baseline max-sm:justify-between max-sm:gap-4 max-sm:px-0 max-sm:py-1.5 max-sm:text-end max-sm:before:text-start max-sm:before:text-xs max-sm:before:font-semibold max-sm:before:text-ink-muted max-sm:before:content-[attr(data-label)]",
+                      c.className,
+                    )}
+                  >
                     {c.render ? c.render(row) : String((row as Record<string, unknown>)[c.key] ?? "")}
                   </td>
                 ))}

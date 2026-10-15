@@ -1,6 +1,6 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
-import { Compass, Hash, Landmark, MapPin, Map as MapIcon, Ruler, ShieldCheck, Users, type LucideIcon } from "lucide-react";
+import { Compass, Landmark, MapPin, Map as MapIcon, Ruler, ShieldCheck, Users, type LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { districtName, upazilaName } from "@/lib/geo";
@@ -13,13 +13,12 @@ export function useUnitLabel() {
   return (u: string) => (t.has(u) ? t(u) : u);
 }
 
-/** Record card (roadmap 4.5 item 4): 3 px primary top rule, label muted / value ink, land ID in mono, optional chip top-right. */
+/** Summary header card (Template B): land ID + place + big risk chip, then the record fields as icon-tile rows. */
 export default function LandInfoCard({ land, chip }: { land: LandInfo; chip?: React.ReactNode }) {
   const t = useTranslations("result");
   const locale = useLocale();
   const unit = useUnitLabel();
   const rows: [string, React.ReactNode, LucideIcon][] = [
-    [t("landId"), <span key="id" className="font-mono">{land.land_id}</span>, Hash],
     [t("district"), districtName(land.district, locale), MapPin],
     [t("upazila"), upazilaName(land.district, land.upazila, locale), MapPin],
     [t("mouza"), land.mouza, MapIcon],
@@ -28,25 +27,35 @@ export default function LandInfoCard({ land, chip }: { land: LandInfo; chip?: Re
     [t("area"), formatArea(land.area, land.area_unit, locale, unit(land.area_unit)), Ruler],
     [t("status"), <StatusBadge key="s" code={land.status} />, ShieldCheck],
   ];
+  const place = [districtName(land.district, locale), upazilaName(land.district, land.upazila, locale), land.mouza].filter(Boolean).join(" · ");
   return (
     <Card title={t("landInfo")} icon={<Landmark />} variant="record">
-      {chip && <div className="mb-3 flex justify-end" data-testid="record-chip">{chip}</div>}
-      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-mono text-xl font-bold text-ink sm:text-2xl">
+            <span className="sr-only">{t("landId")}: </span>
+            {land.land_id}
+          </p>
+          <p className="text-sm text-ink-muted">{place}</p>
+        </div>
+        {chip && <div className="scale-110 origin-right" data-testid="record-chip">{chip}</div>}
+      </div>
+      <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {rows.map(([k, v, Icon]) => (
-          <div key={k} className="border-b border-line pb-2">
-            <dt className="flex items-center gap-1.5 text-xs text-ink-muted">
-              <Icon aria-hidden="true" className="h-3.5 w-3.5" />
+          <div key={k} className="rounded-xl border border-line/70 bg-surface/60 p-3">
+            <dt className="flex items-center gap-2 text-xs text-ink-muted">
+              <span aria-hidden="true" className="icon-tile !h-7 !w-7 !rounded-lg"><Icon className="h-3.5 w-3.5" /></span>
               {k}
             </dt>
-            <dd className="font-medium text-ink">{v}</dd>
+            <dd className="mt-1 ps-9 font-medium text-ink">{v}</dd>
           </div>
         ))}
-        <div className="sm:col-span-2">
-          <dt className="flex items-center gap-1.5 text-xs text-ink-muted">
-            <Users aria-hidden="true" className="h-3.5 w-3.5" />
+        <div className="rounded-xl border border-line/70 bg-surface/60 p-3 sm:col-span-2 lg:col-span-4">
+          <dt className="flex items-center gap-2 text-xs text-ink-muted">
+            <span aria-hidden="true" className="icon-tile !h-7 !w-7 !rounded-lg"><Users className="h-3.5 w-3.5" /></span>
             {t("currentOwners")}
           </dt>
-          <dd className="font-medium text-ink">
+          <dd className="mt-1 ps-9 font-medium text-ink">
             {land.current_owners.length === 0 ? (
               t("noOwners")
             ) : (
