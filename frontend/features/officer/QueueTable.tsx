@@ -61,7 +61,7 @@ export default function QueueTable() {
   ];
 
   return (
-    <Card title={t("title")} icon={<ListChecks />} accent="primary">
+    <Card title={t("title")} icon={<ListChecks />}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <Select
@@ -75,7 +75,7 @@ export default function QueueTable() {
             <div className="min-w-0 flex-1">
               <Input label={t("search.label")} value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search.placeholder")} />
             </div>
-            <Button type="submit" variant="primary" icon={<Search />}>{t("search.submit")}</Button>
+            <Button type="submit" variant="primary" size="md" icon={<Search />}>{t("search.submit")}</Button>
           </form>
         </div>
 
