@@ -34,12 +34,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={cn(
-          "min-h-11 rounded-md border bg-surface px-3 py-2 text-ink transition-colors placeholder:text-ink-muted",
-          "hover:border-primary/50 focus:outline-none focus:ring-2",
+          "min-h-12 rounded-xl border bg-surface px-3 py-2 text-ink transition-[border-color,box-shadow] placeholder:text-ink-muted md:min-h-11",
+          "hover:border-primary/50 focus:outline-none focus:ring-[3px]",
           "disabled:cursor-not-allowed disabled:bg-surface-muted",
           error
-            ? "border-critical focus:border-critical focus:ring-critical/30"
-            : "border-line focus:border-primary focus:ring-primary/30",
+            ? "border-critical focus:border-critical focus:ring-critical/25"
+            : "border-line focus:border-primary focus:ring-primary/25",
           endAdornment ? "pr-11" : "",
           "w-full",
           className,
