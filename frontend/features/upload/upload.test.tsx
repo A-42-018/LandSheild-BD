@@ -197,6 +197,23 @@ describe("UploadForm", () => {
     await new Promise((r) => setTimeout(r, 2500));
     expect(get.mock.calls.length).toBe(calls); // no further polling
   }, 15000);
+
+  it.each([
+    ["en", en],
+    ["bn", bn],
+  ])("explains a FAILED document in %s and retries via POST /reprocess", async (locale, m) => {
+    const failed = doc({ processing_status: "FAILED", failure_code: "OCR_TIMEOUT" });
+    const post = vi.fn().mockResolvedValue(doc({ processing_status: "PROCESSING" }));
+    wrap(client(vi.fn().mockResolvedValue(failed), vi.fn().mockResolvedValue(failed), post), m, locale);
+    choose(pdf(), m);
+    fireEvent.click(screen.getByRole("button", { name: m.upload.submit }));
+    const box = await screen.findByTestId("failed-state");
+    expect(box).toHaveTextContent(m.review.failed.OCR_TIMEOUT);
+    expect(screen.getByTestId("failure-code")).toHaveTextContent("OCR_TIMEOUT");
+    expect(screen.queryByText(m.review.openReview)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("retry-processing"));
+    await waitFor(() => expect(post).toHaveBeenCalledWith("/documents/d1/reprocess"));
+  });
 });
 
 describe("UploadForm office sortlist", () => {
