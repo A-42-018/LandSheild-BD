@@ -99,13 +99,13 @@ export default function LoginForm() {
             </span>
           </p>
         )}
-        <Button type="submit" loading={m.isPending} icon={<LogIn />} className="w-full">
+        <Button type="submit" loading={m.isPending} icon={<LogIn />} className="h-12 w-full rounded-lg shadow-[0_8px_18px_-8px_rgb(var(--primary)/0.7)]">
           {t("submit")}
         </Button>
       </form>
-      <aside aria-labelledby="demo-accounts" className="rounded-lg border border-line bg-surface-muted p-3 text-sm" data-testid="demo-accounts">
+      <aside aria-labelledby="demo-accounts" className="glass-card p-4 text-sm" data-testid="demo-accounts">
         <p id="demo-accounts" className="flex items-center gap-2 font-semibold text-ink">
-          <Info aria-hidden="true" className="h-4 w-4 text-ink-muted" />
+          <Info aria-hidden="true" className="h-4 w-4 text-primary" />
           {t("demoTitle")}
         </p>
         <p className="mt-1 text-ink-muted">{t("demoHint")}</p>
@@ -115,7 +115,7 @@ export default function LoginForm() {
               <button
                 type="button"
                 onClick={() => setEmail(e)}
-                className="flex min-h-11 w-full flex-col items-start gap-1 rounded-md border border-line bg-surface px-3 py-2 text-left transition-colors hover:border-primary/50 hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="flex min-h-11 w-full flex-col items-start gap-1.5 rounded-xl border border-line/80 bg-surface px-3 py-2.5 text-left shadow-[0_2px_6px_-3px_rgb(var(--shadow)/0.2)] transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               >
                 <Badge tone="pending">{tr(e.split("@")[0].toUpperCase())}</Badge>
                 <span className="break-all font-mono text-xs text-link">{e}</span>
