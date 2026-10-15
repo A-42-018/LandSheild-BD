@@ -1,6 +1,5 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import ThemeToggle from "@/components/ThemeToggle";
 
 const LINK = "rounded text-white/90 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
 const HEAD = "mb-2 font-semibold text-white";
@@ -58,7 +57,6 @@ export default function Footer() {
           <p>
             {t("common.demoLabel")} · {t("footer.version")} · {t("footer.updated")}
           </p>
-          <ThemeToggle variant="onBrand" />
         </div>
       </div>
     </footer>

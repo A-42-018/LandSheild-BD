@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Badge } from "@/components/ui";
-import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "@/features/auth/AuthContext";
 import { activeNavHref, navItemsFor } from "@/features/auth/roles";
 
@@ -106,10 +105,7 @@ export default function UserMenu() {
             ))}
           </ul>
         )}
-        <div className="flex items-center justify-between gap-2 border-t border-line px-2 py-2">
-          <span className="text-sm text-ink-muted">{t("theme.label")}</span>
-          <ThemeToggle />
-        </div>
+        <div className="border-t border-line" />
         <button
           type="button"
           onClick={() => void logout()}
