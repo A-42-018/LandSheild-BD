@@ -83,7 +83,7 @@ export default function CitizenSignup() {
             <span>{t(`errors.${citizenSignupErrorKey(m.error)}`)}</span>
           </p>
         )}
-        <Button type="submit" loading={m.isPending} icon={<UserPlus />} className="w-full">{t("submit")}</Button>
+        <Button type="submit" loading={m.isPending} icon={<UserPlus />} className="h-12 w-full rounded-lg shadow-[0_8px_18px_-8px_rgb(var(--primary)/0.7)]">{t("submit")}</Button>
         <p className="text-sm text-ink-muted">
           {t("haveAccount")} <Link href="/login" className="text-link underline underline-offset-2">{t("toLogin")}</Link>
         </p>
