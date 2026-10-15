@@ -29,7 +29,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { intlLocale } from "@/lib/intl-locale";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
-import { SERVICE_ART } from "./Illustrations";
+import { SERVICE_ART, TOOL_ART } from "./Illustrations";
 
 /** Services whose route is not built yet stay hidden until their F-phase lands (track = F2c, now live). */
 export const FLAGS = { track: true } as const;
@@ -95,34 +95,40 @@ function MoreLink({ href, children }: { href: string; children: ReactNode }) {
   );
 }
 
+type ArtComponent = (p: { className?: string }) => JSX.Element;
+
+/** Glass card with an icon, title, description and a 3D-style illustration on the right (Online services, Citizen tools). */
+function ArtCard({ href, testId, icon: I, art: ArtFor, title, desc }: { href: string; testId: string; icon: LucideIcon; art: ArtComponent; title: string; desc: string }) {
+  return (
+    <Link
+      href={href}
+      data-testid={testId}
+      className={`glass-card glass-card-link group relative flex h-full min-h-[8rem] items-start gap-3 p-5 pr-[7.5rem] sm:min-h-[8.75rem] sm:pr-[10rem] ${focus}`}
+    >
+      <I aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
+      <span className="flex-1">
+        <span className="flex items-center gap-1.5 text-[1.0625rem] font-semibold text-ink">
+          {title}
+          <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 -translate-x-1 text-primary opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" />
+        </span>
+        <span className="mt-1 block text-sm leading-relaxed text-ink-muted">{desc}</span>
+      </span>
+      <ArtFor className="pointer-events-none absolute -top-5 right-1 h-[7.5rem] w-[7.5rem] drop-shadow-sm transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:-top-7 sm:right-2 sm:h-[9.5rem] sm:w-[10rem]" />
+    </Link>
+  );
+}
+
 export function ServiceTiles() {
   const t = useTranslations("landing.services");
   return (
     <Band id="services-title">
       <h2 id="services-title" className={h2}>{t("title")}</h2>
       <ul className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
-        {SERVICES.filter((s) => s.key !== "track" || FLAGS.track).map(({ key, href, icon: I }) => {
-          const ArtFor = SERVICE_ART[key];
-          return (
-            <li key={key}>
-              <Link
-                href={href}
-                data-testid="service-tile"
-                className={`glass-card glass-card-link group relative flex h-full min-h-[8rem] items-start gap-3 p-5 pr-[7.5rem] sm:min-h-[8.75rem] sm:pr-[10rem] ${focus}`}
-              >
-                <I aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
-                <span className="flex-1">
-                  <span className="flex items-center gap-1.5 text-[1.0625rem] font-semibold text-ink">
-                    {t(`${key}.title`)}
-                    <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 -translate-x-1 text-primary opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" />
-                  </span>
-                  <span className="mt-1 block text-sm leading-relaxed text-ink-muted">{t(`${key}.desc`)}</span>
-                </span>
-                <ArtFor className="pointer-events-none absolute -top-5 right-1 h-[7.5rem] w-[7.5rem] drop-shadow-sm transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:-top-7 sm:right-2 sm:h-[9.5rem] sm:w-[10rem]" />
-              </Link>
-            </li>
-          );
-        })}
+        {SERVICES.filter((s) => s.key !== "track" || FLAGS.track).map(({ key, href, icon }) => (
+          <li key={key}>
+            <ArtCard href={href} testId="service-tile" icon={icon} art={SERVICE_ART[key]} title={t(`${key}.title`)} desc={t(`${key}.desc`)} />
+          </li>
+        ))}
       </ul>
     </Band>
   );
@@ -135,16 +141,10 @@ export function CitizenTools() {
     <Band id="tools-title">
       <h2 id="tools-title" className={h2}>{t("title")}</h2>
       <p className="mt-3 max-w-3xl text-ink-muted">{t("intro")}</p>
-      <ul className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
-        {TOOL_TILES.map(({ key, href, icon: I }) => (
-          <li key={key}>
-            <Link href={href} data-testid="tool-tile" className={`glass-card glass-card-link flex h-full min-h-11 items-start gap-3 p-4 ${focus}`}>
-              <span className="icon-tile"><I aria-hidden="true" className="h-5 w-5" /></span>
-              <span className="flex-1">
-                <span className="block font-semibold text-ink">{tt(`${key}.title`)}</span>
-                <span className="mt-1 block text-sm text-ink-muted">{tt(`${key}.desc`)}</span>
-              </span>
-            </Link>
+      <ul className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5">
+        {TOOL_TILES.map(({ key, href, icon }) => (
+          <li key={key} className="sm:last:col-span-2 sm:last:mx-auto sm:last:w-[calc(50%-0.625rem)]">
+            <ArtCard href={href} testId="tool-tile" icon={icon} art={TOOL_ART[key]} title={tt(`${key}.title`)} desc={tt(`${key}.desc`)} />
           </li>
         ))}
       </ul>
