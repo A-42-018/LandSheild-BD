@@ -2,8 +2,8 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import { cn } from "./cn";
 
-export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
-export type ButtonSize = "sm" | "md";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "gold";
+export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -13,10 +13,14 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: ReactNode;
   /** Decorative icon after the label. */
   iconRight?: ReactNode;
+  /** Full width below 640 px (phones), natural width above. */
+  fullWidthOnMobile?: boolean;
 }
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-primary-fg hover:bg-primary-hover active:bg-primary-hover",
+  primary:
+    "bg-primary text-primary-fg shadow-[0_6px_16px_-6px_rgb(var(--primary)/0.55)] hover:bg-primary-hover active:bg-primary-hover",
+  gold: "btn-gold font-semibold",
   secondary:
     "border border-primary bg-surface text-primary hover:bg-primary-soft active:bg-primary-soft",
   danger: "bg-critical text-critical-fg hover:bg-critical/90 active:bg-critical/80",
@@ -24,11 +28,12 @@ const variants: Record<ButtonVariant, string> = {
 };
 const sizes: Record<ButtonSize, string> = {
   sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2 text-base",
+  md: "min-h-11 px-4 py-2 text-base",
+  lg: "min-h-12 px-5 py-2.5 text-base",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "primary", size = "md", loading = false, icon, iconRight, disabled, className, type = "button", children, ...rest },
+  { variant = "primary", size = "md", loading = false, icon, iconRight, fullWidthOnMobile, disabled, className, type = "button", children, ...rest },
   ref,
 ) {
   return (
@@ -39,11 +44,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       aria-busy={loading || undefined}
       data-variant={variant}
       className={cn(
-        "inline-flex min-h-11 items-center justify-center gap-2 rounded-md font-medium transition-colors",
+        "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl font-medium transition-[background-color,box-shadow,transform] duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
         "disabled:cursor-not-allowed disabled:opacity-50",
         variants[variant],
         sizes[size],
+        fullWidthOnMobile && "w-full sm:w-auto",
         className,
       )}
       {...rest}
