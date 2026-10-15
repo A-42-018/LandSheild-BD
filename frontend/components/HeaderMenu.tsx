@@ -29,17 +29,17 @@ export default function HeaderMenu({ controls }: { controls: ReactNode }) {
         aria-controls="site-menu"
         aria-label={open ? t("menuClose") : t("menuOpen")}
         onClick={() => setOpen((o) => !o)}
-        className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/40 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 md:hidden"
+        className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/40 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 min-[1120px]:hidden"
       >
         {open ? <X aria-hidden="true" className="h-5 w-5" /> : <Menu aria-hidden="true" className="h-5 w-5" />}
       </button>
       <div
         id="site-menu"
         data-open={open}
-        className={`${open ? "flex" : "hidden"} basis-full flex-col gap-3 border-t border-white/20 pb-3 pt-3 md:flex md:flex-1 md:basis-auto md:flex-row md:flex-nowrap md:items-center md:gap-4 md:border-0 md:p-0`}
+        className={`${open ? "flex" : "hidden"} basis-full flex-col gap-3 border-t border-white/20 pb-3 pt-3 min-[1120px]:flex min-[1120px]:flex-1 min-[1120px]:basis-auto min-[1120px]:flex-row min-[1120px]:flex-nowrap min-[1120px]:items-center min-[1120px]:gap-4 min-[1120px]:border-0 min-[1120px]:p-0`}
       >
         <HeaderNav />
-        <div className="flex flex-wrap items-center gap-2 md:gap-3">
+        <div className="flex flex-wrap items-center gap-2 min-[1120px]:gap-3">
           {controls}
           <UserMenu />
         </div>

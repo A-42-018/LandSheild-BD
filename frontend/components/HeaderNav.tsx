@@ -5,7 +5,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { activeNavHref, navItemsFor } from "@/features/auth/roles";
 
 const PILL =
-  "inline-flex min-h-11 items-center rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
+  "inline-flex min-h-11 items-center whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
 
 /** Header bar links (UD10 sketch: Home, Parcel Map). The remaining pages live in the user menu. */
 export default function HeaderNav() {
@@ -19,7 +19,7 @@ export default function HeaderNav() {
   return (
     <nav
       aria-label={t("nav.main")}
-      className="flex flex-col items-stretch gap-1 md:flex-1 md:flex-row md:items-center md:gap-1"
+      className="flex flex-col items-stretch gap-1 min-[1120px]:flex-1 min-[1120px]:flex-row min-[1120px]:items-center min-[1120px]:gap-1"
     >
       {items.map((i) => {
         const isActive = i.href === active;
