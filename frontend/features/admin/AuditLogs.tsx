@@ -33,7 +33,7 @@ export default function AuditLogs() {
   const rangeInvalid = !!draft.from && !!draft.to && draft.from > draft.to;
 
   const columns: Column<AuditLogItem>[] = [
-    { key: "created_at", header: t("cols.time"), render: (r) => formatDateTime(r.created_at, locale, "—") },
+    { key: "created_at", header: t("cols.time"), className: "whitespace-nowrap", render: (r) => formatDateTime(r.created_at, locale, "—") },
     {
       key: "actor",
       header: t("cols.actor"),

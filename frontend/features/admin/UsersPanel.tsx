@@ -7,7 +7,7 @@ import {
   Badge, Button, Card, ErrorState, Input, LoadingState, Modal, Select, Table, type Column, type SortState,
 } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthContext";
-import { formatDateTime } from "@/features/result/format";
+import { formatDate } from "@/features/result/format";
 import { ADMIN_PAGE_SIZE, ADMIN_ROLES, type AdminUser, type ListParams, type RoleCode, type UserDraft } from "./types";
 import { useAdminUsers, useUserMutations, type UserPatch } from "./useAdmin";
 
@@ -88,15 +88,15 @@ export default function UsersPanel() {
   };
 
   const columns: Column<AdminUser>[] = [
-    { key: "name", header: t("cols.name"), sortable: true, render: (u) => (<>{u.name}{u.id === me?.id && <span className="ml-2 text-xs text-ink-muted">({t("you")})</span>}</>) },
-    { key: "email", header: t("cols.email"), sortable: true },
-    { key: "role", header: t("cols.role"), sortable: true, render: (u) => tr(u.role) },
+    { key: "name", header: t("cols.name"), sortable: true, className: "whitespace-nowrap", render: (u) => (<>{u.name}{u.id === me?.id && <span className="ml-2 text-xs text-ink-muted">({t("you")})</span>}</>) },
+    { key: "email", header: t("cols.email"), sortable: true, className: "[overflow-wrap:anywhere]" },
+    { key: "role", header: t("cols.role"), sortable: true, className: "whitespace-nowrap", render: (u) => tr(u.role) },
     {
       key: "is_active",
       header: t("cols.status"),
       render: (u) => <Badge tone={u.is_active ? "verified" : "pending"}>{u.is_active ? t("active") : t("inactive")}</Badge>,
     },
-    { key: "created_at", header: t("cols.created"), sortable: true, render: (u) => formatDateTime(u.created_at, locale, "—") },
+    { key: "created_at", header: t("cols.created"), sortable: true, className: "whitespace-nowrap", render: (u) => formatDate(u.created_at, locale, "—") },
     {
       key: "actions",
       header: t("cols.actions"),

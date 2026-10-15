@@ -41,7 +41,7 @@ export default function OfficerRequestsPanel() {
     { key: "name", header: t("cols.applicant"), render: (r) => (<><span className="font-medium">{r.name}</span><br /><span className="text-xs text-ink-muted">{r.email}</span></>) },
     { key: "office", header: t("cols.office"), render: (r) => (<><span>{bi(r.office.name_en, r.office.name_bn)}</span><br /><span className="text-xs text-ink-muted">{officePath(r.office)}</span></>) },
     { key: "details", header: t("cols.details"), render: (r) => (<span className="text-sm">{r.designation}<br />{t("empId")}: {r.employee_id}<br />{r.phone}{r.proof_note && (<><br /><span className="text-xs text-ink-muted">{r.proof_note}</span></>)}</span>) },
-    { key: "created_at", header: t("cols.requested"), render: (r) => formatDateTime(r.created_at, locale, "—") },
+    { key: "created_at", header: t("cols.requested"), className: "whitespace-nowrap", render: (r) => formatDateTime(r.created_at, locale, "—") },
     { key: "status", header: t("cols.status"), render: (r) => (<><Badge tone={TONE[r.status]}>{t(`status.${r.status}`)}</Badge>{r.rejection_reason && <p className="mt-1 text-xs text-ink-muted">{r.rejection_reason}</p>}</>) },
     {
       key: "actions",
