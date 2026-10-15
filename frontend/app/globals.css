@@ -227,6 +227,13 @@
     height: 3px;
     background: linear-gradient(90deg, rgb(var(--gold)), rgb(var(--gold) / 0.2) 70%, transparent);
   }
+  /* Loading skeleton: soft shimmer (frozen under prefers-reduced-motion by the global rule). */
+  .skeleton {
+    background: linear-gradient(100deg, rgb(var(--primary-soft)) 30%, rgb(var(--surface) / 0.9) 50%, rgb(var(--primary-soft)) 70%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+  @keyframes skeleton-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
   /* Tinted icon tile used across landing sections. */
   .icon-tile {
     display: inline-flex;
