@@ -155,6 +155,8 @@
   "auth": {
     "loginTitle": "Sign in",
     "loginIntro": "Use your account to verify land records.",
+    "staffTitle": "Staff sign in",
+    "staffIntro": "For reviewers, land office officers and administrators.",
     "email": "Email",
     "password": "Password",
     "submit": "Sign in",
@@ -1888,8 +1890,9 @@
   },
   "authShell": {
     "switcher": "Account options",
-    "tabLogin": "Sign in",
+    "tabLogin": "Citizen sign in",
     "tabSignup": "Citizen sign up",
+    "tabStaff": "Staff sign in",
     "tabOfficer": "Officer request",
     "showPassword": "Show",
     "hidePassword": "Hide",
