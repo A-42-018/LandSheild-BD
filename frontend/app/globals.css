@@ -211,6 +211,19 @@
     background-position: center, center, 50% 22%;
     background-repeat: no-repeat;
   }
+  /* ArtCard: sizes follow the card width (container query), so a 2-up grid at tablet widths no longer squeezes the
+     text into a one-word column. The spacer floats where the illustration sits; text wraps beside it, then goes full width. */
+  .art-card { container-type: inline-size; min-height: 8rem; }
+  .art-card-art { top: -0.75rem; right: 0.25rem; width: 6rem; height: 6rem; }
+  .art-card-spacer { float: right; width: 4.25rem; height: 3.75rem; margin-left: 0.5rem; }
+  @container (min-width: 24rem) {
+    .art-card-art { top: -1.25rem; right: 0.25rem; width: 7.5rem; height: 7.5rem; }
+    .art-card-spacer { width: 5.75rem; height: 4.75rem; }
+  }
+  @container (min-width: 30rem) {
+    .art-card-art { top: -1.75rem; right: 0.5rem; width: 10rem; height: 9.5rem; }
+    .art-card-spacer { width: 8.5rem; height: 6rem; }
+  }
   /* Horizontal scroller with soft fade edges (tab rows on phones). */
   .scroll-fade {
     scrollbar-width: none;
