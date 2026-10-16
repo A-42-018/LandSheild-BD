@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { API, apiLogin, signIn } from "./fixtures";
 
-const STAFF_PAGES = ["/en/officer", "/en/officer/upload", "/en/officer/audit-logs", "/en/officer/admin"];
+const STAFF_PAGES = ["/en/officer", "/en/officer/upload", "/en/officer/audit-logs", "/en/admin"];
 
 test.describe("anonymous visitors", () => {
   for (const path of STAFF_PAGES) {
@@ -42,15 +42,15 @@ test.describe("role ladder", () => {
     await signIn(page, "officer");
     await page.goto("/en/officer");
     await expect(page.getByRole("heading", { name: "Officer dashboard" })).toBeVisible();
-    await page.goto("/en/officer/admin");
+    await page.goto("/en/admin");
     await expect(page.getByText("You don't have permission to perform this action.").first()).toBeVisible();
   });
 
   test("admin reaches the admin console", async ({ page }) => {
     await signIn(page, "admin");
-    await page.goto("/en/officer/admin");
+    await page.goto("/en/admin");
     await expect(page.getByText("You don't have permission to perform this action.")).toHaveCount(0);
-    await expect(page.getByRole("tab").first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Administration" })).toBeVisible();
   });
 
   test("reviewer cannot upload", async ({ page }) => {

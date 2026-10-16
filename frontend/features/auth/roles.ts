@@ -8,10 +8,11 @@ export const OFFICER_UP: Role[] = ["OFFICER", "ADMIN"];
 export const ADMIN_ONLY: Role[] = ["ADMIN"];
 
 /** Where a signed-in user lands when no `?next=` was given (U3.1). Citizens get "আমার ভূমি সেবা" (U3.2),
- *  reviewers "আজকের কাজ" (U3.3). Admin moves to its own area in U3.5. */
+ *  reviewers "আজকের কাজ" (U3.3), admins the console (U3.5). */
 export function redirectFor(role: Role | null | undefined): string {
   if (role === "CITIZEN") return "/my";
   if (role === "REVIEWER") return "/officer/review";
+  if (role === "ADMIN") return "/admin";
   return hasRole(role, REVIEW_UP) ? "/officer" : "/";
 }
 
@@ -41,6 +42,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/my", labelKey: "nav.myArea", roles: ["CITIZEN"] },
   { href: "/officer", labelKey: "nav.dashboard", roles: REVIEW_UP },
   { href: "/officer/upload", labelKey: "nav.upload", roles: OFFICER_UP },
+  { href: "/admin", labelKey: "nav.admin", roles: ADMIN_ONLY },
 ];
 
 export function navItemsFor(role: Role | null, items: NavItem[] = NAV_ITEMS): NavItem[] {

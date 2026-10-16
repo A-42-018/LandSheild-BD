@@ -99,7 +99,7 @@ describe("LoginForm", () => {
     ["CITIZEN", "/my"],
     ["REVIEWER", "/officer/review"],
     ["OFFICER", "/officer"],
-    ["ADMIN", "/officer"],
+    ["ADMIN", "/admin"],
   ] as const)("lands a %s on %s when there is no ?next=", async (role, home) => {
     const c = fakeClient({ login: vi.fn().mockResolvedValue({ user: { ...officer, role } }) as any });
     wrap(<LoginForm />, c);
@@ -172,7 +172,7 @@ describe("redirectFor / loginPathFor", () => {
     expect(redirectFor("CITIZEN")).toBe("/my");
     expect(redirectFor("REVIEWER")).toBe("/officer/review");
     expect(redirectFor("OFFICER")).toBe("/officer");
-    expect(redirectFor("ADMIN")).toBe("/officer");
+    expect(redirectFor("ADMIN")).toBe("/admin");
     expect(redirectFor(null)).toBe("/");
   });
   it("picks the staff sign-in only when no citizen may enter", () => {

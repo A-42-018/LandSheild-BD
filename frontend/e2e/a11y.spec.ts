@@ -14,7 +14,7 @@ const PUBLIC = [
 const SIGNED_IN: [DemoRole, string[]][] = [
   ["citizen", ["verify", "check", "map", "verify/result?land_id=LP-10240", "verify/graph?land_id=LP-10240"]],
   ["officer", ["officer", "officer/upload", "officer/mutations", "officer/archive", "officer/audit-logs", "officer/feedback"]],
-  ["admin", ["officer/admin"]],
+  ["admin", ["admin", "admin/users", "admin/officer-requests", "admin/offices", "admin/records", "admin/audit-logs", "admin/settings"]],
 ];
 
 test.use({ viewport: { width: 360, height: 800 } });
