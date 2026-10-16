@@ -16,6 +16,8 @@ from app.schemas.officer import (
     ActivityActor,
     ActivityItem,
     ActivityList,
+    DecisionItem,
+    DecisionList,
     OfficerStats,
     QueueFilter,
     QueueItem,
@@ -252,3 +254,36 @@ def get_activity(
         for a, name, role in rows
     ]
     return ActivityList(items=items, total=total, limit=limit, offset=offset)
+
+
+DECISION_ACTIONS = {"DOCUMENT_APPROVE": "APPROVED", "DOCUMENT_REJECT": "REJECTED"}
+
+
+def get_my_decisions(db: Session, user: User, limit: int, offset: int) -> DecisionList:
+    """The caller's own approve / reject decisions on documents, newest first (U3.3)."""
+    cond = [AuditLog.actor_id == user.id, AuditLog.action.in_(DECISION_ACTIONS)]
+    total = db.scalar(select(func.count()).select_from(AuditLog).where(*cond)) or 0
+    rows = db.execute(
+        select(AuditLog, Document.document_type, LandParcel.land_id)
+        .outerjoin(Document, Document.id == AuditLog.entity_id)
+        .outerjoin(LandParcel, LandParcel.id == Document.land_id)
+        .where(*cond)
+        .order_by(AuditLog.created_at.desc(), AuditLog.id)
+        .limit(limit)
+        .offset(offset)
+    ).all()
+    items = []
+    for a, dtype, land in rows:
+        new = a.new_value if isinstance(a.new_value, dict) else {}
+        items.append(
+            DecisionItem(
+                id=a.id,
+                document_id=a.entity_id or "",
+                land_id=land,
+                document_type=dtype,
+                decision=DECISION_ACTIONS[a.action],
+                reason=new.get("reason") if a.action == "DOCUMENT_REJECT" else None,
+                created_at=a.created_at,
+            )
+        )
+    return DecisionList(items=items, total=total, limit=limit, offset=offset)

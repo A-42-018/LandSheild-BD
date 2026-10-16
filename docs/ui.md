@@ -123,6 +123,17 @@ Contrast of the level word (WCAG, needs ≥ 4.5; locked in `tests/ui-regression.
 
 Tests: `components/domain/RiskIndicator.test.tsx` checks every level × size × locale for tone, a hidden icon, the word and the "Risk:" prefix, and that no digits appear. It also checks distinct icon shapes, the unknown fallback, Bangla strings and axe. `features/risk/risk.test.tsx` checks the level headline and the Bangla-digit score line.
 
+# Reviewer home `/officer/review` — "আজকের কাজ" (U3.3, 2026-10-17)
+
+Roadmap §4.3 / §6 Phase 3. Reviewers land here after sign-in (`redirectFor("REVIEWER")` = `/officer/review`); the sidebar has "আজকের কাজ" first (reviewers only). Officers and admins can open the URL but it is not in their menu.
+
+- **Queue** (`features/reviewer/TodayQueue.tsx`): `GET /officer/queue?filter=pending&sort=created_at&order=asc&limit=50`, so the oldest document is on top. A count badge in the header says how many wait. Each row has an age chip: up to 2 days (green), 3–7 days (amber), more than 7 days (red). The chip always carries the words ("৯ দিন", "আজ") and a screen-reader band name, never colour alone. "সবচেয়ে পুরোনোটি দিয়ে শুরু করুন" opens the top row. "তথ্য মিলিয়ে দেখুন" marks low-confidence documents. Bands live in `features/reviewer/ageing.ts`.
+- **My history** (`MyHistory.tsx`): `GET /officer/my-decisions` (new, REVIEW_UP, paged): the caller's own `DOCUMENT_APPROVE` / `DOCUMENT_REJECT` audit rows, newest first, with land ID, document type, decision, the rejection reason (from the audit row's `new_value.reason`) and time. Nothing else from the audit row is exposed.
+- **Review screen** (`/officer/review/{id}`): the two-pane layout and low-confidence highlighting already existed. New: a toolbar (`ReviewToolbar.tsx`) with "← আজকের কাজ", "পরবর্তী নথি" and a key reminder. **A** approves, **R** opens the reject dialog, **N** goes to the next waiting document (the one after this in the queue, else the oldest other one). `useReviewShortcuts` matches the physical key (`e.code`), so it works on a Bangla keyboard layout. It ignores keys while typing in a field, with Ctrl / Cmd / Alt, and while a dialog is open. A is also ignored when Approve is disabled (invalid data, own upload, request running). Approve / reject now refresh the `["officer"]` queries so the queue and history update.
+- Not changed: the officer dashboard (`/officer`) still shows the alert list to reviewers, because reviewers can escalate alerts there (existing test). The roadmap says "hide office-wide alerts from the reviewer"; decide before U3.4. Upload and admin were already hidden from reviewers.
+- Tests: backend `tests/test_review.py::test_my_decisions_lists_only_own_with_rejection_reason`, authz matrix row for the new route; frontend `features/reviewer/reviewer.test.tsx` (bands, order, count, history, Bangla digits, axe, N key), `features/review/review-actions.test.tsx` (A / R), `features/auth/auth.test.tsx` (reviewer → `/officer/review`).
+- Not run: browser check (the preview server limit was reached), Playwright e2e, screen reader.
+
 # Citizen area `/my` — "আমার ভূমি সেবা" (U3.2, 2026-10-17)
 
 Roadmap §4.2 / §6 Phase 3. Citizens land here after sign-in (`redirectFor("CITIZEN")` = `/my`); the account menu has "আমার ভূমি সেবা" (`nav.myArea`, citizens only). Staff opening `/my` get the permission message; anonymous visitors go to `/login?next=…`.

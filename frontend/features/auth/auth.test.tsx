@@ -97,7 +97,7 @@ describe("LoginForm", () => {
 
   it.each([
     ["CITIZEN", "/my"],
-    ["REVIEWER", "/officer"],
+    ["REVIEWER", "/officer/review"],
     ["OFFICER", "/officer"],
     ["ADMIN", "/officer"],
   ] as const)("lands a %s on %s when there is no ?next=", async (role, home) => {
@@ -170,7 +170,7 @@ describe("RequireRole", () => {
 describe("redirectFor / loginPathFor", () => {
   it("maps each role to its home", () => {
     expect(redirectFor("CITIZEN")).toBe("/my");
-    expect(redirectFor("REVIEWER")).toBe("/officer");
+    expect(redirectFor("REVIEWER")).toBe("/officer/review");
     expect(redirectFor("OFFICER")).toBe("/officer");
     expect(redirectFor("ADMIN")).toBe("/officer");
     expect(redirectFor(null)).toBe("/");

@@ -8,6 +8,7 @@ from app.models.enums import Role
 from app.models.user import User
 from app.schemas.officer import (
     ActivityList,
+    DecisionList,
     OfficerStats,
     QueueFilter,
     QueueList,
@@ -62,3 +63,13 @@ def activity(
 ) -> ActivityList:
     scope = svc.REVIEWER_ACTIVITY_ENTITIES if user.role == Role.REVIEWER.value else None
     return svc.get_activity(db, action, limit, offset, scope)
+
+
+@router.get("/my-decisions", response_model=DecisionList)
+def my_decisions(
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    user: User = Depends(require_roles(*REVIEW_UP)),
+    db: Session = Depends(get_db),
+) -> DecisionList:
+    return svc.get_my_decisions(db, user, limit, offset)
