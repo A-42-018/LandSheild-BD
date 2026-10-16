@@ -5,10 +5,13 @@ import { Button, Modal } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
 import { useAuth } from "./AuthContext";
 
+/** Staff sessions end after this many idle minutes (shown read-only in the admin settings). */
+export const STAFF_IDLE_MINUTES = 15;
+
 const ACTIVITY = ["pointerdown", "keydown", "scroll", "touchstart"] as const;
 
 /** Signs an officer out after `idleMinutes` without activity; warns `warnSeconds` before, with a live countdown. */
-export default function IdleTimeout({ idleMinutes = 15, warnSeconds = 120 }: { idleMinutes?: number; warnSeconds?: number }) {
+export default function IdleTimeout({ idleMinutes = STAFF_IDLE_MINUTES, warnSeconds = 120 }: { idleMinutes?: number; warnSeconds?: number }) {
   const t = useTranslations("auth.idle");
   const { logout } = useAuth();
   const router = useRouter();

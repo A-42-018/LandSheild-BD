@@ -9,6 +9,7 @@ from app.core.ratelimit import check_rate
 from app.core.rbac import ADMIN_ONLY, require_roles
 from app.models.user import User
 from app.schemas.offices import (
+    AdminOfficeList,
     AdminOfficerRequest,
     AdminOfficerRequestList,
     OfficeList,
@@ -22,6 +23,7 @@ from app.services import offices as svc
 
 router = APIRouter(prefix="/offices", tags=["offices"])
 admin_router = APIRouter(prefix="/admin/officer-requests", tags=["admin"])
+admin_offices_router = APIRouter(prefix="/admin/offices", tags=["admin"])
 Admin = Depends(require_roles(*ADMIN_ONLY))
 Name = Query(min_length=1, max_length=100)
 
@@ -99,3 +101,15 @@ def reject(
     admin: User = Admin, db: Session = Depends(get_db),
 ) -> AdminOfficerRequest:  # fmt: skip
     return svc.decide(db, admin, request_id, False, body.reason.strip(), _ip(request))
+
+
+@admin_offices_router.get("", response_model=AdminOfficeList)
+def admin_offices(
+    q: str | None = Query(default=None, max_length=100),
+    office_type: str | None = Query(default=None, max_length=40),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    _: User = Admin,
+    db: Session = Depends(get_db),
+) -> AdminOfficeList:
+    return svc.list_offices(db, q, office_type, limit, offset)

@@ -103,6 +103,7 @@ EXPECTED = {
     ("GET", f"{P}/admin/officer-requests"): ADMIN,
     ("POST", f"{P}/admin/officer-requests/{{request_id}}/approve"): ADMIN,
     ("POST", f"{P}/admin/officer-requests/{{request_id}}/reject"): ADMIN,
+    ("GET", f"{P}/admin/offices"): ADMIN,
     ("GET", f"{P}/admin/land-records"): ADMIN,
     ("GET", f"{P}/admin/documents"): ADMIN,
     ("GET", f"{P}/admin/ledger/verify"): ADMIN,

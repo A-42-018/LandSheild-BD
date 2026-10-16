@@ -41,7 +41,8 @@
     "contact": "Contact",
     "citizenLogin": "Citizen sign in",
     "officerLogin": "Officer sign in",
-    "myArea": "My land services"
+    "myArea": "My land services",
+    "admin": "Administration"
   },
   "errors": {
     "generic": "We couldn't process this document. Please check the file and try again.",
@@ -940,6 +941,21 @@
         "reasonHint": "The applicant sees this reason when they try to sign in.",
         "empty": "No requests.",
         "error": "Could not update the request. Please try again."
+      },
+      "dataTitle": "Records and documents",
+      "dataPurpose": "Read-only lists of land records and uploaded documents.",
+      "offices": {
+        "title": "Land offices",
+        "hint": "Every land office in the system and the number of active officers tied to it.",
+        "filters": "Office filters",
+        "empty": "No offices match.",
+        "cols": {
+          "name": "Office",
+          "type": "Type",
+          "place": "Place",
+          "code": "Code",
+          "officers": "Officers"
+        }
       }
     },
     "ledger": {
@@ -957,6 +973,53 @@
         "RECORD_MODIFIED": "The live record differs from what the ledger recorded.",
         "RECORD_MISSING": "A recorded entry no longer exists in the database.",
         "UNKNOWN": "The ledger does not match the stored records."
+      }
+    },
+    "nav": {
+      "label": "Administration",
+      "overview": "Overview",
+      "users": "Users",
+      "officerRequests": "Officer requests",
+      "offices": "Offices",
+      "records": "Records and documents",
+      "audit": "Audit log",
+      "settings": "Settings"
+    },
+    "overview": {
+      "title": "Administration",
+      "purpose": "Accounts, officer requests and system health at a glance.",
+      "tilesLabel": "Key counts",
+      "shortcuts": "Shortcuts",
+      "tiles": {
+        "pending": "Officer requests waiting",
+        "users": "Accounts",
+        "records": "Land records",
+        "documents": "Uploaded documents"
+      },
+      "links": {
+        "officerArea": "Officer area",
+        "audit": "Audit log",
+        "settings": "Settings"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "purpose": "The rules the system applies to staff accounts and sessions.",
+      "readonly": "These settings are shown for reference. They are set in the system configuration and cannot be changed here yet.",
+      "session": {
+        "title": "Staff sessions",
+        "idle": "Staff are signed out after {minutes} minutes without activity. A warning appears two minutes before."
+      },
+      "languages": {
+        "title": "Languages",
+        "body": "The site is available in English and Bangla. Each person's choice is saved with their account."
+      },
+      "roles": {
+        "title": "Roles",
+        "CITIZEN": "Searches land, tracks mutations and keeps watched land and reports.",
+        "REVIEWER": "Reviews extracted documents and escalates alerts. Works from the review queue.",
+        "OFFICER": "Decides mutation cases, schedules hearings and sees their own office's figures.",
+        "ADMIN": "Manages accounts, approves officer requests and reads the audit log."
       }
     }
   },

@@ -135,6 +135,27 @@ Roadmap §4.4 / §6 Phase 3. Officers land on `/officer` ("অফিস ড্�
 - Tests: backend `tests/test_hearings.py` (transition + set + move audited, validation, month edges, roles, office scope, scoped stats), authz matrix and audit-coverage rows for the two routes; frontend `features/hearings/hearings.test.tsx` (Dhaka-day grouping, Sunday-first grid, Bangla digits, month change, set-date form, axe).
 - Not run: browser check, Playwright e2e, screen reader.
 
+# Admin console `/admin` (U3.5, 2026-10-17)
+
+Roadmap §4.5 / §6 Phase 3. Administrators get their own area with its own shell (`features/admin/AdminShell.tsx`: side menu on desktop, a sideways-scrolling tab row on phones, same pattern as `/my`). Admins only; `redirectFor("ADMIN")` is now `/admin`, and the old `/officer/admin` redirects there. The officer sidebar keeps one "প্রশাসন" link to `/admin` for admins.
+
+| Page | Route | What it shows |
+|---|---|---|
+| সারসংক্ষেপ | `/admin` | Four count tiles (waiting officer requests, accounts, land records, documents; each links to its page) and the ledger-integrity check |
+| ব্যবহারকারী | `/admin/users` | The existing users table with create / edit (unchanged) |
+| কর্মকর্তার আবেদন | `/admin/officer-requests` | The existing approve / reject list (unchanged) |
+| অফিস | `/admin/offices` | **New.** All land offices, searchable and filterable by type, with the number of active officers tied to each |
+| রেকর্ড ও নথি | `/admin/records` | Land records and documents (were tabs of the old page; kept because the roadmap list did not say where they go) |
+| অডিট লগ | `/admin/audit-logs` | The audit table; officers keep `/officer/audit-logs` |
+| সেটিংস | `/admin/settings` | **Read-only.** Staff idle timeout, languages, what each role may do |
+
+- Backend: `GET /admin/offices?q&office_type&limit&offset` (ADMIN only, added to the authz matrix). The public `/offices` route needs a division and district, so it cannot list everything.
+- Settings are read-only on purpose and say so on the page; there is no settings table yet, so a form would have nothing to save to. `STAFF_IDLE_MINUTES` is now exported from `IdleTimeout` so the page and the timer agree.
+- Offices cannot be created or edited here (the list is the bundled `land_offices.json`).
+- **Still open** (from U3.3 / U3.4): reviewers still see the office-wide alert list on `/officer`, because they can escalate alerts there. Not changed in U3.5, since it concerns the officer area.
+- Tests: backend `tests/test_officer_offices.py::test_admin_office_list_filters_and_counts_officers` (roles, paging, filters, wildcard escaping, officer count); frontend `features/admin/admin.test.tsx` (nav, overview counts, offices table query, settings, redirect), `auth.test.tsx` redirect, e2e specs pointed at `/admin/*`.
+- Not run: browser check (the preview tool refused to start more dev servers), Playwright e2e, screen reader.
+
 # Reviewer home `/officer/review` — "আজকের কাজ" (U3.3, 2026-10-17)
 
 Roadmap §4.3 / §6 Phase 3. Reviewers land here after sign-in (`redirectFor("REVIEWER")` = `/officer/review`); the sidebar has "আজকের কাজ" first (reviewers only). Officers and admins can open the URL but it is not in their menu.
@@ -177,7 +198,7 @@ Roadmap §6 Phase 3. Two sign-in pages, one form.
 | `/officer-login` | "Staff sign in" (reviewer, officer, admin) | reviewer, officer, admin | Staff sign in |
 
 - `LoginForm` takes `audience="citizen" | "staff"` (copy, demo accounts, active tab). Both pages accept every role: the account decides where you land, not the page you used.
-- After sign-in: explicit `?next=` (checked by `safeNext`) wins, otherwise `redirectFor(role)` in `features/auth/roles.ts`: CITIZEN → `/` (`/my` since U3.2), REVIEWER / OFFICER / ADMIN → `/officer`. Admin keeps `/officer` until U3.5 gives it `/admin`; change it in that one function.
+- After sign-in: explicit `?next=` (checked by `safeNext`) wins, otherwise `redirectFor(role)` in `features/auth/roles.ts`: CITIZEN → `/` (`/my` since U3.2), REVIEWER / OFFICER / ADMIN → `/officer`. ADMIN → `/admin` since U3.5.
 - `RequireRole` sends anonymous visitors to `loginPathFor(roles)`: `/officer-login?next=…` when only staff roles are allowed, `/login?next=…` otherwise. The idle-timeout sign-out and the officer-request "Sign in" links also go to `/officer-login`.
 - `AuthShell` has four tabs (2 × 2 on phones): Citizen sign in · Citizen sign up · Staff sign in · Officer request. New keys: `auth.staffTitle|staffIntro`, `authShell.tabStaff`; `authShell.tabLogin` now reads "Citizen sign in" / "নাগরিক সাইন ইন".
 - Sitemap lists the staff sign-in. Header and footer still link to `/login` (U1.2 turns the header link into a citizen / staff menu).

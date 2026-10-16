@@ -17,7 +17,7 @@ export const OFFICER_NAV: { href: string; labelKey: string; roles: Role[] }[] = 
   { href: "/officer/archive", labelKey: "officer.nav.archive", roles: REVIEW_UP },
   { href: "/officer/feedback", labelKey: "officer.nav.feedback", roles: OFFICER_UP },
   { href: "/officer/audit-logs", labelKey: "officer.nav.audit", roles: OFFICER_UP },
-  { href: "/officer/admin", labelKey: "officer.nav.admin", roles: ADMIN_ONLY },
+  { href: "/admin", labelKey: "officer.nav.admin", roles: ADMIN_ONLY },
 ];
 
 const NAV_ICON: Record<string, LucideIcon> = {
@@ -29,7 +29,7 @@ const NAV_ICON: Record<string, LucideIcon> = {
   "/officer/archive": Archive,
   "/officer/feedback": MessageSquare,
   "/officer/audit-logs": ScrollText,
-  "/officer/admin": ShieldCheck,
+  "/admin": ShieldCheck,
 };
 
 export default function OfficerShell({ children }: { children: ReactNode }) {

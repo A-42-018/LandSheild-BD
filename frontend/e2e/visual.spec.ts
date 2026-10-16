@@ -12,7 +12,7 @@ const PUBLIC = ["", "/login", "/officer-login", "/signup", "/officer-signup", "/
 const CITIZEN = ["/verify", "/check", "/verify/result?land_id=LP-10240", "/verify/graph?land_id=LP-10240", "/map"];
 const STAFF: [DemoRole, string[]][] = [
   ["reviewer", ["/officer", "/officer/mutations", "/officer/archive"]],
-  ["admin", ["/officer", "/officer/admin", "/officer/audit-logs", "/officer/upload", "/officer/feedback"]],
+  ["admin", ["/officer", "/admin", "/admin/users", "/admin/offices", "/officer/audit-logs", "/officer/upload", "/officer/feedback"]],
 ];
 
 for (const theme of THEMES) {
