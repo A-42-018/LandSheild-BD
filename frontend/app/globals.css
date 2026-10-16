@@ -37,6 +37,10 @@
     --gold-soft: 241 216 140;
     --header-from: 0 106 78;
     --header-to: 0 106 78;
+    /* Village → city strip above the footer (U1.8): footer green in light; lifted in dark so it shows on the dark page. */
+    --skyline: 10 53 39;
+    /* Kantha stitch colour (U1.8): primary green at 8 %; a lighter mint at 14 % in dark, where low alpha barely shows on the near-black page. */
+    --kantha: 0 106 78 / 0.08;
   }
   :root.dark {
     color-scheme: dark;
@@ -70,6 +74,8 @@
     --gold-soft: 241 216 140;
     --header-from: 0 86 63;
     --header-to: 0 86 63;
+    --skyline: 24 96 70;
+    --kantha: 170 230 200 / 0.14;
   }
   /* High contrast (U1.1): visitor-chosen from the top strip. Body text 21:1, muted text and borders darker, links and focus ring stronger. */
   :root.contrast {

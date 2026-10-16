@@ -4,6 +4,7 @@ import { HOTLINE } from "@/features/help/help";
 import { Link } from "@/i18n/navigation";
 import { localDigits } from "@/lib/intl-locale";
 import { contours } from "./Backdrop";
+import SkylineStrip from "./SkylineStrip";
 
 const LINK = "rounded text-white/80 underline-offset-4 transition-colors hover:text-white hover:underline hover:decoration-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
 const HEAD = "mb-3 text-xs font-bold uppercase tracking-[0.12em] text-gold-strong";
@@ -16,12 +17,14 @@ const RINGS = contours([
   { cx: 120, cy: 330, rings: 5, step: 34, seed: 3.4 },
 ]);
 
-/** Footer (U1.7, roadmap P11): brand row, then the five standard columns. "Planned and built by" holds the demo-project note instead of ministry credits; no app or social links exist, so those columns say so or point to real contact routes. */
+/** Footer (U1.7, roadmap P11): village → city strip on top (U1.8), brand row, then the five standard columns. "Planned and built by" holds the demo-project note instead of ministry credits; no app or social links exist, so those columns say so or point to real contact routes. */
 export default function Footer() {
   const t = useTranslations();
   const locale = useLocale();
   return (
-    <footer className="header-glass relative mt-12 overflow-hidden border-b-0 shadow-none border-t border-t-gold/55 text-sm text-white/80 print:hidden">
+    <>
+    <SkylineStrip />
+    <footer className="header-glass relative overflow-hidden border-b-0 shadow-none border-t border-t-gold/55 text-sm text-white/80 print:hidden">
       <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-gold" viewBox="0 0 1440 360" preserveAspectRatio="xMidYMid slice" fill="none">
         <path d={RINGS} stroke="currentColor" strokeOpacity="0.1" />
       </svg>
@@ -101,5 +104,6 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+    </>
   );
 }

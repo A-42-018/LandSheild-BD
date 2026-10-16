@@ -9,6 +9,7 @@ import { qrTarget } from "./HeroSearch";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import type { ApiClient } from "@/lib/api";
 import Footer from "./Footer";
+import Backdrop, { KANTHA_TILE } from "./Backdrop";
 import { HelpStrip, HomeFaq, HowItWorks, NoticeBoard, ServiceTiles, Trust, WhatWeCheck } from "./Sections";
 import { HOME_FAQ_IDS } from "@/features/info/pages";
 import { NOTICES } from "@/features/notices/notices";
@@ -151,5 +152,25 @@ describe("hotline strip (U1.6)", () => {
     expect(screen.getByTestId("hotline-link")).toHaveAttribute("href", "tel:16122");
     expect(screen.getByText(bn.landing.help.note)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: bn.landing.help.title }).textContent).not.toMatch(/[0-9]/);
+  });
+});
+
+describe("Bangladeshi visual identity (U1.8)", () => {
+  it("backdrop has a kantha stitch layer: dashed, faint, small tile, decorative only", () => {
+    render(<Backdrop />);
+    const backdrop = screen.getByTestId("landing-backdrop");
+    expect(backdrop).toHaveAttribute("aria-hidden", "true");
+    expect(backdrop).toHaveClass("pointer-events-none", "print:hidden");
+    const stitch = screen.getByTestId("kantha-layer").querySelector("pattern path")!;
+    expect(stitch).toHaveAttribute("stroke-dasharray");
+    expect(stitch).toHaveAttribute("stroke", "rgb(var(--kantha))");
+    expect(new Blob([KANTHA_TILE]).size).toBeLessThan(10_000);
+  });
+  it("footer has the village → city strip just above it, hidden from assistive tech and print", () => {
+    const { container } = render(wrap(<Footer />));
+    const strip = screen.getByTestId("skyline-strip");
+    expect(strip).toHaveAttribute("aria-hidden", "true");
+    expect(strip).toHaveClass("pointer-events-none", "print:hidden");
+    expect(strip.nextElementSibling).toBe(container.querySelector("footer"));
   });
 });
