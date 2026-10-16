@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { ErrorState, LoadingState } from "@/components/ui";
 import { useAuth } from "./AuthContext";
-import { hasRole, type Role } from "./roles";
+import { hasRole, loginPathFor, type Role } from "./roles";
 
 export default function RequireRole({ roles, children }: { roles?: Role[]; children: ReactNode }) {
   const { status, user } = useAuth();
@@ -13,8 +13,8 @@ export default function RequireRole({ roles, children }: { roles?: Role[]; child
   const t = useTranslations();
 
   useEffect(() => {
-    if (status === "anonymous") router.replace(`/login?next=${encodeURIComponent(pathname)}`);
-  }, [status, router, pathname]);
+    if (status === "anonymous") router.replace(`${loginPathFor(roles)}?next=${encodeURIComponent(pathname)}`);
+  }, [status, router, pathname, roles]);
 
   if (status === "loading") return <LoadingState label={t("auth.checkingSession")} />;
   if (status === "anonymous") return <LoadingState label={t("auth.loginRequired")} />;

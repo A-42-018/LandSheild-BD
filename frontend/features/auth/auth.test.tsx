@@ -8,7 +8,7 @@ import { ApiError, type ApiClient, type ApiUser } from "@/lib/api";
 import { AuthProvider } from "./AuthContext";
 import LoginForm, { safeNext } from "./LoginForm";
 import RequireRole from "./RequireRole";
-import { navItemsFor, type NavItem } from "./roles";
+import { loginPathFor, navItemsFor, redirectFor, type NavItem } from "./roles";
 
 const replace = vi.fn();
 let search = "";
@@ -56,7 +56,7 @@ describe("LoginForm", () => {
   });
 
   it("shows the demo-accounts hint (no password) and fills the e-mail on click", () => {
-    wrap(<LoginForm />, fakeClient());
+    wrap(<LoginForm audience="staff" />, fakeClient());
     const hint = screen.getByTestId("demo-accounts");
     expect(hint).toHaveTextContent(en.auth.demoTitle);
     expect(hint).not.toHaveTextContent("LandShield2026");
@@ -85,6 +85,34 @@ describe("LoginForm", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(bn.auth.invalidCredentials);
   });
 
+  it.each([
+    ["CITIZEN", "/"],
+    ["REVIEWER", "/officer"],
+    ["OFFICER", "/officer"],
+    ["ADMIN", "/officer"],
+  ] as const)("lands a %s on %s when there is no ?next=", async (role, home) => {
+    const c = fakeClient({ login: vi.fn().mockResolvedValue({ user: { ...officer, role } }) as any });
+    wrap(<LoginForm />, c);
+    fireEvent.change(screen.getByLabelText(/Email/), { target: { value: "a@b.co" } });
+    fireEvent.change(screen.getByLabelText(/Password/), { target: { value: "pw" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith(home));
+  });
+
+  it("citizen page offers only the citizen demo account; staff page the staff ones", () => {
+    const { unmount } = wrap(<LoginForm />, fakeClient());
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(en.auth.loginTitle);
+    expect(screen.getByTestId("demo-accounts")).toHaveTextContent("citizen@demo.landshield.test");
+    expect(screen.getByTestId("demo-accounts")).not.toHaveTextContent("officer@demo.landshield.test");
+    unmount();
+    wrap(<LoginForm audience="staff" />, fakeClient());
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(en.auth.staffTitle);
+    const hint = screen.getByTestId("demo-accounts");
+    for (const r of ["reviewer", "officer", "admin"]) expect(hint).toHaveTextContent(`${r}@demo.landshield.test`);
+    expect(hint).not.toHaveTextContent("citizen@demo.landshield.test");
+    expect(screen.getByRole("link", { name: en.authShell.tabStaff })).toHaveAttribute("aria-current", "page");
+  });
+
   it("safeNext blocks open redirects", () => {
     expect(safeNext("/x?y=1")).toBe("/x?y=1");
     expect(safeNext("//evil.com")).toBe("/");
@@ -94,10 +122,15 @@ describe("LoginForm", () => {
 });
 
 describe("RequireRole", () => {
-  it("redirects anonymous users to /login with next", async () => {
+  it("sends anonymous users on a staff-only page to the staff sign-in with next", async () => {
     wrap(<RequireRole roles={["OFFICER"]}>secret</RequireRole>, fakeClient());
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/login?next=%2Fdashboard"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/officer-login?next=%2Fdashboard"));
     expect(screen.queryByText("secret")).not.toBeInTheDocument();
+  });
+
+  it("sends anonymous users on a page open to citizens to /login with next", async () => {
+    wrap(<RequireRole roles={["CITIZEN", "OFFICER"]}>secret</RequireRole>, fakeClient());
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/login?next=%2Fdashboard"));
   });
 
   it("shows permission message for wrong role", async () => {
@@ -111,6 +144,23 @@ describe("RequireRole", () => {
     const c = fakeClient({ refresh: vi.fn().mockResolvedValue({ user: officer }) as any });
     wrap(<RequireRole roles={["REVIEWER", "OFFICER"]}>secret</RequireRole>, c);
     expect(await screen.findByText("secret")).toBeInTheDocument();
+  });
+});
+
+describe("redirectFor / loginPathFor", () => {
+  it("maps each role to its home", () => {
+    expect(redirectFor("CITIZEN")).toBe("/");
+    expect(redirectFor("REVIEWER")).toBe("/officer");
+    expect(redirectFor("OFFICER")).toBe("/officer");
+    expect(redirectFor("ADMIN")).toBe("/officer");
+    expect(redirectFor(null)).toBe("/");
+  });
+  it("picks the staff sign-in only when no citizen may enter", () => {
+    expect(loginPathFor(["REVIEWER", "OFFICER", "ADMIN"])).toBe("/officer-login");
+    expect(loginPathFor(["ADMIN"])).toBe("/officer-login");
+    expect(loginPathFor(["CITIZEN", "OFFICER"])).toBe("/login");
+    expect(loginPathFor(undefined)).toBe("/login");
+    expect(loginPathFor([])).toBe("/login");
   });
 });
 
