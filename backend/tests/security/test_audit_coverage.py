@@ -32,6 +32,7 @@ AUDIT = {
     ("PATCH", f"{P}/risk-alerts/{{alert_id}}"): "RISK_ALERT_UPDATE",
     ("POST", f"{P}/mutations/{{mutation_id}}/transition"): "MUTATION_TRANSITION",
     ("POST", f"{P}/mutations/{{mutation_id}}/recommend"): "MUTATION_RECOMMEND",
+    ("POST", f"{P}/mutations/{{mutation_id}}/hearing"): "MUTATION_HEARING_SET",
     ("POST", f"{P}/mutations/{{mutation_id}}/appeal"): "MUTATION_TRANSITION",
     ("POST", f"{P}/admin/users"): "USER_CREATE",
     ("PATCH", f"{P}/admin/users/{{user_id}}"): "USER_UPDATE",
@@ -127,6 +128,10 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     _audited(env, "MUTATION_RECOMMEND", lambda: env.post(
         f"{P}/mutations/{mid}/recommend", json={"decision": "REJECT", "note": "audit"}, headers=off))  # fmt: skip
     mark("POST", f"{P}/mutations/{{mutation_id}}/recommend")
+    env.post(f"{P}/mutations/{mid}/transition", json={"to": "HEARING", "reason": "audit"}, headers=off)
+    _audited(env, "MUTATION_HEARING_SET", lambda: env.post(
+        f"{P}/mutations/{mid}/hearing", json={"hearing_at": "2099-01-01T10:00:00+06:00"}, headers=off))  # fmt: skip
+    mark("POST", f"{P}/mutations/{{mutation_id}}/hearing")
     # the recommender may not also decide (four-eyes), so an admin decides; then the appeal
     _audited(env, "MUTATION_TRANSITION", lambda: env.post(
         f"{P}/mutations/{mid}/transition", json={"to": "REJECTED", "reason": "audit"}, headers=heads["ADMIN"]))  # fmt: skip

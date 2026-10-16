@@ -26,7 +26,7 @@ def stats(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> OfficerStats:
-    return svc.get_stats(db)
+    return svc.get_stats(db, user)
 
 
 @router.get("/queue", response_model=QueueList)

@@ -4,7 +4,7 @@ Everything flushes only; the caller owns the transaction (posting: review.approv
 transition: the endpoint commits). Pre-check results: PASS | FAIL | NOT_CHECKED (F3a fills the
 two encumbrance checks (done in F3a)). NOT_CHECKED never blocks the fast track.
 """
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -24,6 +24,7 @@ from app.models.user import User
 from app.risk.config import AREA_TO_SQM
 from app.schemas.document import OfficeBrief
 from app.schemas.mutation import (
+    HearingCalendar,
     MutationDetail,
     MutationList,
     MutationQueueItem,
@@ -32,6 +33,7 @@ from app.services import audit, ledger
 from app.services.risk import analyze_land
 
 S = MutationStatus
+DHAKA = timezone(timedelta(hours=6))  # Bangladesh has no daylight saving
 PASS, FAIL, NOT_CHECKED = "PASS", "FAIL", "NOT_CHECKED"
 CHECKS = (
     "SELLER_IS_RECORDED_OWNER",
@@ -201,8 +203,22 @@ def route_after_prechecks(db: Session, m: MutationRecord, user: User, ip: str | 
         _set_status(db, m, S.UNDER_REVIEW.value, user, "fast track", ip)
 
 
+def _check_hearing_at(when: datetime) -> datetime:
+    """A hearing is set for a moment that has not passed; naive input is read as Dhaka time."""
+    when = when.replace(tzinfo=DHAKA) if when.tzinfo is None else when
+    if when < datetime.now(UTC):
+        raise AppError("HEARING_DATE_PAST", "The hearing date cannot be in the past", 422)
+    return when.astimezone(UTC)  # store UTC whatever the offset (SQLite drops the zone)
+
+
+def _utc(when: datetime | None) -> datetime | None:
+    """Read back as UTC (SQLite returns naive values)."""
+    return when.replace(tzinfo=UTC) if when is not None and when.tzinfo is None else when
+
+
 def transition(
-    db: Session, mutation_id: str, to: str, actor: User, reason: str | None, ip: str | None
+    db: Session, mutation_id: str, to: str, actor: User, reason: str | None, ip: str | None,
+    hearing_at: datetime | None = None,
 ) -> MutationRecord:
     m = db.get(MutationRecord, mutation_id)
     if m is None:
@@ -232,13 +248,67 @@ def transition(
             )
     if to in REASON_REQUIRED and not reason:
         raise AppError("REASON_REQUIRED", "A reason is required for this decision", 422)
+    if hearing_at is not None and to != S.HEARING.value:
+        raise AppError("HEARING_DATE_UNEXPECTED", "A hearing date goes with HEARING only", 422)
+    if hearing_at is not None:
+        hearing_at = _check_hearing_at(hearing_at)
     _set_status(db, m, to, actor, reason, ip)
+    if to == S.HEARING.value:  # a fresh hearing: any earlier date no longer applies
+        m.hearing_at = hearing_at
     if to in DECISIONS:
         m.decided_by = actor.id
     if to == S.APPROVED.value:  # an approved mutation changes the risk picture
         analyze_land(db, db.get(LandParcel, m.land_id).land_id, commit=False)
     db.commit()
     return m
+
+
+def schedule_hearing(
+    db: Session, mutation_id: str, actor: User, hearing_at: datetime, ip: str | None
+) -> MutationRecord:
+    """Set or move the hearing date of a case that is in HEARING. Recorded and audited."""
+    m = db.get(MutationRecord, mutation_id)
+    if m is None:
+        raise AppError("MUTATION_NOT_FOUND", "Mutation not found", 404)
+    if m.status != S.HEARING.value:
+        raise AppError("MUTATION_NOT_IN_HEARING", "Only a case in hearing can be scheduled", 409,
+                       {"status": m.status})  # fmt: skip
+    when = _check_hearing_at(hearing_at)
+    old = {"hearing_at": m.hearing_at.isoformat() if m.hearing_at else None}
+    m.hearing_at = when
+    audit.log(
+        db, actor, "MUTATION_HEARING_SET", "mutation", m.id, old=old,
+        new={"hearing_at": when.isoformat(), "mutation_no": m.mutation_no}, ip=ip,
+    )  # fmt: skip
+    db.commit()
+    return m
+
+
+def hearing_calendar(
+    db: Session, month: str, scope=None, area=None, limit: int = 500
+) -> HearingCalendar:
+    """Cases with a hearing in `month` (YYYY-MM, Dhaka time), by date; plus unscheduled ones."""
+    year, mon = int(month[:4]), int(month[5:7])
+    start = datetime(year, mon, 1, tzinfo=DHAKA).astimezone(UTC)
+    end = datetime(year + (mon == 12), mon % 12 + 1, 1, tzinfo=DHAKA).astimezone(UTC)
+
+    def rows(*where):
+        q = select(MutationRecord).join(LandParcel, LandParcel.id == MutationRecord.land_id)
+        for extra in (scope, area):
+            if extra is not None:
+                q = q.where(extra)
+        return db.scalars(q.where(*where).limit(limit)).all()
+
+    dated = rows(MutationRecord.hearing_at >= start, MutationRecord.hearing_at < end)
+    dated.sort(key=lambda m: (_utc(m.hearing_at), m.id))
+    open_undated = rows(
+        MutationRecord.status == S.HEARING.value, MutationRecord.hearing_at.is_(None)
+    )
+    open_undated.sort(key=lambda m: (m.applied_at, m.id))
+    return HearingCalendar(
+        month=month, items=[_item(db, m) for m in dated],
+        unscheduled=[_item(db, m) for m in open_undated],
+    )
 
 
 def recommend(
@@ -304,7 +374,7 @@ def _item(db: Session, m: MutationRecord) -> MutationQueueItem:
         id=m.id, mutation_no=m.mutation_no, land_id=land.land_id, status=m.status,
         fast_track=m.fast_track, applicant=m.applicant.name, area=m.area,
         area_unit=m.area_unit, applied_at=m.applied_at, status_changed_at=m.status_changed_at,
-        decided_at=m.decided_at, source=m.source,
+        decided_at=m.decided_at, source=m.source, hearing_at=_utc(m.hearing_at),
     )  # fmt: skip
 
 

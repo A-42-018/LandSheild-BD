@@ -1,5 +1,5 @@
 """Officer dashboard queries (P33). Read-only; no internal hashes/paths/ids beyond document id."""
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
@@ -26,6 +26,7 @@ from app.schemas.officer import (
     SortOrder,
 )
 from app.services import ledger
+from app.services.offices import doc_scope, land_scope
 
 PENDING_STATUSES = (DocumentStatus.REVIEW_REQUIRED.value, DocumentStatus.EXTRACTED.value)
 ACTIVE_ALERT_STATUSES = (
@@ -34,6 +35,7 @@ ACTIVE_ALERT_STATUSES = (
     AlertStatus.ESCALATED.value,
 )
 RECENT_DAYS = 7
+DHAKA = timezone(timedelta(hours=6))  # Bangladesh has no daylight saving
 
 
 def _high_risk_land_ids():
@@ -47,62 +49,70 @@ def _active_alert_land_ids():
     return select(FraudAlert.land_id).where(FraudAlert.status.in_(ACTIVE_ALERT_STATUSES))
 
 
-def get_stats(db: Session) -> OfficerStats:
-    total = db.scalar(select(func.count()).select_from(LandParcel)) or 0
-    pending = (
-        db.scalar(
-            select(func.count())
-            .select_from(Document)
-            .where(Document.processing_status.in_(PENDING_STATUSES))
-        )
-        or 0
+def month_start(now: datetime | None = None) -> datetime:
+    """First instant of the current month in Bangladesh time (UTC+6), expressed in UTC."""
+    local = (now or datetime.now(UTC)).astimezone(DHAKA)
+    return local.replace(day=1, hour=0, minute=0, second=0, microsecond=0).astimezone(UTC)
+
+
+def get_stats(db: Session, user: User | None = None) -> OfficerStats:
+    """Counts for the dashboard. An office officer sees their own office and the ones beneath it
+    (the same scope as the queue and the case list); everyone else sees the whole system. The
+    ledger line is system-wide on purpose: the chain is one chain."""
+    lscope, dscope = land_scope(user) if user else None, doc_scope(user) if user else None
+    lands = select(LandParcel.id).where(lscope) if lscope is not None else None
+
+    def in_lands(col):  # restrict a land-id column to the visible lands (no-op for everyone)
+        return [col.in_(lands)] if lands is not None else []
+
+    def count(entity, *where) -> int:
+        return db.scalar(select(func.count()).select_from(entity).where(*where)) or 0
+
+    total = count(LandParcel, *([lscope] if lscope is not None else []))
+    pending = count(
+        Document, Document.processing_status.in_(PENDING_STATUSES),
+        *([dscope] if dscope is not None else []),
     )
     high = (
         db.scalar(select(func.count(func.distinct(FraudAlert.land_id))).where(
-            FraudAlert.severity == "HIGH", FraudAlert.status.in_(ACTIVE_ALERT_STATUSES)
+            FraudAlert.severity == "HIGH", FraudAlert.status.in_(ACTIVE_ALERT_STATUSES),
+            *in_lands(FraudAlert.land_id),
         ))
         or 0
     )
-    verified = (
-        db.scalar(
-            select(func.count())
-            .select_from(LandParcel)
-            .where(
-                LandParcel.status == LandStatus.ACTIVE.value,
-                LandParcel.id.not_in(_active_alert_land_ids()),
-            )
-        )
-        or 0
+    verified = count(
+        LandParcel, LandParcel.status == LandStatus.ACTIVE.value,
+        LandParcel.id.not_in(_active_alert_land_ids()),
+        *([lscope] if lscope is not None else []),
     )
-    open_alerts = (
-        db.scalar(
-            select(func.count()).select_from(FraudAlert).where(
-                FraudAlert.status.in_(ACTIVE_ALERT_STATUSES)
-            )
-        )
-        or 0
+    open_alerts = count(
+        FraudAlert, FraudAlert.status.in_(ACTIVE_ALERT_STATUSES), *in_lands(FraudAlert.land_id)
     )
-    pending_mutations = (
-        db.scalar(
-            select(func.count()).select_from(MutationRecord).where(
-                MutationRecord.status.in_(("APPLIED", "UNDER_REVIEW", "HEARING", "APPEALED"))
-            )
-        )
-        or 0
+    pending_mutations = count(
+        MutationRecord,
+        MutationRecord.status.in_(("APPLIED", "UNDER_REVIEW", "HEARING", "APPEALED")),
+        *in_lands(MutationRecord.land_id),
     )
-    encumbrances = (
-        db.scalar(
-            select(func.count()).select_from(LandEncumbrance).where(
-                LandEncumbrance.status == "ACTIVE"
-            )
-        )
-        or 0
+    encumbrances = count(
+        LandEncumbrance, LandEncumbrance.status == "ACTIVE", *in_lands(LandEncumbrance.land_id)
+    )
+    now = datetime.now(UTC)
+    settled = count(
+        MutationRecord,
+        MutationRecord.status.in_(("APPROVED", "REJECTED")),
+        MutationRecord.decided_at >= month_start(now),
+        *in_lands(MutationRecord.land_id),
+    )
+    hearings = count(
+        MutationRecord, MutationRecord.status == "HEARING",
+        MutationRecord.hearing_at >= now, MutationRecord.hearing_at < now + timedelta(days=7),
+        *in_lands(MutationRecord.land_id),
     )
     chain = ledger.verify(db)
     return OfficerStats(
         total_records=total, pending_review=pending, high_risk=high, verified=verified,
         open_alerts=open_alerts, pending_mutations=pending_mutations,
-        active_encumbrances=encumbrances,
+        active_encumbrances=encumbrances, settled_this_month=settled, hearings_upcoming=hearings,
         ledger_status=chain["status"], ledger_entries=chain["entries"],
     )  # fmt: skip
 

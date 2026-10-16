@@ -25,6 +25,7 @@ export interface MutationQueueItem {
   status_changed_at: string;
   decided_at: string | null;
   source: string;
+  hearing_at?: string | null;
 }
 
 export interface MutationList {
