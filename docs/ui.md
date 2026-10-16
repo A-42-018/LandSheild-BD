@@ -470,3 +470,10 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 - **Guides** are stored and served (`kind=GUIDE`) but no public page shows them yet: that page is U4.1.
 - Not done: reordering by drag, a preview, scheduling a notice for a future date (a future `published_on` shows now), rich text (plain text; line breaks kept in FAQ answers only). The 30-second request cache means a new notice can take up to a minute to appear for a visitor who already has the page open.
 - Tests: `backend/tests/test_content.py`, `features/admin/content.test.tsx`, `features/notices/useNotices.test.tsx`; the old ticker, landing and FAQ tests pass unchanged on the fallback.
+
+## U3.7 — Role-aware header (roadmap §6, Phase 3)
+- **Role badge**: the Bangla role name (নাগরিক / পর্যালোচক / কর্মকর্তা / প্রশাসক, from `roles.*`) now sits in the header bar beside the account button (hidden below 640 px; the account panel still shows it).
+- **Bell** (`components/NotificationBell.tsx`): citizens only. Links to `/my/notifications`, shows the unread count (from `useSummary`, capped at "99+", Bangla digits in bn) and an accessible name "বিজ্ঞপ্তি, N টি অপঠিত". Staff have no watch list, so a bell would always be empty; it is not shown to them or to anonymous visitors.
+- **"আমার ড্যাশবোর্ড"** is the first entry in the account panel for every role and goes to `redirectFor(role)` (`/my`, `/officer/review`, `/officer`, `/admin`). That page is removed from the list below it so it is not listed twice.
+- Not done: live updates (the count refreshes with the other `/me` queries, not by polling), a notification drop-down preview, a bell for staff.
+- Tests: `components/header.test.tsx` (badge per role, shortcut target per role, bell visibility/count/cap).

@@ -42,7 +42,10 @@
     "citizenLogin": "Citizen sign in",
     "officerLogin": "Officer sign in",
     "myArea": "My land services",
-    "admin": "Administration"
+    "admin": "Administration",
+    "myDashboard": "My dashboard",
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {count} unread"
   },
   "errors": {
     "generic": "We couldn't process this document. Please check the file and try again.",
