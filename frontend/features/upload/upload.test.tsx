@@ -110,7 +110,7 @@ describe("UploadForm", () => {
     const f = pdf();
     choose(f);
     fireEvent.change(screen.getByLabelText(en.upload.type), { target: { value: "KHATIAN" } });
-    fireEvent.change(screen.getByLabelText(en.upload.landId), { target: { value: "lp-10100" } });
+    fireEvent.change(screen.getByLabelText(en.upload.landId), { target: { value: "lp-১০১০০" } });
     fireEvent.click(screen.getByRole("button", { name: en.upload.submit }));
     await screen.findByTestId("upload-result");
     const form = upload.mock.calls[0][1] as FormData;

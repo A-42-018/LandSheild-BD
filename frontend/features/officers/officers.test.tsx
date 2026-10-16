@@ -80,9 +80,9 @@ describe("officer signup", () => {
     fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "long-enough-1" } });
     fireEvent.change(screen.getByLabelText(/Designation/), { target: { value: "Tahsildar" } });
     fireEvent.change(screen.getByLabelText(/employee ID/), { target: { value: "EMP-1" } });
-    fireEvent.change(screen.getByLabelText(/Mobile/), { target: { value: "+8801711000000" } });
+    fireEvent.change(screen.getByLabelText(/Mobile/), { target: { value: "+৮৮০১৭১১০০০০০০" } }); // Bangla digits are sent as ASCII
     fireEvent.click(screen.getByRole("button", { name: "Send request" }));
-    await waitFor(() => expect(post).toHaveBeenCalledWith("/offices/officer-requests", expect.objectContaining({ office_id: "o1", email: "rina@office.gov.bd" })));
+    await waitFor(() => expect(post).toHaveBeenCalledWith("/offices/officer-requests", expect.objectContaining({ office_id: "o1", email: "rina@office.gov.bd", phone: "+8801711000000" })));
     expect(await screen.findByTestId("signup-done")).toHaveTextContent("Your account stays inactive");
   });
 

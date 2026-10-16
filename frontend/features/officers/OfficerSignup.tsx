@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { AlertCircle, CheckCircle2, MapPin, UserPlus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
+import { normalizeDigits } from "@/lib/intl-locale";
 import { Button, Input } from "@/components/ui";
 import AuthShell from "@/features/auth/AuthShell";
 import PasswordInput from "@/features/auth/PasswordInput";
@@ -40,7 +41,7 @@ export default function OfficerSignup() {
     email: !EMAIL.test(f.email.trim()),
     password: f.password.length < 8,
     designation: f.designation.trim().length < 2,
-    phone: !PHONE.test(f.phone.trim()),
+    phone: !PHONE.test(normalizeDigits(f.phone.trim())),
     employee_id: f.employee_id.trim().length < 2,
     office: !officeId,
   };
@@ -58,7 +59,7 @@ export default function OfficerSignup() {
         preferred_language: locale === "bn" ? "bn" : "en",
         office_id: officeId,
         designation: f.designation.trim(),
-        phone: f.phone.trim(),
+        phone: normalizeDigits(f.phone.trim()),
         employee_id: f.employee_id.trim(),
         proof_note: f.proof_note.trim() || undefined,
       },
