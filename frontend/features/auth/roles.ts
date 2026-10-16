@@ -20,7 +20,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", labelKey: "nav.home", primary: true },
   { href: "/about", labelKey: "nav.about" },
-  { href: "/verify", labelKey: "nav.verify", roles: ROLES, primary: true },
+  { href: "/verify", labelKey: "nav.verify", primary: true }, // U2.2: public (masked summary)
   { href: "/check", labelKey: "nav.check", roles: ROLES, primary: true },
   { href: "/track", labelKey: "nav.track", primary: true },
   { href: "/verify-document", labelKey: "nav.verifyDoc", primary: true },
