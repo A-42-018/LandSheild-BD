@@ -350,3 +350,11 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 - নামজারির অবস্থা checks the number like `/track` does (MUT-YYYY-NNNN or FB-YYYY-NNNNN), then opens `/track?no=…`; `TrackView` reads `?no=` on arrival and looks it up.
 - দলিল / কিউআর যাচাই links to `/verify-document` (the copy upload) and takes a pasted QR link or land ID. `qrTarget` keeps only the `/v/{id}` path and the `d`/`h` seal, so a pasted link from any host still opens our own page. Camera scanning is U5.1.
 - At 360 px the tab labels use `px-2` so the Bangla words wrap whole; the hero search button spans the full row below `lg`.
+
+## U1.4 — Notice ticker and dated notice list (roadmap §6, Phase 1)
+- `components/NoticeTicker.tsx` renders in the locale layout right under `Header` (not sticky: it scrolls away, the header keeps its height). A light `primary-soft` strip with a "নোটিশ" chip, the scrolling notices, a pause button and "সব নোটিশ" (`/#notices-title`). Each item is a dated link to its card on the home page notice board (`/#notice-n1` …).
+- One data source: `features/notices/notices.ts` (`id`, `date`, `ticker`). The board shows every notice; the ticker shows only those with `ticker: true` (n3 is board-only). U3.6 replaces this list with admin-managed notices and keeps the flag. Copy stays in `landing.notices.items.<id>`; the ticker's own strings are in the new `ticker` namespace (both locales).
+- Motion (WCAG 2.2.2): the loop is CSS only (`.ticker-track` in `globals.css`, 45 s, two equal copies, −50 %), and only under `prefers-reduced-motion: no-preference`. It pauses with the button (`aria-pressed`), on hover and on keyboard focus. With "reduce motion" nothing moves: the row scrolls by hand, and the loop copy and the pause button are hidden. The loop copy is `aria-hidden` and its links are `tabindex=-1`, so screen readers and Tab see each notice once.
+- Dates use `Intl.DateTimeFormat(intlLocale(locale), { dateStyle: "medium" })` (Bangla digits in bn). Targets are 36 px on desktop and 48 px on touch screens (`pointer: coarse`).
+- Board cards got `id="notice-…"` and `scroll-mt-28` so an anchor jump clears the sticky header.
+- Tests: `components/NoticeTicker.test.tsx` (flagged notices only, anchors, hidden loop copy, Bangla digits, pause, axe), board ids and date in `features/landing/landing.test.tsx`.

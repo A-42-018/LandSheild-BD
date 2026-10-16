@@ -411,6 +411,21 @@
 /* Long Bangla words, land IDs and e-mail addresses wrap instead of widening the page (P54). */
 body { overflow-wrap: break-word; }
 
+/* Notice ticker (U1.4, components/NoticeTicker.tsx): scrolls only when motion is allowed; paused by its button, hover or focus.
+   Two equal copies of the list make the -50% loop seamless. With "reduce motion" nothing moves: the row scrolls by hand, the loop copy
+   and the pause button (nothing to pause) are hidden. */
+@media (prefers-reduced-motion: no-preference) {
+  .ticker-track { animation: ticker-scroll 45s linear infinite; }
+  .ticker[data-paused="true"] .ticker-track,
+  .ticker:hover .ticker-track,
+  .ticker:focus-within .ticker-track { animation-play-state: paused; }
+}
+@keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .ticker-viewport { overflow-x: auto; }
+  .ticker-copy, .ticker-pause { display: none; }
+}
+
 /* Respect the OS "reduce motion" setting (P54). */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

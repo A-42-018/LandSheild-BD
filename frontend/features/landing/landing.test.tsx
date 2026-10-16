@@ -9,7 +9,8 @@ import { qrTarget } from "./HeroSearch";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import type { ApiClient } from "@/lib/api";
 import Footer from "./Footer";
-import { HowItWorks, ServiceTiles, Trust, WhatWeCheck } from "./Sections";
+import { HowItWorks, NoticeBoard, ServiceTiles, Trust, WhatWeCheck } from "./Sections";
+import { NOTICES } from "@/features/notices/notices";
 import AboutPage from "../../app/[locale]/about/page";
 
 const push = vi.fn();
@@ -105,6 +106,13 @@ describe("landing sections (U5)", () => {
     render(wrap(<Footer />));
     expect(screen.getByRole("navigation", { name: en.landing.footerNav })).toBeInTheDocument();
     expect(screen.getByText(en.landing.disclaimer)).toBeInTheDocument();
+  });
+  it("notice board lists every notice with a date and an anchor for the ticker links (U1.4)", () => {
+    render(wrap(<NoticeBoard />, "bn"));
+    const items = screen.getAllByTestId("notice-item");
+    expect(items).toHaveLength(NOTICES.length);
+    expect(items.map((li) => li.id)).toEqual(NOTICES.map((n) => `notice-${n.id}`));
+    expect(items[0]).toHaveTextContent("১৪ অক্টোবর, ২০২৬");
   });
   it("about page has purpose, limitations, demo data and non-legal notice", () => {
     render(wrap(<AboutPage params={{ locale: "en" }} />));

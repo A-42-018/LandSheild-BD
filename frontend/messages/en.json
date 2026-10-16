@@ -1094,6 +1094,13 @@
     "contrast": "High contrast",
     "today": "Today's date"
   },
+  "ticker": {
+    "label": "Latest notices",
+    "badge": "Notices",
+    "pause": "Pause scrolling notices",
+    "play": "Resume scrolling notices",
+    "all": "All notices"
+  },
   "mutation": {
     "title": "e-Mutation applications",
     "detailTitle": "Mutation",
