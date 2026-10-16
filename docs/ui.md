@@ -123,6 +123,18 @@ Contrast of the level word (WCAG, needs ≥ 4.5; locked in `tests/ui-regression.
 
 Tests: `components/domain/RiskIndicator.test.tsx` checks every level × size × locale for tone, a hidden icon, the word and the "Risk:" prefix, and that no digits appear. It also checks distinct icon shapes, the unknown fallback, Bangla strings and axe. `features/risk/risk.test.tsx` checks the level headline and the Bangla-digit score line.
 
+# Office dashboard + hearing calendar (U3.4, 2026-10-17)
+
+Roadmap §4.4 / §6 Phase 3. Officers land on `/officer` ("অফিস ড্যাশবোর্ড"); the hearing calendar is `/officer/hearings` (officers and admins; in their menu as "শুনানির ক্যালেন্ডার").
+
+- **Office-scoped KPIs**: `GET /officer/stats` now follows the same scope as the queue and the case list. An office officer counts their own office and the offices beneath it (district > upazila > union); admins, reviewers and the seeded demo officer count everything. The ledger tile stays system-wide because the chain is one chain. Two new tiles: "এই মাসে নিষ্পত্তি" (mutation cases approved or rejected since the 1st, Dhaka time) and "আগামী ৭ দিনে শুনানি". The existing tiles already cover অপেক্ষমাণ পর্যালোচনা, ঝুঁকি সতর্কতা and নামজারি সিদ্ধান্ত বাকি (`pending_mutations`).
+- **Hearing date** (new column `mutation_records.hearing_at`, migration 0014). Set with `to: HEARING` + optional `hearing_at` on `POST /mutations/{id}/transition`, or later with `POST /mutations/{id}/hearing` (OFFICER_UP, only while the case is in HEARING, not in the past, audited as `MUTATION_HEARING_SET` with the old and new value). Moving a case into HEARING again clears the old date. Cases the pre-checks send to HEARING have no date until an officer sets one. Stored in UTC, whatever offset was sent.
+- **Calendar** (`features/hearings/`): `GET /mutations/hearings?month=YYYY-MM[&division&district&upazila&office_id]` returns the month's cases (month edges in Dhaka time, office-scoped) and `unscheduled` (HEARING with no date). The page is a Sunday-first grid (রবি … শনি), Bangla digits and month names through `Intl`, a count on each day, a panel for the open day (time, case, land, applicant, status) and a "তারিখ ঠিক হয়নি" list. Day and time are read in Bangladesh time, so a hearing at 00:30 on the 21st does not land on the 20th. Division / district / upazila filter reuses `AreaFilter`. Case page (`HearingPanel`): shows the date; officers can set or move it.
+- Not done: বঙ্গাব্দ month names in the grid (Gregorian grid with Bangla labels only), notifying the applicant of a hearing date (U3.7 bell), reminders. The reviewer menu does not show the calendar.
+- **Still open** (from U3.3): the officer dashboard still shows the alert list to reviewers, because they can escalate alerts there. Roadmap §4.3 says to hide office-wide alerts from reviewers. Decide before U3.5.
+- Tests: backend `tests/test_hearings.py` (transition + set + move audited, validation, month edges, roles, office scope, scoped stats), authz matrix and audit-coverage rows for the two routes; frontend `features/hearings/hearings.test.tsx` (Dhaka-day grouping, Sunday-first grid, Bangla digits, month change, set-date form, axe).
+- Not run: browser check, Playwright e2e, screen reader.
+
 # Reviewer home `/officer/review` — "আজকের কাজ" (U3.3, 2026-10-17)
 
 Roadmap §4.3 / §6 Phase 3. Reviewers land here after sign-in (`redirectFor("REVIEWER")` = `/officer/review`); the sidebar has "আজকের কাজ" first (reviewers only). Officers and admins can open the URL but it is not in their menu.

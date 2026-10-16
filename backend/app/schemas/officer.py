@@ -30,6 +30,8 @@ class OfficerStats(BaseModel):
     open_alerts: int = 0
     pending_mutations: int = 0
     active_encumbrances: int = 0
+    settled_this_month: int = 0  # mutation cases approved or rejected this month (Dhaka time)
+    hearings_upcoming: int = 0  # hearings in the next 7 days
     ledger_status: str = "INTACT"  # INTACT | BROKEN (status + entry count only, no detail)
     ledger_entries: int = 0
 

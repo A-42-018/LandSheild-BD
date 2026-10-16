@@ -691,7 +691,8 @@
       "mutations": "Mutations",
       "archive": "Archive search",
       "feedback": "Feedback and grievance",
-      "today": "Today's work"
+      "today": "Today's work",
+      "hearings": "Hearing calendar"
     },
     "kpi": {
       "title": "Key figures",
@@ -705,7 +706,9 @@
       "ledger": "Ledger integrity",
       "ledgerIntact": "Intact",
       "ledgerBroken": "Broken",
-      "ledgerEntries": "{count} entries"
+      "ledgerEntries": "{count} entries",
+      "settled_this_month": "Settled this month",
+      "hearings_upcoming": "Hearings in the next 7 days"
     },
     "queue": {
       "title": "Verification queue",
@@ -2170,6 +2173,40 @@
         "decision": "Decision",
         "reason": "Reason for rejection",
         "when": "Decided"
+      }
+    }
+  },
+  "hearings": {
+    "title": "Hearing calendar",
+    "purpose": "See which mutation case is heard on which day.",
+    "area": "Show by area",
+    "monthNav": "Change month",
+    "prev": "Previous month",
+    "next": "Next month",
+    "today": "Today",
+    "gridLabel": "Hearings in {month}",
+    "dayWith": "{date}, {count, plural, one {# hearing} other {# hearings}}",
+    "noDay": "No day selected",
+    "noneThisDay": "No hearings on this day.",
+    "open": "Open mutation {no}",
+    "unscheduled": {
+      "title": "No date yet",
+      "hint": "These cases are in hearing, but no day has been set.",
+      "none": "No hearings without a date"
+    },
+    "panel": {
+      "title": "Hearing date",
+      "none": "Not scheduled yet",
+      "date": "Date",
+      "time": "Time",
+      "set": "Set date",
+      "move": "Change date",
+      "saved": "Hearing date saved.",
+      "hint": "In Bangladesh time.",
+      "errors": {
+        "past": "The date cannot be in the past.",
+        "required": "Enter a date.",
+        "failed": "Could not save the date. Try again."
       }
     }
   }
