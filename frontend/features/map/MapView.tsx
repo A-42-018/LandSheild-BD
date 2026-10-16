@@ -34,7 +34,6 @@ const GLASS = "border border-line/80 bg-surface/90 shadow-glass backdrop-blur-md
 const GLASS_FIELDS =
   "[&_label]:text-xs [&_input:not([type=checkbox])]:py-1.5 [&_select]:py-1.5 [&_button]:py-1.5 [&_button]:text-sm";
 
-const PAD = "px-4 sm:px-6 lg:px-8";
 
 const TILE_URL = resolveTileUrl(process.env.NEXT_PUBLIC_MAP_TILE_URL);
 const ATTRIBUTION =
@@ -179,10 +178,10 @@ export default function MapView() {
       className={
         fullscreen
           ? "flex flex-col gap-3 px-4"
-          : "relative left-1/2 flex w-[calc(100vw-0.5rem)] -translate-x-1/2 flex-col gap-2"
+          : "flex w-full min-w-0 flex-col gap-2" // inside the page column: a 100vw breakout overflowed under classic scrollbars and pushed the map controls off screen
       }
     >
-      <div className={`flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 ${PAD}`}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h1 className="text-xl font-semibold text-ink">{t("map.title")}</h1>
         <p
           role="note"
@@ -191,10 +190,10 @@ export default function MapView() {
           {t("common.demoLabel")}
         </p>
       </div>
-      <p className={`text-sm text-ink-muted ${PAD}`}>{t("map.intro")}</p>
+      <p className="text-sm text-ink-muted">{t("map.intro")}</p>
 
       {gisFailed && (
-        <div className={PAD}>
+        <div>
           <ErrorState
             message={t("map.gis.loadError")}
             onRetry={() => void divisions.refetch()}
@@ -207,7 +206,7 @@ export default function MapView() {
         className={
           fullscreen
             ? "fixed inset-0 z-[2000] isolate bg-surface"
-            : "relative isolate overflow-hidden border-y border-line shadow-card"
+            : "relative isolate overflow-hidden rounded-card border border-line shadow-card"
         }
       >
         <Suspense fallback={<LoadingState />}>
@@ -375,11 +374,11 @@ export default function MapView() {
         </section>
       </div>
 
-      <p className={`text-xs text-ink-muted ${PAD}`}>{t("map.mapHint")}</p>
-      <p className={`text-xs text-ink-muted ${PAD}`}>{t("map.gis.boundaryNote")}</p>
+      <p className="text-xs text-ink-muted">{t("map.mapHint")}</p>
+      <p className="text-xs text-ink-muted">{t("map.gis.boundaryNote")}</p>
 
       {showParcels && (
-        <div className={`flex flex-col gap-3 pb-4 ${PAD}`}>
+        <div className="flex flex-col gap-3 pb-4">
           {parcels}
         </div>
       )}
