@@ -620,6 +620,11 @@
       "intro": "Free calculators for buying, selling and inheriting land.",
       "cta": "All tools"
     },
+    "faq": {
+      "title": "Common questions",
+      "intro": "Short answers to what people ask first. The full list is one click away.",
+      "more": "More questions"
+    },
     "notices": {
       "title": "Notice board",
       "intro": "Sample notices about what changed in this prototype. They are synthetic, not official announcements.",

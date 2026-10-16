@@ -32,6 +32,8 @@ import { NOTICES, noticeAnchor } from "@/features/notices/notices";
 import { intlLocale } from "@/lib/intl-locale";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
+import FaqList from "@/features/info/FaqList";
+import { HOME_FAQ_IDS } from "@/features/info/pages";
 import { SERVICE_ART, TOOL_ART } from "./Illustrations";
 
 /** Services whose route is not built yet stay hidden until their F-phase lands (track = F2c, now live). */
@@ -221,6 +223,21 @@ export function NoticeBoard() {
         ))}
       </ul>
       <MoreLink href="/services">{t("services")}</MoreLink>
+    </Band>
+  );
+}
+
+/** Top five questions as an accordion; "আরও" opens the full list on /faq. */
+export function HomeFaq() {
+  const t = useTranslations("landing.faq");
+  return (
+    <Band id="faq-title">
+      <h2 id="faq-title" className={h2}>{t("title")}</h2>
+      <p className="mt-3 max-w-3xl text-ink-muted">{t("intro")}</p>
+      <div className="mt-6 max-w-3xl">
+        <FaqList ids={HOME_FAQ_IDS} testId="faq-item" />
+      </div>
+      <MoreLink href="/faq">{t("more")}</MoreLink>
     </Band>
   );
 }

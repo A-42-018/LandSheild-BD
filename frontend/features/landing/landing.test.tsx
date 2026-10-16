@@ -9,7 +9,8 @@ import { qrTarget } from "./HeroSearch";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import type { ApiClient } from "@/lib/api";
 import Footer from "./Footer";
-import { HowItWorks, NoticeBoard, ServiceTiles, Trust, WhatWeCheck } from "./Sections";
+import { HomeFaq, HowItWorks, NoticeBoard, ServiceTiles, Trust, WhatWeCheck } from "./Sections";
+import { HOME_FAQ_IDS } from "@/features/info/pages";
 import { NOTICES } from "@/features/notices/notices";
 import AboutPage from "../../app/[locale]/about/page";
 
@@ -113,6 +114,18 @@ describe("landing sections (U5)", () => {
     expect(items).toHaveLength(NOTICES.length);
     expect(items.map((li) => li.id)).toEqual(NOTICES.map((n) => `notice-${n.id}`));
     expect(items[0]).toHaveTextContent("১৪ অক্টোবর, ২০২৬");
+  });
+  it.each(["en", "bn"] as const)("home FAQ shows the top five as a collapsed accordion with a link to all (U1.5, %s)", (loc) => {
+    const m = loc === "en" ? en : bn;
+    render(wrap(<HomeFaq />, loc, null));
+    expect(screen.getByRole("heading", { level: 2, name: m.landing.faq.title })).toBeInTheDocument();
+    const items = screen.getAllByTestId("faq-item") as HTMLDetailsElement[];
+    expect(items).toHaveLength(5);
+    expect(items.map((d) => d.querySelector("summary")?.textContent)).toEqual(HOME_FAQ_IDS.map((id) => m.info.faq[id].q));
+    expect(items.every((d) => !d.open)).toBe(true);
+    fireEvent.click(items[0].querySelector("summary")!);
+    expect(items[0].open).toBe(true);
+    expect(screen.getByRole("link", { name: m.landing.faq.more })).toHaveAttribute("href", "/faq");
   });
   it("about page has purpose, limitations, demo data and non-legal notice", () => {
     render(wrap(<AboutPage params={{ locale: "en" }} />));

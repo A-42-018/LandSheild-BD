@@ -358,3 +358,10 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 - Dates use `Intl.DateTimeFormat(intlLocale(locale), { dateStyle: "medium" })` (Bangla digits in bn). Targets are 36 px on desktop and 48 px on touch screens (`pointer: coarse`).
 - Board cards got `id="notice-…"` and `scroll-mt-28` so an anchor jump clears the sticky header.
 - Tests: `components/NoticeTicker.test.tsx` (flagged notices only, anchors, hidden loop copy, Bangla digits, pause, axe), board ids and date in `features/landing/landing.test.tsx`.
+
+## U1.5 — Home FAQ accordion (roadmap §6, Phase 1)
+- `HomeFaq` in `features/landing/Sections.tsx`, last band on the home page (after Trust): heading `landing.faq.title`, one line of intro, five questions and an "আরও" link to `/faq`.
+- The accordion is `features/info/FaqList.tsx`, shared with the `/faq` page (which lists all nine). It is native `<details>/<summary>`, so it works without script and with the keyboard and screen readers; all items start closed, and each question is a 44 px+ target. Answers are the existing `info.faq.<id>` copy: nothing is written twice.
+- Which five: `HOME_FAQ_IDS` in `features/info/pages.ts` = q1 (what is it), q2 (is it official), q4 (how to check a plot), q5 (what the risk level means), q6 (can I rely on it). Change that list to change the home page; `FaqId` is typed from `FAQ_IDS`.
+- "আরও" is a link, not an in-place expander: the full list already lives on `/faq` (with the page-helpful rating), so there is one place to maintain.
+- Tests: `landing.test.tsx` (five questions in order, all closed, opens on click, link to `/faq`, EN and BN). The jsdom and Playwright axe suites already cover the home page and `/faq`.
