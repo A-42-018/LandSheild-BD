@@ -620,6 +620,13 @@
       "intro": "Free calculators for buying, selling and inheriting land.",
       "cta": "All tools"
     },
+    "help": {
+      "title": "Still stuck? Call us.",
+      "body": "The land services hotline answers questions about land records, mutation and fees.",
+      "note": "16122 is the government land services line. LandShield BD is a demonstration project and is not run by the ministry.",
+      "call": "Call the land services hotline",
+      "write": "Or write to us"
+    },
     "faq": {
       "title": "Common questions",
       "intro": "Short answers to what people ask first. The full list is one click away.",
@@ -1105,6 +1112,17 @@
     "pause": "Pause scrolling notices",
     "play": "Resume scrolling notices",
     "all": "All notices"
+  },
+  "help": {
+    "button": "Help",
+    "panelLabel": "Get help",
+    "title": "How can we help?",
+    "links": {
+      "faq": "Common questions",
+      "guide": "Guide: how to use this site",
+      "feedback": "Send feedback"
+    },
+    "call": "Call the land services hotline"
   },
   "mutation": {
     "title": "e-Mutation applications",

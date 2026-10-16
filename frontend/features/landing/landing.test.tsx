@@ -9,7 +9,7 @@ import { qrTarget } from "./HeroSearch";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import type { ApiClient } from "@/lib/api";
 import Footer from "./Footer";
-import { HomeFaq, HowItWorks, NoticeBoard, ServiceTiles, Trust, WhatWeCheck } from "./Sections";
+import { HelpStrip, HomeFaq, HowItWorks, NoticeBoard, ServiceTiles, Trust, WhatWeCheck } from "./Sections";
 import { HOME_FAQ_IDS } from "@/features/info/pages";
 import { NOTICES } from "@/features/notices/notices";
 import AboutPage from "../../app/[locale]/about/page";
@@ -133,5 +133,23 @@ describe("landing sections (U5)", () => {
     for (const h of [en.about.purpose.title, en.about.limits.title, en.about.demo.title, en.about.notice.title])
       expect(screen.getByRole("heading", { level: 2, name: h })).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(5); // 4 limits + the Home breadcrumb
+  });
+});
+
+describe("hotline strip (U1.6)", () => {
+  it("offers the hotline as a tap-to-call link with the number in the page language", () => {
+    render(wrap(<HelpStrip />, "en", null));
+    expect(screen.getByRole("heading", { name: en.landing.help.title })).toBeInTheDocument();
+    expect(screen.getByTestId("hotline-link")).toHaveAttribute("href", "tel:16122");
+    expect(screen.getByTestId("hotline-link")).toHaveTextContent("16122");
+    expect(screen.getByRole("link", { name: en.landing.help.write })).toHaveAttribute("href", "/feedback");
+  });
+
+  it("uses Bangla digits in Bangla, still dialling 16122, and says the ministry does not run the demo", () => {
+    render(wrap(<HelpStrip />, "bn", null));
+    expect(screen.getByTestId("hotline-link")).toHaveTextContent("১৬১২২");
+    expect(screen.getByTestId("hotline-link")).toHaveAttribute("href", "tel:16122");
+    expect(screen.getByText(bn.landing.help.note)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: bn.landing.help.title }).textContent).not.toMatch(/[0-9]/);
   });
 });

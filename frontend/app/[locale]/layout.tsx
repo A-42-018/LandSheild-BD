@@ -9,6 +9,7 @@ import TopStrip from "@/components/TopStrip";
 import NoticeTicker from "@/components/NoticeTicker";
 import PublicBackdrop from "@/features/landing/PublicBackdrop";
 import Footer from "@/features/landing/Footer";
+import HelpButton from "@/components/HelpButton";
 import PageHelpful from "@/features/feedback/PageHelpful";
 import Providers from "@/features/Providers";
 import "../globals.css";
@@ -74,6 +75,7 @@ export default async function LocaleLayout({
             <PageHelpful />
           </main>
           <Footer />
+          <HelpButton />
           </Providers>
         </NextIntlClientProvider>
       </body>

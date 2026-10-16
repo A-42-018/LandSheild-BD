@@ -11,6 +11,7 @@ import {
   FlaskConical,
   Gavel,
   Landmark,
+  Phone,
   ListChecks,
   QrCode,
   Route,
@@ -29,11 +30,12 @@ import { useLocale, useTranslations } from "next-intl";
 import Reveal from "@/components/Reveal";
 import ArtCard from "@/components/ArtCard";
 import { NOTICES, noticeAnchor } from "@/features/notices/notices";
-import { intlLocale } from "@/lib/intl-locale";
+import { intlLocale, localDigits } from "@/lib/intl-locale";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import FaqList from "@/features/info/FaqList";
 import { HOME_FAQ_IDS } from "@/features/info/pages";
+import { HOTLINE } from "@/features/help/help";
 import { SERVICE_ART, TOOL_ART } from "./Illustrations";
 
 /** Services whose route is not built yet stay hidden until their F-phase lands (track = F2c, now live). */
@@ -239,5 +241,38 @@ export function HomeFaq() {
       </div>
       <MoreLink href="/faq">{t("more")}</MoreLink>
     </Band>
+  );
+}
+
+/** Hotline strip (U1.6), last band on the home page: "still stuck?" with the number as a big tap-to-call link and a way to write instead. */
+export function HelpStrip() {
+  const t = useTranslations("landing.help");
+  const locale = useLocale();
+  return (
+    <section aria-labelledby="help-title" className="relative py-10 sm:py-14">
+      <Reveal>
+        <div className="section-panel flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div className="min-w-0">
+            <h2 id="help-title" className={h2}>{t("title")}</h2>
+            <p className="mt-2 max-w-xl text-ink-muted">{t("body")}</p>
+            <p className="mt-2 text-sm text-ink-muted">{t("note")}</p>
+          </div>
+          <div className="flex shrink-0 flex-col gap-3 sm:items-end">
+            <a
+              href={`tel:${HOTLINE}`}
+              data-testid="hotline-link"
+              aria-label={`${t("call")} ${localDigits(HOTLINE, locale)}`}
+              className={`btn-gold inline-flex min-h-touch items-center justify-center gap-3 rounded-lg px-6 py-2 text-2xl font-extrabold ${focus}`}
+            >
+              <Phone aria-hidden="true" className="h-6 w-6" />
+              {localDigits(HOTLINE, locale)}
+            </a>
+            <Link href="/feedback" className={`inline-flex min-h-touch items-center justify-center rounded-md px-2 font-semibold text-primary underline-offset-4 hover:underline ${focus}`}>
+              {t("write")}
+            </Link>
+          </div>
+        </div>
+      </Reveal>
+    </section>
   );
 }
