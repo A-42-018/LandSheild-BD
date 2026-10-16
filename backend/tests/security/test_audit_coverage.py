@@ -38,6 +38,12 @@ AUDIT = {
     ("POST", f"{P}/offices/officer-requests"): "OFFICER_REQUEST",
     ("POST", f"{P}/admin/officer-requests/{{request_id}}/approve"): "OFFICER_REQUEST_APPROVE",
     ("POST", f"{P}/admin/officer-requests/{{request_id}}/reject"): "OFFICER_REQUEST_REJECT",
+    ("DELETE", f"{P}/me/searches"): "SEARCH_HISTORY_CLEAR",
+    ("POST", f"{P}/me/watchlist"): "WATCHLIST_ADD",
+    ("DELETE", f"{P}/me/watchlist/{{land_id}}"): "WATCHLIST_REMOVE",
+    ("POST", f"{P}/me/notifications/read"): None,  # U3.2: own inbox read state, nothing anyone else sees; would drown the log
+    ("PATCH", f"{P}/me/profile"): "PROFILE_UPDATE",
+    ("POST", f"{P}/me/password"): "PASSWORD_CHANGE",
 }
 
 
@@ -180,6 +186,23 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     _audited(env, "FEEDBACK_UPDATE", lambda: env.patch(
         f"{P}/feedback/{fid}", json={"status": "IN_REVIEW"}, headers=off))  # fmt: skip
     mark("PATCH", f"{P}/feedback/{{feedback_id}}")
+
+    cit = heads["CITIZEN"]
+    _audited(env, "WATCHLIST_ADD", lambda: env.post(f"{P}/me/watchlist", json={"land_id": "LP-10001"}, headers=cit))
+    mark("POST", f"{P}/me/watchlist")
+    _audited(env, "WATCHLIST_REMOVE", lambda: env.delete(f"{P}/me/watchlist/LP-10001", headers=cit))
+    mark("DELETE", f"{P}/me/watchlist/{{land_id}}")
+    _audited(env, "SEARCH_HISTORY_CLEAR", lambda: env.delete(f"{P}/me/searches", headers=cit))
+    mark("DELETE", f"{P}/me/searches")
+    before = _ids(env)
+    assert env.post(f"{P}/me/notifications/read", json={}, headers=cit).status_code == 200
+    mark("POST", f"{P}/me/notifications/read")
+    assert _ids(env) == before, "marking notifications read must not write audit rows"
+    _audited(env, "PROFILE_UPDATE", lambda: env.patch(f"{P}/me/profile", json={"phone": "01711000000"}, headers=cit))
+    mark("PATCH", f"{P}/me/profile")
+    _audited(env, "PASSWORD_CHANGE", lambda: env.post(f"{P}/me/password", json={
+        "current_password": "correct-horse-1", "new_password": "correct-horse-2"}, headers=cit))  # fmt: skip
+    mark("POST", f"{P}/me/password")
 
     assert ran == set(AUDIT), f"write routes with no scenario: {set(AUDIT) - ran}"
 

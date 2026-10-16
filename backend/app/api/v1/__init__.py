@@ -11,6 +11,7 @@ from app.api.v1 import (
     health,
     lands,
     map,
+    me,
     mutations,
     officer,
     offices,
@@ -37,5 +38,6 @@ api_router.include_router(officer.router)
 api_router.include_router(feedback.router)
 api_router.include_router(risk.router)
 api_router.include_router(verification.router)
+api_router.include_router(me.router)
 api_router.include_router(public.router)
 api_router.include_router(rbac_stub.router)

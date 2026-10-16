@@ -123,6 +123,27 @@ Contrast of the level word (WCAG, needs ≥ 4.5; locked in `tests/ui-regression.
 
 Tests: `components/domain/RiskIndicator.test.tsx` checks every level × size × locale for tone, a hidden icon, the word and the "Risk:" prefix, and that no digits appear. It also checks distinct icon shapes, the unknown fallback, Bangla strings and axe. `features/risk/risk.test.tsx` checks the level headline and the Bangla-digit score line.
 
+# Citizen area `/my` — "আমার ভূমি সেবা" (U3.2, 2026-10-17)
+
+Roadmap §4.2 / §6 Phase 3. Citizens land here after sign-in (`redirectFor("CITIZEN")` = `/my`); the account menu has "আমার ভূমি সেবা" (`nav.myArea`, citizens only). Staff opening `/my` get the permission message; anonymous visitors go to `/login?next=…`.
+
+| Route | Screen (BN / EN) | What it shows |
+|---|---|---|
+| `/my` | আমার ড্যাশবোর্ড / My dashboard | Greeting, 3 big buttons (জমি যাচাই · কেনার আগে যাচাই · নামজারির অবস্থা), 4 count tiles, latest notifications, last searched parcels, latest reports |
+| `/my/searches` | আমার অনুসন্ধান / My searches | Parcels the citizen opened, newest first, with "আবার দেখুন" and the watch button; "ইতিহাস মুছুন" asks first |
+| `/my/watchlist` | নজরে রাখা জমি / Watched land | Watched parcels (max 20), note, "since" date, unread-update badge |
+| `/my/reports` | আমার প্রতিবেদন / My reports | Own verification reports with the risk indicator; opens `/report/{id}` (print/PDF + QR live there) |
+| `/my/notifications` | বিজ্ঞপ্তি / Notifications | Inbox; unread rows tinted with a "নতুন" chip; opening one marks it read; "সব পড়া হয়েছে"; "শুধু না-পড়া দেখুন" filter |
+| `/my/profile` | প্রোফাইল ও নিরাপত্তা / Profile and security | Name, mobile (Bangla digits accepted), site language (switches the locale when changed), password change |
+
+- Shell `features/my/MyShell.tsx`: sticky side menu on desktop with the name card; on phones the six sections are a row of tabs that scrolls sideways and always keeps the current one in view (no hidden drawer). The Notifications tab carries the unread count in BN digits.
+- Result page: "নজরে রাখুন / নজর থেকে সরান" (`features/my/WatchButton.tsx`) next to "যাচাই প্রতিবেদন তৈরি করুন". Secondary style, so the report stays the one primary button. Hidden for staff.
+- Data (backend migration `0013`): `search_history` (one row per user + parcel; a repeat within 60 s counts once, so search → result page is one visit), `watchlist` (`checked_at` = window already turned into notifications), `notifications` (`kind` + `data` codes, `read_at`), `users.phone`. Only CITIZEN accounts collect history and notifications.
+- Notification kinds: `WATCH_TRANSACTION`, `WATCH_MUTATION`, `WATCH_MUTATION_STATUS`, `WATCH_ENCUMBRANCE` (made when the citizen opens the area, from records newer than `checked_at`), `REPORT_READY` (on `POST /verification`). Sentences in `my.notes.kind.*` reuse `result.txType`, `result.encType`, `status`, `risk.level`. Two requests checking at once (badge + inbox) claim the window with a conditional update in the same transaction as the inserts, so nothing doubles and the loser reads the finished inbox.
+- Not here (later tasks): bell icon in the header (U3.7), SMS/e-mail delivery, editing a watch note in the UI (the API accepts `note`), "কেনার আগে যাচাই (পূর্ণ)" stays at `/check`.
+- Tests: backend `tests/test_me.py` (24) + authz matrix and audit coverage rows for the 11 routes; frontend `features/my/my.test.tsx` (19, incl. axe on dashboard, searches, reports, notifications, profile), `features/auth/auth.test.tsx` (citizen → `/my`), e2e `guards.spec.ts` (`/my` guard, not run here).
+- Checked in the browser (dev server on a fresh migrated DB, BN + EN): citizen sign-in lands on `/my`; watching LP-10100 and generating a report fill the dashboard; a court case, mortgage and acquisition added to LP-10100 appear once each in the inbox with the badge in step; mark-all-read; profile save with a Bangla-digit mobile number; 375 px has no sideways scroll. Not run: Playwright e2e, screen reader.
+
 # Role-based sign-in (U3.1, 2026-10-17)
 
 Roadmap §6 Phase 3. Two sign-in pages, one form.
@@ -133,7 +154,7 @@ Roadmap §6 Phase 3. Two sign-in pages, one form.
 | `/officer-login` | "Staff sign in" (reviewer, officer, admin) | reviewer, officer, admin | Staff sign in |
 
 - `LoginForm` takes `audience="citizen" | "staff"` (copy, demo accounts, active tab). Both pages accept every role: the account decides where you land, not the page you used.
-- After sign-in: explicit `?next=` (checked by `safeNext`) wins, otherwise `redirectFor(role)` in `features/auth/roles.ts`: CITIZEN → `/`, REVIEWER / OFFICER / ADMIN → `/officer`. Admin keeps `/officer` until U3.5 gives it `/admin`; change it in that one function.
+- After sign-in: explicit `?next=` (checked by `safeNext`) wins, otherwise `redirectFor(role)` in `features/auth/roles.ts`: CITIZEN → `/` (`/my` since U3.2), REVIEWER / OFFICER / ADMIN → `/officer`. Admin keeps `/officer` until U3.5 gives it `/admin`; change it in that one function.
 - `RequireRole` sends anonymous visitors to `loginPathFor(roles)`: `/officer-login?next=…` when only staff roles are allowed, `/login?next=…` otherwise. The idle-timeout sign-out and the officer-request "Sign in" links also go to `/officer-login`.
 - `AuthShell` has four tabs (2 × 2 on phones): Citizen sign in · Citizen sign up · Staff sign in · Officer request. New keys: `auth.staffTitle|staffIntro`, `authShell.tabStaff`; `authShell.tabLogin` now reads "Citizen sign in" / "নাগরিক সাইন ইন".
 - Sitemap lists the staff sign-in. Header and footer still link to `/login` (U1.2 turns the header link into a citizen / staff menu).

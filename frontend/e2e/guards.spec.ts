@@ -59,3 +59,23 @@ test.describe("role ladder", () => {
     await expect(page.getByText("You don't have permission to perform this action.").first()).toBeVisible();
   });
 });
+
+test.describe("citizen area /my (U3.2)", () => {
+  test("anonymous → citizen sign-in with next=", async ({ page }) => {
+    await page.goto("/en/my/watchlist");
+    await expect(page).toHaveURL(/\/en\/login\?next=%2Fmy%2Fwatchlist/);
+  });
+
+  test("citizen sees their dashboard", async ({ page }) => {
+    await signIn(page, "citizen");
+    await page.goto("/en/my");
+    await expect(page.getByRole("heading", { level: 1, name: /^Hello, / })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "My land services" })).toBeVisible();
+  });
+
+  test("staff get the permission message", async ({ page }) => {
+    await signIn(page, "officer");
+    await page.goto("/en/my");
+    await expect(page.getByText("You don't have permission to perform this action.").first()).toBeVisible();
+  });
+});

@@ -1,5 +1,6 @@
 from app.models.alert import FraudAlert
 from app.models.audit import AuditLog
+from app.models.citizen import Notification, SearchHistory, WatchlistItem
 from app.models.deed import Deed
 from app.models.document import Document
 from app.models.encumbrance import LandEncumbrance
@@ -46,15 +47,18 @@ __all__ = [
     "MutationRecord",
     "MutationSource",
     "MutationStatus",
+    "Notification",
     "OfficerRequest",
     "Owner",
     "OwnershipHistory",
     "RiskAssessment",
     "Role",
+    "SearchHistory",
     "Transaction",
     "TransactionStatus",
     "TransactionType",
     "User",
     "VerificationRequest",
     "VerificationStatus",
+    "WatchlistItem",
 ]
