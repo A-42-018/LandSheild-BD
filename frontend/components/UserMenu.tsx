@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Badge } from "@/components/ui";
+import HeaderDropdown from "./HeaderDropdown";
 import { useAuth } from "@/features/auth/AuthContext";
 import { activeNavHref, navItemsFor } from "@/features/auth/roles";
 
@@ -12,7 +13,7 @@ const ICON_BTN =
 
 /**
  * Right-most header control (UD10 sketch): a user icon.
- * Anonymous → link to sign in. Signed in → opens a panel with name + role, the pages that are
+ * Anonymous → "Sign in ▾" asking who they are (citizen / officer). Signed in → opens a panel with name + role, the pages that are
  * not in the header bar (role-filtered) and Sign out.
  */
 function initials(name: string): string {
@@ -45,13 +46,16 @@ export default function UserMenu() {
 
   if (status === "anonymous") {
     return (
-      <Link
-        href="/login"
-        className="btn-gold inline-flex h-10 items-center gap-2 rounded-lg px-4 text-sm font-bold uppercase tracking-[0.06em] transition-[filter] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-      >
-        <LogIn aria-hidden="true" className="h-4 w-4" />
-        {t("nav.login")}
-      </Link>
+      <HeaderDropdown
+        id="login-menu"
+        variant="action"
+        label={t("nav.login")}
+        icon={<LogIn aria-hidden="true" className="h-4 w-4" />}
+        items={[
+          { href: "/login", label: t("nav.citizenLogin") },
+          { href: "/login?as=officer", label: t("nav.officerLogin") },
+        ]}
+      />
     );
   }
   if (status !== "authenticated" || !user) return null;

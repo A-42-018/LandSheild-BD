@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastProvider } from "@/components/ui/Toast";
 import { AuthProvider } from "./auth/AuthContext";
-import { applyTheme, readTheme } from "@/lib/theme";
+import { applyContrast, applyTextSize, applyTheme, readContrast, readTextSize, readTheme } from "@/lib/theme";
 
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -16,6 +16,8 @@ export default function Providers({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     root.classList.add("theme-switching"); // no colour fade while the page repaints in the saved theme
     applyTheme(readTheme());
+    applyTextSize(readTextSize());
+    applyContrast(readContrast());
     window.setTimeout(() => root.classList.remove("theme-switching"), 150);
   }, []);
   return (

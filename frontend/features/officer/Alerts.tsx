@@ -6,7 +6,7 @@ import { ApiError } from "@/lib/api";
 import { Link } from "@/i18n/navigation";
 import { Badge, Button, Card, EmptyState, ErrorState, LoadingState, useToast } from "@/components/ui";
 import StatusBadge from "@/components/domain/StatusBadge";
-import { RISK_TONE } from "@/components/domain/RiskBadge";
+import { RISK_TONE } from "@/components/domain/RiskIndicator";
 import EvidenceList from "@/features/risk/EvidenceList";
 import { formatDateTime } from "@/features/result/format";
 import { useAuth } from "@/features/auth/AuthContext";

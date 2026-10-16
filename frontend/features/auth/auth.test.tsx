@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -47,6 +47,16 @@ beforeEach(() => {
 });
 
 describe("LoginForm", () => {
+  it("?as=officer (header Sign in ▾ → Officer sign in) shows the officer heading; the default heading is unchanged", () => {
+    wrap(<LoginForm />, fakeClient());
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(en.auth.loginTitle);
+    cleanup();
+    search = "as=officer";
+    wrap(<LoginForm />, fakeClient());
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(en.auth.officerLoginTitle);
+    expect(screen.getByText(en.auth.officerLoginIntro)).toBeInTheDocument();
+  });
+
   it("shows required errors and does not call login when empty", async () => {
     const c = fakeClient();
     wrap(<LoginForm />, c);
@@ -98,6 +108,16 @@ describe("RequireRole", () => {
     wrap(<RequireRole roles={["OFFICER"]}>secret</RequireRole>, fakeClient());
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/login?next=%2Fdashboard"));
     expect(screen.queryByText("secret")).not.toBeInTheDocument();
+  });
+
+  it("keeps the query in next, so a home-page search survives sign-in (U1.3)", async () => {
+    window.history.pushState({}, "", "/dashboard?district=Gazipur&dag=785");
+    try {
+      wrap(<RequireRole>secret</RequireRole>, fakeClient());
+      await waitFor(() => expect(replace).toHaveBeenCalledWith(`/login?next=${encodeURIComponent("/dashboard?district=Gazipur&dag=785")}`));
+    } finally {
+      window.history.pushState({}, "", "/");
+    }
   });
 
   it("shows permission message for wrong role", async () => {

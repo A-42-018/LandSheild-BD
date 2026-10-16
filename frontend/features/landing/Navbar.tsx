@@ -1,7 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import HeaderMenu from "@/components/HeaderMenu";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
 
 /** Decorative header texture: faint plot lines behind the logo and a "digital" column grid on the right. */
@@ -29,7 +28,7 @@ function HeaderArt() {
   );
 }
 
-/** Solid primary header with a 2 px accent rule; language and light/dark toggles sit in the bar next to the account button. */
+/** Solid primary header with a 2 px accent rule; the light/dark toggle sits in the bar next to the account button (language, text size and contrast are in TopStrip). */
 export default function Navbar() {
   const t = useTranslations("common");
   return (
@@ -44,17 +43,12 @@ export default function Navbar() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/brand/logo-mark.svg" alt="" width={64} height={64} className="h-10 w-10 object-contain drop-shadow-[0_2px_6px_rgb(0_0_0/0.45)]" />
             <span className="flex flex-col leading-tight">
-              <span className="font-display text-[1.2rem] font-extrabold uppercase leading-none tracking-[0.045em]">{t("appName")}</span>
+              <span className="font-display text-[1.2rem] font-extrabold uppercase leading-none tracking-[0.045em]">{t("brand")}</span>
               <span className="mt-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#E9DDB4]/85" lang="bn" aria-hidden="true">{t("subLine")}</span>
             </span>
           </Link>
           <HeaderMenu
-            controls={
-              <>
-                <LanguageSwitcher variant="header" />
-                <ThemeToggle variant="icon" />
-              </>
-            }
+            controls={<ThemeToggle variant="icon" />}
           />
         </div>
       </header>

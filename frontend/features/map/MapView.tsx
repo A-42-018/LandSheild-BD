@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { EyeOff, Layers, ListTree, Maximize2, Minimize2, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button, EmptyState, ErrorState, LoadingState, Select } from "@/components/ui";
+import RiskIndicator from "@/components/domain/RiskIndicator";
 import { useRouter } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
 import ParcelList from "./ParcelList";
@@ -383,7 +384,7 @@ export default function MapView() {
                     className="inline-block h-3 w-3 shrink-0 rounded-sm border border-line"
                     style={{ backgroundColor: RISK_COLOR[lvl] }}
                   />
-                  {t(`risk.level.${lvl}`)}
+                  <RiskIndicator level={lvl} size="sm" showLabel={false} />
                 </span>
               ))}
             {showParcels && <span className="text-ink-muted">{t("map.legendNote")}</span>}

@@ -27,9 +27,10 @@ const variants: Record<ButtonVariant, string> = {
   ghost: "text-primary hover:bg-primary-soft active:bg-primary-soft",
 };
 const sizes: Record<ButtonSize, string> = {
+  // Every size is at least 48 px tall (min-h-touch); sizes differ in padding and text only.
   sm: "px-3 py-1.5 text-sm",
-  md: "min-h-11 px-4 py-2 text-base",
-  lg: "min-h-12 px-5 py-2.5 text-base",
+  md: "px-4 py-2 text-base",
+  lg: "px-5 py-2.5 text-base",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -44,7 +45,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       aria-busy={loading || undefined}
       data-variant={variant}
       className={cn(
-        "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl font-medium transition-[background-color,box-shadow,transform] duration-200",
+        "inline-flex min-h-touch items-center justify-center gap-2 rounded-xl font-medium transition-[background-color,box-shadow,transform] duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
         "disabled:cursor-not-allowed disabled:opacity-50",
         variants[variant],

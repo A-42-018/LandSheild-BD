@@ -22,12 +22,7 @@ def _not_found() -> AppError:
 
 
 def _to_public(db: Session, land: LandParcel, viewer: User) -> LandPublic:
-    rows = db.execute(
-        select(Owner)
-        .join(OwnershipHistory, OwnershipHistory.owner_id == Owner.id)
-        .where(OwnershipHistory.land_id == land.id, OwnershipHistory.end_date.is_(None))
-        .order_by(OwnershipHistory.start_date, Owner.name)
-    ).scalars()
+    rows = current_owners(db, land)
     show_father = viewer.role in _SEES_FATHER
     owners = [
         LandOwnerPublic(name=o.name, father_name=o.father_name if show_father else None)
@@ -54,16 +49,10 @@ def get_land(db: Session, land_id: str, viewer: User) -> LandPublic:
     return _to_public(db, land, viewer)
 
 
-def search_land(
-    db: Session,
-    *,
-    district: str,
-    upazila: str,
-    mouza: str,
-    khatian: str,
-    dag: str,
-    viewer: User,
-) -> LandPublic:
+def find_by_location(
+    db: Session, *, district: str, upazila: str, mouza: str, khatian: str, dag: str
+) -> LandParcel:
+    """Exact parcel lookup: case-insensitive place names, Bangla digits accepted (404 if none)."""
     d, u, m, k, g = (_norm(v) for v in (district, upazila, mouza, khatian, dag))
     land = db.scalar(
         select(LandParcel).where(
@@ -76,4 +65,31 @@ def search_land(
     )
     if land is None:
         raise _not_found()
+    return land
+
+
+def current_owners(db: Session, land: LandParcel) -> list[Owner]:
+    return list(
+        db.execute(
+            select(Owner)
+            .join(OwnershipHistory, OwnershipHistory.owner_id == Owner.id)
+            .where(OwnershipHistory.land_id == land.id, OwnershipHistory.end_date.is_(None))
+            .order_by(OwnershipHistory.start_date, Owner.name)
+        ).scalars()
+    )
+
+
+def search_land(
+    db: Session,
+    *,
+    district: str,
+    upazila: str,
+    mouza: str,
+    khatian: str,
+    dag: str,
+    viewer: User,
+) -> LandPublic:
+    land = find_by_location(
+        db, district=district, upazila=upazila, mouza=mouza, khatian=khatian, dag=dag
+    )
     return _to_public(db, land, viewer)

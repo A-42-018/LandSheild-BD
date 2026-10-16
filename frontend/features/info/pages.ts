@@ -14,6 +14,9 @@ export const INFO_PAGES = {
 export type InfoSlug = keyof typeof INFO_PAGES;
 
 export const FAQ_IDS = ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"] as const;
+export type FaqId = (typeof FAQ_IDS)[number];
+/** The five a citizen asks first, shown on the home page: what it is, is it official, how to check, what the risk means, can I rely on it. */
+export const HOME_FAQ_IDS = ["q1", "q2", "q4", "q5", "q6"] as const satisfies readonly FaqId[];
 
 export const SITEMAP_GROUPS = [
   { id: "services", links: [["/services", "services.title"], ["/verify", "nav.verify"], ["/check", "nav.check"], ["/track", "nav.track"], ["/verify-document", "nav.verifyDoc"], ["/map", "nav.map"]] },

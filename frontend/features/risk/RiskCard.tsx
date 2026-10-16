@@ -2,14 +2,13 @@
 import { useLocale, useTranslations } from "next-intl";
 import { ShieldAlert } from "lucide-react";
 import Card from "@/components/ui/Card";
-import RiskBadge from "@/components/domain/RiskBadge";
+import RiskIndicator from "@/components/domain/RiskIndicator";
 import { formatDate } from "@/features/result/format";
+import { intlLocale } from "@/lib/intl-locale";
 import EvidenceList from "./EvidenceList";
 import type { RiskAssessment } from "./types";
 
 const BAR: Record<string, string> = { LOW: "bg-verified", MEDIUM: "bg-review", HIGH: "bg-critical" };
-const TEXT: Record<string, string> = { LOW: "text-verified", MEDIUM: "text-review", HIGH: "text-critical" };
-const TILE: Record<string, string> = { LOW: "bg-verified-soft text-verified", MEDIUM: "bg-review-soft text-review", HIGH: "bg-critical-soft text-critical" };
 const ACCENT = { LOW: "verified", MEDIUM: "review", HIGH: "critical" } as const;
 
 export default function RiskCard({ risk }: { risk: RiskAssessment }) {
@@ -19,6 +18,8 @@ export default function RiskCard({ risk }: { risk: RiskAssessment }) {
   const mlScore = typeof risk.ml_score === "number" ? Math.max(0, Math.min(1, risk.ml_score)) : null;
   const mlEvidence = risk.evidence.find((e) => e.code === "ML_ANOMALY");
   const mlPoints = typeof mlEvidence?.params?.points === "number" ? (mlEvidence.params.points as number) : 0;
+  const num = new Intl.NumberFormat(intlLocale(locale));
+  const level = t(`risk.level.${risk.risk_level in ACCENT ? risk.risk_level : "UNKNOWN"}`);
   return (
     <Card
       title={t("result.riskTitle")}
@@ -27,16 +28,12 @@ export default function RiskCard({ risk }: { risk: RiskAssessment }) {
       data-testid="risk-section"
     >
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <span aria-hidden="true" className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${TILE[risk.risk_level] ?? "bg-pending-soft text-pending"}`}>
-            <ShieldAlert className="h-6 w-6" />
-          </span>
-          <span className="text-sm text-ink-muted">{t("risk.score")}</span>
-          <span data-testid="risk-score" className={`font-display text-4xl font-bold ${TEXT[risk.risk_level] ?? "text-ink"}`}>
-            {score}
-            <span className="text-sm font-normal text-ink-muted"> / 100</span>
-          </span>
-          <RiskBadge level={risk.risk_level} />
+        {/* U0.3: the level (colour + icon + word) is the headline; the score is a secondary detail. */}
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <RiskIndicator level={risk.risk_level} size="lg" data-testid="risk-level" />
+          <p data-testid="risk-score" className="text-sm text-ink-muted">
+            {t("risk.scoreLine", { score: num.format(score), max: num.format(100) })}
+          </p>
         </div>
         <div
           role="meter"
@@ -44,6 +41,7 @@ export default function RiskCard({ risk }: { risk: RiskAssessment }) {
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={score}
+          aria-valuetext={`${t("risk.label")}: ${level} (${num.format(score)} / ${num.format(100)})`}
           className="relative h-3 w-full overflow-hidden rounded-full bg-surface-muted ring-1 ring-line"
         >
           <div className={`h-full ${BAR[risk.risk_level] ?? "bg-pending"}`} style={{ width: `${score}%` }} />

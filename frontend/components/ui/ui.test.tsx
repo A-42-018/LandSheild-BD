@@ -13,7 +13,7 @@ describe("UI v2 core", () => {
   it("Button gold + lg + fullWidthOnMobile", () => {
     render(<Button variant="gold" size="lg" fullWidthOnMobile>Go</Button>);
     const b = screen.getByRole("button", { name: "Go" });
-    expect(b).toHaveClass("btn-gold", "min-h-12", "w-full");
+    expect(b).toHaveClass("btn-gold", "min-h-touch", "w-full");
   });
   it("Badge is a pill and can show a status dot", () => {
     const { container } = render(<Badge tone="verified" dot>OK</Badge>);

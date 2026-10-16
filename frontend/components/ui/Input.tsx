@@ -34,7 +34,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={cn(
-          "min-h-12 rounded-xl border bg-surface px-3 py-2 text-ink transition-[border-color,box-shadow] placeholder:text-ink-muted md:min-h-11",
+          "min-h-touch rounded-xl border bg-surface px-3 py-2 text-ink transition-[border-color,box-shadow] placeholder:text-ink-muted",
           "hover:border-primary/50 focus:outline-none focus:ring-[3px]",
           "disabled:cursor-not-allowed disabled:bg-surface-muted",
           error

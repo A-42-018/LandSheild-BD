@@ -54,6 +54,69 @@ Applies to `frontend/messages/bn.json`. Enforced in review; based on §5 of `doc
   - Phone, land ID and mutation number inputs should accept Bangla digits (normalise like `features/verify/schema.ts`).
   - Brand: roadmap §5 asks for "ল্যান্ডশিল্ড বিডি", but `tests/i18n-parity.test.ts` currently requires `LandShield BD` and forbids the Bangla spelling. This needs a decision before U1.
 
+# Design tokens + risk indicator (U0.3, 2026-10-17)
+
+Extends the tokens below (Design v2, U1); nothing was renamed. Roadmap §5 "Visual".
+
+## Green palette (confirmed, unchanged)
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `primary` | `#006A4E` (government green, = `primary-600`) | `#4CC38A` | buttons, links on cards, focus ring |
+| `primary-hover` | `#00563F` | `#6ED6A5` | hover / pressed |
+| `primary-soft` | `#E6F2ED` | `#0E3028` | tinted panels, glass-card tint |
+| `primary-50 … 900` | `#E6F2ED` → `#002E23` | same | fixed scale for illustrations and charts |
+| `brand-deep` / `brand-deep-2` | `#0A3527` / `#0F4A35` | same | header, hero band, footer |
+| `gold` family | `#D6B25C` … | same | one accent per view only |
+Red (`critical`) is only for high risk and errors. Amber (`review`) means medium risk / needs review.
+
+## Bangla type scale
+`text-xs … text-xl` read CSS variables (`--text-*`, `--leading-*` in `globals.css`); `tailwind.config.ts` maps them, so class names are unchanged and every component picks up the scale. `body` uses `text-base`.
+
+| Class | EN size / line | BN size / line (`:root:lang(bn)`) |
+|---|---|---|
+| `text-xs` | 12 / 16 px | **13 px / 1.6** (smallest Bangla text) |
+| `text-sm` | 14 / 20 px | 15 px / 1.6 |
+| `text-base` (body) | 16 / 24 px | **17 px / 1.7** |
+| `text-lg` | 18 / 28 px | 19 px / 1.6 |
+| `text-xl` | 20 / 28 px | 21 px / 1.5 |
+- Bangla headings `h1–h3` are weight 600 and line-height 1.35 (`:lang(bn)` rules at the end of `globals.css`). `text-2xl` and up and the fluid `heading-*` sizes are unchanged.
+- Arbitrary sizes (`text-[0.8125rem]` etc. in the header, hero, auth panel) are not part of the scale. Leave them alone unless the screen is reworked.
+
+## Touch targets (48 px)
+- Token `--touch-target: 3rem` → Tailwind `min-h-touch`, `min-w-touch`, `h-touch`, `w-touch`.
+- `Button` (every size; sm/md/lg differ only in padding and text), `Input`, `Select`, `Tabs`, Modal close and Toast close are at least 48 px on every screen. Input/Select no longer shrink to 44 px on desktop.
+- The `@media (pointer: coarse)` net in `globals.css` is now 48 px (buttons, selects, tabs, header/nav/aside/footer links, Leaflet zoom). Header icon buttons and segments stay `h-11` on desktop and get 48 px on touch screens through this net.
+- `tests/a11y.test.tsx` ("touch-target contract") fails if a shared control goes back to `min-h-11` or the net drops the token.
+- Checked 2026-10-17 at 360 px with touch emulation (bn: home, verify, result, map, tools, officer dashboard): no horizontal scroll and no button, field or tab under 48 px.
+
+## Risk indicator — `components/domain/RiskIndicator.tsx`
+Use it for **every** parcel risk level. It always shows colour + icon + word together: never colour alone, never a bare score.
+
+| Level | Tone (token) | Icon (lucide) | EN | BN |
+|---|---|---|---|---|
+| `LOW` | `verified` (green) | `CheckCircle2` (circle) | Risk: Low | ঝুঁকি: নিম্ন |
+| `MEDIUM` | `review` (amber) | `AlertTriangle` (triangle) | Risk: Medium | ঝুঁকি: মাঝারি |
+| `HIGH` | `critical` (red) | `AlertOctagon` (octagon) | Risk: High | ঝুঁকি: উচ্চ |
+| anything else / null | `pending` (grey-blue) | `HelpCircle` | Risk: Not known | ঝুঁকি: জানা নেই |
+
+- Props: `level`, `size` = `sm` (table cell, legend) | `md` (default chip) | `lg` (headline on the risk card: 48 px icon tile, label above, big word), `showLabel` (default `true`; `false` keeps "Risk:" for screen readers only, for use under a "Risk" column or `<dt>`).
+- The icon is `aria-hidden`; the text carries the meaning. The icon shapes differ, so the level is still readable in greyscale print and for colour-blind users. `data-risk` / `data-tone` are set for tests.
+- Exports `RISK_LEVELS`, `RISK_TONE`, `RISK_ICON`, `riskLevelOf`. Evidence and alert severities (HIGH / MEDIUM / INFO) are a different scale. They keep their own `Badge` but import `RISK_TONE` from here.
+- Strings: `risk.label`, `risk.level.{LOW,MEDIUM,HIGH,UNKNOWN}`, `risk.scoreLine` (both locales).
+- Used in: result header chip (`ResultView`), `RiskCard` (lg), public QR page (chip + "Risk level" field), map parcel list and map legend (next to the outline swatch), officer queue "Risk" column. `RiskBadge` was removed.
+- `RiskCard`: the level is the headline. The score is one secondary line ("ঝুঁকির হিসাবে ১০০-এর মধ্যে ৭০", Bangla digits via `Intl.NumberFormat(intlLocale(locale))`). The bar's `aria-valuetext` says the level too.
+- Not switched: map polygon outline colours (map data, `RISK_COLOR`) and the Leaflet popup (text only, so it is not colour-only).
+
+Contrast of the level word (WCAG, needs ≥ 4.5; locked in `tests/ui-regression.test.ts`):
+| Pair | Light | Dark |
+|---|---|---|
+| verified / verified-soft · surface · primary-soft (glass tint) | 5.6 · 6.4 · 5.6 | 7.8 · 9.0 · 7.4 |
+| review / review-soft · surface · primary-soft | 5.5 · 6.1 · 5.3 | 8.8 · 10.4 · 8.5 |
+| critical / critical-soft · surface · primary-soft | 5.1 · 6.0 · 5.2 | 5.9 · 6.3 · 5.2 |
+| pending / pending-soft · surface | 5.6 · 6.5 | 5.9 · 6.8 |
+
+Tests: `components/domain/RiskIndicator.test.tsx` checks every level × size × locale for tone, a hidden icon, the word and the "Risk:" prefix, and that no digits appear. It also checks distinct icon shapes, the unknown fallback, Bangla strings and axe. `features/risk/risk.test.tsx` checks the level headline and the Bangla-digit score line.
+
 # Design v2 (UI REDESIGN V2, 2026-10-15)
 
 Source of truth = the landing page `/` and the sign-in pages. Every inner page now uses the same language; older sections below describe the earlier flat U1–U7 look and stay for history.
@@ -70,7 +133,7 @@ Source of truth = the landing page `/` and the sign-in pages. Every inner page n
 
 ## Components
 - `Card` glass by default, `tone="panel"` = section panel, icon in a tile, accent/record = 3 px left bar.
-- `Button` sizes sm / md 44 px / lg 48 px, `variant="gold"`, `fullWidthOnMobile`. `Badge` is a pill with optional dot.
+- `Button` sizes sm / md 44 px / lg 48 px (all 48 px since U0.3), `variant="gold"`, `fullWidthOnMobile`. `Badge` is a pill with optional dot.
 - `Input`/`Select` 48 px on phones, 3 px focus glow. `Tabs` `variant="underline" | "segmented"`, fading scroll edges, `sticky`. `Modal` = bottom sheet < 640 px.
 - `Table` stacks into label/value cards < 640 px (`stackOnMobile`, pure CSS, same markup). Note: `display:block` on the table drops table semantics in Safari/VoiceOver on phones; the label is repeated per cell via `data-label`.
 - `PageHeader` renders `PageHero` (hero band, breadcrumb, meta chips, art, actions); `variant="plain"` for the officer area. `ServiceLayout` = Template A (form 7/12 + sticky "What you need"; collapsible `<details>` below 1024 px). `StateCard` = Template G (404, error). `ArtCard` shared by landing and tools hub. `Reveal`, `ToastProvider/useToast`, `Skeleton`.
@@ -215,7 +278,7 @@ Hex colours remain in `features/map/*` (risk outline colours, `riskColor` test p
 
 ## Accessibility + responsive (P54, Q8)
 - **axe-core 4.13** runs in `frontend/tests/a11y.test.tsx` on home, verify, result, report, login, review and dashboard, in EN and BN (14 cases + a harness sanity test that proves axe catches a bad fragment). Zero violations of any impact. jsdom has no layout, so `color-contrast` is off there (contrast = the computed table above); `region`, `landmark-one-main`, `page-has-heading-one` are off because the tests render fragments (the real `<main>`/`<header>` live in `app/[locale]/layout.tsx`).
-- **Tap targets ≥ 44 px:** `Button` (md and sm), `Input`, `Select`, `Tabs`, Modal close, header icon buttons, theme/language segments, nav pills, user-menu rows, map search button are `min-h-11`/`h-11`. `globals.css` adds a `@media (pointer: coarse)` net (buttons, selects, tabs, header/nav/aside/footer links, Leaflet zoom buttons = 44 px). Inline links in running text are exempt.
+- **Tap targets ≥ 44 px (raised to 48 px in U0.3, see above):** `Button` (md and sm), `Input`, `Select`, `Tabs`, Modal close, header icon buttons, theme/language segments, nav pills, user-menu rows, map search button are `min-h-11`/`h-11`. `globals.css` adds a `@media (pointer: coarse)` net (buttons, selects, tabs, header/nav/aside/footer links, Leaflet zoom buttons = 44 px). Inline links in running text are exempt.
 - **Responsive fixes:** the user-menu dropdown spans the header width below 768 px (was `left-0` + `w-64`, could run off a 375 px screen); `body { overflow-wrap: break-word }` so long Bangla words, land IDs and e-mail addresses wrap; `prefers-reduced-motion` switches off transitions/animations.
 - **E5 pass (2026-10-14), every route:**
   - **jsdom axe** (`tests/a11y.test.tsx`) now covers 33 views (home, verify, check, track, verify-document, result, report, login, officer-signup, tools x4, services, FAQ/accessibility/privacy/terms/data-sources/sitemap, feedback, public QR page, 404, error, review, dashboard, officer upload/mutations/archive/audit-log/feedback) in EN and BN: zero violations of any impact.
@@ -265,3 +328,47 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 ## U4 — Brand + Bangla-first (2026-10-06)
 - Logo is now flat SVG: `public/brand/logo-mark.svg`, `logo-full.svg`; `app/icon.png` rendered from the mark; old PNGs in `public/brand/legacy/` (unreferenced). Earlier logo notes above are historical.
 - Default locale `bn`; `:lang(bn)` typography rules at the end of `app/globals.css`.
+
+## U1.1 — Top strip returns (roadmap §6, Phase 1)
+- `components/TopStrip.tsx` is mounted above the header in `app/[locale]/layout.tsx` (not sticky, `print:hidden`). Left: weekday · বঙ্গাব্দ date · খ্রিস্টাব্দ date. Right: text size A− / A / A+, high-contrast toggle, **বাং | EN** pill (`LanguageSwitcher variant="strip"`). The header keeps only the theme button; the language switch moved here.
+- Dates: `lib/bn-date.ts` follows the Bangladesh revised calendar (new year 14 April; anchors tested: 8 Falgun = 21 Feb, 12 Choitro = 26 Mar, 2 Poush = 16 Dec) and uses Dhaka time. Rendered after mount, because pages are statically generated and must not bake in a date. Bangla digits come from `localDigits`.
+- Text size: `ls-text-size` 100 / 112.5 / 125 on `<html>`; **default is 100 and only an explicit choice changes it** (the 2026-10-15 removal was caused by a stale saved 125 %). `theme-init.js` applies it before paint and `Providers` re-applies it after a language switch.
+- High contrast: `ls-contrast = high` adds `contrast` to `<html>`; `:root.contrast` and `:root.dark.contrast` in `globals.css` darken ink, muted text, borders and links, and thicken the focus ring. Off by default.
+- Not done here: the demo notice (`strip.notice`) is not shown in the strip (the footer and result pages still carry the demo label).
+
+## U1.2 — Header nav, Bangla brand, sign-in choice (roadmap §6, Phase 1)
+- Bar links (`components/HeaderNav.tsx`): হোম · সেবাসমূহ ▾ · হিসাব-সহায়ক (`/tools`) · নির্দেশিকা · নোটিশ · যোগাযোগ. The dropdown is `components/HeaderDropdown.tsx` (a disclosure button + links, not an ARIA menu): Escape closes and returns focus, so do an outside click, focus leaving and navigation. Inside the mobile panel it opens inline; from 1280 px it is a popover.
+- সেবাসমূহ lists "সব সেবা" (`/services`) plus the header-primary items of `NAV_ITEMS` the role may see (`/verify-document` is now primary). Anonymous visitors see নামজারির অবস্থা and দলিলের কপি যাচাই only, until the `/verify`, `/check` and `/map` pages become public (U2).
+- Targets for pages that do not exist yet: নির্দেশিকা → `/faq` (until `/guide`, U4.1); নোটিশ → `/#notices-title`, the notice board on the home page (until `/notices`, U3.6); যোগাযোগ → `/feedback`. The notice anchor is never marked as the current page.
+- Wording: the nav says হিসাব-সহায়ক, not the roadmap's "নাগরিক টুলস", and the button says সাইন ইন, not "লগইন", because the U0.1 glossary fixes both.
+- Sign in ▾ (`UserMenu`, anonymous only) offers নাগরিক সাইন ইন (`/login`) and কর্মকর্তা সাইন ইন (`/login?as=officer`). Both use the same form and API; `?as=officer` only changes the heading and intro. Separate pages and redirects per role are U3.1.
+- Brand: new key `common.brand` ("ল্যান্ডশিল্ড বিডি" in bn) is used by the header and the footer logo. `common.appName` stays "LandShield BD" for the page title and the report header. `tests/i18n-parity.test.ts` now allows the Bangla spelling in that one key only. This settles the open item from U0.1.
+
+## U1.3 — Hero with tabbed search card (roadmap §6, Phase 1)
+- `features/landing/HeroSearch.tsx` sits under the H1 on the photo banner (`-mt-14`, solid `bg-surface` card, so no text sits on the photo except the heading). One `Tabs variant="segmented"` card: জমি খুঁজুন · নামজারির অবস্থা · দলিল / কিউআর যাচাই. The old hero test that forbade a form is replaced by tests for the tabs and each hand-off.
+- জমি খুঁজুন is `VerifyForm compact` (বিভাগ → জেলা → উপজেলা → মৌজা → খতিয়ান/দাগ). Land search still needs sign-in until the public summary (U2.1/U2.2), so a visitor who is not signed in goes to `/verify?district=…&dag=…` and sees a note saying so. `RequireRole` now keeps the query in `?next=`, and `/verify` fills itself from the query and searches once when all five fields are there and the user is signed in. Signed-in users search straight from the hero.
+- নামজারির অবস্থা checks the number like `/track` does (MUT-YYYY-NNNN or FB-YYYY-NNNNN), then opens `/track?no=…`; `TrackView` reads `?no=` on arrival and looks it up.
+- দলিল / কিউআর যাচাই links to `/verify-document` (the copy upload) and takes a pasted QR link or land ID. `qrTarget` keeps only the `/v/{id}` path and the `d`/`h` seal, so a pasted link from any host still opens our own page. Camera scanning is U5.1.
+- At 360 px the tab labels use `px-2` so the Bangla words wrap whole; the hero search button spans the full row below `lg`.
+
+## U1.4 — Notice ticker and dated notice list (roadmap §6, Phase 1)
+- `components/NoticeTicker.tsx` renders in the locale layout right under `Header` (not sticky: it scrolls away, the header keeps its height). A light `primary-soft` strip with a "নোটিশ" chip, the scrolling notices, a pause button and "সব নোটিশ" (`/#notices-title`). Each item is a dated link to its card on the home page notice board (`/#notice-n1` …).
+- One data source: `features/notices/notices.ts` (`id`, `date`, `ticker`). The board shows every notice; the ticker shows only those with `ticker: true` (n3 is board-only). U3.6 replaces this list with admin-managed notices and keeps the flag. Copy stays in `landing.notices.items.<id>`; the ticker's own strings are in the new `ticker` namespace (both locales).
+- Motion (WCAG 2.2.2): the loop is CSS only (`.ticker-track` in `globals.css`, 45 s, two equal copies, −50 %), and only under `prefers-reduced-motion: no-preference`. It pauses with the button (`aria-pressed`), on hover and on keyboard focus. With "reduce motion" nothing moves: the row scrolls by hand, and the loop copy and the pause button are hidden. The loop copy is `aria-hidden` and its links are `tabindex=-1`, so screen readers and Tab see each notice once.
+- Dates use `Intl.DateTimeFormat(intlLocale(locale), { dateStyle: "medium" })` (Bangla digits in bn). Targets are 36 px on desktop and 48 px on touch screens (`pointer: coarse`).
+- Board cards got `id="notice-…"` and `scroll-mt-28` so an anchor jump clears the sticky header.
+- Tests: `components/NoticeTicker.test.tsx` (flagged notices only, anchors, hidden loop copy, Bangla digits, pause, axe), board ids and date in `features/landing/landing.test.tsx`.
+
+## U1.5 — Home FAQ accordion (roadmap §6, Phase 1)
+- `HomeFaq` in `features/landing/Sections.tsx`, last band on the home page (after Trust): heading `landing.faq.title`, one line of intro, five questions and an "আরও" link to `/faq`.
+- The accordion is `features/info/FaqList.tsx`, shared with the `/faq` page (which lists all nine). It is native `<details>/<summary>`, so it works without script and with the keyboard and screen readers; all items start closed, and each question is a 44 px+ target. Answers are the existing `info.faq.<id>` copy: nothing is written twice.
+- Which five: `HOME_FAQ_IDS` in `features/info/pages.ts` = q1 (what is it), q2 (is it official), q4 (how to check a plot), q5 (what the risk level means), q6 (can I rely on it). Change that list to change the home page; `FaqId` is typed from `FAQ_IDS`.
+- "আরও" is a link, not an in-place expander: the full list already lives on `/faq` (with the page-helpful rating), so there is one place to maintain.
+- Tests: `landing.test.tsx` (five questions in order, all closed, opens on click, link to `/faq`, EN and BN). The jsdom and Playwright axe suites already cover the home page and `/faq`.
+
+## U1.6 — Hotline strip and floating help button (roadmap §6, Phase 1)
+- **Hotline strip**: `HelpStrip` in `features/landing/Sections.tsx`, the last band on the home page (after the FAQ, so "still stuck?" comes at the end). A heading, one line, a large gold tap-to-call button (`tel:16122`, 48 px+) and an "অথবা আমাদের লিখুন" link to `/feedback`. Under it, a note that 16122 is the government land services line and this site is a demo not run by the ministry, so nobody thinks the hotline belongs to us.
+- **Floating help button**: `components/HelpButton.tsx`, mounted once in the locale layout after the footer, fixed bottom-end corner (`end-4`, so it flips with the writing direction), hidden in print. A gold pill "সাহায্য" (48 px) opens a small panel: সচরাচর জিজ্ঞাসা (`/faq`), নির্দেশিকা (`/faq` until `/guide`, U4.1, as in the header), মতামত জানান (`/feedback`) and the hotline. It is a disclosure, not a modal (nothing behind it is hidden or trapped): Escape closes and returns focus to the button, as do a click outside, focus leaving and navigation. `z-40`: above the page, below modals (50), the full-screen map (2000) and toasts (3000).
+- One place for the number and links: `features/help/help.ts` (`HOTLINE`, `HELP_LINKS`). The number shows in Bangla digits under `bn` (`localDigits`) but the `tel:` link always dials the ASCII number. Copy: `help` (button and panel) and `landing.help` (strip), both locales. The strip's Bangla note avoids the Bangla brand spelling on purpose (`tests/i18n-parity.test.ts` allows it only in `common.brand`).
+- Not checked: the button against the Leaflet controls on `/map` (they are `z-1000` inside the map, so they would sit on top of the button where they overlap; `/map` needs sign-in until U2.3), and the real opening hours of 16122, which the copy does not claim.
+- Tests: `components/HelpButton.test.tsx` (closed by default, links, Bangla digits with ASCII `tel:`, Escape and focus, outside click and navigation, axe closed and open in EN and BN), `landing.test.tsx` (strip in EN and BN).

@@ -2,7 +2,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { AlertOctagon, AlertTriangle, Info } from "lucide-react";
 import Badge from "@/components/ui/Badge";
-import { RISK_TONE } from "@/components/domain/RiskBadge";
+import { RISK_TONE } from "@/components/domain/RiskIndicator";
 import { evidenceKey, evidenceValues } from "./evidence";
 import type { Evidence } from "./types";
 

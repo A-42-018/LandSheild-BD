@@ -10,7 +10,12 @@ from app.core.errors import AppError
 from app.models.alert import FraudAlert
 from app.models.audit import AuditLog
 from app.models.encumbrance import LandEncumbrance
-from app.models.enums import AlertStatus, TransactionStatus, VerificationStatus
+from app.models.enums import (
+    AlertStatus,
+    EncumbranceType,
+    TransactionStatus,
+    VerificationStatus,
+)
 from app.models.land_parcel import LandParcel
 from app.models.mutation import MutationRecord
 from app.models.ownership import OwnershipHistory
@@ -20,10 +25,13 @@ from app.risk.assess import assess
 from app.risk.context import load_land_context
 from app.schemas.public import (
     PublicCounts,
+    PublicLandSummary,
     PublicMutationStatus,
     PublicMutationStep,
     PublicVerify,
 )
+from app.services import land as land_svc
+from app.services.names import mask_name
 
 _LAND_ID = re.compile(r"^LP-\d{5}$")
 _MUTATION_NO = re.compile(r"^MUT-\d{4}-\d{4}$")
@@ -48,16 +56,8 @@ def find_land(db: Session, land_id: str) -> LandParcel:
     return land
 
 
-def get_public_verify(db: Session, land_id: str) -> PublicVerify:
-    land = find_land(db, land_id)
-    level = assess(load_land_context(db, land)).level
-    last = db.scalar(
-        select(func.max(VerificationRequest.completed_at)).where(
-            VerificationRequest.land_id == land.id,
-            VerificationRequest.status == VerificationStatus.COMPLETED.value,
-        )
-    )
-    counts = PublicCounts(
+def _counts(db: Session, land: LandParcel) -> PublicCounts:
+    return PublicCounts(
         ownership_records=_count(db, OwnershipHistory.id, OwnershipHistory.land_id == land.id),
         transactions=_count(db, Transaction.id, Transaction.land_id == land.id),
         flagged_transactions=_count(
@@ -82,6 +82,17 @@ def get_public_verify(db: Session, land_id: str) -> PublicVerify:
             MutationRecord.status.in_(("APPLIED", "UNDER_REVIEW", "HEARING", "APPEALED")),
         ),
     )
+
+
+def get_public_verify(db: Session, land_id: str) -> PublicVerify:
+    land = find_land(db, land_id)
+    level = assess(load_land_context(db, land)).level
+    last = db.scalar(
+        select(func.max(VerificationRequest.completed_at)).where(
+            VerificationRequest.land_id == land.id,
+            VerificationRequest.status == VerificationStatus.COMPLETED.value,
+        )
+    )
     return PublicVerify(
         land_id=land.land_id,
         district=land.district,
@@ -89,8 +100,41 @@ def get_public_verify(db: Session, land_id: str) -> PublicVerify:
         mouza=land.mouza,
         status=land.status,
         risk_level=level,
-        counts=counts,
+        counts=_counts(db, land),
         last_verified_at=last,
+    )
+
+
+def search_land_summary(
+    db: Session, *, district: str, upazila: str, mouza: str, khatian: str, dag: str
+) -> tuple[LandParcel, PublicLandSummary]:
+    """Same lookup as the signed-in search, answered with a masked summary (read-only)."""
+    land = land_svc.find_by_location(
+        db, district=district, upazila=upazila, mouza=mouza, khatian=khatian, dag=dag
+    )
+    owners = land_svc.current_owners(db, land)
+    open_case = _count(
+        db,
+        LandEncumbrance.id,
+        LandEncumbrance.land_id == land.id,
+        LandEncumbrance.type == EncumbranceType.COURT_CASE.value,
+        LandEncumbrance.status == "ACTIVE",
+    )
+    return land, PublicLandSummary(
+        land_id=land.land_id,
+        district=land.district,
+        upazila=land.upazila,
+        mouza=land.mouza,
+        khatian_no=land.khatian_no,
+        dag_no=land.dag_no,
+        area=land.area,
+        area_unit=land.area_unit,
+        status=land.status,
+        risk_level=assess(load_land_context(db, land)).level,
+        owner_count=len(owners),
+        owners_masked=[mask_name(o.name) for o in owners],
+        open_case=open_case > 0,
+        counts=_counts(db, land),
     )
 
 

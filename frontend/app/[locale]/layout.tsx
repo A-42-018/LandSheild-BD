@@ -5,8 +5,11 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import Header from "@/components/Header";
+import TopStrip from "@/components/TopStrip";
+import NoticeTicker from "@/components/NoticeTicker";
 import PublicBackdrop from "@/features/landing/PublicBackdrop";
 import Footer from "@/features/landing/Footer";
+import HelpButton from "@/components/HelpButton";
 import PageHelpful from "@/features/feedback/PageHelpful";
 import Providers from "@/features/Providers";
 import "../globals.css";
@@ -62,7 +65,9 @@ export default async function LocaleLayout({
             {t("skipToContent")}
           </a>
           <div className="contents print:hidden">
+            <TopStrip />
             <Header />
+            <NoticeTicker />
           </div>
           <PublicBackdrop />
           <main id="main" className="mx-auto max-w-[75rem] px-4 py-8 print:max-w-none print:p-0">
@@ -70,6 +75,7 @@ export default async function LocaleLayout({
             <PageHelpful />
           </main>
           <Footer />
+          <HelpButton />
           </Providers>
         </NextIntlClientProvider>
       </body>

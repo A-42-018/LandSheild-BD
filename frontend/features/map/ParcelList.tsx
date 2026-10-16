@@ -2,7 +2,7 @@
 import { useTranslations } from "next-intl";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui";
-import RiskBadge from "@/components/domain/RiskBadge";
+import RiskIndicator from "@/components/domain/RiskIndicator";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import type { MapFeatureDto } from "./types";
@@ -50,7 +50,7 @@ export default function ParcelList({
                 {t("popup.dag")} {p.dag_no} · {t("popup.khatian")} {p.khatian_no} · {p.area} {unit}
               </span>
               <StatusBadge code={p.status} />
-              <RiskBadge level={p.risk_level} />
+              <RiskIndicator level={p.risk_level} />
               <span className="ms-auto flex flex-wrap gap-2">
                 <Button
                   size="sm"

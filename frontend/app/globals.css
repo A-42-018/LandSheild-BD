@@ -37,6 +37,10 @@
     --gold-soft: 241 216 140;
     --header-from: 0 106 78;
     --header-to: 0 106 78;
+    /* Village → city strip above the footer (U1.8): footer green in light; lifted in dark so it shows on the dark page. */
+    --skyline: 10 53 39;
+    /* Kantha stitch colour (U1.8): primary green at 8 %; a lighter mint at 14 % in dark, where low alpha barely shows on the near-black page. */
+    --kantha: 0 106 78 / 0.08;
   }
   :root.dark {
     color-scheme: dark;
@@ -70,8 +74,67 @@
     --gold-soft: 241 216 140;
     --header-from: 0 86 63;
     --header-to: 0 86 63;
+    --skyline: 24 96 70;
+    --kantha: 170 230 200 / 0.14;
   }
-  body { @apply bg-surface-muted text-ink antialiased; }
+  /* High contrast (U1.1): visitor-chosen from the top strip. Body text 21:1, muted text and borders darker, links and focus ring stronger. */
+  :root.contrast {
+    --surface-muted: 255 255 255;
+    --line: 84 96 112;
+    --ink: 0 0 0;
+    --ink-muted: 33 45 64;
+    --primary: 0 78 56;
+    --primary-hover: 0 58 42;
+    --link: 0 38 105;
+    --verified: 0 84 34;
+    --review: 107 58 0;
+    --critical: 155 0 10;
+    --pending: 45 57 76;
+  }
+  :root.dark.contrast {
+    --surface: 0 0 0;
+    --surface-muted: 0 0 0;
+    --line: 150 165 190;
+    --ink: 255 255 255;
+    --ink-muted: 214 223 237;
+    --primary: 124 232 178;
+    --primary-hover: 170 244 205;
+    --link: 178 212 255;
+    --verified: 110 236 178;
+    --review: 253 214 90;
+    --critical: 255 150 150;
+    --pending: 200 210 226;
+  }
+  .contrast :focus-visible { outline-width: 3px; outline-offset: 3px; }
+  .contrast main p a, .contrast main li a { text-decoration-line: underline; text-underline-offset: 3px; }
+  /* Type scale + touch target (U0.3). Latin keeps Tailwind's default sizes; Bangla (smaller x-height, stacked vowel
+     signs) gets one step larger text and taller lines, so no Bangla text is below 13 px and body copy is 17 px / 1.7. */
+  :root {
+    --touch-target: 3rem;
+    --text-xs: 0.75rem;
+    --leading-xs: 1rem;
+    --text-sm: 0.875rem;
+    --leading-sm: 1.25rem;
+    --text-base: 1rem;
+    --leading-base: 1.5rem;
+    --text-lg: 1.125rem;
+    --leading-lg: 1.75rem;
+    --text-xl: 1.25rem;
+    --leading-xl: 1.75rem;
+  }
+  :root:lang(bn) {
+    --text-xs: 0.8125rem;
+    --leading-xs: 1.6;
+    --text-sm: 0.9375rem;
+    --leading-sm: 1.6;
+    --text-base: 1.0625rem;
+    --leading-base: 1.7;
+    --text-lg: 1.1875rem;
+    --leading-lg: 1.6;
+    --text-xl: 1.3125rem;
+    --leading-xl: 1.5;
+  }
+  body { @apply bg-surface-muted text-base text-ink antialiased; }
   /* Headings use the display face (Plus Jakarta Sans); Bangla glyphs fall back to Noto Sans Bengali via the stack. Body stays Inter. */
   h1, h2 { @apply font-display; }
   h1 { @apply text-heading-1; }
@@ -330,29 +393,44 @@
 .ls-popup dd { margin: 0; font-weight: 500; }
 .ls-popup a { display: block; padding: 0.4rem 0.75rem 0.6rem; font-weight: 600; color: rgb(var(--primary)); text-decoration: underline; }
 
-/* Touch targets (P54): on coarse pointers every control is at least 44 x 44 px.
+/* Touch targets (P54, raised to 48 px in U0.3): on coarse pointers every control is at least 48 x 48 px.
    Inline links inside running text are exempt (WCAG 2.5.8 inline exception). */
 @media (pointer: coarse) {
   button, select, summary, [role="tab"],
   input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]) {
-    min-height: 44px;
+    min-height: var(--touch-target);
   }
-  button, [role="tab"] { min-width: 44px; }
+  button, [role="tab"] { min-width: var(--touch-target); }
   header a[href], nav a[href], aside a[href], footer li > a[href] {
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
+    min-height: var(--touch-target);
   }
   .leaflet-touch .leaflet-bar a,
   .leaflet-touch .leaflet-control-layers-toggle {
-    width: 44px;
-    height: 44px;
-    line-height: 44px;
+    width: var(--touch-target);
+    height: var(--touch-target);
+    line-height: var(--touch-target);
   }
 }
 
 /* Long Bangla words, land IDs and e-mail addresses wrap instead of widening the page (P54). */
 body { overflow-wrap: break-word; }
+
+/* Notice ticker (U1.4, components/NoticeTicker.tsx): scrolls only when motion is allowed; paused by its button, hover or focus.
+   Two equal copies of the list make the -50% loop seamless. With "reduce motion" nothing moves: the row scrolls by hand, the loop copy
+   and the pause button (nothing to pause) are hidden. */
+@media (prefers-reduced-motion: no-preference) {
+  .ticker-track { animation: ticker-scroll 45s linear infinite; }
+  .ticker[data-paused="true"] .ticker-track,
+  .ticker:hover .ticker-track,
+  .ticker:focus-within .ticker-track { animation-play-state: paused; }
+}
+@keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .ticker-viewport { overflow-x: auto; }
+  .ticker-copy, .ticker-pause { display: none; }
+}
 
 /* Respect the OS "reduce motion" setting (P54). */
 @media (prefers-reduced-motion: reduce) {
@@ -369,6 +447,8 @@ body { overflow-wrap: break-word; }
 :lang(bn) body, body:lang(bn) { line-height: 1.7; }
 :lang(bn) h1, :lang(bn) h2, :lang(bn) h3, :lang(bn) h4 { line-height: 1.35; }
 :lang(bn) h1 { font-size: 1.875rem; }
+/* U0.3: Bangla headings at 600 (roadmap §5); 700 makes dense conjuncts hard to read. */
+:lang(bn) h1, :lang(bn) h2, :lang(bn) h3 { font-weight: 600; }
 
 /* U6: numbered report sections (1. Summary, 2. …); Bangla numerals in bn. */
 .report-sections { counter-reset: sec; }

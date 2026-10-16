@@ -336,14 +336,17 @@ describe("axe harness sanity", () => {
 });
 
 describe("touch-target contract (P54)", () => {
-  it("shared controls are 44 px tall and globals.css has the coarse-pointer net", async () => {
+  it("shared controls are 48 px tall (U0.3) and globals.css has the coarse-pointer net", async () => {
     const { readFileSync } = await import("node:fs");
     const read = (f: string) => readFileSync(`${process.cwd()}/${f}`, "utf8");
     for (const f of ["components/ui/Button.tsx", "components/ui/Input.tsx", "components/ui/Select.tsx", "components/ui/Tabs.tsx"]) {
-      expect(read(f), f).toContain("min-h-11");
+      expect(read(f), f).toContain("min-h-touch");
+      expect(read(f), f).not.toMatch(/\bmin-h-11\b/);
     }
     const css = read("app/globals.css");
-    expect(css).toMatch(/@media \(pointer: coarse\)[\s\S]*min-height: 44px/);
+    expect(css).toMatch(/--touch-target:\s*3rem;/);
+    expect(css).toMatch(/@media \(pointer: coarse\)[\s\S]*min-height: var\(--touch-target\)/);
+    expect(read("tailwind.config.ts")).toMatch(/touch:\s*"var\(--touch-target\)"/);
     expect(css).toMatch(/prefers-reduced-motion: reduce/);
   });
 });

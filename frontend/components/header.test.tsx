@@ -44,20 +44,14 @@ describe("activeNavHref", () => {
 });
 
 describe("Navbar (UD3)", () => {
-  it("has brand link, main nav, language switch and a single light/dark button; no top strip", () => {
+  it("has brand link, main nav and a single light/dark button; the strip controls live in TopStrip, not here", () => {
     render(wrap(<Navbar />));
     expect(screen.getByRole("link", { name: en.common.appName })).toHaveAttribute("href", "/");
     expect(screen.getByRole("navigation", { name: en.nav.main })).toBeInTheDocument();
     expect(screen.queryByTestId("top-strip")).not.toBeInTheDocument();
     expect(screen.queryByRole("group", { name: en.strip.textSize })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("aria-current", "true");
+    expect(screen.queryByRole("navigation", { name: en.common.language })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: en.theme.toDark })).toBeInTheDocument();
-  });
-
-  it("language switch lists EN then BN inside the header", () => {
-    render(wrap(<Navbar />));
-    const lang = screen.getByRole("navigation", { name: en.common.language });
-    expect(within(lang).getAllByRole("link").map((a) => a.textContent)).toEqual(["EN", "BN"]);
   });
 
   it("theme button toggles light and dark and stores the choice", () => {
@@ -76,19 +70,69 @@ describe("Navbar (UD3)", () => {
     pathname = "/map";
     auth = { status: "authenticated", user: { name: "C", role: "CITIZEN" }, logout };
     render(wrap(<Navbar />));
+    fireEvent.click(screen.getByRole("button", { name: en.nav.services }));
     expect(screen.getByRole("link", { name: en.nav.map })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: en.nav.home })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: en.nav.tools })).not.toHaveAttribute("aria-current");
   });
 
-  it("service nav: Home for anonymous; Home, Verify land, Check before you buy, Parcel map when signed in", () => {
+  it("bar links point at their pages; the current page is marked (Home on /, Citizen tools under /tools)", () => {
+    render(wrap(<Navbar />));
+    expect(screen.getByRole("link", { name: en.nav.home })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: en.nav.tools })).toHaveAttribute("href", "/tools");
+    expect(screen.getByRole("link", { name: en.nav.guide })).toHaveAttribute("href", "/faq");
+    expect(screen.getByRole("link", { name: en.nav.notices })).toHaveAttribute("href", "/#notices-title");
+    expect(screen.getByRole("link", { name: en.nav.contact })).toHaveAttribute("href", "/feedback");
+    cleanup();
+    pathname = "/tools/units";
+    render(wrap(<Navbar />));
+    expect(screen.getByRole("link", { name: en.nav.tools })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: en.nav.home })).not.toHaveAttribute("aria-current");
+    // The notices anchor is on the home page; it is never "the current page".
+    expect(screen.getByRole("link", { name: en.nav.notices })).not.toHaveAttribute("aria-current");
+  });
+
+  it("nav order: Home, Services ▾, Citizen tools, Guide, Notices, Contact", () => {
     render(wrap(<Navbar />));
     const nav = screen.getByRole("navigation", { name: en.nav.main });
-    expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.track]);
+    const labels = Array.from(nav.children).map((el) => el.textContent);
+    expect(labels[0]).toBe(en.nav.home);
+    expect(labels[1]).toContain(en.nav.services);
+    expect(labels.slice(2)).toEqual([en.nav.tools, en.nav.guide, en.nav.notices, en.nav.contact]);
+  });
+
+  it("services dropdown: All services + public pages for anonymous; the signed-in pages are added by role", () => {
+    const items = () => within(document.getElementById("services-menu-panel")!).getAllByRole("link", { hidden: true }).map((a) => a.textContent);
+    render(wrap(<Navbar />));
+    expect(items()).toEqual([en.nav.allServices, en.nav.verify, en.nav.track, en.nav.verifyDoc]);
     auth = { status: "authenticated", user: { name: "O", role: "OFFICER" }, logout };
     cleanup();
     render(wrap(<Navbar />));
-    const nav2 = screen.getByRole("navigation", { name: en.nav.main });
-    expect(within(nav2).getAllByRole("link").map((a) => a.textContent)).toEqual([en.nav.home, en.nav.verify, en.nav.check, en.nav.track, en.nav.map]);
+    expect(items()).toEqual([en.nav.allServices, en.nav.verify, en.nav.check, en.nav.track, en.nav.verifyDoc, en.nav.map]);
+  });
+
+  it("services dropdown opens and closes (button, Escape returns focus, outside click) and marks the trigger on a service page", () => {
+    render(wrap(<Navbar />));
+    const btn = screen.getByRole("button", { name: en.nav.services });
+    const panel = document.getElementById("services-menu-panel")!;
+    expect(btn).toHaveAttribute("aria-expanded", "false");
+    expect(btn).toHaveAttribute("aria-controls", "services-menu-panel");
+    expect(panel).toHaveAttribute("hidden");
+    fireEvent.click(btn);
+    expect(btn).toHaveAttribute("aria-expanded", "true");
+    expect(panel).not.toHaveAttribute("hidden");
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(btn).toHaveAttribute("aria-expanded", "false");
+    expect(btn).toHaveFocus();
+    fireEvent.click(btn);
+    fireEvent.mouseDown(document.body);
+    expect(btn).toHaveAttribute("aria-expanded", "false");
+    cleanup();
+    pathname = "/track";
+    render(wrap(<Navbar />));
+    fireEvent.click(screen.getByRole("button", { name: en.nav.services }));
+    expect(screen.getByRole("link", { name: en.nav.track })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("button", { name: en.nav.services })).toHaveClass("text-gold-strong");
   });
 
   it("theme default is light when nothing is stored (dark only by explicit choice)", () => {
@@ -102,11 +146,29 @@ describe("Navbar (UD3)", () => {
     expect(screen.getByText(en.common.subLine)).toBeInTheDocument();
   });
 
-  it("anonymous: user icon links to sign in, no sign out", () => {
+  it("anonymous: Sign in ▾ asks who you are (citizen / officer); no account button, no sign out", () => {
     render(wrap(<Navbar />));
-    expect(screen.getByRole("link", { name: en.nav.login })).toHaveAttribute("href", "/login");
+    const btn = screen.getByRole("button", { name: en.nav.login });
+    expect(btn).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("link", { name: en.nav.citizenLogin })).not.toBeInTheDocument();
+    fireEvent.click(btn);
+    expect(btn).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("link", { name: en.nav.citizenLogin })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("link", { name: en.nav.officerLogin })).toHaveAttribute("href", "/login?as=officer");
     expect(screen.queryByRole("button", { name: en.nav.account })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: en.nav.logout })).not.toBeInTheDocument();
+  });
+
+  it("signed in: no Sign in ▾ in the header", () => {
+    auth = { status: "authenticated", user: { name: "C", role: "CITIZEN" }, logout };
+    render(wrap(<Navbar />));
+    expect(screen.queryByRole("button", { name: en.nav.login })).not.toBeInTheDocument();
+  });
+
+  it("brand: Bangla spelling in bn, English in en, with the tagline under it", () => {
+    render(wrap(<Navbar />, "bn"));
+    expect(screen.getByRole("link", { name: bn.common.brand })).toHaveAttribute("href", "/");
+    expect(screen.getByText(bn.common.subLine)).toBeInTheDocument();
   });
 
   it("signed in: user icon opens a panel with name, role, remaining links; sign out works", () => {
@@ -141,7 +203,8 @@ describe("Navbar (UD3)", () => {
     fireEvent.click(screen.getByRole("button", { name: en.nav.account }));
     expect(screen.queryByRole("link", { name: en.nav.upload })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: en.nav.dashboard })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: en.nav.verify })).toBeInTheDocument();
+    // Verify land is in the services dropdown now, not in the account panel.
+    expect(screen.getByRole("link", { name: en.nav.verify, hidden: true })).toBeInTheDocument();
   });
 
   it("mobile menu button toggles the panel, aria-expanded and closes on Escape", () => {
@@ -165,18 +228,23 @@ describe("Navbar (UD3)", () => {
   });
 });
 
-describe("Footer (UD3)", () => {
-  it.each(["en", "bn"] as const)("has one labelled nav with 4 columns: services, about, help, legal (%s)", (loc) => {
+describe("Footer (U1.7)", () => {
+  it.each(["en", "bn"] as const)("has one labelled nav with the five standard columns and a demo-project note (%s)", (loc) => {
     const m = loc === "en" ? en : bn;
     render(wrap(<Footer />, loc));
     const nav = screen.getByRole("navigation", { name: m.landing.footerNav });
     expect(nav).toBeInTheDocument();
-    for (const h of [m.footer.services, m.footer.aboutTitle, m.footer.help, m.footer.legal]) expect(screen.getByText(h)).toBeInTheDocument();
-    expect(screen.getByText(new RegExp("support@landshield.demo"))).toBeInTheDocument();
+    for (const h of [m.footer.importantLinks, m.footer.planning, m.footer.apps, m.footer.contactTitle, m.footer.techSupport]) expect(screen.getByText(h)).toBeInTheDocument();
+    expect(screen.getByTestId("footer-demo-note")).toHaveTextContent(m.footer.demoProject);
+    expect(screen.getByText(m.footer.demoNote)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "support@landshield.demo" })).toHaveAttribute("href", "mailto:support@landshield.demo");
+    expect(screen.getByTestId("footer-hotline")).toHaveAttribute("href", "tel:16122");
+    expect(screen.getByTestId("footer-hotline")).toHaveTextContent(loc === "bn" ? "১৬১২২" : "16122");
     expect(screen.getByRole("link", { name: m.nav.map })).toHaveAttribute("href", "/map");
-    expect(screen.getByRole("link", { name: m.nav.login })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("link", { name: m.nav.track })).toHaveAttribute("href", "/track");
     expect(screen.getByText(m.landing.disclaimer)).toBeInTheDocument();
-    expect(screen.getByText(new RegExp(m.common.demoLabel.replace(/[.]/g, "\\.")))).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(m.common.demoLabel.replace(/[.]/g, "\\."))) ).toBeInTheDocument();
+    expect(nav.textContent).not.toMatch(/ভূমি মন্ত্রণালয়|Ministry of Land/);
   });
 });
 

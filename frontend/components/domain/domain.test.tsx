@@ -3,7 +3,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it } from "vitest";
 import bn from "../../messages/bn.json";
 import en from "../../messages/en.json";
-import RiskBadge, { RISK_TONE } from "./RiskBadge";
 import StatusBadge, { STATUS_TONE } from "./StatusBadge";
 
 const wrap = (locale: "en" | "bn", ui: React.ReactNode) =>
@@ -29,24 +28,6 @@ describe("StatusBadge", () => {
     for (const code of Object.keys(STATUS_TONE)) {
       expect(en.status).toHaveProperty(code);
       expect(bn.status).toHaveProperty(code);
-    }
-  });
-});
-
-describe("RiskBadge", () => {
-  it("maps HIGH → High / উচ্চ with critical tone", () => {
-    const { unmount } = wrap("en", <RiskBadge level="HIGH" />);
-    expect(screen.getByText("High")).toHaveAttribute("data-tone", "critical");
-    unmount();
-    wrap("bn", <RiskBadge level="HIGH" />);
-    expect(screen.getByText("উচ্চ")).toBeInTheDocument();
-  });
-  it("LOW verified, MEDIUM review; keys exist in both locales", () => {
-    expect(RISK_TONE.LOW).toBe("verified");
-    expect(RISK_TONE.MEDIUM).toBe("review");
-    for (const l of Object.keys(RISK_TONE)) {
-      expect(en.risk.level).toHaveProperty(l);
-      expect(bn.risk.level).toHaveProperty(l);
     }
   });
 });

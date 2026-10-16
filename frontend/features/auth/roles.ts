@@ -12,7 +12,7 @@ export interface NavItem {
   labelKey: string;
   /** undefined = public; [] not allowed */
   roles?: Role[];
-  /** true = shown in the header bar; others live in the account menu (UD10) */
+  /** true = shown in the header bar (Home, and the সেবাসমূহ dropdown); others live in the account menu (UD10) */
   primary?: boolean;
 }
 
@@ -20,10 +20,10 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", labelKey: "nav.home", primary: true },
   { href: "/about", labelKey: "nav.about" },
-  { href: "/verify", labelKey: "nav.verify", roles: ROLES, primary: true },
+  { href: "/verify", labelKey: "nav.verify", primary: true }, // U2.2: public (masked summary)
   { href: "/check", labelKey: "nav.check", roles: ROLES, primary: true },
   { href: "/track", labelKey: "nav.track", primary: true },
-  { href: "/verify-document", labelKey: "nav.verifyDoc" },
+  { href: "/verify-document", labelKey: "nav.verifyDoc", primary: true },
   { href: "/map", labelKey: "nav.map", roles: ROLES, primary: true },
   { href: "/officer", labelKey: "nav.dashboard", roles: REVIEW_UP },
   { href: "/officer/upload", labelKey: "nav.upload", roles: OFFICER_UP },

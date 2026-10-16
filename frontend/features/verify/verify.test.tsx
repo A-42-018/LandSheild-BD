@@ -23,6 +23,17 @@ function client(get: ApiClient["get"]): ApiClient {
   return { refresh: vi.fn().mockResolvedValue({ user }), get } as unknown as ApiClient;
 }
 
+/** A visitor: refresh finds no session, so the form falls back to the public endpoint. */
+function visitor(request: ApiClient["request"]): ApiClient {
+  return { refresh: vi.fn().mockResolvedValue(null), get: vi.fn(), request } as unknown as ApiClient;
+}
+
+const SUMMARY = {
+  land_id: "LP-10240", district: "Gazipur", upazila: "Sreepur", mouza: "Barmi", khatian_no: "1250", dag_no: "790",
+  area: 10, area_unit: "decimal", status: "ACTIVE", risk_level: "HIGH", owner_count: 2,
+  owners_masked: ["R*** U***", "K*** M***"], open_case: true, counts: { active_encumbrances: 1, pending_mutations: 0 },
+};
+
 function wrap(c: ApiClient, messages: any = en, locale = "en") {
   const qc = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return render(
@@ -82,6 +93,20 @@ describe("VerifyForm", () => {
     const url = get.mock.calls.map((c) => c[0] as string).find((u) => u.startsWith("/lands/search")) as string;
     expect(url).toContain("khatian=1245");
     expect(url).toContain("district=Gazipur");
+  });
+
+  it("fills itself from the hero's query and searches once (U1.3)", async () => {
+    window.history.pushState({}, "", "/verify?district=Gazipur&upazila=Sreepur&mouza=Barmi&khatian=1245&dag=785");
+    const get = vi.fn().mockResolvedValue({ land_id: "LP-10100" });
+    try {
+      wrap(client(get as any));
+      await waitFor(() => expect(push).toHaveBeenCalledWith("/verify/result?land_id=LP-10100"));
+      expect(screen.getByLabelText(new RegExp(en.verify.upazila))).toHaveValue("Sreepur");
+      expect(screen.getByLabelText(new RegExp(en.verify.mouza))).toHaveValue("Barmi");
+      expect(get.mock.calls.filter((c) => (c[0] as string).startsWith("/lands/search"))).toHaveLength(1);
+    } finally {
+      window.history.pushState({}, "", "/");
+    }
   });
 
   it("suggests mouza names of the chosen upazila while typing", async () => {
@@ -160,5 +185,58 @@ describe("VerifyForm", () => {
     fill(bn);
     fireEvent.click(await screen.findByRole("button", { name: bn.verify.submit }));
     expect(await screen.findByRole("alert")).toHaveTextContent(bn.verify.errors.network);
+  });
+
+  describe("visitor (U2.2)", () => {
+    it("searches the public endpoint without a token and shows the masked summary", async () => {
+      const request = vi.fn().mockResolvedValue(SUMMARY);
+      const c = visitor(request as any);
+      wrap(c);
+      fill();
+      fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+      const card = await screen.findByTestId("public-summary");
+      const [url, opts] = request.mock.calls[0];
+      expect(url).toContain("/public/lands/search?");
+      expect(url).toContain("khatian=1245");
+      expect(opts).toEqual({ anonymous: true });
+      expect(c.get).not.toHaveBeenCalled();
+      expect(push).not.toHaveBeenCalled();
+      expect(within(card).getByText("LP-10240")).toBeInTheDocument();
+      expect(within(screen.getByTestId("masked-owners")).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["R*** U***", "K*** M***"]);
+      expect(within(card).getByText(en.risk.level.HIGH)).toBeInTheDocument();
+      expect(card).toHaveTextContent(en.verify.summary.maskNote);
+    });
+
+    it("the sign-in button returns to the full result of that parcel", async () => {
+      wrap(visitor(vi.fn().mockResolvedValue(SUMMARY) as any));
+      fill();
+      fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+      const link = await screen.findByTestId("summary-login");
+      expect(link).toHaveAttribute("href", `/login?next=${encodeURIComponent("/verify/result?land_id=LP-10240")}`);
+      expect(link).toHaveTextContent(en.verify.summary.loginForFull);
+    });
+
+    it("answers the hero's query on its own once the visitor state is known", async () => {
+      window.history.pushState({}, "", "/verify?district=Gazipur&upazila=Sreepur&mouza=Barmi&khatian=1250&dag=790");
+      const request = vi.fn().mockResolvedValue(SUMMARY);
+      try {
+        wrap(visitor(request as any));
+        expect(await screen.findByTestId("public-summary")).toBeInTheDocument();
+        expect(request).toHaveBeenCalledTimes(1);
+      } finally {
+        window.history.pushState({}, "", "/");
+      }
+    });
+
+    it("shows not found and rate-limit messages in Bangla", async () => {
+      const request = vi.fn().mockRejectedValueOnce(new ApiError(404, "LAND_NOT_FOUND", "x")).mockRejectedValueOnce(new ApiError(429, "RATE_LIMITED", "x"));
+      wrap(visitor(request as any), bn, "bn");
+      fill(bn);
+      fireEvent.click(await screen.findByRole("button", { name: bn.verify.submit }));
+      expect(await screen.findByRole("alert")).toHaveTextContent(bn.verify.errors.notFound);
+      fireEvent.click(screen.getByRole("button", { name: bn.verify.submit }));
+      await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(bn.verify.errors.rateLimited));
+      expect(screen.queryByTestId("public-summary")).toBeNull();
+    });
   });
 });

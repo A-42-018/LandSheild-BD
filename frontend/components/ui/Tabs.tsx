@@ -89,7 +89,7 @@ export default function Tabs({ tabs, value, defaultValue, onValueChange, label, 
               disabled={tab.disabled}
               onClick={() => select(tab.id)}
               className={cn(
-                "min-h-11 shrink-0 px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50",
+                "min-h-touch shrink-0 px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50",
                 segmented
                   ? cn(
                       "flex-1 rounded-lg sm:flex-none",
