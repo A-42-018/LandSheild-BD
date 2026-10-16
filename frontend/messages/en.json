@@ -63,13 +63,16 @@
     "APPEALED": "Appealed"
   },
   "risk": {
+    "label": "Risk",
     "level": {
       "LOW": "Low",
       "MEDIUM": "Medium",
-      "HIGH": "High"
+      "HIGH": "High",
+      "UNKNOWN": "Not known"
     },
     "disclaimer": "AI assists human reviewers. This is not a legal determination.",
     "score": "Risk score",
+    "scoreLine": "Risk score {score} of {max}",
     "evidenceTitle": "Evidence",
     "noEvidence": "No risk indicators found for this parcel.",
     "assessedOn": "Assessed on {date}",

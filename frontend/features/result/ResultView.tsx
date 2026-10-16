@@ -6,7 +6,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { EmptyState, ErrorState, LoadingState, Tabs } from "@/components/ui";
 import PageHeader from "@/components/PageHeader";
 import { PlotSearchArt } from "@/features/landing/Illustrations";
-import RiskBadge from "@/components/domain/RiskBadge";
+import RiskIndicator from "@/components/domain/RiskIndicator";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -104,7 +104,7 @@ export default function ResultView({ landId }: { landId?: string }) {
     const lerr = t("result.loadError");
     body = (
       <>
-        <LandInfoCard land={land.data} chip={risk.data ? <RiskBadge level={risk.data.risk_level} /> : undefined} />
+        <LandInfoCard land={land.data} chip={risk.data ? <RiskIndicator level={risk.data.risk_level} /> : undefined} />
         <Tabs
           sticky
           label={t("page.recordTabs")}

@@ -28,11 +28,15 @@ function show(risk: RiskAssessment, messages: any = en, locale = "en") {
 }
 
 describe("RiskCard", () => {
-  it("shows score, level badge, plain bar and every evidence item (EN)", () => {
+  it("leads with the level (icon + word), score secondary, plain bar and every evidence item (EN)", () => {
     show(HIGH);
-    expect(screen.getByTestId("risk-score")).toHaveTextContent("70");
-    expect(screen.getAllByText(en.risk.level.HIGH).length).toBeGreaterThan(0);
+    const level = screen.getByTestId("risk-level");
+    expect(level).toHaveAttribute("data-risk", "HIGH");
+    expect(level).toHaveTextContent("Risk: High");
+    expect(level.querySelector("svg")).not.toBeNull();
+    expect(screen.getByTestId("risk-score")).toHaveTextContent("Risk score 70 of 100");
     expect(screen.getByRole("meter")).toHaveAttribute("aria-valuenow", "70");
+    expect(screen.getByRole("meter")).toHaveAttribute("aria-valuetext", "Risk: High (70 / 100)");
     const items = within(screen.getByRole("list", { name: en.risk.evidenceTitle })).getAllByRole("listitem");
     expect(items).toHaveLength(2);
     expect(items[0]).toHaveTextContent("Possible duplicate transaction");
@@ -41,9 +45,12 @@ describe("RiskCard", () => {
     expect(items[1]).toHaveTextContent("Potential inconsistency");
   });
 
-  it("renders the same evidence in Bangla", () => {
+  it("renders the same evidence in Bangla, with the level as ঝুঁকি: উচ্চ and Bangla digits in the score", () => {
     show(HIGH, bn, "bn");
-    expect(screen.getAllByText(bn.risk.level.HIGH).length).toBeGreaterThan(0);
+    expect(screen.getByTestId("risk-level")).toHaveTextContent("ঝুঁকি: উচ্চ");
+    expect(screen.getByTestId("risk-score")).toHaveTextContent("ঝুঁকির হিসাবে ১০০-এর মধ্যে ৭০");
+    expect(screen.getByTestId("risk-score").textContent).not.toMatch(/[0-9]/);
+    expect(screen.getByRole("meter").getAttribute("aria-valuetext")).toBe("ঝুঁকি: উচ্চ (৭০ / ১০০)");
     const items = within(screen.getByRole("list", { name: bn.risk.evidenceTitle })).getAllByRole("listitem");
     expect(items).toHaveLength(2);
     expect(items[0]).toHaveTextContent("সম্ভাব্য দ্বৈত লেনদেন");

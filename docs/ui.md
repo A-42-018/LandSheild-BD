@@ -54,6 +54,69 @@ Applies to `frontend/messages/bn.json`. Enforced in review; based on §5 of `doc
   - Phone, land ID and mutation number inputs should accept Bangla digits (normalise like `features/verify/schema.ts`).
   - Brand: roadmap §5 asks for "ল্যান্ডশিল্ড বিডি", but `tests/i18n-parity.test.ts` currently requires `LandShield BD` and forbids the Bangla spelling. This needs a decision before U1.
 
+# Design tokens + risk indicator (U0.3, 2026-10-17)
+
+Extends the tokens below (Design v2, U1); nothing was renamed. Roadmap §5 "Visual".
+
+## Green palette (confirmed, unchanged)
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `primary` | `#006A4E` (government green, = `primary-600`) | `#4CC38A` | buttons, links on cards, focus ring |
+| `primary-hover` | `#00563F` | `#6ED6A5` | hover / pressed |
+| `primary-soft` | `#E6F2ED` | `#0E3028` | tinted panels, glass-card tint |
+| `primary-50 … 900` | `#E6F2ED` → `#002E23` | same | fixed scale for illustrations and charts |
+| `brand-deep` / `brand-deep-2` | `#0A3527` / `#0F4A35` | same | header, hero band, footer |
+| `gold` family | `#D6B25C` … | same | one accent per view only |
+Red (`critical`) is only for high risk and errors. Amber (`review`) means medium risk / needs review.
+
+## Bangla type scale
+`text-xs … text-xl` read CSS variables (`--text-*`, `--leading-*` in `globals.css`); `tailwind.config.ts` maps them, so class names are unchanged and every component picks up the scale. `body` uses `text-base`.
+
+| Class | EN size / line | BN size / line (`:root:lang(bn)`) |
+|---|---|---|
+| `text-xs` | 12 / 16 px | **13 px / 1.6** (smallest Bangla text) |
+| `text-sm` | 14 / 20 px | 15 px / 1.6 |
+| `text-base` (body) | 16 / 24 px | **17 px / 1.7** |
+| `text-lg` | 18 / 28 px | 19 px / 1.6 |
+| `text-xl` | 20 / 28 px | 21 px / 1.5 |
+- Bangla headings `h1–h3` are weight 600 and line-height 1.35 (`:lang(bn)` rules at the end of `globals.css`). `text-2xl` and up and the fluid `heading-*` sizes are unchanged.
+- Arbitrary sizes (`text-[0.8125rem]` etc. in the header, hero, auth panel) are not part of the scale. Leave them alone unless the screen is reworked.
+
+## Touch targets (48 px)
+- Token `--touch-target: 3rem` → Tailwind `min-h-touch`, `min-w-touch`, `h-touch`, `w-touch`.
+- `Button` (every size; sm/md/lg differ only in padding and text), `Input`, `Select`, `Tabs`, Modal close and Toast close are at least 48 px on every screen. Input/Select no longer shrink to 44 px on desktop.
+- The `@media (pointer: coarse)` net in `globals.css` is now 48 px (buttons, selects, tabs, header/nav/aside/footer links, Leaflet zoom). Header icon buttons and segments stay `h-11` on desktop and get 48 px on touch screens through this net.
+- `tests/a11y.test.tsx` ("touch-target contract") fails if a shared control goes back to `min-h-11` or the net drops the token.
+- Checked 2026-10-17 at 360 px with touch emulation (bn: home, verify, result, map, tools, officer dashboard): no horizontal scroll and no button, field or tab under 48 px.
+
+## Risk indicator — `components/domain/RiskIndicator.tsx`
+Use it for **every** parcel risk level. It always shows colour + icon + word together: never colour alone, never a bare score.
+
+| Level | Tone (token) | Icon (lucide) | EN | BN |
+|---|---|---|---|---|
+| `LOW` | `verified` (green) | `CheckCircle2` (circle) | Risk: Low | ঝুঁকি: নিম্ন |
+| `MEDIUM` | `review` (amber) | `AlertTriangle` (triangle) | Risk: Medium | ঝুঁকি: মাঝারি |
+| `HIGH` | `critical` (red) | `AlertOctagon` (octagon) | Risk: High | ঝুঁকি: উচ্চ |
+| anything else / null | `pending` (grey-blue) | `HelpCircle` | Risk: Not known | ঝুঁকি: জানা নেই |
+
+- Props: `level`, `size` = `sm` (table cell, legend) | `md` (default chip) | `lg` (headline on the risk card: 48 px icon tile, label above, big word), `showLabel` (default `true`; `false` keeps "Risk:" for screen readers only, for use under a "Risk" column or `<dt>`).
+- The icon is `aria-hidden`; the text carries the meaning. The icon shapes differ, so the level is still readable in greyscale print and for colour-blind users. `data-risk` / `data-tone` are set for tests.
+- Exports `RISK_LEVELS`, `RISK_TONE`, `RISK_ICON`, `riskLevelOf`. Evidence and alert severities (HIGH / MEDIUM / INFO) are a different scale. They keep their own `Badge` but import `RISK_TONE` from here.
+- Strings: `risk.label`, `risk.level.{LOW,MEDIUM,HIGH,UNKNOWN}`, `risk.scoreLine` (both locales).
+- Used in: result header chip (`ResultView`), `RiskCard` (lg), public QR page (chip + "Risk level" field), map parcel list and map legend (next to the outline swatch), officer queue "Risk" column. `RiskBadge` was removed.
+- `RiskCard`: the level is the headline. The score is one secondary line ("ঝুঁকির হিসাবে ১০০-এর মধ্যে ৭০", Bangla digits via `Intl.NumberFormat(intlLocale(locale))`). The bar's `aria-valuetext` says the level too.
+- Not switched: map polygon outline colours (map data, `RISK_COLOR`) and the Leaflet popup (text only, so it is not colour-only).
+
+Contrast of the level word (WCAG, needs ≥ 4.5; locked in `tests/ui-regression.test.ts`):
+| Pair | Light | Dark |
+|---|---|---|
+| verified / verified-soft · surface · primary-soft (glass tint) | 5.6 · 6.4 · 5.6 | 7.8 · 9.0 · 7.4 |
+| review / review-soft · surface · primary-soft | 5.5 · 6.1 · 5.3 | 8.8 · 10.4 · 8.5 |
+| critical / critical-soft · surface · primary-soft | 5.1 · 6.0 · 5.2 | 5.9 · 6.3 · 5.2 |
+| pending / pending-soft · surface | 5.6 · 6.5 | 5.9 · 6.8 |
+
+Tests: `components/domain/RiskIndicator.test.tsx` checks every level × size × locale for tone, a hidden icon, the word and the "Risk:" prefix, and that no digits appear. It also checks distinct icon shapes, the unknown fallback, Bangla strings and axe. `features/risk/risk.test.tsx` checks the level headline and the Bangla-digit score line.
+
 # Design v2 (UI REDESIGN V2, 2026-10-15)
 
 Source of truth = the landing page `/` and the sign-in pages. Every inner page now uses the same language; older sections below describe the earlier flat U1–U7 look and stay for history.
@@ -70,7 +133,7 @@ Source of truth = the landing page `/` and the sign-in pages. Every inner page n
 
 ## Components
 - `Card` glass by default, `tone="panel"` = section panel, icon in a tile, accent/record = 3 px left bar.
-- `Button` sizes sm / md 44 px / lg 48 px, `variant="gold"`, `fullWidthOnMobile`. `Badge` is a pill with optional dot.
+- `Button` sizes sm / md 44 px / lg 48 px (all 48 px since U0.3), `variant="gold"`, `fullWidthOnMobile`. `Badge` is a pill with optional dot.
 - `Input`/`Select` 48 px on phones, 3 px focus glow. `Tabs` `variant="underline" | "segmented"`, fading scroll edges, `sticky`. `Modal` = bottom sheet < 640 px.
 - `Table` stacks into label/value cards < 640 px (`stackOnMobile`, pure CSS, same markup). Note: `display:block` on the table drops table semantics in Safari/VoiceOver on phones; the label is repeated per cell via `data-label`.
 - `PageHeader` renders `PageHero` (hero band, breadcrumb, meta chips, art, actions); `variant="plain"` for the officer area. `ServiceLayout` = Template A (form 7/12 + sticky "What you need"; collapsible `<details>` below 1024 px). `StateCard` = Template G (404, error). `ArtCard` shared by landing and tools hub. `Reveal`, `ToastProvider/useToast`, `Skeleton`.
@@ -215,7 +278,7 @@ Hex colours remain in `features/map/*` (risk outline colours, `riskColor` test p
 
 ## Accessibility + responsive (P54, Q8)
 - **axe-core 4.13** runs in `frontend/tests/a11y.test.tsx` on home, verify, result, report, login, review and dashboard, in EN and BN (14 cases + a harness sanity test that proves axe catches a bad fragment). Zero violations of any impact. jsdom has no layout, so `color-contrast` is off there (contrast = the computed table above); `region`, `landmark-one-main`, `page-has-heading-one` are off because the tests render fragments (the real `<main>`/`<header>` live in `app/[locale]/layout.tsx`).
-- **Tap targets ≥ 44 px:** `Button` (md and sm), `Input`, `Select`, `Tabs`, Modal close, header icon buttons, theme/language segments, nav pills, user-menu rows, map search button are `min-h-11`/`h-11`. `globals.css` adds a `@media (pointer: coarse)` net (buttons, selects, tabs, header/nav/aside/footer links, Leaflet zoom buttons = 44 px). Inline links in running text are exempt.
+- **Tap targets ≥ 44 px (raised to 48 px in U0.3, see above):** `Button` (md and sm), `Input`, `Select`, `Tabs`, Modal close, header icon buttons, theme/language segments, nav pills, user-menu rows, map search button are `min-h-11`/`h-11`. `globals.css` adds a `@media (pointer: coarse)` net (buttons, selects, tabs, header/nav/aside/footer links, Leaflet zoom buttons = 44 px). Inline links in running text are exempt.
 - **Responsive fixes:** the user-menu dropdown spans the header width below 768 px (was `left-0` + `w-64`, could run off a 375 px screen); `body { overflow-wrap: break-word }` so long Bangla words, land IDs and e-mail addresses wrap; `prefers-reduced-motion` switches off transitions/animations.
 - **E5 pass (2026-10-14), every route:**
   - **jsdom axe** (`tests/a11y.test.tsx`) now covers 33 views (home, verify, check, track, verify-document, result, report, login, officer-signup, tools x4, services, FAQ/accessibility/privacy/terms/data-sources/sitemap, feedback, public QR page, 404, error, review, dashboard, officer upload/mutations/archive/audit-log/feedback) in EN and BN: zero violations of any impact.

@@ -71,7 +71,34 @@
     --header-from: 0 86 63;
     --header-to: 0 86 63;
   }
-  body { @apply bg-surface-muted text-ink antialiased; }
+  /* Type scale + touch target (U0.3). Latin keeps Tailwind's default sizes; Bangla (smaller x-height, stacked vowel
+     signs) gets one step larger text and taller lines, so no Bangla text is below 13 px and body copy is 17 px / 1.7. */
+  :root {
+    --touch-target: 3rem;
+    --text-xs: 0.75rem;
+    --leading-xs: 1rem;
+    --text-sm: 0.875rem;
+    --leading-sm: 1.25rem;
+    --text-base: 1rem;
+    --leading-base: 1.5rem;
+    --text-lg: 1.125rem;
+    --leading-lg: 1.75rem;
+    --text-xl: 1.25rem;
+    --leading-xl: 1.75rem;
+  }
+  :root:lang(bn) {
+    --text-xs: 0.8125rem;
+    --leading-xs: 1.6;
+    --text-sm: 0.9375rem;
+    --leading-sm: 1.6;
+    --text-base: 1.0625rem;
+    --leading-base: 1.7;
+    --text-lg: 1.1875rem;
+    --leading-lg: 1.6;
+    --text-xl: 1.3125rem;
+    --leading-xl: 1.5;
+  }
+  body { @apply bg-surface-muted text-base text-ink antialiased; }
   /* Headings use the display face (Plus Jakarta Sans); Bangla glyphs fall back to Noto Sans Bengali via the stack. Body stays Inter. */
   h1, h2 { @apply font-display; }
   h1 { @apply text-heading-1; }
@@ -330,24 +357,24 @@
 .ls-popup dd { margin: 0; font-weight: 500; }
 .ls-popup a { display: block; padding: 0.4rem 0.75rem 0.6rem; font-weight: 600; color: rgb(var(--primary)); text-decoration: underline; }
 
-/* Touch targets (P54): on coarse pointers every control is at least 44 x 44 px.
+/* Touch targets (P54, raised to 48 px in U0.3): on coarse pointers every control is at least 48 x 48 px.
    Inline links inside running text are exempt (WCAG 2.5.8 inline exception). */
 @media (pointer: coarse) {
   button, select, summary, [role="tab"],
   input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]) {
-    min-height: 44px;
+    min-height: var(--touch-target);
   }
-  button, [role="tab"] { min-width: 44px; }
+  button, [role="tab"] { min-width: var(--touch-target); }
   header a[href], nav a[href], aside a[href], footer li > a[href] {
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
+    min-height: var(--touch-target);
   }
   .leaflet-touch .leaflet-bar a,
   .leaflet-touch .leaflet-control-layers-toggle {
-    width: 44px;
-    height: 44px;
-    line-height: 44px;
+    width: var(--touch-target);
+    height: var(--touch-target);
+    line-height: var(--touch-target);
   }
 }
 
@@ -369,6 +396,8 @@ body { overflow-wrap: break-word; }
 :lang(bn) body, body:lang(bn) { line-height: 1.7; }
 :lang(bn) h1, :lang(bn) h2, :lang(bn) h3, :lang(bn) h4 { line-height: 1.35; }
 :lang(bn) h1 { font-size: 1.875rem; }
+/* U0.3: Bangla headings at 600 (roadmap §5); 700 makes dense conjuncts hard to read. */
+:lang(bn) h1, :lang(bn) h2, :lang(bn) h3 { font-weight: 600; }
 
 /* U6: numbered report sections (1. Summary, 2. …); Bangla numerals in bn. */
 .report-sections { counter-reset: sec; }

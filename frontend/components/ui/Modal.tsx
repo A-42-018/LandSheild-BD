@@ -74,7 +74,7 @@ export default function Modal({ open, onClose, title, children, footer, classNam
         <div aria-hidden="true" className="mx-auto -mt-2 mb-3 h-1 w-10 rounded-full bg-line sm:hidden" />
         <div className="mb-4 flex items-start justify-between gap-4 border-b border-line pb-3">
           <h2 id={titleId} className="text-lg font-semibold text-ink">{title}</h2>
-          <button type="button" aria-label={t("close")} onClick={onClose} className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-ink-muted hover:bg-primary-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+          <button type="button" aria-label={t("close")} onClick={onClose} className="inline-flex h-touch w-touch shrink-0 items-center justify-center rounded-lg text-ink-muted hover:bg-primary-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
         </div>

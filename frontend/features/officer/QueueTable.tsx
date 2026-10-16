@@ -5,7 +5,7 @@ import { ListChecks, Search } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
 import StatusBadge from "@/components/domain/StatusBadge";
-import RiskBadge from "@/components/domain/RiskBadge";
+import RiskIndicator from "@/components/domain/RiskIndicator";
 import { Badge, Button, Card, ErrorState, Input, LoadingState, Select, Table, type Column } from "@/components/ui";
 import { formatDateTime } from "@/features/result/format";
 import AreaFilter, { NO_AREA } from "@/features/officers/AreaFilter";
@@ -56,7 +56,7 @@ export default function QueueTable() {
         </span>
       ),
     },
-    { key: "risk", header: t("cols.risk"), render: (r) => (r.high_risk ? <RiskBadge level="HIGH" /> : <span className="text-ink-muted">—</span>) },
+    { key: "risk", header: t("cols.risk"), render: (r) => (r.high_risk ? <RiskIndicator level="HIGH" size="sm" showLabel={false} /> : <span className="text-ink-muted">—</span>) },
     { key: "created_at", header: t("cols.created"), sortable: true, render: (r) => formatDateTime(r.created_at, locale, "—") },
   ];
 

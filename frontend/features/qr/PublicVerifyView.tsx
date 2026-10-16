@@ -6,7 +6,7 @@ import { districtName, upazilaName } from "@/lib/geo";
 import { Card, EmptyState, ErrorState, LoadingState } from "@/components/ui";
 import { ShieldArt } from "@/features/landing/Illustrations";
 import PageHeader from "@/components/PageHeader";
-import RiskBadge from "@/components/domain/RiskBadge";
+import RiskIndicator from "@/components/domain/RiskIndicator";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
@@ -78,7 +78,7 @@ export default function PublicVerifyView({ landId }: { landId: string }) {
       <>
         <Card title={<span className="font-mono">{d.land_id}</span>} variant="record" data-testid="public-summary">
           <div className="mb-3 flex justify-end">
-            <RiskBadge level={d.risk_level} />
+            <RiskIndicator level={d.risk_level} />
           </div>
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             <div>
@@ -102,7 +102,7 @@ export default function PublicVerifyView({ landId }: { landId: string }) {
             <div>
               <dt className="text-xs text-ink-muted">{t("publicVerify.risk")}</dt>
               <dd className="font-medium text-ink" data-testid="public-risk">
-                <RiskBadge level={d.risk_level} />
+                <RiskIndicator level={d.risk_level} showLabel={false} />
               </dd>
             </div>
             <div>

@@ -27,7 +27,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div key={i.id} className="glass-card toast-in pointer-events-auto flex w-full max-w-sm items-center gap-3 border-l-[4px] p-3 text-sm text-ink shadow-lift" style={{ borderLeftColor: `rgb(var(--${i.kind === "success" ? "verified" : "critical"}))` }}>
             {i.kind === "success" ? <CheckCircle2 aria-hidden="true" className="h-5 w-5 shrink-0 text-verified" /> : <XCircle aria-hidden="true" className="h-5 w-5 shrink-0 text-critical" />}
             <span className="flex-1">{i.text}</span>
-            <button type="button" aria-label={t("close")} onClick={() => drop(i.id)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-ink-muted hover:bg-primary-soft">
+            <button type="button" aria-label={t("close")} onClick={() => drop(i.id)} className="-my-2 inline-flex h-touch w-touch shrink-0 items-center justify-center rounded-lg text-ink-muted hover:bg-primary-soft">
               <X aria-hidden="true" className="h-4 w-4" />
             </button>
           </div>

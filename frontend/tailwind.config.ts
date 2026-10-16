@@ -53,11 +53,20 @@ const config: Config = {
         glass: "0 1px 2px rgb(var(--shadow) / 0.05), 0 14px 34px -16px rgb(var(--shadow) / 0.28)",
         lift: "0 2px 4px rgb(var(--shadow) / 0.06), 0 22px 44px -18px rgb(var(--shadow) / 0.35)",
       },
+      // Body type scale (U0.3): sizes and line heights are CSS variables, so Bangla gets larger text and taller lines
+      // from one place (`:root:lang(bn)` in globals.css) without per-component classes. Class names are unchanged.
       fontSize: {
+        xs: ["var(--text-xs)", { lineHeight: "var(--leading-xs)" }],
+        sm: ["var(--text-sm)", { lineHeight: "var(--leading-sm)" }],
+        base: ["var(--text-base)", { lineHeight: "var(--leading-base)" }],
+        lg: ["var(--text-lg)", { lineHeight: "var(--leading-lg)" }],
+        xl: ["var(--text-xl)", { lineHeight: "var(--leading-xl)" }],
         "heading-1": ["clamp(1.75rem, 1.2rem + 2.2vw, 2.6rem)", { lineHeight: "1.2", fontWeight: "700" }],
         "heading-2": ["clamp(1.375rem, 1.1rem + 1vw, 1.75rem)", { lineHeight: "1.3", fontWeight: "700" }],
         "heading-3": ["1.125rem", { lineHeight: "1.5rem", fontWeight: "600" }],
       },
+      // Minimum touch target (U0.3): `min-h-touch` / `min-w-touch` / `h-touch` = 48 px.
+      spacing: { touch: "var(--touch-target)" },
       fontFamily: {
         sans: ["var(--font-inter)", "var(--font-bengali)", "system-ui", "sans-serif"],
         bn: ["var(--font-bengali)", "var(--font-inter)", "system-ui", "sans-serif"],
