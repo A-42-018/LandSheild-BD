@@ -2,10 +2,15 @@ export interface MapPropsDto {
   land_id: string;
   dag_no: string;
   khatian_no: string;
-  area: number;
-  area_unit: string;
-  status: string;
-  risk_level: string;
+  /** Place, sent by the public map so a visitor's "details" link can run the public search (U2.3). */
+  district?: string;
+  upazila?: string;
+  mouza?: string;
+  /** Signed-in map only: the public map (U2.3) carries outlines and numbers, nothing else. */
+  area?: number;
+  area_unit?: string;
+  status?: string;
+  risk_level?: string;
 }
 
 export interface MapFeatureDto {
@@ -30,8 +35,8 @@ export const RISK_COLOR: Record<string, string> = {
 };
 export const NEUTRAL_COLOR = "#5B6B80";
 
-export function riskColor(level: string): string {
-  return RISK_COLOR[level] ?? NEUTRAL_COLOR;
+export function riskColor(level: string | undefined): string {
+  return (level && RISK_COLOR[level]) || NEUTRAL_COLOR;
 }
 
 export function filterFeatures(features: MapFeatureDto[], filter: RiskFilter): MapFeatureDto[] {

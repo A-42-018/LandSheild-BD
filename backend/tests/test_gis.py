@@ -29,8 +29,16 @@ def _find(fc, name):
 
 
 @pytest.mark.parametrize("path", ["/capabilities", "/divisions", "/search?q=khulna"])
-def test_requires_login(env, path):
-    assert env.get(f"{P}{path}").status_code == 401
+def test_boundaries_are_open_data_without_login(env, path):
+    """U2.3: the public map needs them; they carry no personal data."""
+    r = env.get(f"{P}{path}")
+    assert r.status_code == 200 and "max-age" in r.headers["cache-control"]
+
+
+def test_gis_rate_limited_per_ip(env):
+    for _ in range(120):
+        assert env.get(f"{P}/divisions").status_code == 200
+    assert env.get(f"{P}/divisions").status_code == 429
 
 
 @pytest.mark.parametrize("role", ROLES)

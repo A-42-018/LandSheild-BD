@@ -12,6 +12,7 @@ from app.schemas.feedback import (
     PageRatingIn,
     PublicFeedbackStatus,
 )
+from app.schemas.map import PublicMapCollection
 from app.schemas.public import (
     DocumentVerifyBody,
     DocumentVerifyOut,
@@ -24,6 +25,7 @@ from app.schemas.public import (
 )
 from app.services import audit, doc_verify, signing
 from app.services import feedback as feedback_svc
+from app.services import map as map_svc
 from app.services import public as svc
 from app.services.upload_validation import MAX_UPLOAD_BYTES
 
@@ -48,6 +50,20 @@ def _guard(request: Request, response: Response, settings: Settings) -> None:
     ip = request.client.host if request.client else "unknown"
     check_rate("public", ip, settings.public_rate_limit_per_min)
     response.headers["Cache-Control"] = "no-store"
+
+
+@router.get("/map", response_model=PublicMapCollection)
+def public_map(
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> PublicMapCollection:
+    """U2.3: parcel outlines + numbers for the no-login map. No owners, risk or area."""
+    ip = request.client.host if request.client else "unknown"
+    check_rate("public-map", ip, settings.public_map_rate_limit_per_min)
+    response.headers["Cache-Control"] = "no-store"
+    return map_svc.get_public_map(db)
 
 
 @router.get("/lands/search", response_model=PublicLandSummary)

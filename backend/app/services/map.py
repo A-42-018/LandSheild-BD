@@ -6,7 +6,14 @@ from sqlalchemy.orm import Session
 from app.models.land_parcel import LandParcel
 from app.risk.assess import assess
 from app.risk.context import load_land_context
-from app.schemas.map import MapCollection, MapFeature, MapProps
+from app.schemas.map import (
+    MapCollection,
+    MapFeature,
+    MapProps,
+    PublicMapCollection,
+    PublicMapFeature,
+    PublicMapProps,
+)
 
 _POLYGONS = {"Polygon", "MultiPolygon"}
 
@@ -45,3 +52,28 @@ def get_map(db: Session) -> MapCollection:
             )
         )
     return MapCollection(features=features)
+
+
+def get_public_map(db: Session) -> PublicMapCollection:
+    """Outlines + parcel numbers for visitors. Same polygons as `get_map`, but no risk assessment is
+    run and nothing about owners, status or area leaves."""
+    lands = db.scalars(
+        select(LandParcel).where(LandParcel.geometry.is_not(None)).order_by(LandParcel.land_id)
+    ).all()
+    return PublicMapCollection(
+        features=[
+            PublicMapFeature(
+                geometry=land.geometry,
+                properties=PublicMapProps(
+                    land_id=land.land_id,
+                    dag_no=land.dag_no,
+                    khatian_no=land.khatian_no,
+                    district=land.district,
+                    upazila=land.upazila,
+                    mouza=land.mouza,
+                ),
+            )
+            for land in lands
+            if _usable(land.geometry)
+        ]
+    )
