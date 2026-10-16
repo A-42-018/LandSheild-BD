@@ -1437,7 +1437,19 @@
     "lastUpdate": "Last updated",
     "response": "Reply",
     "noResponse": "No reply yet.",
-    "feedbackPrivacy": "Only the type, status, dates and our reply are shown. Your message and contact details are not available here."
+    "feedbackPrivacy": "Only the type, status, dates and our reply are shown. Your message and contact details are not available here.",
+    "sentence": {
+      "APPLIED": "Your application has been received. It is waiting for the office to check it.",
+      "UNDER_REVIEW": "The office is checking your application now.",
+      "HEARING": "Your application is at the hearing step.",
+      "APPEALED": "An appeal was made. The office above will decide.",
+      "APPROVED": "Your application was approved.",
+      "REJECTED": "Your application was rejected. Ask the office for the reason.",
+      "UNKNOWN": "Your application is in process. Ask the office for details.",
+      "days": "{count, plural, =0 {You applied today.} one {You applied # day ago.} other {You applied # days ago.}}",
+      "office": "Office: {office}.",
+      "label": "Status in plain words"
+    }
   },
   "archive": {
     "title": "Archive search",

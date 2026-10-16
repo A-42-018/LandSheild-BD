@@ -10,6 +10,7 @@ import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
 import { formatDate } from "@/features/result/format";
 import { FEEDBACK_REF, type PublicFeedbackStatus } from "@/features/feedback/types";
+import { statusSentence } from "./sentence";
 import { MUTATION_NO, normaliseNo, type MutationStatusDto, type TrackStepState } from "./types";
 
 /** State = icon + text + colour (roadmap 4.2 rule 4), theme tokens only. */
@@ -25,20 +26,20 @@ export function Stepper({ data }: { data: MutationStatusDto }) {
   const locale = useLocale();
   const rejected = data.status === "REJECTED";
   return (
-    <ol className="flex flex-col gap-0" data-testid="track-steps" aria-label={t("stepsLabel")}>
+    <ol className="flex flex-col gap-0 sm:flex-row sm:gap-2" data-testid="track-steps" aria-label={t("stepsLabel")}>
       {data.steps.map((s, i) => {
         const last = i === data.steps.length - 1;
         const [cls, Icon] = rejected && s.step === "DECIDED" ? ["border-critical bg-critical-soft text-critical", XCircle] : STATE_STYLE[s.state];
         const label = s.step === "DECIDED" && s.state === "done" ? t(`outcome.${data.status}`) : t(`steps.${s.step}`);
         return (
-          <li key={s.step} data-testid={`step-${s.step}`} data-state={s.state} className="flex gap-3" aria-current={s.state === "current" ? "step" : undefined}>
-            <div className="flex flex-col items-center">
+          <li key={s.step} data-testid={`step-${s.step}`} data-state={s.state} className="flex gap-3 sm:flex-1 sm:flex-col sm:gap-2" aria-current={s.state === "current" ? "step" : undefined}>
+            <div className="flex flex-col items-center sm:flex-row">
               <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 ${cls}`}>
                 <Icon aria-hidden="true" className="h-5 w-5" />
               </span>
-              {!last && <span aria-hidden="true" className="my-1 w-0 flex-1 border-l-2 border-dashed border-primary/30" />}
+              {!last && <span aria-hidden="true" className="my-1 w-0 flex-1 border-l-2 border-dashed border-primary/30 sm:mx-1 sm:my-0 sm:h-0 sm:w-auto sm:border-l-0 sm:border-t-2" />}
             </div>
-            <div className={last ? "pb-0" : "pb-5"}>
+            <div className={last ? "pb-0" : "pb-5 sm:pb-0"}>
               <p className="font-semibold text-ink">{label}</p>
               <p className="text-sm text-ink-muted">
                 {t(`state.${s.state}`)}
@@ -49,6 +50,28 @@ export function Stepper({ data }: { data: MutationStatusDto }) {
         );
       })}
     </ol>
+  );
+}
+
+/** SMS-style status in plain words: the number, then one short sentence each for the stage, the days and the office. */
+export function StatusLine({ data }: { data: MutationStatusDto }) {
+  const t = useTranslations("track");
+  const x = statusSentence(data);
+  return (
+    <div className="mb-5 rounded-xl border border-primary/30 bg-primary-soft p-4" data-testid="track-sentence" role="group" aria-label={t("sentence.label")}>
+      <p className="text-lg font-semibold leading-relaxed text-ink">
+        <span className="font-mono">{data.mutation_no}</span>
+        {": "}
+        {t(`sentence.${x.status}`)}
+      </p>
+      {(x.days !== null || x.office) && (
+        <p className="mt-1 text-ink-muted">
+          {x.days !== null && t("sentence.days", { count: x.days })}
+          {x.days !== null && x.office ? " " : ""}
+          {x.office && t("sentence.office", { office: x.office })}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -162,6 +185,7 @@ export default function TrackView() {
         )}
         {d && (
           <Card title={<span className="font-mono">{d.mutation_no}</span>} variant="record" data-testid="track-result">
+            <StatusLine data={d} />
             <dl className="mb-5 grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
               <div>
                 <dt className="text-xs text-ink-muted">{t("status")}</dt>

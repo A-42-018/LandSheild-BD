@@ -7,6 +7,7 @@ import bn from "../../messages/bn.json";
 import { ApiError, type ApiClient } from "@/lib/api";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import TrackView from "./TrackView";
+import { SENTENCE_STATUSES, statusSentence } from "./sentence";
 import { MUTATION_NO, normaliseNo, type MutationStatusDto } from "./types";
 
 vi.mock("@/i18n/navigation", () => ({
@@ -123,5 +124,47 @@ describe("TrackView", () => {
     await screen.findByTestId("track-result");
     expect(screen.getByTestId("step-HEARING")).toHaveTextContent(bn.track.steps.HEARING);
     expect(screen.getByTestId("step-HEARING")).toHaveTextContent(bn.track.state.current);
+  });
+
+  it("leads with a plain status sentence: number, stage, days, office (U2.5)", async () => {
+    wrap(vi.fn().mockResolvedValue(HEARING) as any);
+    submit("MUT-2026-0009");
+    const line = await screen.findByTestId("track-sentence");
+    expect(line).toHaveTextContent("MUT-2026-0009: Your application is at the hearing step.");
+    expect(line).toHaveTextContent("You applied 5 days ago. Office: AC Land Office, Sreepur.");
+  });
+
+  it("drops the days for a decided application and says the outcome (U2.5)", async () => {
+    wrap(vi.fn().mockResolvedValue(REJECTED) as any);
+    submit("MUT-2026-0010");
+    const line = await screen.findByTestId("track-sentence");
+    expect(line).toHaveTextContent("Your application was rejected. Ask the office for the reason.");
+    expect(line).not.toHaveTextContent("You applied");
+  });
+
+  it("writes the sentence in Bangla with Bangla digits (U2.5)", async () => {
+    wrap(vi.fn().mockResolvedValue(HEARING) as any, bn, "bn");
+    fireEvent.change(screen.getByLabelText(new RegExp(bn.track.number)), { target: { value: "MUT-2026-0009" } });
+    fireEvent.click(screen.getByRole("button", { name: bn.track.submit }));
+    const line = await screen.findByTestId("track-sentence");
+    expect(line).toHaveTextContent("আপনার আবেদন এখন শুনানির ধাপে আছে।");
+    expect(line).toHaveTextContent("আপনি ৫ দিন আগে আবেদন করেছেন।");
+  });
+});
+
+describe("statusSentence", () => {
+  const base = { days_pending: null, office: null };
+  it("has a sentence for every known status in both languages", () => {
+    for (const status of SENTENCE_STATUSES) {
+      expect(statusSentence({ ...base, status }).status).toBe(status);
+      expect((en.track.sentence as Record<string, string>)[status]).toBeTruthy();
+      expect((bn.track.sentence as Record<string, string>)[status]).toBeTruthy();
+    }
+  });
+  it("falls back for a status it does not know", () => {
+    expect(statusSentence({ ...base, status: "WITHDRAWN" }).status).toBe("UNKNOWN");
+  });
+  it("passes days and office through", () => {
+    expect(statusSentence({ status: "APPLIED", days_pending: 0, office: "X" })).toEqual({ status: "APPLIED", days: 0, office: "X" });
   });
 });
