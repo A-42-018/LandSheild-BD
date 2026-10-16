@@ -1,9 +1,9 @@
 # Bangla copy rules and glossary (U0.1, 2026-10-16)
 
-Applies to `frontend/messages/bn.json`. Enforced in review; based on §5 of `docs/ui-ux-roadmap.md`.
+Applies to `frontend/messages/bn.json`. Enforced in review; based on §5 of `docs/ui-ux-roadmap.md`. The digit rule is also enforced by `frontend/tests/bn-digits.test.ts` (U0.2).
 
 ## Rules
-- Bangla digits in every value (`১২৪৫`, `১০ এমবি`). Numbers that come from code go through `Intl.NumberFormat("bn-BD")` / `localDigits`.
+- Bangla digits in every value (`১২৪৫`, `১০ এমবি`). Numbers and dates that come from code go through `lib/intl-locale.ts`: `Intl.NumberFormat(intlLocale(locale))`, `localDigits`, `formatDate`, `formatDateTime`. Typed input goes through `normalizeDigits` before validating.
 - One idea per sentence, under 20 words. Split clauses joined by `;` into separate sentences.
 - Plain spoken words over Sanskritised or English terms. If a citizen would not say it at a land office, rewrite it.
 - Keys and ICU placeholders (`{date}`, `{count, plural, …}`, `#`) never change. Only the text around them does.
@@ -41,17 +41,23 @@ Applies to `frontend/messages/bn.json`. Enforced in review; based on §5 of `doc
 **Accepted loanwords** (widely used, no clearer Bangla): সাইন ইন, সাইন আপ, সাইন আউট, ইমেইল, পাসওয়ার্ড, অ্যাকাউন্ট, মোবাইল, ফাইল, পিডিএফ, স্ক্যান, কপি, লিংক, মেনু, আইডি, আইপি, কুকি, ক্লিক, এআই. Staff screens only: ড্যাশবোর্ড, আপলোড, ফিল্টার, অডিট লগ, লেজার, এন্ট্রি, রিসেট, প্রিভিউ, জুম. Citizen screens say "জমা দিন" instead of "আপলোড".
 
 **Latin script allowed only for:**
-- Codes the user must type exactly: `LP-10100`, `MUT-2026-0001`, `FB-2026-00001`, phone `+8801711000000`. The validators accept ASCII only (`LAND_ID_RE`, `MUTATION_NO`, `PHONE`), so the hint text says "ইংরেজি অঙ্কে".
+- Codes the user must type exactly: `LP-10100`, `MUT-2026-0001`, `FB-2026-00001`. The letters must be Latin; the digits may be typed in Bangla or English, because the land ID, tracking number and officer phone inputs run `normalizeDigits` before validating (U0.2). The phone example is written in Bangla digits.
 - Proper names: LandShield BD, OpenStreetMap, geoBoundaries, Tesseract, Claude, GNU FreeSans, README; file types JPG / PNG / PDF; licences MIT, ODbL, CC BY 4.0.
+
+## Automated check (U0.2)
+- `frontend/tests/bn-digits.test.ts` fails if any `bn.json` value has a Latin digit `0-9` in its text. ICU syntax is ignored: argument names, `=0` / `offset:` selectors, number/date styles and `#`. Text inside plural/select branches is still checked.
+- The allowlist is per key, and each key lists the exact tokens that may carry Latin digits: `upload.landIdHint`, `upload.errors.LAND_ID` (`LP-10100`); `track.numberHint` (`MUT-2026-0001`, `FB-2026-00001`); `track.errors.format`, `track.example` (`MUT-2026-0001`); `info.dataSources.s2.items.i1` (`CC BY 4.0`). Any other digit in those strings still fails. A second test fails if an allowlisted key or token disappears, so stale entries get removed.
+- To allow a new code, add the key and token to `ALLOWED` in the test and to the list above.
+- Runs with the rest of the unit tests: `npm test` or `npx vitest run` in `frontend/`.
 
 ## Audit result (U0.1)
 - 230 strings rewritten in `bn.json`. Keys and placeholders are unchanged; a script checked placeholder sets per key.
-- Latin digits remaining: only the allowlist above (7 strings).
+- Latin digits remaining: only the allowlist above (7 strings at U0.1; 6 after U0.2 moved the phone example to Bangla digits).
 - Sentences over 20 words: 0. Before the audit there were 2 (`about.purpose.body`, `info.privacy.s3.body`).
 - Tests updated for the new wording: `features/review/engine-badge.test.tsx`, `features/risk/risk.test.tsx`.
 - Open items for later tasks:
-  - U0.2 should turn the Latin-digit rule into a test that uses this allowlist.
-  - Phone, land ID and mutation number inputs should accept Bangla digits (normalise like `features/verify/schema.ts`).
+  - ~~U0.2 should turn the Latin-digit rule into a test that uses this allowlist.~~ Done, see "Automated check (U0.2)".
+  - ~~Phone, land ID and mutation number inputs should accept Bangla digits.~~ Done in U0.2.
   - Brand: roadmap §5 asks for "ল্যান্ডশিল্ড বিডি", but `tests/i18n-parity.test.ts` currently requires `LandShield BD` and forbids the Bangla spelling. This needs a decision before U1.
 
 # Design v2 (UI REDESIGN V2, 2026-10-15)

@@ -56,6 +56,7 @@ const submit = (v: string) => {
 describe("mutation number", () => {
   it("accepts MUT-YYYY-NNNN only, case and space tolerant", () => {
     expect(MUTATION_NO.test(normaliseNo("  mut-2026-0009 "))).toBe(true);
+    expect(normaliseNo("MUT-২০২৬-০০০৯")).toBe("MUT-2026-0009");
     for (const bad of ["MUT-26-9", "LP-10240", "MUT-2026-00091", ""]) expect(MUTATION_NO.test(normaliseNo(bad))).toBe(false);
   });
 });

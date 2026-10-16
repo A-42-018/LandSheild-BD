@@ -1,11 +1,8 @@
 import { z } from "zod";
 
-const BN_DIGITS = "০১২৩৪৫৬৭৮৯";
+import { normalizeDigits } from "@/lib/intl-locale";
 
-/** Bangla digits → ASCII digits; everything else untouched. */
-export function normalizeDigits(s: string): string {
-  return s.replace(/[০-৯]/g, (c) => String(BN_DIGITS.indexOf(c)));
-}
+export { normalizeDigits };
 
 /** Error messages are i18n keys under `verify.errors.*`. */
 const numeric = z.preprocess(

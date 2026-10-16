@@ -12,6 +12,7 @@ import {
   ACCEPT,
   DOCUMENT_TYPES,
   LAND_ID_RE,
+  normaliseLandId,
   errorCodeFromApi,
   formatBytes,
   validateFile,
@@ -146,7 +147,7 @@ export default function UploadForm() {
       const form = new FormData();
       form.append("file", f);
       form.append("document_type", docType);
-      if (landId.trim()) form.append("land_id", landId.trim().toUpperCase());
+      if (landId.trim()) form.append("land_id", normaliseLandId(landId));
       if (!myOffice && office) form.append("office_id", office.id);
       setProgress(0);
       return api.upload<DocumentUploadOut>("/documents/upload", form, { onProgress: setProgress });
@@ -188,7 +189,7 @@ export default function UploadForm() {
     if (!file) return setFileError("EMPTY_FILE");
     const fe = validateFile(file);
     setFileError(fe);
-    const badLand = landId.trim() !== "" && !LAND_ID_RE.test(landId.trim().toUpperCase());
+    const badLand = landId.trim() !== "" && !LAND_ID_RE.test(normaliseLandId(landId));
     setLandIdError(badLand);
     const noOffice = needsOffice && !office;
     setOfficeError(noOffice);

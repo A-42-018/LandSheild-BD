@@ -1,7 +1,11 @@
+import { normalizeDigits } from "@/lib/intl-locale";
+
 export const MAX_BYTES = 10 * 1024 * 1024; // mirrors backend MAX_FILE_BYTES (10 MB)
 export const ALLOWED_EXT = ["jpg", "jpeg", "png", "pdf"] as const;
 export const DOCUMENT_TYPES = ["DEED", "KHATIAN", "PORCHA", "MUTATION", "OTHER"] as const;
 export const LAND_ID_RE = /^LP-\d{5}$/;
+/** Typed land ID → canonical form: Bangla digits to ASCII, trimmed, upper-case. */
+export const normaliseLandId = (s: string) => normalizeDigits(s).trim().toUpperCase();
 export const ACCEPT = ".jpg,.jpeg,.png,.pdf";
 
 export type UploadErrorCode =
