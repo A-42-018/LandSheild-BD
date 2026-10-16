@@ -1,12 +1,13 @@
 "use client";
-import { LogIn, LogOut } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Badge } from "@/components/ui";
 import HeaderDropdown from "./HeaderDropdown";
 import { useAuth } from "@/features/auth/AuthContext";
-import { activeNavHref, navItemsFor } from "@/features/auth/roles";
+import { activeNavHref, navItemsFor, redirectFor } from "@/features/auth/roles";
+import NotificationBell from "./NotificationBell";
 
 const ICON_BTN =
   "inline-flex h-11 w-11 items-center justify-center rounded-lg border border-gold/60 bg-black/20 text-gold-soft transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
@@ -62,10 +63,13 @@ export default function UserMenu() {
 
   const all = navItemsFor(user.role);
   const active = activeNavHref(pathname ?? "/", all);
-  const more = all.filter((i) => !i.primary);
+  const home = redirectFor(user.role);
+  const more = all.filter((i) => !i.primary && i.href !== home);
 
   return (
-    <div ref={root} className="min-[1280px]:relative">
+    <div ref={root} className="flex items-center gap-2 min-[1280px]:relative">
+      <Badge tone="pending" className="hidden sm:inline-flex" data-testid="role-badge">{t(`roles.${user.role}`)}</Badge>
+      {user.role === "CITIZEN" && <NotificationBell className={ICON_BTN} />}
       <button
         type="button"
         aria-expanded={open}
@@ -92,6 +96,20 @@ export default function UserMenu() {
             <Badge tone="pending" className="mt-1">{t(`roles.${user.role}`)}</Badge>
           </div>
         </div>
+        <ul className="my-1 space-y-0.5">
+          <li>
+            <Link
+              href={home}
+              aria-current={home === active ? "page" : undefined}
+              className={`flex min-h-11 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                home === active ? "bg-primary-soft text-primary" : "text-ink"
+              }`}
+            >
+              <LayoutDashboard aria-hidden="true" className="h-4 w-4" />
+              {t("nav.myDashboard")}
+            </Link>
+          </li>
+        </ul>
         {more.length > 0 && (
           <ul className="my-1 space-y-0.5">
             {more.map((i) => (
