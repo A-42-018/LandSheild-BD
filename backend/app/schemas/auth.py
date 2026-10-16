@@ -53,6 +53,7 @@ class UserOut(BaseModel):
     name: str
     email: str
     role: str
+    phone: str | None = None
     preferred_language: str
     office: OfficeBrief | None = None
 

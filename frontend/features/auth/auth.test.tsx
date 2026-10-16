@@ -96,7 +96,7 @@ describe("LoginForm", () => {
   });
 
   it.each([
-    ["CITIZEN", "/"],
+    ["CITIZEN", "/my"],
     ["REVIEWER", "/officer"],
     ["OFFICER", "/officer"],
     ["ADMIN", "/officer"],
@@ -169,7 +169,7 @@ describe("RequireRole", () => {
 
 describe("redirectFor / loginPathFor", () => {
   it("maps each role to its home", () => {
-    expect(redirectFor("CITIZEN")).toBe("/");
+    expect(redirectFor("CITIZEN")).toBe("/my");
     expect(redirectFor("REVIEWER")).toBe("/officer");
     expect(redirectFor("OFFICER")).toBe("/officer");
     expect(redirectFor("ADMIN")).toBe("/officer");

@@ -40,7 +40,8 @@
     "notices": "Notices",
     "contact": "Contact",
     "citizenLogin": "Citizen sign in",
-    "officerLogin": "Officer sign in"
+    "officerLogin": "Officer sign in",
+    "myArea": "My land services"
   },
   "errors": {
     "generic": "We couldn't process this document. Please check the file and try again.",
@@ -1978,5 +1979,148 @@
     "p2": "Every result links to the evidence behind it.",
     "p3": "Officer and reviewer access is role-based and audited.",
     "notice": "Demo e-governance prototype. Not a government website."
+  },
+  "my": {
+    "nav": {
+      "label": "My land services",
+      "dashboard": "My dashboard",
+      "searches": "My searches",
+      "watchlist": "Watched land",
+      "reports": "My reports",
+      "notifications": "Notifications",
+      "profile": "Profile and security"
+    },
+    "dashboard": {
+      "greeting": "Hello, {name}",
+      "intro": "What would you like to do today?",
+      "actionsLabel": "Main services",
+      "actions": {
+        "verify": {
+          "title": "Verify land",
+          "desc": "Find a parcel and see its owner, cases and risk."
+        },
+        "check": {
+          "title": "Check before you buy",
+          "desc": "A checklist to go through before you pay anyone."
+        },
+        "track": {
+          "title": "Mutation status",
+          "desc": "See which step your mutation application is at."
+        }
+      },
+      "stats": "At a glance",
+      "statSearches": "Searches",
+      "statWatching": "Watched land",
+      "statReports": "Reports",
+      "statUnread": "New notifications",
+      "recent": "Recent activity",
+      "recentSearches": "Last searched",
+      "recentReports": "Latest reports",
+      "latestNotes": "Latest notifications",
+      "seeAll": "See all",
+      "emptyRecent": "Nothing here yet. Start by verifying a parcel.",
+      "loadError": "We couldn't load your dashboard."
+    },
+    "parcel": {
+      "place": "{mouza}, {upazila}, {district}",
+      "numbers": "Khatian {khatian} · Dag {dag}",
+      "dag": "Dag {dag}"
+    },
+    "searches": {
+      "title": "My searches",
+      "purpose": "Every parcel you have looked up. Open one again in one tap.",
+      "lastSearched": "Last opened {date}",
+      "count": "{count, plural, one {Opened # time} other {Opened # times}}",
+      "open": "Open again",
+      "clear": "Clear history",
+      "clearTitle": "Clear your search history?",
+      "clearBody": "This removes the list of parcels you have looked up. Your reports and watched land stay.",
+      "clearConfirm": "Yes, clear",
+      "cancel": "Cancel",
+      "cleared": "Search history cleared.",
+      "empty": "You have not looked up any parcel yet.",
+      "emptyAction": "Verify a parcel",
+      "loadError": "We couldn't load your searches."
+    },
+    "watch": {
+      "title": "Watched land",
+      "purpose": "We tell you when a new sale, case or mutation appears on these parcels.",
+      "add": "Watch this land",
+      "remove": "Stop watching",
+      "watching": "Watching",
+      "added": "You are now watching {land}.",
+      "removed": "You stopped watching {land}.",
+      "full": "You can watch up to {limit} parcels. Stop watching one first.",
+      "error": "We couldn't update your watched land. Try again.",
+      "since": "Watching since {date}",
+      "unread": "{count, plural, one {# new update} other {# new updates}}",
+      "note": "Note: {note}",
+      "open": "Open record",
+      "used": "{count} of {limit} used",
+      "empty": "You are not watching any land yet.",
+      "emptyHint": "Open a parcel and press “Watch this land”. We will tell you when something changes.",
+      "loadError": "We couldn't load your watched land."
+    },
+    "reports": {
+      "title": "My reports",
+      "purpose": "Every report you have made. Open one to print it or show its QR code.",
+      "made": "Made on {date}",
+      "open": "Open report",
+      "failed": "This report could not be made.",
+      "empty": "You have not made a report yet.",
+      "emptyHint": "Open a parcel and press “Generate verification report”.",
+      "loadError": "We couldn't load your reports."
+    },
+    "notes": {
+      "title": "Notifications",
+      "purpose": "Changes on your watched land and your finished reports.",
+      "markAll": "Mark all as read",
+      "unreadOnly": "Show unread only",
+      "new": "New",
+      "open": "Open",
+      "empty": "No notifications yet.",
+      "emptyUnread": "You have read everything.",
+      "loadError": "We couldn't load your notifications.",
+      "kind": {
+        "WATCH_TRANSACTION": "New transaction recorded on {land}: {type}.",
+        "WATCH_MUTATION": "A mutation application ({no}) was filed on {land}.",
+        "WATCH_MUTATION_STATUS": "Mutation {no} on {land} is now at this step: {status}.",
+        "WATCH_ENCUMBRANCE": "New burden on {land}: {type}.",
+        "REPORT_READY": "Your report for {land} is ready. Risk: {level}.",
+        "OTHER": "Update about {land}."
+      }
+    },
+    "profile": {
+      "title": "Profile and security",
+      "purpose": "Your name, mobile number, language and password.",
+      "details": "Your details",
+      "name": "Full name",
+      "phone": "Mobile number",
+      "phoneHint": "For example: 01711000000. Optional.",
+      "language": "Language for the site",
+      "email": "Email",
+      "emailNote": "You sign in with your email, so it cannot be changed here.",
+      "save": "Save details",
+      "saved": "Your details are saved.",
+      "noChange": "Nothing changed.",
+      "password": "Change password",
+      "current": "Current password",
+      "new": "New password",
+      "newHint": "At least 8 characters.",
+      "confirm": "Type the new password again",
+      "changePassword": "Change password",
+      "changed": "Your password is changed. Use it next time you sign in.",
+      "errors": {
+        "nameRequired": "Write your name.",
+        "phone": "Write an 11-digit mobile number that starts with 01, for example 01711000000.",
+        "currentRequired": "Write your current password.",
+        "short": "The new password needs at least 8 characters.",
+        "mismatch": "The two new passwords do not match. Type them again.",
+        "WRONG_PASSWORD": "Your current password is not correct. Check it and try again.",
+        "PASSWORD_UNCHANGED": "The new password is the same as the current one. Choose a different one.",
+        "RATE_LIMITED": "Too many tries. Wait one minute and try again.",
+        "generic": "We couldn't save. Check your connection and try again."
+      }
+    }
   }
 }
