@@ -44,20 +44,14 @@ describe("activeNavHref", () => {
 });
 
 describe("Navbar (UD3)", () => {
-  it("has brand link, main nav, language switch and a single light/dark button; no top strip", () => {
+  it("has brand link, main nav and a single light/dark button; the strip controls live in TopStrip, not here", () => {
     render(wrap(<Navbar />));
     expect(screen.getByRole("link", { name: en.common.appName })).toHaveAttribute("href", "/");
     expect(screen.getByRole("navigation", { name: en.nav.main })).toBeInTheDocument();
     expect(screen.queryByTestId("top-strip")).not.toBeInTheDocument();
     expect(screen.queryByRole("group", { name: en.strip.textSize })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("aria-current", "true");
+    expect(screen.queryByRole("navigation", { name: en.common.language })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: en.theme.toDark })).toBeInTheDocument();
-  });
-
-  it("language switch lists EN then BN inside the header", () => {
-    render(wrap(<Navbar />));
-    const lang = screen.getByRole("navigation", { name: en.common.language });
-    expect(within(lang).getAllByRole("link").map((a) => a.textContent)).toEqual(["EN", "BN"]);
   });
 
   it("theme button toggles light and dark and stores the choice", () => {

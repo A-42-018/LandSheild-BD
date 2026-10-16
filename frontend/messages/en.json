@@ -1063,7 +1063,9 @@
     "glyphSmaller": "A−",
     "glyphNormal": "A",
     "glyphLarger": "A+",
-    "label": "Site notice and display settings"
+    "label": "Site notice and display settings",
+    "contrast": "High contrast",
+    "today": "Today's date"
   },
   "mutation": {
     "title": "e-Mutation applications",

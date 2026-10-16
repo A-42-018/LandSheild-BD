@@ -71,6 +71,36 @@
     --header-from: 0 86 63;
     --header-to: 0 86 63;
   }
+  /* High contrast (U1.1): visitor-chosen from the top strip. Body text 21:1, muted text and borders darker, links and focus ring stronger. */
+  :root.contrast {
+    --surface-muted: 255 255 255;
+    --line: 84 96 112;
+    --ink: 0 0 0;
+    --ink-muted: 33 45 64;
+    --primary: 0 78 56;
+    --primary-hover: 0 58 42;
+    --link: 0 38 105;
+    --verified: 0 84 34;
+    --review: 107 58 0;
+    --critical: 155 0 10;
+    --pending: 45 57 76;
+  }
+  :root.dark.contrast {
+    --surface: 0 0 0;
+    --surface-muted: 0 0 0;
+    --line: 150 165 190;
+    --ink: 255 255 255;
+    --ink-muted: 214 223 237;
+    --primary: 124 232 178;
+    --primary-hover: 170 244 205;
+    --link: 178 212 255;
+    --verified: 110 236 178;
+    --review: 253 214 90;
+    --critical: 255 150 150;
+    --pending: 200 210 226;
+  }
+  .contrast :focus-visible { outline-width: 3px; outline-offset: 3px; }
+  .contrast main p a, .contrast main li a { text-decoration-line: underline; text-underline-offset: 3px; }
   /* Type scale + touch target (U0.3). Latin keeps Tailwind's default sizes; Bangla (smaller x-height, stacked vowel
      signs) gets one step larger text and taller lines, so no Bangla text is below 13 px and body copy is 17 px / 1.7. */
   :root {

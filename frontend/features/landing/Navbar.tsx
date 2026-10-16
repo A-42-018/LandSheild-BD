@@ -1,7 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import HeaderMenu from "@/components/HeaderMenu";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
 
 /** Decorative header texture: faint plot lines behind the logo and a "digital" column grid on the right. */
@@ -29,7 +28,7 @@ function HeaderArt() {
   );
 }
 
-/** Solid primary header with a 2 px accent rule; language and light/dark toggles sit in the bar next to the account button. */
+/** Solid primary header with a 2 px accent rule; the light/dark toggle sits in the bar next to the account button (language, text size and contrast are in TopStrip). */
 export default function Navbar() {
   const t = useTranslations("common");
   return (
@@ -49,12 +48,7 @@ export default function Navbar() {
             </span>
           </Link>
           <HeaderMenu
-            controls={
-              <>
-                <LanguageSwitcher variant="header" />
-                <ThemeToggle variant="icon" />
-              </>
-            }
+            controls={<ThemeToggle variant="icon" />}
           />
         </div>
       </header>

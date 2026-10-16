@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import Header from "@/components/Header";
+import TopStrip from "@/components/TopStrip";
 import PublicBackdrop from "@/features/landing/PublicBackdrop";
 import Footer from "@/features/landing/Footer";
 import PageHelpful from "@/features/feedback/PageHelpful";
@@ -62,6 +63,7 @@ export default async function LocaleLayout({
             {t("skipToContent")}
           </a>
           <div className="contents print:hidden">
+            <TopStrip />
             <Header />
           </div>
           <PublicBackdrop />

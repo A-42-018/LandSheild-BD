@@ -328,3 +328,10 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 ## U4 — Brand + Bangla-first (2026-10-06)
 - Logo is now flat SVG: `public/brand/logo-mark.svg`, `logo-full.svg`; `app/icon.png` rendered from the mark; old PNGs in `public/brand/legacy/` (unreferenced). Earlier logo notes above are historical.
 - Default locale `bn`; `:lang(bn)` typography rules at the end of `app/globals.css`.
+
+## U1.1 — Top strip returns (roadmap §6, Phase 1)
+- `components/TopStrip.tsx` is mounted above the header in `app/[locale]/layout.tsx` (not sticky, `print:hidden`). Left: weekday · বঙ্গাব্দ date · খ্রিস্টাব্দ date. Right: text size A− / A / A+, high-contrast toggle, **বাং | EN** pill (`LanguageSwitcher variant="strip"`). The header keeps only the theme button; the language switch moved here.
+- Dates: `lib/bn-date.ts` follows the Bangladesh revised calendar (new year 14 April; anchors tested: 8 Falgun = 21 Feb, 12 Choitro = 26 Mar, 2 Poush = 16 Dec) and uses Dhaka time. Rendered after mount, because pages are statically generated and must not bake in a date. Bangla digits come from `localDigits`.
+- Text size: `ls-text-size` 100 / 112.5 / 125 on `<html>`; **default is 100 and only an explicit choice changes it** (the 2026-10-15 removal was caused by a stale saved 125 %). `theme-init.js` applies it before paint and `Providers` re-applies it after a language switch.
+- High contrast: `ls-contrast = high` adds `contrast` to `<html>`; `:root.contrast` and `:root.dark.contrast` in `globals.css` darken ink, muted text, borders and links, and thicken the focus ring. Off by default.
+- Not done here: the demo notice (`strip.notice`) is not shown in the strip (the footer and result pages still carry the demo label).

@@ -1063,7 +1063,9 @@
     "glyphSmaller": "অ−",
     "glyphNormal": "অ",
     "glyphLarger": "অ+",
-    "label": "সাইটের নোটিশ ও দেখার পছন্দ"
+    "label": "সাইটের নোটিশ ও দেখার পছন্দ",
+    "contrast": "উচ্চ কনট্রাস্ট",
+    "today": "আজকের তারিখ"
   },
   "mutation": {
     "title": "ই-নামজারি আবেদন",
