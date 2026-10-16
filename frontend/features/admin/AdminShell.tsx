@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Building2, Database, LayoutDashboard, ScrollText, Settings, UserCheck, Users, type LucideIcon } from "lucide-react";
+import { Building2, Database, FileText, LayoutDashboard, ScrollText, Settings, UserCheck, Users, type LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
 
@@ -10,6 +10,7 @@ export const ADMIN_NAV: { href: string; key: string; Icon: LucideIcon }[] = [
   { href: "/admin/users", key: "users", Icon: Users },
   { href: "/admin/officer-requests", key: "officerRequests", Icon: UserCheck },
   { href: "/admin/offices", key: "offices", Icon: Building2 },
+  { href: "/admin/content", key: "content", Icon: FileText },
   { href: "/admin/records", key: "records", Icon: Database },
   { href: "/admin/audit-logs", key: "audit", Icon: ScrollText },
   { href: "/admin/settings", key: "settings", Icon: Settings },

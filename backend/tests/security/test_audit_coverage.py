@@ -39,6 +39,9 @@ AUDIT = {
     ("POST", f"{P}/offices/officer-requests"): "OFFICER_REQUEST",
     ("POST", f"{P}/admin/officer-requests/{{request_id}}/approve"): "OFFICER_REQUEST_APPROVE",
     ("POST", f"{P}/admin/officer-requests/{{request_id}}/reject"): "OFFICER_REQUEST_REJECT",
+    ("POST", f"{P}/admin/content"): "CONTENT_CREATE",
+    ("PATCH", f"{P}/admin/content/{{item_id}}"): "CONTENT_UPDATE",
+    ("DELETE", f"{P}/admin/content/{{item_id}}"): "CONTENT_DELETE",
     ("DELETE", f"{P}/me/searches"): "SEARCH_HISTORY_CLEAR",
     ("POST", f"{P}/me/watchlist"): "WATCHLIST_ADD",
     ("DELETE", f"{P}/me/watchlist/{{land_id}}"): "WATCHLIST_REMOVE",
@@ -178,6 +181,18 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     _audited(env, "OFFICER_REQUEST_REJECT", lambda: env.post(
         f"{P}/admin/officer-requests/{rid[1]}/reject", json={"reason": "Not verified"}, headers=adm))  # fmt: skip
     mark("POST", f"{P}/admin/officer-requests/{{request_id}}/reject")
+
+    note = {
+        "kind": "FAQ", "title_en": "Audit item", "title_bn": "অডিট আইটেম",
+        "body_en": "Audit body text", "body_bn": "অডিট বিবরণ",
+    }
+    item = _audited(env, "CONTENT_CREATE", lambda: env.post(f"{P}/admin/content", json=note, headers=adm))
+    mark("POST", f"{P}/admin/content")
+    cid = item.json()["id"]
+    _audited(env, "CONTENT_UPDATE", lambda: env.patch(f"{P}/admin/content/{cid}", json={"position": 2}, headers=adm))
+    mark("PATCH", f"{P}/admin/content/{{item_id}}")
+    _audited(env, "CONTENT_DELETE", lambda: env.delete(f"{P}/admin/content/{cid}", headers=adm))
+    mark("DELETE", f"{P}/admin/content/{{item_id}}")
 
     fb = _audited(env, "FEEDBACK_SUBMIT", lambda: env.post(f"{P}/public/feedback", json={
         "kind": "GRIEVANCE", "subject": "Audit subject", "message": "Audit message body"}))  # fmt: skip

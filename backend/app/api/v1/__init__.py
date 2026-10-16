@@ -5,6 +5,7 @@ from app.api.v1 import (
     admin_audit,
     archive,
     auth,
+    content,
     documents,
     feedback,
     gis,
@@ -26,6 +27,8 @@ api_router.include_router(health.router)
 api_router.include_router(admin_audit.router)
 api_router.include_router(admin.router)
 api_router.include_router(auth.router)
+api_router.include_router(content.router)
+api_router.include_router(content.admin_router)
 api_router.include_router(offices.router)
 api_router.include_router(offices.admin_router)
 api_router.include_router(offices.admin_offices_router)
