@@ -25,6 +25,26 @@ class PublicVerify(BaseModel):
     last_verified_at: datetime | None = None
 
 
+class PublicLandSummary(BaseModel):
+    """Masked search result (U2.1): owners as "R*** U***" only; no father name, NID, deeds or ids.
+    Full records stay behind sign-in (`/lands/*`)."""
+
+    land_id: str
+    district: str
+    upazila: str
+    mouza: str
+    khatian_no: str
+    dag_no: str
+    area: float
+    area_unit: str
+    status: str
+    risk_level: str
+    owner_count: int
+    owners_masked: list[str]
+    open_case: bool  # an ACTIVE court case is recorded against the parcel
+    counts: PublicCounts
+
+
 class PublicKey(BaseModel):
     algorithm: str
     public_key: str

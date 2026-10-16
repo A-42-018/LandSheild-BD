@@ -131,3 +131,15 @@ def can_auto_merge(a: str | None, fa: str | None, b: str | None, fb: str | None)
     if not normalize_name(fa) or not normalize_name(fb):
         return False
     return owner_similarity(a, b) >= MERGE_MIN and owner_similarity(fa, fb) >= MERGE_MIN
+
+
+def mask_name(value: str) -> str:
+    """Public display (U2.1): honorifics kept, every other word cut to its first letter + "***".
+
+    "Md. Rahim Uddin" -> "Md. R*** U***", "রহিম উদ্দিন" -> "র*** উ***". The full name never leaves.
+    """
+    out = []
+    for word in unicodedata.normalize("NFC", value).split():
+        bare = word.rstrip(".:").casefold()
+        out.append(word if bare in HONORIFICS or word.casefold() in HONORIFICS else f"{word[0]}***")
+    return " ".join(out)

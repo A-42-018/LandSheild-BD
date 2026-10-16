@@ -63,6 +63,7 @@ def _sweep(env, store, jobs):
         urls += [f"{P}/lands/{land}{x}" for x in ("", "/ownership", "/transactions", "/risk", "/graph", "/pre-purchase-check")]
         urls.append(f"{P}/public/verify/{land}")
     urls += [f"{P}/public/mutation-status/{no}" for no in ("MUT-2012-0001", "MUT-2023-0007")]
+    urls.append(f"{P}/public/lands/search?district=Dhaka&upazila=Savar&mouza=Ashulia&khatian=610&dag=210")
     for v in verifications.values():
         urls += [f"{P}/verification/{v}", f"{P}/verification/{v}/report"]
     out = []

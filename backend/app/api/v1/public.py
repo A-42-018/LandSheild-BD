@@ -16,6 +16,7 @@ from app.schemas.public import (
     DocumentVerifyBody,
     DocumentVerifyOut,
     PublicKey,
+    PublicLandSummary,
     PublicMutationStatus,
     PublicSeal,
     PublicSignature,
@@ -47,6 +48,29 @@ def _guard(request: Request, response: Response, settings: Settings) -> None:
     ip = request.client.host if request.client else "unknown"
     check_rate("public", ip, settings.public_rate_limit_per_min)
     response.headers["Cache-Control"] = "no-store"
+
+
+@router.get("/lands/search", response_model=PublicLandSummary)
+def public_land_search(
+    request: Request,
+    response: Response,
+    district: str = Query(min_length=1, max_length=100),
+    upazila: str = Query(min_length=1, max_length=100),
+    mouza: str = Query(min_length=1, max_length=100),
+    khatian: str = Query(min_length=1, max_length=50),
+    dag: str = Query(min_length=1, max_length=50),
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> PublicLandSummary:
+    """U2.1: no-login search with a masked summary. Rate-limited per IP; each hit is audited."""
+    _guard(request, response, settings)
+    ip = request.client.host if request.client else None
+    land, summary = svc.search_land_summary(
+        db, district=district, upazila=upazila, mouza=mouza, khatian=khatian, dag=dag
+    )
+    audit.log(db, None, "PUBLIC_LAND_SEARCH", "land", land.id, ip=ip)
+    db.commit()
+    return summary
 
 
 @router.get("/mutation-status/{mutation_no}", response_model=PublicMutationStatus)
