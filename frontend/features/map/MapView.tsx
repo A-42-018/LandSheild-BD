@@ -1,6 +1,6 @@
 "use client";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Layers, Maximize2, Minimize2, Search } from "lucide-react";
+import { EyeOff, Layers, ListTree, Maximize2, Minimize2, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button, EmptyState, ErrorState, LoadingState, Select } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
@@ -55,11 +55,14 @@ export default function MapView() {
   const [showBoundaries, setShowBoundaries] = useState(true);
   const [showParcels, setShowParcels] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
-  const [legendOpen, setLegendOpen] = useState(false); // phones only; the legend is always shown from 640 px
+  const [legendOpen, setLegendOpen] = useState(true);
 
-  // Phones: start with the search menu closed so the map is visible first.
+  // Phones: start with the search menu and the legend closed so the map is visible first.
   useEffect(() => {
-    if (typeof window.matchMedia === "function" && window.matchMedia("(max-width: 639px)").matches) setMenuOpen(false);
+    if (typeof window.matchMedia === "function" && window.matchMedia("(max-width: 639px)").matches) {
+      setMenuOpen(false);
+      setLegendOpen(false);
+    }
   }, []);
 
   // Esc leaves fullscreen; the page behind does not scroll
@@ -324,54 +327,68 @@ export default function MapView() {
             </div>
           )}
         </aside>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className={`absolute bottom-9 right-2 z-[1000] !text-ink sm:hidden ${GLASS} ${legendOpen ? "hidden" : ""}`}
-          aria-expanded={legendOpen}
-          aria-controls="map-legend"
-          onClick={() => setLegendOpen(true)}
-        >
-          {t("map.legendTitle")}
-        </Button>
-        <section
-          id="map-legend"
-          aria-label={t("map.legendTitle")}
-          className={`absolute bottom-9 right-2 z-[1000] max-w-[15rem] flex-col gap-1 rounded-card p-2.5 text-xs text-ink sm:flex ${legendOpen ? "flex" : "hidden"} ${GLASS}`}
-        >
-          <button type="button" onClick={() => setLegendOpen(false)} className="self-end text-xs font-medium text-link underline sm:hidden">
-            {t("common.close")}
-          </button>
-          <span className="text-sm font-semibold">{t("map.legendTitle")}</span>
-          {showBoundaries &&
-            (["division", "district", "upazila"] as const).map((lvl) => (
-              <span key={lvl} className="inline-flex items-center gap-1.5">
-                <span
-                  aria-hidden="true"
-                  className="inline-block w-5 shrink-0 border-t"
-                  style={{
-                    borderTopWidth: LEVEL_STYLE[lvl].weight + 1,
-                    borderColor: LEVEL_STYLE[lvl].color,
-                  }}
-                />
-                {t(`map.gis.level.${lvl}`)}
-                {lvl === level && ` — ${t("map.gis.shownNow")}`}
-              </span>
-            ))}
-          {showParcels &&
-            (["LOW", "MEDIUM", "HIGH"] as const).map((lvl) => (
-              <span key={lvl} className="inline-flex items-center gap-1.5">
-                <span
-                  aria-hidden="true"
-                  className="inline-block h-3 w-3 shrink-0 rounded-sm border border-line"
-                  style={{ backgroundColor: RISK_COLOR[lvl] }}
-                />
-                {t(`risk.level.${lvl}`)}
-              </span>
-            ))}
-          {showParcels && <span className="text-ink-muted">{t("map.legendNote")}</span>}
-        </section>
+        {!legendOpen && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className={`absolute bottom-9 right-2 z-[1000] !text-ink hover:!bg-surface-muted ${GLASS}`}
+            icon={<ListTree />}
+            aria-expanded={false}
+            aria-controls="map-legend"
+            onClick={() => setLegendOpen(true)}
+          >
+            {t("map.showLegend")}
+          </Button>
+        )}
+        {legendOpen && (
+          <section
+            id="map-legend"
+            aria-label={t("map.legendTitle")}
+            className={`absolute bottom-9 right-2 z-[1000] flex max-w-[15rem] flex-col gap-1 rounded-card p-2.5 text-xs text-ink ${GLASS}`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-semibold">{t("map.legendTitle")}</span>
+              <button
+                type="button"
+                aria-expanded={true}
+                aria-controls="map-legend"
+                onClick={() => setLegendOpen(false)}
+                className="inline-flex min-h-8 items-center gap-1 rounded-md px-1.5 text-xs font-medium text-link hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
+                <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
+                {t("map.hideLegend")}
+              </button>
+            </div>
+            {showBoundaries &&
+              (["division", "district", "upazila"] as const).map((lvl) => (
+                <span key={lvl} className="inline-flex items-center gap-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block w-5 shrink-0 border-t"
+                    style={{
+                      borderTopWidth: LEVEL_STYLE[lvl].weight + 1,
+                      borderColor: LEVEL_STYLE[lvl].color,
+                    }}
+                  />
+                  {t(`map.gis.level.${lvl}`)}
+                  {lvl === level && ` — ${t("map.gis.shownNow")}`}
+                </span>
+              ))}
+            {showParcels &&
+              (["LOW", "MEDIUM", "HIGH"] as const).map((lvl) => (
+                <span key={lvl} className="inline-flex items-center gap-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-3 w-3 shrink-0 rounded-sm border border-line"
+                    style={{ backgroundColor: RISK_COLOR[lvl] }}
+                  />
+                  {t(`risk.level.${lvl}`)}
+                </span>
+              ))}
+            {showParcels && <span className="text-ink-muted">{t("map.legendNote")}</span>}
+          </section>
+        )}
       </div>
 
       <p className="text-xs text-ink-muted">{t("map.mapHint")}</p>

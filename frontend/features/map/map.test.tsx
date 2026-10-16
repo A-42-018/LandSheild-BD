@@ -207,6 +207,14 @@ describe("MapView (UD7)", () => {
     await waitFor(() => expect(container).not.toHaveAttribute("data-fullscreen"));
     expect(container).toContainElement(screen.getByRole("region", { name: en.map.legendTitle }));
   });
+  it("legend can be hidden and shown again", async () => {
+    wrap(client(ok(DATA)));
+    await screen.findByTestId("map-canvas");
+    fireEvent.click(screen.getByRole("button", { name: en.map.hideLegend }));
+    expect(screen.queryByRole("region", { name: en.map.legendTitle })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: en.map.showLegend }));
+    expect(screen.getByRole("region", { name: en.map.legendTitle })).toHaveTextContent("High");
+  });
   it("parcel rows carry the risk level for styling", async () => {
     wrap(client(ok(DATA)));
     expect(await screen.findByTestId("parcel-LP-10240")).toHaveAttribute("data-risk", "HIGH");
