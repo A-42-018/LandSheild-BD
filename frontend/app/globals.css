@@ -198,15 +198,18 @@
       background-size: auto;
     }
   }
-  /* Photo block between the title and the points: grows with the panel (tall forms such as officer request), so no empty gap;
-     its top and bottom edges fade into the panel green. */
+  /* Desktop photo frame (AuthShell .auth-frame): the farmer photo fills the sticky, viewport-high frame; a green fade
+     at the top carries the title, a fade at the bottom carries the points, the middle keeps face + phone clear. Both
+     fades end in the panel green, so the frame blends into the panel when the form is taller than the frame. */
   .auth-photo {
-    background-image: url("/landing/farmer-768.webp");
-    background-size: cover;
-    background-position: 55% 0;
+    background-image:
+      linear-gradient(180deg, #0A3527 0%, rgb(10 53 39 / 0.9) 12%, rgb(10 53 39 / 0.35) 24%, rgb(10 53 39 / 0) 34%,
+        rgb(10 53 39 / 0) 56%, rgb(10 53 39 / 0.55) 70%, rgb(10 53 39 / 0.92) 86%, #0A3527 100%),
+      linear-gradient(90deg, rgb(10 53 39 / 0.35), transparent 30%, transparent 70%, rgb(10 53 39 / 0.35)),
+      url("/landing/farmer-768.webp");
+    background-size: cover, cover, cover;
+    background-position: center, center, 50% 22%;
     background-repeat: no-repeat;
-    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 84%, transparent 100%);
-    mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 84%, transparent 100%);
   }
   /* Horizontal scroller with soft fade edges (tab rows on phones). */
   .scroll-fade {
