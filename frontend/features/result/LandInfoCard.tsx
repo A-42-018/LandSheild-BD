@@ -13,8 +13,8 @@ export function useUnitLabel() {
   return (u: string) => (t.has(u) ? t(u) : u);
 }
 
-/** Summary header card (Template B): land ID + place + big risk chip, then the record fields as icon-tile rows. */
-export default function LandInfoCard({ land, chip }: { land: LandInfo; chip?: React.ReactNode }) {
+/** Record fields as icon-tile rows under the land ID and place. `bare` drops the card frame when a collapsible section already supplies the title (U2.4). */
+export default function LandInfoCard({ land, chip, bare }: { land: LandInfo; chip?: React.ReactNode; bare?: boolean }) {
   const t = useTranslations("result");
   const locale = useLocale();
   const unit = useUnitLabel();
@@ -28,8 +28,8 @@ export default function LandInfoCard({ land, chip }: { land: LandInfo; chip?: Re
     [t("status"), <StatusBadge key="s" code={land.status} />, ShieldCheck],
   ];
   const place = [districtName(land.district, locale), upazilaName(land.district, land.upazila, locale), land.mouza].filter(Boolean).join(" · ");
-  return (
-    <Card title={t("landInfo")} icon={<Landmark />} variant="record">
+  const body = (
+    <>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-mono text-xl font-bold text-ink sm:text-2xl">
@@ -73,6 +73,12 @@ export default function LandInfoCard({ land, chip }: { land: LandInfo; chip?: Re
           </dd>
         </div>
       </dl>
+    </>
+  );
+  if (bare) return <div data-testid="land-info">{body}</div>;
+  return (
+    <Card title={t("landInfo")} icon={<Landmark />} variant="record">
+      {body}
     </Card>
   );
 }

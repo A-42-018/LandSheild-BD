@@ -318,7 +318,39 @@
     "resolvedOn": "Resolved",
     "notResolved": "Not resolved",
     "reference": "Reference",
-    "authority": "Authority"
+    "authority": "Authority",
+    "detailsTitle": "Full details",
+    "detailsHint": "Open a section to see the records behind this summary.",
+    "verdict": {
+      "title": "Quick summary",
+      "summaryLabel": "Summary",
+      "headline": {
+        "LOW": "No warning signs found",
+        "MEDIUM": "A few things need checking",
+        "HIGH": "Be careful before you buy",
+        "UNKNOWN": "We could not rate this plot"
+      },
+      "level": {
+        "LOW": "Our checks found nothing unusual in this plot's records.",
+        "MEDIUM": "Our checks found a few details that do not fully match.",
+        "HIGH": "Our checks found serious problems in this plot's records.",
+        "UNKNOWN": "The risk check did not finish for this plot."
+      },
+      "signs": "{count, plural, =0 {No warning signs were raised.} one {# warning sign was raised.} other {# warning signs were raised.}}",
+      "casesNone": "No court case, khas land, acquisition or mortgage is recorded.",
+      "casesSome": "A court case, khas land, acquisition or mortgage is on record.",
+      "stepsTitle": "What to do now",
+      "steps": {
+        "report": "Download the report and keep it with your papers.",
+        "confirmOffice": "Before you pay, confirm these records at the AC (Land) office.",
+        "checkSigns": "Ask the seller to explain each warning sign listed below.",
+        "noPay": "Do not pay or sign anything yet.",
+        "takeReport": "Take this report to the AC (Land) office and ask them to check the flagged items.",
+        "caseDocs": "Ask the seller for the case, khas or mortgage papers and check them at the office.",
+        "lawyer": "Talk to a land lawyer before you go further.",
+        "retry": "Try again in a moment, or ask the AC (Land) office to check this plot."
+      }
+    }
   },
   "report": {
     "title": "Land verification report",

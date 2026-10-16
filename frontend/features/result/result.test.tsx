@@ -51,8 +51,12 @@ const DATA: Record<string, any> = {
   },
 };
 
-/** U6: record sections live in tabs; open one by its label. */
-const openTab = async (name: string) => fireEvent.click(await screen.findByRole("tab", { name }));
+/** U2.4: record sections are collapsible; open one by its title. */
+const openTab = async (name: string) => {
+  const toggle = (await screen.findAllByTestId("section-toggle")).find((x) => x.textContent?.startsWith(name));
+  if (!toggle) throw new Error(`no section "${name}"`);
+  fireEvent.click(toggle);
+};
 
 function client(get: (path: string) => Promise<any>): ApiClient {
   return { refresh: vi.fn().mockResolvedValue({ user }), get } as unknown as ApiClient;
@@ -81,11 +85,14 @@ describe("ResultView", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(en.result.title);
     expect(screen.getByRole("navigation", { name: en.page.breadcrumb })).toBeInTheDocument();
     expect(screen.getByTestId("page-meta")).toHaveTextContent("LP-10100");
-    expect(screen.getAllByRole("tab").map((x) => x.textContent)).toEqual([
-      en.result.tabOwnership, en.result.tabTransactions, en.result.tabMutation, en.result.tabEncumbrance, en.result.tabEvidence,
-    ]);
-    expect(await screen.findByTestId("record-chip")).toHaveTextContent(en.risk.level.LOW);
+    await waitFor(() =>
+      expect(screen.getAllByTestId("section-toggle").map((x) => x.textContent)).toEqual([
+        en.result.landInfo, `${en.result.tabOwnership}3`, `${en.result.tabTransactions}2`, `${en.result.tabMutation}0`, `${en.result.tabEncumbrance}1`, `${en.result.tabEvidence}0`,
+      ]),
+    );
+    expect(await screen.findByTestId("verdict-badge")).toHaveTextContent(en.risk.level.LOW);
 
+    await openTab(en.result.tabOwnership);
     const items = within(await screen.findByRole("list", { name: en.result.ownership })).getAllByRole("listitem");
     expect(items).toHaveLength(3);
     expect(items[0]).toHaveTextContent("Rahim Uddin");
@@ -103,10 +110,60 @@ describe("ResultView", () => {
     expect(rows[2]).toHaveTextContent("Hasan Ali");
 
     await openTab(en.result.tabEvidence);
-    expect(screen.getByTestId("risk-section")).toHaveTextContent(en.risk.noEvidence);
+    expect(await screen.findByTestId("risk-section")).toHaveTextContent(en.risk.noEvidence);
   });
 
-  it("shows cases / encumbrances in their tab", async () => {
+  it("leads with the verdict: big badge, three plain lines, then what to do now", async () => {
+    wrap(client(okGet), "LP-10100");
+    const verdict = await screen.findByTestId("verdict");
+    expect(within(verdict).getByTestId("verdict-badge")).toHaveTextContent(en.risk.level.LOW);
+    expect(within(verdict).getByText(en.result.verdict.headline.LOW)).toBeInTheDocument();
+    const lines = within(within(verdict).getByTestId("verdict-summary")).getAllByRole("listitem");
+    expect(lines.map((x) => x.textContent)).toEqual([en.result.verdict.level.LOW, "No warning signs were raised.", en.result.verdict.casesNone]);
+    const steps = within(within(verdict).getByTestId("next-steps"));
+    expect(steps.getByText(en.result.verdict.stepsTitle)).toBeInTheDocument();
+    expect(steps.getAllByRole("listitem").map((x) => x.textContent)).toEqual([en.result.verdict.steps.confirmOffice, en.result.verdict.steps.report]);
+    // order on the page: verdict → details sections
+    const all = screen.getByTestId("verdict").compareDocumentPosition(screen.getByTestId("section-ownership"));
+    expect(all & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("HIGH risk with an open case warns first, opens the evidence section and tells the user not to pay", async () => {
+    const ev = [
+      { code: "ACTIVE_LITIGATION", severity: "HIGH", params: { reference_no: "C-9" } },
+      { code: "SELLER_MISMATCH", severity: "HIGH", params: { transaction_date: "2019-06-20" } },
+    ];
+    const get = (path: string) => (path === "/lands/LP-10100/risk" ? Promise.resolve(risk("LP-10100", 85, "HIGH", ev)) : okGet(path));
+    wrap(client(get), "LP-10100");
+    const verdict = await screen.findByTestId("verdict");
+    await within(verdict).findByText(en.result.verdict.headline.HIGH);
+    expect(within(verdict).getByTestId("verdict-badge")).toHaveAttribute("data-risk", "HIGH");
+    expect(within(verdict).getByText("2 warning signs were raised.")).toBeInTheDocument();
+    expect(within(verdict).getByText(en.result.verdict.casesSome)).toBeInTheDocument();
+    const steps = within(verdict).getAllByRole("listitem").filter((x) => x.closest("ol"));
+    expect(steps.map((x) => x.textContent)).toEqual([en.result.verdict.steps.noPay, en.result.verdict.steps.caseDocs, en.result.verdict.steps.takeReport]);
+    expect(await screen.findByTestId("risk-section")).toBeInTheDocument(); // evidence section opened by itself
+  });
+
+  it("keeps the detail sections closed until opened (only the land facts start open)", async () => {
+    wrap(client(okGet), "LP-10100");
+    await screen.findByTestId("verdict");
+    expect(screen.getByTestId("section-land")).toHaveAttribute("open");
+    expect(screen.getByTestId("section-ownership")).not.toHaveAttribute("open");
+    expect(screen.queryByRole("list", { name: en.result.ownership })).toBeNull();
+    await openTab(en.result.tabOwnership);
+    expect(await screen.findByRole("list", { name: en.result.ownership })).toBeInTheDocument();
+  });
+
+  it("still gives next steps when the risk check fails", async () => {
+    const get = (path: string) => (path.endsWith("/risk") ? Promise.reject(new ApiError(500, "X", "boom")) : okGet(path));
+    wrap(client(get), "LP-10100");
+    const verdict = await screen.findByTestId("verdict");
+    expect(await within(verdict).findByRole("alert")).toHaveTextContent(en.risk.loadError);
+    expect(within(verdict).getByText(en.result.verdict.steps.retry)).toBeInTheDocument();
+  });
+
+  it("shows cases / encumbrances in their section", async () => {
     wrap(client(okGet), "LP-10100");
     await openTab(en.result.tabEncumbrance);
     const row = within(await screen.findByRole("table", { name: en.result.encumbrances })).getAllByRole("row")[1];
@@ -148,6 +205,7 @@ describe("ResultView", () => {
   it("renders LP-10001: single owner and empty transactions state", async () => {
     wrap(client(okGet), "LP-10001");
     expect(await screen.findByText("LP-10001")).toBeInTheDocument();
+    await openTab(en.result.tabOwnership);
     const items = within(await screen.findByRole("list", { name: en.result.ownership })).getAllByRole("listitem");
     expect(items).toHaveLength(1);
     expect(items[0]).toHaveTextContent("Jamal Hossain");

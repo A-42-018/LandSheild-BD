@@ -38,7 +38,7 @@ test.describe("mobile viewport (375 px)", () => {
   test("HIGH-risk result, mutation queue and admin console fit 375 px (tab bars scroll inside themselves)", async ({ page }) => {
     await signIn(page, "admin");
     await page.goto("/en/verify/result?land_id=LP-10240");
-    await expect(page.getByRole("tab").first()).toBeVisible();
+    await expect(page.getByTestId("verdict")).toBeVisible();
     await expectNoHorizontalScroll(page);
     await openEvidenceTab(page);
     await expect(page.getByTestId("risk-section")).toBeVisible();
@@ -65,7 +65,7 @@ test.describe("UI v2 mobile patterns (375 px)", () => {
   test("tables stack into label/value cards", async ({ page }) => {
     await signIn(page, "citizen");
     await page.goto("/en/verify/result?land_id=LP-10100");
-    await page.getByRole("tab", { name: "Transactions" }).click();
+    await page.getByTestId("section-transactions").locator("summary").click();
     const cell = page.locator("td[data-label]").first();
     await expect(cell).toBeVisible();
     expect(await cell.evaluate((el) => getComputedStyle(el).display)).toBe("flex");

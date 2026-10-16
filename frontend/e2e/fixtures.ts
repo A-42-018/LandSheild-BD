@@ -19,9 +19,11 @@ export async function apiToken(request: APIRequestContext, role: DemoRole): Prom
   return (await res.json()).access_token as string;
 }
 
-/** U6: the risk card lives in the last record tab ("Evidence" / BN equivalent). */
+/** U2.4: the risk card lives in the last collapsible section ("Evidence" / BN equivalent); it opens itself when there is evidence, so only open it if closed. */
 export async function openEvidenceTab(page: Page): Promise<void> {
-  await page.getByRole("tab").last().click();
+  const section = page.getByTestId("section-evidence");
+  await section.waitFor();
+  if ((await section.getAttribute("open")) === null) await section.locator("summary").click();
 }
 
 export async function signIn(page: Page, role: DemoRole): Promise<void> {
