@@ -18,7 +18,7 @@ export const GIS: Record<string, unknown> = {
 };
 export const route = (d: MapCollectionDto, extra: Record<string, unknown> = {}) =>
   vi.fn((p: string): Promise<any> => {
-    const all: Record<string, unknown> = { ...GIS, ...extra, "/lands/map": d };
+    const all: Record<string, unknown> = { ...GIS, ...extra, "/lands/map": d, "/public/map": d };
     return p in all ? Promise.resolve(all[p]) : Promise.reject(new ApiError(404, "X", "x"));
   });
 

@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     cookie_samesite: str = "lax"
     auth_rate_limit_per_min: int = 10
     public_rate_limit_per_min: int = 60
+    public_map_rate_limit_per_min: int = 120  # boundary + parcel-outline reads (map page makes several per click)
     verify_doc_rate_limit_per_min: int = 10
     feedback_rate_limit_per_min: int = 5
     upload_rate_limit_per_hour: int = 20  # per user (R4)

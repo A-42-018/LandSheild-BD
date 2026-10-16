@@ -18,10 +18,13 @@ export default function ParcelList({
   features,
   selectedId,
   onSelect,
+  detailsHref,
 }: {
   features: MapFeatureDto[];
   selectedId: string | null;
   onSelect: (landId: string) => void;
+  /** Where "View details" goes; default is the signed-in result page. */
+  detailsHref?: (p: MapFeatureDto["properties"]) => string;
 }) {
   const t = useTranslations("map");
   const tu = useTranslations("result.units");
@@ -33,24 +36,27 @@ export default function ParcelList({
       <ul className="flex flex-col gap-2">
         {features.map((f) => {
           const p = f.properties;
-          const unit = tu.has(p.area_unit) ? tu(p.area_unit) : p.area_unit;
+          const au = p.area_unit ?? "";
+          const unit = tu.has(au) ? tu(au) : au;
+          const href = detailsHref?.(p) ?? `/verify/result?land_id=${encodeURIComponent(p.land_id)}`;
           return (
             <li
               key={p.land_id}
               data-testid={`parcel-${p.land_id}`}
               aria-current={selectedId === p.land_id ? "true" : undefined}
               data-risk={p.risk_level}
-              className={`flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-l-4 border-line bg-surface p-3 shadow-card transition-shadow hover:shadow-raised ${LEFT[p.risk_level] ?? "border-l-pending"} ${selectedId === p.land_id ? "ring-2 ring-primary/50" : ""}`}
+              className={`flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-l-4 border-line bg-surface p-3 shadow-card transition-shadow hover:shadow-raised ${LEFT[p.risk_level ?? ""] ?? "border-l-pending"} ${selectedId === p.land_id ? "ring-2 ring-primary/50" : ""}`}
             >
               <span className="inline-flex items-center gap-1.5 font-semibold text-ink">
                 <MapPin aria-hidden="true" className="h-4 w-4 text-primary" />
                 {p.land_id}
               </span>
               <span className="text-sm text-ink-muted">
-                {t("popup.dag")} {p.dag_no} · {t("popup.khatian")} {p.khatian_no} · {p.area} {unit}
+                {t("popup.dag")} {p.dag_no} · {t("popup.khatian")} {p.khatian_no}
+                {p.area !== undefined && ` · ${p.area} ${unit}`}
               </span>
-              <StatusBadge code={p.status} />
-              <RiskIndicator level={p.risk_level} />
+              {p.status && <StatusBadge code={p.status} />}
+              {p.risk_level && <RiskIndicator level={p.risk_level} />}
               <span className="ms-auto flex flex-wrap gap-2">
                 <Button
                   size="sm"
@@ -61,7 +67,7 @@ export default function ParcelList({
                   {t("showOnMap")}
                 </Button>
                 <Link
-                  href={`/verify/result?land_id=${encodeURIComponent(p.land_id)}`}
+                  href={href}
                   aria-label={t("viewDetailsFor", { landId: p.land_id })}
                   className="inline-flex items-center rounded-md px-2 text-sm font-medium text-primary underline"
                 >

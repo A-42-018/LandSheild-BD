@@ -35,10 +35,11 @@ export function buildPopup(
     [labels.landId, p.land_id],
     [labels.dag, p.dag_no],
     [labels.khatian, p.khatian_no],
-    [labels.area, `${p.area} ${labels.unitText(p.area_unit)}`],
-    [labels.status, labels.statusText(p.status)],
-    [labels.risk, labels.riskText(p.risk_level)],
   ];
+  // The public map has no area / status / risk: show only what came.
+  if (p.area !== undefined) rows.push([labels.area, `${p.area} ${labels.unitText(p.area_unit ?? "")}`]);
+  if (p.status) rows.push([labels.status, labels.statusText(p.status)]);
+  if (p.risk_level) rows.push([labels.risk, labels.riskText(p.risk_level)]);
   for (const [k, v] of rows) {
     const dt = document.createElement("dt");
     dt.textContent = k;

@@ -54,6 +54,9 @@ const DATA: MapCollectionDto = {
 function client(get: (p: string) => Promise<any>): ApiClient {
   return { refresh: vi.fn().mockResolvedValue({ user }), get } as unknown as ApiClient;
 }
+function visitor(get: (p: string) => Promise<any>): ApiClient {
+  return { refresh: vi.fn().mockResolvedValue(null), get } as unknown as ApiClient;
+}
 function wrap(c: ApiClient, messages: any = en, locale = "en") {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
@@ -112,6 +115,7 @@ describe("MapView", () => {
     wrap(client(ok(DATA)));
     expect(screen.getAllByRole("status").length).toBeGreaterThan(0);
     expect(await screen.findByTestId("map-canvas")).toBeInTheDocument();
+    await screen.findByTestId("parcel-LP-10100");
     expect(screen.getByRole("note")).toHaveTextContent(en.common.demoLabel);
     expect(screen.getAllByTestId("canvas-feature")).toHaveLength(3);
     const legend = screen.getByRole("region", { name: en.map.legendTitle });
@@ -128,6 +132,7 @@ describe("MapView", () => {
   it("risk filter narrows canvas and list; no-match shows an empty state", async () => {
     wrap(client(ok({ ...DATA, features: [DATA.features[0], DATA.features[1]] })));
     await screen.findByTestId("map-canvas");
+    await screen.findByTestId("parcel-LP-10100");
     fireEvent.change(screen.getByLabelText(en.map.filterLabel), { target: { value: "HIGH" } });
     expect(screen.getAllByTestId("canvas-feature").map((e) => e.textContent)).toEqual(["LP-10240"]);
     expect(screen.queryByTestId("parcel-LP-10100")).toBeNull();
@@ -141,6 +146,7 @@ describe("MapView", () => {
   it("Show on map selects the parcel for the canvas", async () => {
     wrap(client(ok(DATA)));
     await screen.findByTestId("map-canvas");
+    await screen.findByTestId("parcel-LP-10100");
     fireEvent.click(screen.getByRole("button", { name: "Show LP-10500 on map" }));
     expect(screen.getByTestId("map-canvas")).toHaveAttribute("data-selected", "LP-10500");
     expect(screen.getByTestId("parcel-LP-10500")).toHaveAttribute("aria-current", "true");
@@ -174,20 +180,21 @@ describe("MapView", () => {
   it("renders Bangla labels", async () => {
     wrap(client(ok(DATA)), bn, "bn");
     expect(await screen.findByRole("heading", { level: 1, name: bn.map.title })).toBeInTheDocument();
-    expect(screen.getByLabelText(bn.map.filterLabel)).toBeInTheDocument();
+    expect(await screen.findByLabelText(bn.map.filterLabel)).toBeInTheDocument();
     expect(screen.getByTestId("parcel-LP-10240")).toHaveTextContent(bn.risk.level.HIGH);
     await waitFor(() => expect(screen.getByTestId("map-canvas")).toHaveAttribute("aria-label", bn.map.canvasLabel));
   });
 
-  it("is in the nav for every signed-in role, not for anonymous", () => {
+  it("is in the nav for everyone, including visitors (U2.3)", () => {
     const has = (r: any) => navItemsFor(r).some((i) => i.href === "/map");
-    expect(has(null)).toBe(false);
+    expect(has(null)).toBe(true);
     for (const r of ["CITIZEN", "REVIEWER", "OFFICER", "ADMIN"]) expect(has(r)).toBe(true);
   });
 
   it("parcel list carries no owner names", async () => {
     wrap(client(ok(DATA)));
     await screen.findByTestId("map-canvas");
+    await screen.findByTestId("parcel-LP-10100");
     expect(document.body.textContent).not.toMatch(/Rahim|Karim|Hasan/);
   });
 });
@@ -196,6 +203,7 @@ describe("MapView (UD7)", () => {
   it("fullscreen button toggles fullscreen and Esc leaves it; legend stays on the map", async () => {
     wrap(client(ok(DATA)));
     const canvas = await screen.findByTestId("map-canvas");
+    await screen.findByTestId("parcel-LP-10100");
     const container = canvas.parentElement!;
     expect(container).not.toHaveAttribute("data-fullscreen");
     const btn = screen.getByRole("button", { name: en.map.gis.fullscreen });
@@ -210,6 +218,7 @@ describe("MapView (UD7)", () => {
   it("legend can be hidden and shown again", async () => {
     wrap(client(ok(DATA)));
     await screen.findByTestId("map-canvas");
+    await screen.findByTestId("parcel-LP-10100");
     fireEvent.click(screen.getByRole("button", { name: en.map.hideLegend }));
     expect(screen.queryByRole("region", { name: en.map.legendTitle })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: en.map.showLegend }));
@@ -218,5 +227,43 @@ describe("MapView (UD7)", () => {
   it("parcel rows carry the risk level for styling", async () => {
     wrap(client(ok(DATA)));
     expect(await screen.findByTestId("parcel-LP-10240")).toHaveAttribute("data-risk", "HIGH");
+  });
+});
+
+describe("MapView as a visitor (U2.3)", () => {
+  const PUB: MapCollectionDto = {
+    type: "FeatureCollection",
+    features: ["LP-10100", "LP-10240"].map((id) => ({
+      type: "Feature" as const,
+      geometry: DATA.features[0].geometry,
+      properties: { land_id: id, dag_no: "210", khatian_no: "610", district: "Dhaka", upazila: "Savar", mouza: "Ashulia" },
+    })),
+  };
+  it("reads the public map, no risk filter or risk legend, details go to the public search", async () => {
+    const get = vi.fn(route(PUB));
+    wrap(visitor(get));
+    expect(await screen.findByTestId("parcel-LP-10240")).toBeInTheDocument();
+    expect(get.mock.calls.map((c) => c[0])).toContain("/public/map");
+    expect(get.mock.calls.map((c) => c[0])).not.toContain("/lands/map");
+    expect(screen.queryByLabelText(en.map.filterLabel)).toBeNull();
+    const legend = screen.getByRole("region", { name: en.map.legendTitle });
+    expect(legend).not.toHaveTextContent("High");
+    expect(legend).toHaveTextContent(en.map.legendNotePublic);
+    const row = screen.getByTestId("parcel-LP-10240");
+    expect(within(row).queryByText("High")).toBeNull();
+    expect(within(row).getByRole("link", { name: "View details for LP-10240" })).toHaveAttribute(
+      "href",
+      "/verify?district=Dhaka&upazila=Savar&mouza=Ashulia&khatian=610&dag=210",
+    );
+    expect(screen.getByText(en.map.introPublic)).toBeInTheDocument();
+  });
+  it("popup shows only the numbers", () => {
+    const labels: PopupLabels = {
+      landId: "Land ID", dag: "Dag", khatian: "Khatian", area: "Area", status: "Status", risk: "Risk", view: "View",
+      statusText: (c) => c, riskText: (c) => c, unitText: (c) => c,
+    };
+    const text = buildPopup(PUB.features[0].properties, labels, "/x", vi.fn()).textContent ?? "";
+    expect(text).toContain("610");
+    for (const w of ["Area", "Status", "Risk"]) expect(text).not.toContain(w);
   });
 });

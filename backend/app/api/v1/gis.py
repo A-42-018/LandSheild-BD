@@ -1,44 +1,46 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request, Response
 
-from app.core.rbac import ANY_AUTH, require_roles
-from app.models.user import User
+from app.api.v1.auth import get_settings_dep
+from app.core.config import Settings
+from app.core.ratelimit import check_rate
 from app.schemas.gis import GisCapabilities, GisCollection, MouzaList, SearchResult, UnionList
 from app.services import gis as svc
 
-router = APIRouter(prefix="/gis", tags=["gis"])
+
+def _open_data(
+    request: Request, response: Response, settings: Settings = Depends(get_settings_dep)
+) -> None:
+    """Boundaries are open data (geoBoundaries): readable without sign-in (U2.3), per-IP limited."""
+    ip = request.client.host if request.client else "unknown"
+    check_rate("public-map", ip, settings.public_map_rate_limit_per_min)
+    response.headers["Cache-Control"] = "public, max-age=300"
+
+
+router = APIRouter(prefix="/gis", tags=["gis"], dependencies=[Depends(_open_data)])
 
 
 @router.get("/capabilities", response_model=GisCapabilities)
-def capabilities(_user: User = Depends(require_roles(*ANY_AUTH))) -> GisCapabilities:
+def capabilities() -> GisCapabilities:
     return svc.capabilities()
 
 
 @router.get("/divisions", response_model=GisCollection)
-def divisions(_user: User = Depends(require_roles(*ANY_AUTH))) -> GisCollection:
+def divisions() -> GisCollection:
     return svc.divisions()
 
 
 @router.get("/districts", response_model=GisCollection)
-def districts(
-    division_id: str = Query(min_length=1, max_length=8),
-    _user: User = Depends(require_roles(*ANY_AUTH)),
-) -> GisCollection:
+def districts(division_id: str = Query(min_length=1, max_length=8)) -> GisCollection:
     return svc.districts(division_id)
 
 
 @router.get("/upazilas", response_model=GisCollection)
-def upazilas(
-    district_id: str = Query(min_length=1, max_length=8),
-    _user: User = Depends(require_roles(*ANY_AUTH)),
-) -> GisCollection:
+def upazilas(district_id: str = Query(min_length=1, max_length=8)) -> GisCollection:
     return svc.upazilas(district_id)
 
 
 @router.get("/unions", response_model=UnionList)
-def unions(
-    upazila_id: str = Query(min_length=1, max_length=8),
-    _user: User = Depends(require_roles(*ANY_AUTH)),
-) -> UnionList:
+def unions(upazila_id: str = Query(min_length=1, max_length=8)) -> UnionList:
     return svc.unions(upazila_id)
 
 
@@ -46,15 +48,10 @@ def unions(
 def mouzas(
     upazila_id: str = Query(min_length=1, max_length=8),
     union_id: str | None = Query(default=None, min_length=1, max_length=12, pattern=r"^\d+$"),
-    _user: User = Depends(require_roles(*ANY_AUTH)),
 ) -> MouzaList:
     return svc.mouzas(upazila_id, union_id)
 
 
 @router.get("/search", response_model=SearchResult)
-def search(
-    q: str = Query(min_length=2, max_length=60),
-    _user: User = Depends(require_roles(*ANY_AUTH)),
-) -> SearchResult:
+def search(q: str = Query(min_length=2, max_length=60)) -> SearchResult:
     return svc.search(q)
-

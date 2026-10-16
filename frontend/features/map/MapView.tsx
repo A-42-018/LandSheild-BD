@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button, EmptyState, ErrorState, LoadingState, Select } from "@/components/ui";
 import RiskIndicator from "@/components/domain/RiskIndicator";
 import { useRouter } from "@/i18n/navigation";
+import { useAuth } from "@/features/auth/AuthContext";
 import { ApiError } from "@/lib/api";
 import ParcelList from "./ParcelList";
 import SearchMenu from "./gis/SearchMenu";
@@ -25,7 +26,7 @@ import {
 } from "./gis/types";
 import { useDistricts, useDivisions, useUpazilas } from "./gis/useGis";
 import type { PopupLabels } from "./popup";
-import { filterFeatures, RISK_COLOR, RISK_FILTERS, type RiskFilter } from "./types";
+import { filterFeatures, RISK_COLOR, RISK_FILTERS, type MapFeatureDto, type RiskFilter } from "./types";
 import { useParcelMap } from "./useMap";
 
 // Leaflet only loads when the map is on screen (and only in the browser).
@@ -43,6 +44,8 @@ const ATTRIBUTION =
 export default function MapView() {
   const t = useTranslations();
   const router = useRouter();
+  const { status } = useAuth();
+  const publicView = status !== "authenticated"; // U2.3: visitors see outlines and numbers, no risk colours
   const q = useParcelMap();
   const divisions = useDivisions();
   const [sel, setSel] = useState<GisSelection>(EMPTY_SELECTION);
@@ -122,7 +125,15 @@ export default function MapView() {
     riskText: (c) => code("risk.level", c),
     unitText: (c) => code("result.units", c),
   };
-  const detailsPath = (id: string) => `/verify/result?land_id=${encodeURIComponent(id)}`;
+  // Signed in: the full result. Visitor: the public search, pre-filled from the parcel's place and numbers.
+  const detailsOf = (p: MapFeatureDto["properties"]) =>
+    publicView
+      ? `/verify?${new URLSearchParams({ district: p.district ?? "", upazila: p.upazila ?? "", mouza: p.mouza ?? "", khatian: p.khatian_no, dag: p.dag_no })}`
+      : `/verify/result?land_id=${encodeURIComponent(p.land_id)}`;
+  const detailsPath = (id: string) => {
+    const f = q.data?.features.find((x) => x.properties.land_id === id);
+    return f ? detailsOf(f.properties) : `/verify/result?land_id=${encodeURIComponent(id)}`;
+  };
 
   const options = RISK_FILTERS.map((f) => ({
     value: f,
@@ -151,17 +162,19 @@ export default function MapView() {
     parcels = (
       <>
         <div className="flex flex-wrap items-end gap-4">
-          <div className="w-full sm:w-56">
-            <Select
-              label={t("map.filterLabel")}
-              options={options}
-              value={filter}
-              onChange={(e) => {
-                setFilter(e.target.value as RiskFilter);
-                setSelected(null);
-              }}
-            />
-          </div>
+          {!publicView && (
+            <div className="w-full sm:w-56">
+              <Select
+                label={t("map.filterLabel")}
+                options={options}
+                value={filter}
+                onChange={(e) => {
+                  setFilter(e.target.value as RiskFilter);
+                  setSelected(null);
+                }}
+              />
+            </div>
+          )}
           <p role="status" className="text-sm text-ink-muted">
             {t("map.count", { count: features.length })}
           </p>
@@ -169,7 +182,7 @@ export default function MapView() {
         {features.length === 0 ? (
           <EmptyState title={t("map.noMatch")} />
         ) : (
-          <ParcelList features={features} selectedId={selected} onSelect={setSelected} />
+          <ParcelList features={features} selectedId={selected} onSelect={setSelected} detailsHref={detailsOf} />
         )}
       </>
     );
@@ -194,7 +207,7 @@ export default function MapView() {
           {t("common.demoLabel")}
         </p>
       </div>
-      <p className="text-sm text-ink-muted">{t("map.intro")}</p>
+      <p className="text-sm text-ink-muted">{t(publicView ? "map.introPublic" : "map.intro")}</p>
 
       {gisFailed && (
         <div>
@@ -321,7 +334,7 @@ export default function MapView() {
                     checked={showParcels}
                     onChange={(e) => setShowParcels(e.target.checked)}
                   />
-                  {t("map.gis.layerParcels")}
+                  {t(publicView ? "map.gis.layerParcelsPublic" : "map.gis.layerParcels")}
                 </label>
               </fieldset>
               </div>
@@ -377,6 +390,7 @@ export default function MapView() {
                 </span>
               ))}
             {showParcels &&
+              !publicView &&
               (["LOW", "MEDIUM", "HIGH"] as const).map((lvl) => (
                 <span key={lvl} className="inline-flex items-center gap-1.5">
                   <span
@@ -387,7 +401,7 @@ export default function MapView() {
                   <RiskIndicator level={lvl} size="sm" showLabel={false} />
                 </span>
               ))}
-            {showParcels && <span className="text-ink-muted">{t("map.legendNote")}</span>}
+            {showParcels && <span className="text-ink-muted">{t(publicView ? "map.legendNotePublic" : "map.legendNote")}</span>}
           </section>
         )}
       </div>

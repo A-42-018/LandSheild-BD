@@ -20,10 +20,9 @@ interface LandHit {
 
 const fold = (s: string) => s.toLowerCase().replace(/[^a-z0-9\u0980-\u09ff]/g, "");
 
-/** Mouza names of the chosen upazila (from the map data) to suggest while typing; empty when unavailable or signed out. */
+/** Mouza names of the chosen upazila (from the map data) to suggest while typing; empty when unavailable. */
 function useMouzaSuggestions(district: string, upazila: string): { value: string; label: string }[] {
-  const { status } = useAuth();
-  const { data: found } = useGisSearch(status === "authenticated" ? upazila : ""); // map data still needs sign-in: no 401 for visitors
+  const { data: found } = useGisSearch(upazila);
   const hits = (found?.hits ?? []).filter((h) => h.level === "upazila" && fold(h.name) === fold(upazila));
   const hit = hits.find((h) => fold(h.path).includes(fold(district))) ?? (hits.length === 1 ? hits[0] : undefined);
   const { data } = useMouzas(hit?.id ?? "");

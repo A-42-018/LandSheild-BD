@@ -24,3 +24,25 @@ class MapFeature(BaseModel):
 class MapCollection(BaseModel):
     type: Literal["FeatureCollection"] = "FeatureCollection"
     features: list[MapFeature]
+
+
+class PublicMapProps(BaseModel):
+    """No-login map (U2.3): where a parcel is, plus its numbers. No owner, risk, status or area."""
+
+    land_id: str
+    dag_no: str
+    khatian_no: str
+    district: str
+    upazila: str
+    mouza: str
+
+
+class PublicMapFeature(BaseModel):
+    type: Literal["Feature"] = "Feature"
+    geometry: dict[str, Any]
+    properties: PublicMapProps
+
+
+class PublicMapCollection(BaseModel):
+    type: Literal["FeatureCollection"] = "FeatureCollection"
+    features: list[PublicMapFeature]

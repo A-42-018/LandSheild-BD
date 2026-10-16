@@ -1077,8 +1077,11 @@
       "loadError": "We couldn't load the boundary data. Please try again.",
       "boundaryNote": "Boundaries are third-party open data (geoBoundaries, via ifahimreza/bangladesh-geojson), simplified for this prototype. They are not official survey or cadastral boundaries.",
       "fullscreen": "Fullscreen",
-      "exitFullscreen": "Exit fullscreen"
-    }
+      "exitFullscreen": "Exit fullscreen",
+      "layerParcelsPublic": "Land parcels (outlines)"
+    },
+    "introPublic": "Explore Bangladesh from division down to upazila on a street map. Parcel outlines show only the parcel numbers; sign in to see risk colours.",
+    "legendNotePublic": "Outlines show where a parcel is. Choose one to look it up; sign in for its risk level."
   },
   "theme": {
     "toDark": "Switch to dark mode",

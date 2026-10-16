@@ -24,6 +24,7 @@ cd backend && PYTHONPATH=.. python -c "import json; from app.main import app; pr
 | auth | `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`; `GET /auth/me` | public / signed-in |
 | public | `GET /public/verify/{land_id}` (no names, 60/min/IP) | none |
 | public (U2.1) | `GET /public/lands/search?district&upazila&mouza&khatian&dag` → masked summary: place, khatian/dag, area, status, risk level, owner count + owners as `R*** U***`, `open_case`, counts. No father name, NID, deeds or ids; every hit audited as `PUBLIC_LAND_SEARCH` (hashed IP); unknown = 404 `LAND_NOT_FOUND` | none, 60/min/IP (shared public bucket) |
+| public (U2.3) | `GET /public/map` → parcel outlines + dag/khatian numbers + district/upazila/mouza; no owners, risk, status or area. `GET /gis/*` boundaries are now readable without sign-in (open data, cache 5 min) | none, 120/min/IP |
 | public (F2c) | `GET /public/mutation-status/{mutation_no}` → status, step dates (applied · review · hearing · decided), AC Land office, days pending. No names, no land id; unknown/malformed number = 404 `MUTATION_NOT_FOUND` | none, 60/min/IP |
 | public (F4a) | `GET /public/keys` (Ed25519 public key), `GET /public/seal/{land_id}` (signed QR payload), `GET /public/signature` (check a seal: VALID · INVALID · UNKNOWN) | none, 60/min/IP |
 | public (F4b) | `POST /public/verify-document` (multipart copy, compared then discarded, never stored), `POST /public/verify-document/fields` (typed fields) | none, stricter verify-doc limit |

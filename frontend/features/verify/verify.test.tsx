@@ -199,7 +199,7 @@ describe("VerifyForm", () => {
       expect(url).toContain("/public/lands/search?");
       expect(url).toContain("khatian=1245");
       expect(opts).toEqual({ anonymous: true });
-      expect(c.get).not.toHaveBeenCalled();
+      expect((c.get as any).mock.calls.filter((a: any[]) => String(a[0]).startsWith("/lands/"))).toEqual([]);
       expect(push).not.toHaveBeenCalled();
       expect(within(card).getByText("LP-10240")).toBeInTheDocument();
       expect(within(screen.getByTestId("masked-owners")).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["R*** U***", "K*** M***"]);
