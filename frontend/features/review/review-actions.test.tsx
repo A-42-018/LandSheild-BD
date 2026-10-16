@@ -182,3 +182,25 @@ describe("approve / reject / reprocess", () => {
     expect(screen.getByTestId("reprocess-btn")).toHaveTextContent(bn.review.actions.reprocess);
   });
 });
+
+describe("keyboard shortcuts (U3.3)", () => {
+  it("A approves, and R opens the reject dialog", async () => {
+    const { post } = setup();
+    await screen.findByTestId("approve-btn");
+    fireEvent.keyDown(window, { code: "KeyR", key: "r" });
+    expect(await screen.findByTestId("reject-confirm")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: en.review.cancel }));
+    await waitFor(() => expect(screen.queryByTestId("reject-confirm")).toBeNull());
+    fireEvent.keyDown(window, { code: "KeyA", key: "a" });
+    await waitFor(() => expect(post).toHaveBeenCalledWith("/documents/d1/approve"));
+  });
+
+  it("A does nothing while the data is invalid, and keys typed into a field are ignored", async () => {
+    const bad = extraction({}, { validation: { valid: false, errors: [{ field: "buyer", code: "REQUIRED" }] } });
+    const { post } = setup({ ext: bad });
+    fireEvent.click(await screen.findByTestId("edit-mouza"));
+    fireEvent.keyDown(screen.getByTestId("input-mouza"), { code: "KeyA", key: "a" });
+    fireEvent.keyDown(window, { code: "KeyA", key: "a" });
+    expect(post).not.toHaveBeenCalled();
+  });
+});

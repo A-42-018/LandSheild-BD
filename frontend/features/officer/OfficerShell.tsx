@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Archive, ClipboardList, FileCheck2, LayoutDashboard, MessageSquare, ScrollText, ShieldCheck, Upload, type LucideIcon } from "lucide-react";
+import { Archive, ClipboardList, FileCheck2, LayoutDashboard, ListChecks, MessageSquare, ScrollText, ShieldCheck, Upload, type LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Badge, Button } from "@/components/ui";
 import IdleTimeout from "@/features/auth/IdleTimeout";
@@ -9,6 +9,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { ADMIN_ONLY, hasRole, OFFICER_UP, REVIEW_UP, type Role } from "@/features/auth/roles";
 
 export const OFFICER_NAV: { href: string; labelKey: string; roles: Role[] }[] = [
+  { href: "/officer/review", labelKey: "officer.nav.today", roles: ["REVIEWER"] },
   { href: "/officer", labelKey: "officer.nav.dashboard", roles: REVIEW_UP },
   { href: "/officer/upload", labelKey: "officer.nav.upload", roles: OFFICER_UP },
   { href: "/officer/mutations", labelKey: "officer.nav.mutations", roles: REVIEW_UP },
@@ -19,6 +20,7 @@ export const OFFICER_NAV: { href: string; labelKey: string; roles: Role[] }[] = 
 ];
 
 const NAV_ICON: Record<string, LucideIcon> = {
+  "/officer/review": ListChecks,
   "/officer": LayoutDashboard,
   "/officer/upload": Upload,
   "/officer/mutations": FileCheck2,

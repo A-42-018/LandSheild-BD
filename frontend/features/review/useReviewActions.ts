@@ -17,6 +17,7 @@ export function useReviewActions(id: string) {
   const { api } = useAuth();
   const qc = useQueryClient();
   const refresh = () => qc.invalidateQueries({ queryKey: ["document", id] }); // doc + extraction
+  const refreshQueue = () => qc.invalidateQueries({ queryKey: ["officer"] }); // today's queue, counts, my decisions
 
   const save = useMutation<ExtractionOut, ApiError, { field: string; value: string | null }>({
     mutationFn: (v) => api.patch<ExtractionOut>(`/documents/${id}/extraction`, { fields: [v] }),
@@ -24,11 +25,11 @@ export function useReviewActions(id: string) {
   });
   const approve = useMutation<unknown, ApiError, void>({
     mutationFn: () => api.post(`/documents/${id}/approve`),
-    onSettled: refresh,
+    onSettled: () => Promise.all([refresh(), refreshQueue()]),
   });
   const reject = useMutation<unknown, ApiError, string>({
     mutationFn: (reason) => api.post(`/documents/${id}/reject`, { reason }),
-    onSuccess: refresh,
+    onSuccess: () => Promise.all([refresh(), refreshQueue()]),
   });
   const reprocess = useMutation<unknown, ApiError, void>({
     mutationFn: () => api.post(`/documents/${id}/reprocess`),

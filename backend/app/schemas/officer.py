@@ -70,3 +70,20 @@ class ActivityList(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class DecisionItem(BaseModel):
+    id: str  # audit row id
+    document_id: str
+    land_id: str | None
+    document_type: str | None
+    decision: str  # APPROVED | REJECTED
+    reason: str | None  # only set for rejections
+    created_at: datetime
+
+
+class DecisionList(BaseModel):
+    items: list[DecisionItem]
+    total: int
+    limit: int
+    offset: int

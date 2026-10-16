@@ -87,6 +87,7 @@ EXPECTED = {
     ("GET", f"{P}/officer/stats"): REVIEW,
     ("GET", f"{P}/officer/queue"): REVIEW,
     ("GET", f"{P}/officer/activity"): REVIEW,
+    ("GET", f"{P}/officer/my-decisions"): REVIEW,
     ("GET", f"{P}/risk-alerts"): REVIEW,
     ("PATCH", f"{P}/risk-alerts/{{alert_id}}"): REVIEW,
     ("POST", f"{P}/documents/upload"): OFFICER,

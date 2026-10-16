@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api";
 import { Button, useToast } from "@/components/ui";
 import RejectModal from "./RejectModal";
+import { useReviewShortcuts } from "./useReviewShortcuts";
 import { useReviewActions } from "./useReviewActions";
 import type { ExtractionOut } from "./types";
 
@@ -27,6 +28,12 @@ export default function ReviewActions({
     if (rj.isSuccess) toast("success", t("decision.REJECTED"));
   }, [rj.isSuccess]);
   const status = data.processing_status;
+  const reviewable = REVIEWABLE.includes(status);
+  const blocked = !data.validation.valid || !!data.self_approval_blocked || ap.isPending || rj.isPending || actions.reprocess.isPending;
+  useReviewShortcuts({
+    A: reviewable && !blocked ? () => ap.mutate() : undefined,
+    R: reviewable && !rj.isPending ? () => setRejecting(true) : undefined,
+  });
 
   if (status === "APPROVED" || status === "REJECTED") {
     return (
@@ -57,16 +64,17 @@ export default function ReviewActions({
       <div className="flex flex-wrap gap-2">
         <Button
           size="lg"
+          aria-keyshortcuts="A"
           onClick={() => approve.mutate()}
           disabled={invalid || ownUpload || busy}
           loading={approve.isPending}
           aria-describedby={ownUpload ? "approve-own-upload" : invalid ? "approve-blocked" : undefined}
           data-testid="approve-btn"
         >
-          {t("actions.approve")}
+          {t("actions.approve")} <kbd aria-hidden="true" className="ml-1 hidden rounded border border-current px-1 text-xs md:inline">A</kbd>
         </Button>
-        <Button variant="danger" onClick={() => setRejecting(true)} disabled={busy} data-testid="reject-btn">
-          {t("actions.reject")}
+        <Button variant="danger" aria-keyshortcuts="R" onClick={() => setRejecting(true)} disabled={busy} data-testid="reject-btn">
+          {t("actions.reject")} <kbd aria-hidden="true" className="ml-1 hidden rounded border border-current px-1 text-xs md:inline">R</kbd>
         </Button>
         <Button variant="secondary" onClick={() => reprocess.mutate()} disabled={busy} loading={reprocess.isPending} data-testid="reprocess-btn">
           {t("actions.reprocess")}

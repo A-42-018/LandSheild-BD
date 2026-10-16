@@ -526,7 +526,13 @@
       "doc": "Document",
       "fields": "Fields"
     },
-    "splitter": "Resize the document and fields panes"
+    "splitter": "Resize the document and fields panes",
+    "toolbar": {
+      "back": "Today's work",
+      "next": "Next document",
+      "noNext": "No other document is waiting.",
+      "keys": "Keys: A approve · R reject · N next document"
+    }
   },
   "landing": {
     "disclaimerTitle": "Disclaimer",
@@ -684,7 +690,8 @@
       "admin": "Administration",
       "mutations": "Mutations",
       "archive": "Archive search",
-      "feedback": "Feedback and grievance"
+      "feedback": "Feedback and grievance",
+      "today": "Today's work"
     },
     "kpi": {
       "title": "Key figures",
@@ -2120,6 +2127,49 @@
         "PASSWORD_UNCHANGED": "The new password is the same as the current one. Choose a different one.",
         "RATE_LIMITED": "Too many tries. Wait one minute and try again.",
         "generic": "We couldn't save. Check your connection and try again."
+      }
+    }
+  },
+  "reviewer": {
+    "title": "Today's work",
+    "purpose": "Documents waiting for your decision, oldest first. Start from the top.",
+    "count": "{count, plural, =0 {Nothing waiting} one {{n} document waiting} other {{n} documents waiting}}",
+    "queue": {
+      "title": "Waiting for review",
+      "legend": "Waiting time",
+      "legendItem": {
+        "fresh": "Up to 2 days",
+        "aging": "3 to 7 days",
+        "late": "More than 7 days"
+      },
+      "band": {
+        "fresh": "Up to 2 days",
+        "aging": "3 to 7 days",
+        "late": "More than 7 days"
+      },
+      "age": {
+        "today": "Today",
+        "days": "{count, plural, one {# day} other {# days}}"
+      },
+      "startOldest": "Start with the oldest",
+      "review": "Review",
+      "openRow": "Review {name}",
+      "noLand": "Unassigned",
+      "lowConfidence": "Check fields",
+      "emptyTitle": "All clear",
+      "emptyBody": "No document is waiting for review right now.",
+      "more": "Showing the oldest {shown} of {total}."
+    },
+    "history": {
+      "title": "My review history",
+      "empty": "You have not approved or rejected any document yet.",
+      "noLand": "Unassigned",
+      "cols": {
+        "land": "Land ID",
+        "type": "Document",
+        "decision": "Decision",
+        "reason": "Reason for rejection",
+        "when": "Decided"
       }
     }
   }
