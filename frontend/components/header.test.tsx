@@ -228,18 +228,23 @@ describe("Navbar (UD3)", () => {
   });
 });
 
-describe("Footer (UD3)", () => {
-  it.each(["en", "bn"] as const)("has one labelled nav with 4 columns: services, about, help, legal (%s)", (loc) => {
+describe("Footer (U1.7)", () => {
+  it.each(["en", "bn"] as const)("has one labelled nav with the five standard columns and a demo-project note (%s)", (loc) => {
     const m = loc === "en" ? en : bn;
     render(wrap(<Footer />, loc));
     const nav = screen.getByRole("navigation", { name: m.landing.footerNav });
     expect(nav).toBeInTheDocument();
-    for (const h of [m.footer.services, m.footer.aboutTitle, m.footer.help, m.footer.legal]) expect(screen.getByText(h)).toBeInTheDocument();
-    expect(screen.getByText(new RegExp("support@landshield.demo"))).toBeInTheDocument();
+    for (const h of [m.footer.importantLinks, m.footer.planning, m.footer.apps, m.footer.contactTitle, m.footer.techSupport]) expect(screen.getByText(h)).toBeInTheDocument();
+    expect(screen.getByTestId("footer-demo-note")).toHaveTextContent(m.footer.demoProject);
+    expect(screen.getByText(m.footer.demoNote)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "support@landshield.demo" })).toHaveAttribute("href", "mailto:support@landshield.demo");
+    expect(screen.getByTestId("footer-hotline")).toHaveAttribute("href", "tel:16122");
+    expect(screen.getByTestId("footer-hotline")).toHaveTextContent(loc === "bn" ? "১৬১২২" : "16122");
     expect(screen.getByRole("link", { name: m.nav.map })).toHaveAttribute("href", "/map");
-    expect(screen.getByRole("link", { name: m.nav.login })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("link", { name: m.nav.track })).toHaveAttribute("href", "/track");
     expect(screen.getByText(m.landing.disclaimer)).toBeInTheDocument();
-    expect(screen.getByText(new RegExp(m.common.demoLabel.replace(/[.]/g, "\\.")))).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(m.common.demoLabel.replace(/[.]/g, "\\."))) ).toBeInTheDocument();
+    expect(nav.textContent).not.toMatch(/ভূমি মন্ত্রণালয়|Ministry of Land/);
   });
 });
 
