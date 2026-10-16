@@ -179,6 +179,8 @@
   "auth": {
     "loginTitle": "Sign in",
     "loginIntro": "Use your account to verify land records.",
+    "staffTitle": "Staff sign in",
+    "staffIntro": "For reviewers, land office officers and administrators.",
     "email": "Email",
     "password": "Password",
     "submit": "Sign in",
@@ -206,9 +208,7 @@
       "expired": "You were signed out after a period of inactivity. Please sign in again."
     },
     "citizenPrompt": "Don't have an account?",
-    "citizenLink": "Create a citizen account",
-    "officerLoginTitle": "Officer sign in",
-    "officerLoginIntro": "Use your officer account for land office work."
+    "citizenLink": "Create a citizen account"
   },
   "verify": {
     "title": "Verify Land",
@@ -1966,8 +1966,9 @@
   },
   "authShell": {
     "switcher": "Account options",
-    "tabLogin": "Sign in",
+    "tabLogin": "Citizen sign in",
     "tabSignup": "Citizen sign up",
+    "tabStaff": "Staff sign in",
     "tabOfficer": "Officer request",
     "showPassword": "Show",
     "hidePassword": "Hide",

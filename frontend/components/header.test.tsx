@@ -154,7 +154,7 @@ describe("Navbar (UD3)", () => {
     fireEvent.click(btn);
     expect(btn).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("link", { name: en.nav.citizenLogin })).toHaveAttribute("href", "/login");
-    expect(screen.getByRole("link", { name: en.nav.officerLogin })).toHaveAttribute("href", "/login?as=officer");
+    expect(screen.getByRole("link", { name: en.nav.officerLogin })).toHaveAttribute("href", "/officer-login");
     expect(screen.queryByRole("button", { name: en.nav.account })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: en.nav.logout })).not.toBeInTheDocument();
   });

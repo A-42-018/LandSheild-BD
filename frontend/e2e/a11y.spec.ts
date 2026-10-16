@@ -8,7 +8,7 @@ const axePath = join(process.cwd(), "node_modules/axe-core/axe.min.js");
 
 const PUBLIC = [
   "", "about", "faq", "accessibility", "privacy", "terms", "data-sources", "sitemap", "services", "feedback",
-  "track", "verify-document", "tools", "tools/units", "tools/fees", "tools/inheritance", "login", "officer-signup",
+  "track", "verify-document", "tools", "tools/units", "tools/fees", "tools/inheritance", "login", "officer-login", "officer-signup",
   "no-such-page", "v/LP-10001",
 ];
 const SIGNED_IN: [DemoRole, string[]][] = [

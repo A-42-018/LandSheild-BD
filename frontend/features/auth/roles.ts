@@ -7,6 +7,16 @@ export const REVIEW_UP: Role[] = ["REVIEWER", "OFFICER", "ADMIN"];
 export const OFFICER_UP: Role[] = ["OFFICER", "ADMIN"];
 export const ADMIN_ONLY: Role[] = ["ADMIN"];
 
+/** Where a signed-in user lands when no `?next=` was given (U3.1). Admin moves to its own area in U3.5. */
+export function redirectFor(role: Role | null | undefined): string {
+  return hasRole(role, REVIEW_UP) ? "/officer" : "/";
+}
+
+/** Staff-only pages send anonymous visitors to the staff sign-in; everything else uses the citizen one. */
+export function loginPathFor(allowed?: Role[]): "/login" | "/officer-login" {
+  return allowed && allowed.length > 0 && allowed.every((r) => REVIEW_UP.includes(r)) ? "/officer-login" : "/login";
+}
+
 export interface NavItem {
   href: string;
   labelKey: string;
