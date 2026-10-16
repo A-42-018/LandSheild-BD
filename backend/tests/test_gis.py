@@ -55,6 +55,30 @@ def test_hierarchy_counts_and_names(env):
     assert unicodedata.normalize("NFC", _find(upa, "Kachua")["bn_name"]) == unicodedata.normalize("NFC", "কচুয়া")
 
 
+def test_gazipur_lists_all_five_upazilas_and_name_clashes_sit_in_the_right_district(env):
+    """Gazipur's Sreepur carried Magura's Sreepur id in the source, so Gazipur had no Sreepur and Kaliakair sat
+    under Magura; Dhaka's thanas were scattered over Kushtia/Magura. Guards FIXES in scripts/build_gis_data.py."""
+    h = _h(env, "CITIZEN")
+
+    def get(path, **params):
+        return env.get(f"{P}{path}", headers=h, params=params).json()["features"]
+
+    dist = {f["properties"]["name"]: f["properties"] for dv in get("/divisions") for f in get("/districts", division_id=dv["properties"]["id"])}
+
+    def names(d):
+        return {f["properties"]["name"]: f["properties"] for f in get("/upazilas", district_id=dist[d]["id"])}
+
+    gaz = names("Gazipur")
+    assert {"Gazipur Sadar", "Kaliakair", "Kaliganj", "Kapasia", "Sreepur"} <= set(gaz)
+    assert not {"Dakshinkhan", "Uttar Khan"} & set(gaz)
+    assert gaz["Sreepur"]["bn_name"] == "শ্রীপুর" and gaz["Sreepur"]["bbox"][0] > 90.0  # not Magura's (89.3)
+    assert gaz["Kaliakair"]["bn_name"]  # Bangla name comes from the source upazila (spelling varies)
+    mag = names("Magura")
+    assert set(mag) == {"Magura Sadar", "Mohammadpur", "Shalikha", "Sreepur"} and mag["Sreepur"]["bbox"][0] < 89.6
+    assert {"Gulshan", "Dhanmondi", "Mirpur", "Savar", "Dakshinkhan"} <= set(names("Dhaka"))
+    assert {"Mirpur", "Daulatpur"} <= set(names("Kushtia"))
+
+
 def test_every_feature_has_geometry_bbox_and_valid_parent(env):
     divs = _get(env, "/divisions").json()
     ids = {f["properties"]["id"] for f in divs["features"]}

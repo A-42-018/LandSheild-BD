@@ -29,6 +29,51 @@ TOL = {"upazila": 0.0015, "district": 0.003, "division": 0.006}
 NDIGITS = 4
 
 
+# The source tags polygons by name, so a few name clashes land in the wrong district (e.g. Gazipur's
+# Sreepur carries Magura's Sreepur id, so Gazipur had no Sreepur), and the nearest-polygon fallback
+# below put Dhaka's thanas under Kushtia/Magura/Narayanganj. Found by checking every polygon against
+# its district centre; applied after the automatic matching.
+# Keys: a source upazila id for a polygon the source tagged, "loose:<name>" for an untagged one.
+# Values: ("src", source upazila id) = take id, district and Bangla name from that source upazila;
+#         ("new", district name, id)  = a city thana the source has no upazila for.
+FIXES: dict[str, tuple[str, ...]] = {
+    "315": ("src", "162"),  # tagged Sreepur/Magura is Gazipur's Sreepur ...
+    "loose:Sreepur": ("src", "315"),  # ... and the untagged one is Magura's
+    "loose:Kaliakair": ("src", "160"),
+    "309": ("new", "Dhaka", "g119"),  # tagged Mirpur/Kushtia is Dhaka's Mirpur thana ...
+    "loose:Mirpur": ("src", "309"),  # ... the untagged one is Kushtia's
+    "308": ("new", "Khulna", "g120"),  # tagged Daulatpur/Kushtia is Khulna's Daulatpur thana
+    "loose:Daulatpur": ("src", "308"),
+    "313": ("new", "Dhaka", "g121"),  # tagged Mohammadpur/Magura is Dhaka's thana
+    "loose:Mohammadpur": ("src", "313"),
+    "485": ("src", "129"),  # tagged Companiganj/Sylhet is Noakhali's ...
+    "loose:Companiganj": ("src", "485"),
+    "449": ("src", "446"),  # the two Pirganj polygons were swapped
+    "446": ("src", "449"),
+    "loose:Austagram": ("src", "178"),
+    "loose:Gangni": ("src", "316"),
+    "loose:Meherpur Sadar": ("src", "318"),
+    "loose:Hajiganj": ("src", "63"),
+    "loose:Kabirhat": ("src", "132"),
+    "loose:Senbagh": ("src", "130"),
+    "loose:Subarnachar": ("src", "134"),
+    "loose:Hatiya": ("src", "131"),
+    "loose:Manoharganj": ("src", "92"),
+    "loose:Roypura": ("src", "230"),
+    "loose:Lalmonirhat Sadar": ("src", "424"),
+    "loose:Kanthalia": ("src", "25"),
+    "loose:Narayanganj Sadar": ("src", "223"),
+}
+for _n in (
+    "Adabor Badda Cantonment Dhanmondi Gulshan Kafrul Kalabagan Khilgaon Khilkhet Pallabi Ramna "
+    "Rampura Shahbagh Tejgaon Dakshinkhan Demra"
+).split() + [
+    "Darus Salam", "New Market", "Shah Ali", "Sher-e-bangla Nagar", "Tejgaon Ind. Area",
+    "Uttar Khan",
+]:
+    FIXES[f"loose:{_n}"] = ("new", "Dhaka", "")  # id stays the polygon's own g-id
+
+
 def _load(src: Path) -> dict[str, object]:
     src.mkdir(parents=True, exist_ok=True)
     out: dict[str, object] = {}
@@ -119,6 +164,21 @@ def main() -> None:
             resolved.append((f, u["id"], u["district_id"], u["name"], u["bn_name"]))
         else:  # no Bangla name in the source: UI falls back to the English name
             resolved.append((f, f"g{i + 1}", loose_district[i], name, ""))
+
+    by_dist_name = {d["name"]: k for k, d in dists.items()}
+    for i, (f, uid, _did, name, _bn) in enumerate(resolved):
+        p = f["properties"]
+        tagged = p["upazila_id"] in ups
+        fix = FIXES.get(p["upazila_id"] if tagged else f"loose:{name}")
+        if fix is None:
+            continue
+        if fix[0] == "src":
+            u = ups[fix[1]]
+            # keep the polygon's own English spelling
+            resolved[i] = (f, u["id"], u["district_id"], name, u["bn_name"])
+        else:
+            nid = fix[2] or uid
+            resolved[i] = (f, nid, by_dist_name[fix[1]], name, "")
 
     dist_parts: dict[str, list] = {}
     upa_feats: list[dict] = []
