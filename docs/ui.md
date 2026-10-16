@@ -1,3 +1,59 @@
+# Bangla copy rules and glossary (U0.1, 2026-10-16)
+
+Applies to `frontend/messages/bn.json`. Enforced in review; based on §5 of `docs/ui-ux-roadmap.md`.
+
+## Rules
+- Bangla digits in every value (`১২৪৫`, `১০ এমবি`). Numbers that come from code go through `Intl.NumberFormat("bn-BD")` / `localDigits`.
+- One idea per sentence, under 20 words. Split clauses joined by `;` into separate sentences.
+- Plain spoken words over Sanskritised or English terms. If a citizen would not say it at a land office, rewrite it.
+- Keys and ICU placeholders (`{date}`, `{count, plural, …}`, `#`) never change. Only the text around them does.
+- Citizen pages (home, verify, result, check, track, verify-document, public QR page, tools, info pages, sign-up) get the full glossary. Staff pages (officer, reviewer, admin) use the same glossary terms, but may keep the loanwords listed below.
+
+## Glossary
+| Avoid | Use | Note |
+|---|---|---|
+| রিস্ক স্কোর ৭০, স্কোর, পয়েন্ট | ঝুঁকি: উচ্চ / মাঝারি / নিম্ন; "ঝুঁকির হিসাবে # নম্বর" | Show the level, never a bare score |
+| OCR, ওসিআর, এক্সট্রাকশন, নিষ্কাশন, এক্সট্র্যাক্টর | দলিল থেকে তথ্য পড়া; পড়া তথ্য; পড়ার পদ্ধতি | "OCR আস্থা" → পড়ার নির্ভরযোগ্যতা |
+| হ্যাশ, স্বাক্ষর, স্বাক্ষরিত, SHA-256 (record integrity) | ডিজিটাল সিল; সিলযুক্ত রেকর্ড | |
+| হ্যাশ / ফিঙ্গারপ্রিন্ট (of a file) | ডিজিটাল ছাপ | IP hash → আইপি সংকেত |
+| এনকাম্ব্রান্স, দায়, দায়বদ্ধতা, দাবি, দায়-বিবরণ | দায়-দেনা (মামলা, বন্ধক, খাস, অধিগ্রহণ) | |
+| স্ট্যাটাস | অবস্থা | |
+| QR | কিউআর কোড | |
+| মিউটেশন, ই-মিউটেশন | নামজারি, ই-নামজারি | `result.mutations` keeps "(মিউটেশন)" once as a hint |
+| ডকুমেন্ট | নথি (দলিল when it is a deed) | |
+| রিভিউয়ার, অ্যাডমিন | পর্যালোচক, প্রশাসক | Same as `roles.*` |
+| ডেটা, ডেটাসেট, কৃত্রিম ডেটা | তথ্য; কাল্পনিক / নমুনা তথ্য | |
+| প্রোটোটাইপ, সিভিক-টেক, ই-গভর্নেন্স | ডেমো; পরীক্ষামূলক | Demo ribbon: "শিক্ষার্থীদের তৈরি ডেমো · সরকারি ওয়েবসাইট নয়" |
+| টুলস, ক্যালকুলেটর | হিসাব-সহায়ক; … হিসাব | |
+| গ্রাফ, নোড, ক্যানভাস | মালিকানার চিত্র; ঘর | |
+| পাবলিক | সবার জন্য খোলা | |
+| রেফারেন্স | সূত্র নম্বর | |
+| নির্দেশক, ঝুঁকি-নির্দেশক | সতর্ক সংকেত; ঝুঁকির সংকেত | |
+| মানব পর্যালোচনা প্রয়োজন | একজন পর্যালোচকের দেখা দরকার | |
+| ওভারল্যাপ, রেজোলিউশন, এক্সটেনশন, ক্যাডাস্ট্রাল | describe it: "একটির ওপর আরেকটি পড়েছে", "ছবির মাপ", "ফাইলের নাম", "মৌজা নকশা" | |
+| চেকলিস্ট, প্রি-চেক | তালিকা; প্রাথমিক যাচাই | |
+| প্রিন্ট | ছাপুন | |
+| হোম | প্রথম পাতা | |
+| নেভিগেশন (aria labels) | মেনু | |
+| ডিভাইস, স্ক্র্যাপ, রেট লিমিট, ওয়ারেন্টি, অ্যানালিটিক্স ট্র্যাকার | ফোন বা কম্পিউটার; স্বয়ংক্রিয়ভাবে নামানো; চেষ্টার সীমা; নিশ্চয়তা; নজরদারির কোড | |
+| আইনগত মালিকানা প্রতিষ্ঠা / স্বত্ব প্রত্যয়ন | মালিকানা ঠিক করে না / মালিকানার সনদ দেয় না | |
+
+**Accepted loanwords** (widely used, no clearer Bangla): সাইন ইন, সাইন আপ, সাইন আউট, ইমেইল, পাসওয়ার্ড, অ্যাকাউন্ট, মোবাইল, ফাইল, পিডিএফ, স্ক্যান, কপি, লিংক, মেনু, আইডি, আইপি, কুকি, ক্লিক, এআই. Staff screens only: ড্যাশবোর্ড, আপলোড, ফিল্টার, অডিট লগ, লেজার, এন্ট্রি, রিসেট, প্রিভিউ, জুম. Citizen screens say "জমা দিন" instead of "আপলোড".
+
+**Latin script allowed only for:**
+- Codes the user must type exactly: `LP-10100`, `MUT-2026-0001`, `FB-2026-00001`, phone `+8801711000000`. The validators accept ASCII only (`LAND_ID_RE`, `MUTATION_NO`, `PHONE`), so the hint text says "ইংরেজি অঙ্কে".
+- Proper names: LandShield BD, OpenStreetMap, geoBoundaries, Tesseract, Claude, GNU FreeSans, README; file types JPG / PNG / PDF; licences MIT, ODbL, CC BY 4.0.
+
+## Audit result (U0.1)
+- 230 strings rewritten in `bn.json`. Keys and placeholders are unchanged; a script checked placeholder sets per key.
+- Latin digits remaining: only the allowlist above (7 strings).
+- Sentences over 20 words: 0. Before the audit there were 2 (`about.purpose.body`, `info.privacy.s3.body`).
+- Tests updated for the new wording: `features/review/engine-badge.test.tsx`, `features/risk/risk.test.tsx`.
+- Open items for later tasks:
+  - U0.2 should turn the Latin-digit rule into a test that uses this allowlist.
+  - Phone, land ID and mutation number inputs should accept Bangla digits (normalise like `features/verify/schema.ts`).
+  - Brand: roadmap §5 asks for "ল্যান্ডশিল্ড বিডি", but `tests/i18n-parity.test.ts` currently requires `LandShield BD` and forbids the Bangla spelling. This needs a decision before U1.
+
 # Design v2 (UI REDESIGN V2, 2026-10-15)
 
 Source of truth = the landing page `/` and the sign-in pages. Every inner page now uses the same language; older sections below describe the earlier flat U1–U7 look and stay for history.

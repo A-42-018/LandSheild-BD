@@ -94,8 +94,8 @@ describe("RiskCard", () => {
   it("shows the ML line in Bangla and 'no points' when the hint added nothing", () => {
     show({ ...HIGH, ml_score: 0.1 }, bn, "bn");
     const line = screen.getByTestId("risk-ml");
-    expect(line.textContent).toMatch(/অস্বাভাবিকতা মডেল/);
-    expect(line.textContent).toMatch(/কোনো পয়েন্ট যোগ হয়নি/);
+    expect(line.textContent).toMatch(/অস্বাভাবিকতা যাচাই/);
+    expect(line.textContent).toMatch(/ঝুঁকির হিসাবে কিছু যোগ হয়নি/);
     expect(line.textContent).not.toContain("{");
   });
 
