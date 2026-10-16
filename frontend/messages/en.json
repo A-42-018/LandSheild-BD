@@ -974,6 +974,8 @@
     "loadError": "We couldn't load the parcel map. Please try again.",
     "mapHint": "Drag to pan, use the zoom buttons or scroll to zoom, and click a boundary to drill down. Every place is also available in the search menu.",
     "legendTitle": "Map legend",
+    "hideLegend": "Hide legend",
+    "showLegend": "Show map legend",
     "legendNote": "Outline colour shows the indicator level; each parcel also states its level in text. Review required means a human reviewer should check the records.",
     "listTitle": "Parcels",
     "showOnMap": "Show on map",

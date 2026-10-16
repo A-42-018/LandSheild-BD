@@ -1,6 +1,6 @@
 "use client";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Layers, Maximize2, Minimize2, Search } from "lucide-react";
+import { EyeOff, Layers, ListTree, Maximize2, Minimize2, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button, EmptyState, ErrorState, LoadingState, Select } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
@@ -34,7 +34,6 @@ const GLASS = "border border-line/80 bg-surface/90 shadow-glass backdrop-blur-md
 const GLASS_FIELDS =
   "[&_label]:text-xs [&_input:not([type=checkbox])]:py-1.5 [&_select]:py-1.5 [&_button]:py-1.5 [&_button]:text-sm";
 
-const PAD = "px-4 sm:px-6 lg:px-8";
 
 const TILE_URL = resolveTileUrl(process.env.NEXT_PUBLIC_MAP_TILE_URL);
 const ATTRIBUTION =
@@ -56,11 +55,14 @@ export default function MapView() {
   const [showBoundaries, setShowBoundaries] = useState(true);
   const [showParcels, setShowParcels] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
-  const [legendOpen, setLegendOpen] = useState(false); // phones only; the legend is always shown from 640 px
+  const [legendOpen, setLegendOpen] = useState(true);
 
-  // Phones: start with the search menu closed so the map is visible first.
+  // Phones: start with the search menu and the legend closed so the map is visible first.
   useEffect(() => {
-    if (typeof window.matchMedia === "function" && window.matchMedia("(max-width: 639px)").matches) setMenuOpen(false);
+    if (typeof window.matchMedia === "function" && window.matchMedia("(max-width: 639px)").matches) {
+      setMenuOpen(false);
+      setLegendOpen(false);
+    }
   }, []);
 
   // Esc leaves fullscreen; the page behind does not scroll
@@ -179,10 +181,10 @@ export default function MapView() {
       className={
         fullscreen
           ? "flex flex-col gap-3 px-4"
-          : "relative left-1/2 flex w-[calc(100vw-0.5rem)] -translate-x-1/2 flex-col gap-2"
+          : "flex w-full min-w-0 flex-col gap-2" // inside the page column: a 100vw breakout overflowed under classic scrollbars and pushed the map controls off screen
       }
     >
-      <div className={`flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 ${PAD}`}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h1 className="text-xl font-semibold text-ink">{t("map.title")}</h1>
         <p
           role="note"
@@ -191,10 +193,10 @@ export default function MapView() {
           {t("common.demoLabel")}
         </p>
       </div>
-      <p className={`text-sm text-ink-muted ${PAD}`}>{t("map.intro")}</p>
+      <p className="text-sm text-ink-muted">{t("map.intro")}</p>
 
       {gisFailed && (
-        <div className={PAD}>
+        <div>
           <ErrorState
             message={t("map.gis.loadError")}
             onRetry={() => void divisions.refetch()}
@@ -207,7 +209,7 @@ export default function MapView() {
         className={
           fullscreen
             ? "fixed inset-0 z-[2000] isolate bg-surface"
-            : "relative isolate overflow-hidden border-y border-line shadow-card"
+            : "relative isolate overflow-hidden rounded-card border border-line shadow-card"
         }
       >
         <Suspense fallback={<LoadingState />}>
@@ -325,61 +327,75 @@ export default function MapView() {
             </div>
           )}
         </aside>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className={`absolute bottom-9 right-2 z-[1000] !text-ink sm:hidden ${GLASS} ${legendOpen ? "hidden" : ""}`}
-          aria-expanded={legendOpen}
-          aria-controls="map-legend"
-          onClick={() => setLegendOpen(true)}
-        >
-          {t("map.legendTitle")}
-        </Button>
-        <section
-          id="map-legend"
-          aria-label={t("map.legendTitle")}
-          className={`absolute bottom-9 right-2 z-[1000] max-w-[15rem] flex-col gap-1 rounded-card p-2.5 text-xs text-ink sm:flex ${legendOpen ? "flex" : "hidden"} ${GLASS}`}
-        >
-          <button type="button" onClick={() => setLegendOpen(false)} className="self-end text-xs font-medium text-link underline sm:hidden">
-            {t("common.close")}
-          </button>
-          <span className="text-sm font-semibold">{t("map.legendTitle")}</span>
-          {showBoundaries &&
-            (["division", "district", "upazila"] as const).map((lvl) => (
-              <span key={lvl} className="inline-flex items-center gap-1.5">
-                <span
-                  aria-hidden="true"
-                  className="inline-block w-5 shrink-0 border-t"
-                  style={{
-                    borderTopWidth: LEVEL_STYLE[lvl].weight + 1,
-                    borderColor: LEVEL_STYLE[lvl].color,
-                  }}
-                />
-                {t(`map.gis.level.${lvl}`)}
-                {lvl === level && ` — ${t("map.gis.shownNow")}`}
-              </span>
-            ))}
-          {showParcels &&
-            (["LOW", "MEDIUM", "HIGH"] as const).map((lvl) => (
-              <span key={lvl} className="inline-flex items-center gap-1.5">
-                <span
-                  aria-hidden="true"
-                  className="inline-block h-3 w-3 shrink-0 rounded-sm border border-line"
-                  style={{ backgroundColor: RISK_COLOR[lvl] }}
-                />
-                {t(`risk.level.${lvl}`)}
-              </span>
-            ))}
-          {showParcels && <span className="text-ink-muted">{t("map.legendNote")}</span>}
-        </section>
+        {!legendOpen && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className={`absolute bottom-9 right-2 z-[1000] !text-ink hover:!bg-surface-muted ${GLASS}`}
+            icon={<ListTree />}
+            aria-expanded={false}
+            aria-controls="map-legend"
+            onClick={() => setLegendOpen(true)}
+          >
+            {t("map.showLegend")}
+          </Button>
+        )}
+        {legendOpen && (
+          <section
+            id="map-legend"
+            aria-label={t("map.legendTitle")}
+            className={`absolute bottom-9 right-2 z-[1000] flex max-w-[15rem] flex-col gap-1 rounded-card p-2.5 text-xs text-ink ${GLASS}`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-semibold">{t("map.legendTitle")}</span>
+              <button
+                type="button"
+                aria-expanded={true}
+                aria-controls="map-legend"
+                onClick={() => setLegendOpen(false)}
+                className="inline-flex min-h-8 items-center gap-1 rounded-md px-1.5 text-xs font-medium text-link hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
+                <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
+                {t("map.hideLegend")}
+              </button>
+            </div>
+            {showBoundaries &&
+              (["division", "district", "upazila"] as const).map((lvl) => (
+                <span key={lvl} className="inline-flex items-center gap-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block w-5 shrink-0 border-t"
+                    style={{
+                      borderTopWidth: LEVEL_STYLE[lvl].weight + 1,
+                      borderColor: LEVEL_STYLE[lvl].color,
+                    }}
+                  />
+                  {t(`map.gis.level.${lvl}`)}
+                  {lvl === level && ` — ${t("map.gis.shownNow")}`}
+                </span>
+              ))}
+            {showParcels &&
+              (["LOW", "MEDIUM", "HIGH"] as const).map((lvl) => (
+                <span key={lvl} className="inline-flex items-center gap-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-3 w-3 shrink-0 rounded-sm border border-line"
+                    style={{ backgroundColor: RISK_COLOR[lvl] }}
+                  />
+                  {t(`risk.level.${lvl}`)}
+                </span>
+              ))}
+            {showParcels && <span className="text-ink-muted">{t("map.legendNote")}</span>}
+          </section>
+        )}
       </div>
 
-      <p className={`text-xs text-ink-muted ${PAD}`}>{t("map.mapHint")}</p>
-      <p className={`text-xs text-ink-muted ${PAD}`}>{t("map.gis.boundaryNote")}</p>
+      <p className="text-xs text-ink-muted">{t("map.mapHint")}</p>
+      <p className="text-xs text-ink-muted">{t("map.gis.boundaryNote")}</p>
 
       {showParcels && (
-        <div className={`flex flex-col gap-3 pb-4 ${PAD}`}>
+        <div className="flex flex-col gap-3 pb-4">
           {parcels}
         </div>
       )}
