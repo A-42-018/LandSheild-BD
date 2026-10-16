@@ -183,13 +183,13 @@ describe("admin misc", () => {
 });
 
 describe("admin console shell (U3.5)", () => {
-  it("lists the six sections plus records, with the current one marked", () => {
+  it("lists the sections, content and records, with the current one marked", () => {
     expect(ADMIN_NAV.map((n) => n.href)).toEqual([
-      "/admin", "/admin/users", "/admin/officer-requests", "/admin/offices", "/admin/records", "/admin/audit-logs", "/admin/settings",
+      "/admin", "/admin/users", "/admin/officer-requests", "/admin/offices", "/admin/content", "/admin/records", "/admin/audit-logs", "/admin/settings",
     ]);
     wrap(undefined, en, "en", <AdminShell><p>body</p></AdminShell>);
     const nav = screen.getByRole("navigation", { name: "Administration" });
-    expect(within(nav).getAllByRole("link")).toHaveLength(7);
+    expect(within(nav).getAllByRole("link")).toHaveLength(8);
     expect(within(nav).getByRole("link", { current: "page" })).toHaveTextContent("Users");
     expect(screen.getByText("body")).toBeInTheDocument();
   });

@@ -674,7 +674,8 @@
           "title": "Citizen tools added",
           "body": "Land unit converter, fee calculator and inheritance shares."
         }
-      }
+      },
+      "empty": "No notices have been published yet."
     }
   },
   "officer": {
@@ -956,6 +957,52 @@
           "code": "Code",
           "officers": "Officers"
         }
+      },
+      "content": {
+        "title": "Notices, FAQ and guides",
+        "hint": "Write the public notices, FAQ answers and guides here, in Bangla and English. Only published items appear on the public pages.",
+        "kindsLabel": "Type of content",
+        "kinds": {
+          "NOTICE": "Notices",
+          "FAQ": "FAQ",
+          "GUIDE": "Guides"
+        },
+        "kindHint": {
+          "NOTICE": "Shown newest first on the home page notice board. Tick \"Show in ticker\" to also scroll a notice under the header.",
+          "FAQ": "Shown on /faq and, for the first five, on the home page. Lower position comes first. Until you add one, the built-in answers are shown.",
+          "GUIDE": "Guides are saved and will fill the guide pages when those are built. They do not appear on a public page yet."
+        },
+        "add": "Add",
+        "addTitle": "Add {kind}",
+        "editTitle": "Edit item",
+        "edit": "Edit",
+        "delete": "Delete",
+        "editAria": "Edit {title}",
+        "deleteAria": "Delete {title}",
+        "deleteTitle": "Delete this item?",
+        "deleteBody": "\"{title}\" will be removed from the public pages. This cannot be undone.",
+        "empty": "Nothing here yet.",
+        "published": "Published",
+        "draft": "Draft",
+        "inTicker": "In ticker",
+        "cols": {
+          "title": "Title",
+          "date": "Date",
+          "position": "Position",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "fields": {
+          "titleBn": "Title (Bangla)",
+          "titleEn": "Title (English)",
+          "bodyBn": "Text (Bangla)",
+          "bodyEn": "Text (English)",
+          "date": "Date",
+          "ticker": "Show in ticker",
+          "position": "Position",
+          "positionHint": "Lower numbers come first.",
+          "published": "Published (visible to everyone)"
+        }
       }
     },
     "ledger": {
@@ -981,6 +1028,7 @@
       "users": "Users",
       "officerRequests": "Officer requests",
       "offices": "Offices",
+      "content": "Notices, FAQ and guides",
       "records": "Records and documents",
       "audit": "Audit log",
       "settings": "Settings"
