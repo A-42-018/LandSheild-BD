@@ -123,6 +123,23 @@ Contrast of the level word (WCAG, needs ≥ 4.5; locked in `tests/ui-regression.
 
 Tests: `components/domain/RiskIndicator.test.tsx` checks every level × size × locale for tone, a hidden icon, the word and the "Risk:" prefix, and that no digits appear. It also checks distinct icon shapes, the unknown fallback, Bangla strings and axe. `features/risk/risk.test.tsx` checks the level headline and the Bangla-digit score line.
 
+# Role-based sign-in (U3.1, 2026-10-17)
+
+Roadmap §6 Phase 3. Two sign-in pages, one form.
+
+| Route | Page | Demo accounts shown | Shell tab |
+|---|---|---|---|
+| `/login` | "Sign in" (citizens) | citizen | Citizen sign in |
+| `/officer-login` | "Staff sign in" (reviewer, officer, admin) | reviewer, officer, admin | Staff sign in |
+
+- `LoginForm` takes `audience="citizen" | "staff"` (copy, demo accounts, active tab). Both pages accept every role: the account decides where you land, not the page you used.
+- After sign-in: explicit `?next=` (checked by `safeNext`) wins, otherwise `redirectFor(role)` in `features/auth/roles.ts`: CITIZEN → `/`, REVIEWER / OFFICER / ADMIN → `/officer`. Admin keeps `/officer` until U3.5 gives it `/admin`; change it in that one function.
+- `RequireRole` sends anonymous visitors to `loginPathFor(roles)`: `/officer-login?next=…` when only staff roles are allowed, `/login?next=…` otherwise. The idle-timeout sign-out and the officer-request "Sign in" links also go to `/officer-login`.
+- `AuthShell` has four tabs (2 × 2 on phones): Citizen sign in · Citizen sign up · Staff sign in · Officer request. New keys: `auth.staffTitle|staffIntro`, `authShell.tabStaff`; `authShell.tabLogin` now reads "Citizen sign in" / "নাগরিক সাইন ইন".
+- Sitemap lists the staff sign-in. Header and footer still link to `/login` (U1.2 turns the header link into a citizen / staff menu).
+- Tests: `features/auth/auth.test.tsx` (role → home table, audience copy and demo accounts, guard target), `tests/a11y.test.tsx` (`staff-login`), e2e `guards.spec.ts`, `a11y.spec.ts`, `visual.spec.ts`.
+- Checked in the browser (dev server, EN): anonymous `/officer` → `/officer-login?next=%2Fofficer`; reviewer signing in on `/officer-login` lands on `/officer`. Not run: Bangla page in a browser, Playwright e2e, phone widths for the 2 × 2 tab grid.
+
 # Design v2 (UI REDESIGN V2, 2026-10-15)
 
 Source of truth = the landing page `/` and the sign-in pages. Every inner page now uses the same language; older sections below describe the earlier flat U1–U7 look and stay for history.

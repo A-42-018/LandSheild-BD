@@ -7,8 +7,8 @@ test.describe("anonymous visitors", () => {
   for (const path of STAFF_PAGES) {
     test(`${path} → login with next=`, async ({ page }) => {
       await page.goto(path);
-      await expect(page).toHaveURL(/\/en\/login\?next=/);
-      await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+      await expect(page).toHaveURL(/\/en\/officer-login\?next=/);
+      await expect(page.getByRole("heading", { name: "Staff sign in" })).toBeVisible();
     });
   }
 

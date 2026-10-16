@@ -53,7 +53,7 @@ export default function UserMenu() {
         icon={<LogIn aria-hidden="true" className="h-4 w-4" />}
         items={[
           { href: "/login", label: t("nav.citizenLogin") },
-          { href: "/login?as=officer", label: t("nav.officerLogin") },
+          { href: "/officer-login", label: t("nav.officerLogin") },
         ]}
       />
     );

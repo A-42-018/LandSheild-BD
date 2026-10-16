@@ -64,6 +64,6 @@ describe("IdleTimeout", () => {
     tick(61);
     await act(async () => { await Promise.resolve(); });
     expect(logout).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/login?expired=1");
+    expect(replace).toHaveBeenCalledWith("/officer-login?expired=1");
   });
 });
