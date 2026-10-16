@@ -49,7 +49,7 @@ describe("EngineBadge", () => {
 
   it("is translated to Bangla", () => {
     show({ ocr_source: "tesseract", extractor: "claude" }, bn, "bn");
-    expect(screen.getByTestId("badge-source")).toHaveTextContent("উৎস: টেসারেক্ট ওসিআর");
-    expect(screen.getByTestId("badge-extractor")).toHaveTextContent("এক্সট্র্যাক্টর: ক্লড");
+    expect(screen.getByTestId("badge-source")).toHaveTextContent("উৎস: টেসারেক্ট দিয়ে লেখা পড়া");
+    expect(screen.getByTestId("badge-extractor")).toHaveTextContent("পড়ার পদ্ধতি: ক্লড");
   });
 });
