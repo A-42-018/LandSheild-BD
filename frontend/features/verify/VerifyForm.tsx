@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Search, SearchCheck } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -36,12 +36,16 @@ function useMouzaSuggestions(district: string, upazila: string): { value: string
   return out;
 }
 
-/** `compact` (U5): landing-page hero variant — no card, no intro/hints, fields in a responsive grid. */
+const FIELDS = ["district", "upazila", "mouza", "khatian", "dag"] as const;
+
+/** `compact` (U5): landing-page hero variant — no card, no intro/hints, fields in a responsive grid.
+ *  U1.3: anonymous hero searches go to `/verify?district=…` (sign-in keeps the query); the full form fills itself from
+ *  that query and searches once when every field is valid. */
 export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   const t = useTranslations("verify");
   const locale = useLocale();
   const router = useRouter();
-  const { api } = useAuth();
+  const { api, status } = useAuth();
 
   const {
     register,
@@ -58,6 +62,30 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   // Division is a UI-only filter: picking one narrows the districts; picking a district fills it in.
   const [division, setDivision] = useState("");
   const districtOptions = division ? districtsOf(division) : DISTRICTS;
+  // Full form only: take the hero's query once, then search on the user's behalf if it is complete and they are signed in.
+  const prefilled = useRef(false);
+  const autoRun = useRef(false);
+  // The upazila <select> only gets its options once the district is in, so its value is applied a render later.
+  const pendingUpazila = useRef("");
+  useEffect(() => {
+    if (compact || prefilled.current) return;
+    prefilled.current = true;
+    const p = new URLSearchParams(window.location.search);
+    const district = p.get("district") ?? "";
+    if (district) setDivision(divisionOf(district));
+    for (const k of FIELDS) {
+      const v = p.get(k);
+      if (v) setValue(k, v);
+    }
+    pendingUpazila.current = p.get("upazila") ?? "";
+    autoRun.current = FIELDS.every((k) => p.get(k));
+  }, [compact, setValue]);
+  useEffect(() => {
+    if (!pendingUpazila.current || !district) return;
+    setValue("upazila", pendingUpazila.current);
+    pendingUpazila.current = "";
+  }, [district, setValue]);
+
   const upazila = watch("upazila") as string;
   const mouzaNames = useMouzaSuggestions(district, upazila);
   const [mouzaOpen, setMouzaOpen] = useState(false);
@@ -86,19 +114,20 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   };
   const err = (k?: { message?: string }) => (k?.message ? t(`errors.${k.message}`) : undefined);
 
+  const query = (v: VerifyValues) => new URLSearchParams({ district: v.district, upazila: v.upazila, mouza: v.mouza, khatian: v.khatian, dag: v.dag }).toString();
   const m = useMutation({
-    mutationFn: (v: VerifyValues) => {
-      const q = new URLSearchParams({
-        district: v.district,
-        upazila: v.upazila,
-        mouza: v.mouza,
-        khatian: v.khatian,
-        dag: v.dag,
-      });
-      return api.get<LandHit>(`/lands/search?${q.toString()}`);
-    },
+    mutationFn: (v: VerifyValues) => api.get<LandHit>(`/lands/search?${query(v)}`),
     onSuccess: (land) => router.push(`/verify/result?land_id=${encodeURIComponent(land.land_id)}`),
   });
+  // Land search still needs sign-in (public summary is U2.1), so the hero hands an anonymous search to /verify.
+  const onValid = (v: VerifyValues) => (compact && status !== "authenticated" ? router.push(`/verify?${query(v)}`) : m.mutate(v));
+  const submit = handleSubmit(onValid);
+
+  useEffect(() => {
+    if (!autoRun.current || status !== "authenticated") return;
+    autoRun.current = false;
+    void submit();
+  }, [status, submit]);
 
   const apiErr = (() => {
     const e = m.error;
@@ -114,7 +143,7 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   const hint = compact ? undefined : t("numericHint");
   const form = (
       <form
-        onSubmit={handleSubmit((v) => m.mutate(v))}
+        onSubmit={submit}
         noValidate
         aria-label={compact ? t("title") : undefined}
         className={compact ? "grid grid-cols-2 items-start gap-3 lg:grid-cols-4" : "grid grid-cols-1 items-start gap-4 sm:grid-cols-2"}
@@ -233,11 +262,16 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
           size="lg"
           loading={m.isPending}
           icon={<Search />}
-          className={compact ? "mt-6 w-full lg:col-span-2" : "w-full sm:col-span-2"}
+          className={compact ? "col-span-full w-full lg:col-span-2 lg:mt-6" : "w-full sm:col-span-2"}
         >
           {m.isPending ? t("searching") : t("submit")}
         </Button>
         {!compact && <p className="text-xs text-ink-muted sm:col-span-2">{t("demoNote")}</p>}
+        {compact && status !== "authenticated" && (
+          <p className="col-span-full text-sm text-ink-muted" data-testid="hero-land-note">
+            {t("signInNote")}
+          </p>
+        )}
       </form>
   );
 

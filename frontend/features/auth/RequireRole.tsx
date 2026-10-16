@@ -13,7 +13,8 @@ export default function RequireRole({ roles, children }: { roles?: Role[]; child
   const t = useTranslations();
 
   useEffect(() => {
-    if (status === "anonymous") router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+    // Keep the query (e.g. a land search started on the home page) so sign-in brings the user back to it.
+    if (status === "anonymous") router.replace(`/login?next=${encodeURIComponent(pathname + window.location.search)}`);
   }, [status, router, pathname]);
 
   if (status === "loading") return <LoadingState label={t("auth.checkingSession")} />;

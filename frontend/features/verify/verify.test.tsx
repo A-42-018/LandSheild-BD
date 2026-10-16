@@ -84,6 +84,20 @@ describe("VerifyForm", () => {
     expect(url).toContain("district=Gazipur");
   });
 
+  it("fills itself from the hero's query and searches once (U1.3)", async () => {
+    window.history.pushState({}, "", "/verify?district=Gazipur&upazila=Sreepur&mouza=Barmi&khatian=1245&dag=785");
+    const get = vi.fn().mockResolvedValue({ land_id: "LP-10100" });
+    try {
+      wrap(client(get as any));
+      await waitFor(() => expect(push).toHaveBeenCalledWith("/verify/result?land_id=LP-10100"));
+      expect(screen.getByLabelText(new RegExp(en.verify.upazila))).toHaveValue("Sreepur");
+      expect(screen.getByLabelText(new RegExp(en.verify.mouza))).toHaveValue("Barmi");
+      expect(get.mock.calls.filter((c) => (c[0] as string).startsWith("/lands/search"))).toHaveLength(1);
+    } finally {
+      window.history.pushState({}, "", "/");
+    }
+  });
+
   it("suggests mouza names of the chosen upazila while typing", async () => {
     const get = vi.fn(async (url: string) => {
       if (url.startsWith("/gis/search"))

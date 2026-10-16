@@ -124,7 +124,22 @@
   },
   "home": {
     "title": "Verify land before you buy",
-    "intro": "Look up a plot by its record details. See the recorded owner, mutation, cases and risk indicators — with the evidence behind every result."
+    "intro": "Look up a plot by its record details. See the recorded owner, mutation, cases and risk indicators — with the evidence behind every result.",
+    "search": {
+      "title": "Which service do you need?",
+      "tabs": {
+        "land": "Find land",
+        "track": "Mutation status",
+        "doc": "Deed / QR check"
+      },
+      "docIntro": "Submit a copy of your deed. We check whether it matches the record that carries a digital seal.",
+      "docLink": "Check a deed copy",
+      "qrTitle": "Check a QR code",
+      "qrLabel": "QR code link or land ID",
+      "qrHint": "Scanning the QR code with a phone camera opens the check page by itself. On a computer, paste the link printed on the report here.",
+      "qrInvalid": "That link or ID is not valid. Copy the whole link printed on the report and paste it here.",
+      "qrSubmit": "Check QR code"
+    }
   },
   "about": {
     "title": "About LandShield BD",
@@ -210,6 +225,7 @@
     "numericHint": "Digits only, e.g. 1245 or ১২৪৫",
     "submit": "Verify",
     "searching": "Processing…",
+    "signInNote": "You need to sign in to see the result. What you typed will be kept.",
     "demoNote": "Not an official government land record.",
     "errors": {
       "required": "This field is required.",

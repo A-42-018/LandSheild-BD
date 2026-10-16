@@ -69,6 +69,19 @@ describe("TrackView", () => {
     expect(request).not.toHaveBeenCalled();
   });
 
+  it("looks up ?no= from the home-page search card on arrival (U1.3)", async () => {
+    window.history.pushState({}, "", "/track?no=MUT-2026-0009");
+    const request = vi.fn().mockResolvedValue(HEARING);
+    try {
+      wrap(request as any);
+      expect(await screen.findByTestId("track-result")).toBeInTheDocument();
+      expect(screen.getByLabelText(/Mutation number/)).toHaveValue("MUT-2026-0009");
+      expect(request).toHaveBeenCalledWith("/public/mutation-status/MUT-2026-0009", { anonymous: true });
+    } finally {
+      window.history.pushState({}, "", "/");
+    }
+  });
+
   it("calls the public endpoint anonymously and shows the stepper (hearing)", async () => {
     const request = vi.fn().mockResolvedValue(HEARING);
     wrap(request as any);

@@ -110,6 +110,16 @@ describe("RequireRole", () => {
     expect(screen.queryByText("secret")).not.toBeInTheDocument();
   });
 
+  it("keeps the query in next, so a home-page search survives sign-in (U1.3)", async () => {
+    window.history.pushState({}, "", "/dashboard?district=Gazipur&dag=785");
+    try {
+      wrap(<RequireRole>secret</RequireRole>, fakeClient());
+      await waitFor(() => expect(replace).toHaveBeenCalledWith(`/login?next=${encodeURIComponent("/dashboard?district=Gazipur&dag=785")}`));
+    } finally {
+      window.history.pushState({}, "", "/");
+    }
+  });
+
   it("shows permission message for wrong role", async () => {
     const c = fakeClient({ refresh: vi.fn().mockResolvedValue({ user: { ...officer, role: "CITIZEN" } }) as any });
     wrap(<RequireRole roles={["OFFICER"]}>secret</RequireRole>, c);

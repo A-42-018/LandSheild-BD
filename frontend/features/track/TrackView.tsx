@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, CircleDashed, Clock, Minus, Search, Route, XCircle, type LucideIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
@@ -78,9 +78,8 @@ export default function TrackView() {
     return "generic";
   })();
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const n = normaliseNo(no);
+  const lookUp = (raw: string) => {
+    const n = normaliseNo(raw);
     const isFeedback = FEEDBACK_REF.test(n);
     const ok = isFeedback || MUTATION_NO.test(n);
     setInvalid(!ok);
@@ -90,6 +89,19 @@ export default function TrackView() {
     if (isFeedback) f.mutate(n);
     else m.mutate(n);
   };
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    lookUp(no);
+  };
+  // U1.3: the home-page search card sends `?no=`; fill the box and look it up straight away (once, even in Strict Mode).
+  const arrived = useRef(false);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("no");
+    if (!q || arrived.current) return;
+    arrived.current = true;
+    setNo(q);
+    lookUp(q);
+  }, []);
 
   const d = m.data;
   const fb = f.data;

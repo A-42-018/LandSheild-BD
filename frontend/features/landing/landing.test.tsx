@@ -1,18 +1,20 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import en from "../../messages/en.json";
 import bn from "../../messages/bn.json";
 import Hero from "./Hero";
+import { qrTarget } from "./HeroSearch";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import type { ApiClient } from "@/lib/api";
 import Footer from "./Footer";
 import { HowItWorks, ServiceTiles, Trust, WhatWeCheck } from "./Sections";
 import AboutPage from "../../app/[locale]/about/page";
 
+const push = vi.fn();
 vi.mock("@/i18n/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => ({ push, replace: vi.fn() }),
   Link: ({ href, children, ...r }: any) => <a href={href} {...r}>{children}</a>,
 }));
 vi.mock("next-intl/server", () => ({ setRequestLocale: () => {} }));
@@ -28,14 +30,61 @@ const wrap = (ui: React.ReactNode, locale: "en" | "bn" = "en", role: string | nu
   </NextIntlClientProvider>
 );
 
-describe("landing hero (U5)", () => {
-  it.each(["en", "bn"] as const)("H1 and intro only: no search form, no duplicate service links, no logo image (%s)", (loc) => {
+beforeEach(() => push.mockClear());
+
+describe("landing hero (U1.3)", () => {
+  it.each(["en", "bn"] as const)("H1, intro and a tabbed search card with the land form open (%s)", (loc) => {
     const m = loc === "en" ? en : bn;
-    const { container } = render(wrap(<Hero />, loc));
+    const { container } = render(wrap(<Hero />, loc, null));
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(m.home.title);
-    expect(screen.queryByRole("form")).not.toBeInTheDocument();
-    expect(screen.queryAllByRole("link")).toHaveLength(0);
+    expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual([m.home.search.tabs.land, m.home.search.tabs.track, m.home.search.tabs.doc]);
+    expect(screen.getByRole("tab", { name: m.home.search.tabs.land })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("form", { name: m.verify.title })).toBeInTheDocument();
+    for (const f of [m.verify.division, m.verify.district, m.verify.upazila, m.verify.mouza, m.verify.khatian, m.verify.dag])
+      expect(screen.getByLabelText(new RegExp(`^${f}`))).toBeInTheDocument();
+    expect(screen.getByTestId("hero-land-note")).toHaveTextContent(m.verify.signInNote);
     expect(container.querySelector("img")).toBeNull();
+  });
+
+  it("anonymous land search goes to /verify with the answers in the query", async () => {
+    render(wrap(<Hero />, "en", null));
+    fireEvent.change(screen.getByLabelText(/^District/), { target: { value: "Gazipur" } });
+    fireEvent.change(screen.getByLabelText(/^Upazila/), { target: { value: "Sreepur" } });
+    fireEvent.change(screen.getByLabelText(/^Mouza/), { target: { value: "Barmi" } });
+    fireEvent.change(screen.getByLabelText(/^Khatian/), { target: { value: "১২৪৫" } });
+    fireEvent.change(screen.getByLabelText(/^Dag/), { target: { value: "785" } });
+    fireEvent.click(screen.getByRole("button", { name: en.verify.submit }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/verify?district=Gazipur&upazila=Sreepur&mouza=Barmi&khatian=1245&dag=785"));
+  });
+
+  it("mutation tab checks the number, then opens /track?no=", () => {
+    render(wrap(<Hero />, "en", null));
+    fireEvent.click(screen.getByRole("tab", { name: en.home.search.tabs.track }));
+    const box = screen.getByLabelText(new RegExp(`^${en.track.number}`));
+    fireEvent.change(box, { target: { value: "mut-2026" } });
+    fireEvent.click(screen.getByRole("button", { name: en.track.submit }));
+    expect(screen.getByText(en.track.errors.format)).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+    fireEvent.change(box, { target: { value: " mut-2026-0009 " } });
+    fireEvent.click(screen.getByRole("button", { name: en.track.submit }));
+    expect(push).toHaveBeenCalledWith("/track?no=MUT-2026-0009");
+  });
+
+  it("deed tab links to the copy check and opens a pasted QR link on this site", () => {
+    render(wrap(<Hero />, "bn", null));
+    fireEvent.click(screen.getByRole("tab", { name: bn.home.search.tabs.doc }));
+    expect(screen.getByTestId("hero-doc-link")).toHaveAttribute("href", "/verify-document");
+    fireEvent.change(screen.getByLabelText(new RegExp(`^${bn.home.search.qrLabel}`)), { target: { value: "https://evil.example/bn/v/LAND-0001?d=D1&h=abc&x=1" } });
+    fireEvent.click(screen.getByRole("button", { name: bn.home.search.qrSubmit }));
+    expect(push).toHaveBeenCalledWith("/v/LAND-0001?d=D1&h=abc");
+  });
+
+  it("qrTarget keeps only the /v/ path and seal, rejects junk", () => {
+    expect(qrTarget("LAND-0001")).toBe("/v/LAND-0001");
+    expect(qrTarget("http://localhost:3000/en/v/abc123/")).toBe("/v/abc123");
+    expect(qrTarget("  ")).toBeNull();
+    expect(qrTarget("hello world")).toBeNull();
+    expect(qrTarget("../../admin")).toBeNull();
   });
 });
 
