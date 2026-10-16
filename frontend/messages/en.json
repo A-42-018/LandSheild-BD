@@ -10,7 +10,8 @@
     "placeholderNote": "This page is a placeholder. Real features arrive in later phases.",
     "close": "Close",
     "retry": "Try again",
-    "subLine": "Digital land verification"
+    "subLine": "Digital land verification",
+    "brand": "LandShield BD"
   },
   "nav": {
     "home": "Home",
@@ -31,7 +32,15 @@
     "verifyDoc": "Verify a document copy",
     "track": "Track mutation",
     "profile": "Account",
-    "signup": "Sign up"
+    "signup": "Sign up",
+    "services": "Services",
+    "allServices": "All services",
+    "tools": "Citizen tools",
+    "guide": "Guide",
+    "notices": "Notices",
+    "contact": "Contact",
+    "citizenLogin": "Citizen sign in",
+    "officerLogin": "Officer sign in"
   },
   "errors": {
     "generic": "We couldn't process this document. Please check the file and try again.",
@@ -182,7 +191,9 @@
       "expired": "You were signed out after a period of inactivity. Please sign in again."
     },
     "citizenPrompt": "Don't have an account?",
-    "citizenLink": "Create a citizen account"
+    "citizenLink": "Create a citizen account",
+    "officerLoginTitle": "Officer sign in",
+    "officerLoginIntro": "Use your officer account for land office work."
   },
   "verify": {
     "title": "Verify Land",

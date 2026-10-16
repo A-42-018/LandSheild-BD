@@ -29,6 +29,8 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [touched, setTouched] = useState(false);
+  // Header "Sign in ▾" → Officer sign in. Same form and same API; only the heading and intro speak to officers.
+  const officer = params.get("as") === "officer";
 
   const m = useMutation({
     mutationFn: () => login(email, password),
@@ -66,8 +68,8 @@ export default function LoginForm() {
   return (
     <AuthShell mode="login">
       <div>
-        <h1 className="text-heading-2 text-ink">{t("loginTitle")}</h1>
-        <p className="mt-1 text-ink-muted">{t("loginIntro")}</p>
+        <h1 className="text-heading-2 text-ink">{t(officer ? "officerLoginTitle" : "loginTitle")}</h1>
+        <p className="mt-1 text-ink-muted">{t(officer ? "officerLoginIntro" : "loginIntro")}</p>
       </div>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         {params.get("expired") === "1" && (

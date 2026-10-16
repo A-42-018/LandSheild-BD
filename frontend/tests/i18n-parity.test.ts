@@ -25,10 +25,13 @@ describe("messages", () => {
 import { intlLocale } from "../lib/intl-locale";
 
 describe("brand + locale", () => {
-  it("brand name stays English in bn (no Bangla transliteration anywhere)", () => {
+  it("appName stays English in both locales; the Bangla spelling lives only in bn common.brand (header and footer logo)", () => {
     expect(bn.common.appName).toBe("LandShield BD");
     expect(en.common.appName).toBe("LandShield BD");
-    expect(JSON.stringify(bn)).not.toContain("ল্যান্ডশিল্ড");
+    expect(en.common.brand).toBe("LandShield BD");
+    expect(bn.common.brand).toBe("ল্যান্ডশিল্ড বিডি");
+    const { brand: _brand, ...rest } = bn.common;
+    expect(JSON.stringify({ ...bn, common: rest })).not.toContain("ল্যান্ডশিল্ড");
   });
   it("maps bn to bn-BD for Intl", () => {
     expect(intlLocale("bn")).toBe("bn-BD");
