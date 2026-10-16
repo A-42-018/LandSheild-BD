@@ -25,13 +25,14 @@ const PANEL_RINGS = contours([{ cx: 360, cy: 120, rings: 7, step: 26, seed: 2.2 
 /** Shared frame for sign in / sign up / officer request, matching the landing look: one glass card with a brand panel
  *  and the form side with segmented tabs. Desktop: the panel holds a sticky, viewport-high photo frame (farmer with phone,
  *  title on a green fade at the top, the 3 points on a green fade at the bottom), so face and phone stay in view on one
- *  screen while a tall form (officer request) scrolls. On phones the panel shrinks to a short banner above the form. */
+ *  screen while a tall form (officer request) scrolls. The sticky top (6.625rem) is the frame's own resting position
+ *  (header + page padding), so it never shifts before it pins; it leaves only with the card's end. On phones the panel shrinks to a short banner above the form. */
 export default function AuthShell({ mode, children }: { mode: AuthMode; children: ReactNode }) {
   const t = useTranslations("authShell");
   return (
     <div className="glass-card mx-auto grid w-full max-w-5xl overflow-clip !rounded-[22px] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <aside className="auth-panel relative overflow-clip text-white/95">
-        <div className="auth-frame relative flex flex-col gap-8 overflow-hidden p-6 sm:p-8 lg:sticky lg:top-20 lg:h-[min(calc(100dvh-8.5rem),50rem)] lg:min-h-[34rem] lg:justify-between lg:gap-6 lg:p-7">
+        <div className="auth-frame relative flex flex-col gap-8 overflow-hidden p-6 sm:p-8 lg:sticky lg:top-[6.625rem] lg:h-[min(calc(100dvh-7.625rem),52rem)] lg:min-h-[34rem] lg:justify-between lg:gap-6 lg:p-7">
           <div aria-hidden="true" className="auth-photo pointer-events-none absolute inset-0 hidden lg:block" />
           <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-gold" viewBox="0 0 400 640" preserveAspectRatio="xMidYMid slice" fill="none">
             <path d={PANEL_RINGS} stroke="currentColor" strokeOpacity="0.08" />
