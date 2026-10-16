@@ -1,8 +1,8 @@
 "use client";
 import { Bell } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
-import { useSummary } from "@/features/my/useMy";
+import { Link, usePathname } from "@/i18n/navigation";
+import { useUnreadCount } from "@/features/my/useMy";
 import { localDigits } from "@/lib/intl-locale";
 
 /** Header bell (U3.7): unread count of the citizen's notifications, links to the inbox. Rendered for citizens only: they are the
@@ -10,10 +10,12 @@ import { localDigits } from "@/lib/intl-locale";
 export default function NotificationBell({ className }: { className: string }) {
   const t = useTranslations("nav");
   const locale = useLocale();
-  const unread = useSummary().data?.unread ?? 0;
+  const unread = useUnreadCount().data ?? 0;
+  const current = usePathname() === "/my/notifications";
   return (
     <Link
       href="/my/notifications"
+      aria-current={current ? "page" : undefined}
       aria-label={unread > 0 ? t("bellUnread", { count: unread }) : t("bell")}
       className={`relative ${className}`}
     >

@@ -16,6 +16,18 @@ export const useSearches = () => useMe<SearchList>(["searches"], "/me/searches?l
 export const useReports = () => useMe<ReportList>(["reports"], "/me/reports?limit=100");
 export const useNotifications = (unreadOnly = false) =>
   useMe<NotificationList>(["notifications", unreadOnly ? "unread" : "all"], `/me/notifications?limit=100${unreadOnly ? "&unread_only=true" : ""}`);
+/** Header bell (U3.7): the smallest notifications page carries the `unread` total. Refreshed every minute and on tab focus, since
+ *  the header outlives page navigations; any `/me` mutation (e.g. mark read) invalidates it too. */
+export function useUnreadCount() {
+  const { api, status } = useAuth();
+  return useQuery({
+    queryKey: [...ME, "notifications", "count"],
+    enabled: status === "authenticated",
+    queryFn: () => api.get<NotificationList>("/me/notifications?unread_only=true&limit=1").then((r) => r.unread),
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+  });
+}
 /** `enabled=false` for staff: the watch button only exists for citizens. */
 export const useWatchlist = (enabled = true) => useMe<WatchList>(["watchlist"], "/me/watchlist", enabled);
 

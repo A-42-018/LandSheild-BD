@@ -20,7 +20,7 @@ vi.mock("@/i18n/navigation", () => ({
 }));
 vi.mock("@/features/auth/AuthContext", () => ({ useAuth: () => auth }));
 let unread = 0;
-vi.mock("@/features/my/useMy", () => ({ useSummary: () => ({ data: { unread } }) }));
+vi.mock("@/features/my/useMy", () => ({ useUnreadCount: () => ({ data: unread }) }));
 
 const wrap = (ui: React.ReactNode, locale: "en" | "bn" = "en") => (
   <NextIntlClientProvider locale={locale} messages={locale === "en" ? en : bn}>
@@ -206,12 +206,27 @@ describe("Navbar (UD3)", () => {
     expect(bn.nav.myDashboard).toBe("আমার ড্যাশবোর্ড");
   });
 
+  it("reviewer: the shortcut is the current page on আজকের কাজ, and the plain Dashboard entry is not listed twice", () => {
+    auth = { status: "authenticated", user: { name: "R", role: "REVIEWER" }, logout };
+    pathname = "/officer/review/abc";
+    render(wrap(<Navbar />));
+    fireEvent.click(screen.getByRole("button", { name: en.nav.account }));
+    expect(screen.getByRole("link", { name: en.nav.myDashboard })).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("link", { name: en.nav.dashboard })).not.toBeInTheDocument();
+  });
+
   it("bell: citizens only, links to the inbox and shows the unread count", () => {
     auth = { status: "authenticated", user: { name: "C", role: "CITIZEN" }, logout };
     render(wrap(<Navbar />));
     expect(screen.getByRole("link", { name: en.nav.bell })).toHaveAttribute("href", "/my/notifications");
+    expect(screen.getByRole("link", { name: en.nav.bell })).not.toHaveAttribute("aria-current");
     expect(screen.queryByTestId("bell-badge")).not.toBeInTheDocument();
     cleanup();
+    pathname = "/my/notifications";
+    render(wrap(<Navbar />));
+    expect(screen.getByRole("link", { name: en.nav.bell })).toHaveAttribute("aria-current", "page");
+    cleanup();
+    pathname = "/";
     unread = 3;
     render(wrap(<Navbar />));
     expect(screen.getByRole("link", { name: "Notifications, 3 unread" })).toBeInTheDocument();

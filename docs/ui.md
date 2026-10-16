@@ -472,8 +472,8 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 - Tests: `backend/tests/test_content.py`, `features/admin/content.test.tsx`, `features/notices/useNotices.test.tsx`; the old ticker, landing and FAQ tests pass unchanged on the fallback.
 
 ## U3.7 — Role-aware header (roadmap §6, Phase 3)
-- **Role badge**: the Bangla role name (নাগরিক / পর্যালোচক / কর্মকর্তা / প্রশাসক, from `roles.*`) now sits in the header bar beside the account button (hidden below 640 px; the account panel still shows it).
-- **Bell** (`components/NotificationBell.tsx`): citizens only. Links to `/my/notifications`, shows the unread count (from `useSummary`, capped at "99+", Bangla digits in bn) and an accessible name "বিজ্ঞপ্তি, N টি অপঠিত". Staff have no watch list, so a bell would always be empty; it is not shown to them or to anonymous visitors.
-- **"আমার ড্যাশবোর্ড"** is the first entry in the account panel for every role and goes to `redirectFor(role)` (`/my`, `/officer/review`, `/officer`, `/admin`). That page is removed from the list below it so it is not listed twice.
-- Not done: live updates (the count refreshes with the other `/me` queries, not by polling), a notification drop-down preview, a bell for staff.
+- **Role badge**: the Bangla role name (নাগরিক / পর্যালোচক / কর্মকর্তা / প্রশাসক, from `roles.*`) now sits in the header bar beside the account button (hidden below 640 px; the account panel shows it only at those widths).
+- **Bell** (`components/NotificationBell.tsx`): citizens only. Links to `/my/notifications`, shows the unread count (`useUnreadCount`: `GET /me/notifications?unread_only=true&limit=1`, refreshed every minute and on tab focus, capped at "99+", Bangla digits in bn) and an accessible name "বিজ্ঞপ্তি, Nটি অপঠিত" (`nav.bellUnread`), and is marked as the current page on the inbox. Staff have no watch list, so a bell would always be empty; it is not shown to them or to anonymous visitors.
+- **"আমার ড্যাশবোর্ড"** is the first entry in the account panel for every role and goes to `redirectFor(role)` (`/my`, `/officer/review`, `/officer`, `/admin`). The list below it drops that page and any parent of it (a reviewer's start page is `/officer/review`, so the plain "ড্যাশবোর্ড" `/officer` entry is not shown to reviewers in the panel; the officer side menu still has it).
+- Not done: push updates (the count is polled once a minute), a notification drop-down preview, a bell for staff.
 - Tests: `components/header.test.tsx` (badge per role, shortcut target per role, bell visibility/count/cap).
