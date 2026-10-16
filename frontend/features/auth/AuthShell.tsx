@@ -31,7 +31,7 @@ export default function AuthShell({ mode, children }: { mode: AuthMode; children
   const t = useTranslations("authShell");
   return (
     <div className="glass-card mx-auto grid w-full max-w-5xl overflow-clip !rounded-[22px] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-      <aside className="auth-panel relative overflow-clip text-white/95">
+      <aside className="auth-panel relative overflow-clip text-white/95 lg:bg-[#0A3527] lg:bg-none">
         <div className="auth-frame relative flex flex-col gap-8 overflow-hidden p-6 sm:p-8 lg:sticky lg:top-[6.625rem] lg:h-[min(calc(100dvh-7.625rem),52rem)] lg:min-h-[34rem] lg:justify-between lg:gap-6 lg:p-7">
           <div aria-hidden="true" className="auth-photo pointer-events-none absolute inset-0 hidden lg:block" />
           <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full text-gold" viewBox="0 0 400 640" preserveAspectRatio="xMidYMid slice" fill="none">
