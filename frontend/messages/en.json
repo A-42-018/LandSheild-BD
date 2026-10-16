@@ -225,7 +225,7 @@
     "numericHint": "Digits only, e.g. 1245 or ১২৪৫",
     "submit": "Verify",
     "searching": "Processing…",
-    "signInNote": "You need to sign in to see the result. What you typed will be kept.",
+    "signInNote": "See a short summary without signing in. The full report needs sign-in.",
     "demoNote": "Not an official government land record.",
     "errors": {
       "required": "This field is required.",
@@ -234,7 +234,20 @@
       "notFound": "No records found.",
       "permission": "You don't have permission to perform this action.",
       "network": "Cannot reach the server. Please try again.",
-      "generic": "We couldn't process this request. Please try again."
+      "generic": "We couldn't process this request. Please try again.",
+      "rateLimited": "Too many searches. Please try again in a minute."
+    },
+    "summary": {
+      "title": "Parcel found: short summary",
+      "owners": "{count, plural, one {Current owner on record: {n}} other {Current owners on record: {n}}}",
+      "openCase": "Open court case",
+      "yes": "Yes",
+      "no": "No",
+      "encumbrances": "Encumbrances (case, khas, acquisition, mortgage)",
+      "pendingMutations": "Mutations in progress",
+      "maskNote": "Names are partly hidden for privacy. Father's name and NID number are never shown.",
+      "loginForFull": "Sign in to see the full report",
+      "noAccount": "No account? Register for free"
     }
   },
   "result": {
