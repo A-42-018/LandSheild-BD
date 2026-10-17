@@ -21,6 +21,28 @@ export function loginPathFor(allowed?: Role[]): "/login" | "/officer-login" {
   return allowed && allowed.length > 0 && allowed.every((r) => REVIEW_UP.includes(r)) ? "/officer-login" : "/login";
 }
 
+/** Minimum roles per role-gated route (mirrors each page's RequireRole); the longest matching prefix wins. */
+export const ROUTE_ROLES: Record<string, Role[]> = {
+  "/officer": REVIEW_UP,
+  "/officer/upload": OFFICER_UP,
+  "/officer/hearings": OFFICER_UP,
+  "/officer/feedback": OFFICER_UP,
+  "/officer/audit-logs": OFFICER_UP,
+  "/officer/admin": ADMIN_ONLY,
+  "/admin": ADMIN_ONLY,
+  "/my": ["CITIZEN"],
+};
+
+/** Whether `role` may open the (locale-less) `path`; paths without a role gate are open to everyone. */
+export function canOpenPath(role: Role | null | undefined, path: string): boolean {
+  const clean = path.split(/[?#]/)[0].replace(/\/+$/, "") || "/";
+  let best: string | null = null;
+  for (const href of Object.keys(ROUTE_ROLES)) {
+    if ((clean === href || clean.startsWith(`${href}/`)) && (best === null || href.length > best.length)) best = href;
+  }
+  return best === null || hasRole(role, ROUTE_ROLES[best]);
+}
+
 export interface NavItem {
   href: string;
   labelKey: string;

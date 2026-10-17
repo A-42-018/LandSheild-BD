@@ -11,7 +11,7 @@ import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { useAuth } from "./AuthContext";
 import AuthShell from "./AuthShell";
 import PasswordInput from "./PasswordInput";
-import { redirectFor } from "./roles";
+import { canOpenPath, redirectFor } from "./roles";
 
 export type LoginAudience = "citizen" | "staff";
 
@@ -45,10 +45,12 @@ export default function LoginForm({ audience = "citizen" }: { audience?: LoginAu
 
   const m = useMutation({
     mutationFn: () => login(email, password),
-    // An explicit ?next= wins; otherwise the role's home (redirectFor).
+    // An explicit ?next= wins when this role may open it (a stale link from another role's expired session must not
+    // dump a reviewer on a "no permission" page); otherwise the role's home (redirectFor).
     onSuccess: (user) => {
       const next = params.get("next");
-      router.replace(next ? safeNext(next) : redirectFor(user.role));
+      const target = next ? safeNext(next) : null;
+      router.replace(target && canOpenPath(user.role, target) ? target : redirectFor(user.role));
     },
   });
 
