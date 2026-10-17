@@ -136,7 +136,7 @@ export default function TrackView() {
   const d = m.data;
   const fb = f.data;
   return (
-    <ServiceLayout service="track" title={t("title")} purpose={t("purpose")} art={<RouteArt />}>
+    <ServiceLayout service="track" title={t("title")} purpose={t("purpose")} art={<RouteArt />} tip="track">
       <p role="note" className="glass-card px-4 py-2 text-sm font-medium text-ink">
         {t("demoNote")}
       </p>

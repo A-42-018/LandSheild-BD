@@ -1,6 +1,7 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
+import PageTip from "@/components/PageTip";
 import { Badge } from "@/components/ui";
 import { localDigits } from "@/lib/intl-locale";
 import MyHistory from "./MyHistory";
@@ -25,6 +26,7 @@ export default function ReviewerHome() {
           </Badge>,
         ]}
       />
+      <PageTip page="reviewer" />
       <TodayQueue />
       <MyHistory />
     </div>

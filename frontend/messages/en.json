@@ -2550,5 +2550,84 @@
     "stopNamed": "Stop listening: {subject}",
     "noVoice": "This device has no Bangla voice, so it cannot read this page aloud. A phone usually has one.",
     "subjectResult": "Land result"
+  },
+  "pageTip": {
+    "title": "What to do on this page?",
+    "verify": {
+      "s1": "Choose the district, upazila and mouza.",
+      "s2": "Type the khatian and dag numbers as they appear on your papers.",
+      "s3": "Press “Verify”. You need to sign in to see the full result."
+    },
+    "check": {
+      "s1": "Enter the plot details of the land you want to buy.",
+      "s2": "If you know the seller's name, add it as printed on the deed.",
+      "s3": "Before you pay, take the list to a lawyer or the land office."
+    },
+    "track": {
+      "s1": "Enter the application number from your receipt, e.g. MUT-2026-0001.",
+      "s2": "Press “Track status” to see which step it has reached.",
+      "s3": "If a hearing date is shown, go to the office that day with your papers."
+    },
+    "verifyDoc": {
+      "s1": "Choose a photo or PDF of the deed copy you were given.",
+      "s2": "Press “Verify copy”. The file is not kept.",
+      "s3": "If any field does not match, check the original deed at the registry office."
+    },
+    "my": {
+      "s1": "Pick a service from the three buttons at the top.",
+      "s2": "Watch a plot to get a notice when something changes.",
+      "s3": "Your past searches and reports are listed below."
+    },
+    "officer": {
+      "s1": "The key numbers show how much work is waiting.",
+      "s2": "Open the oldest documents in the review list first.",
+      "s3": "Act on risk alerts. Dismiss a wrong alert with a reason."
+    },
+    "reviewer": {
+      "s1": "Open the top document first. It has waited longest.",
+      "s2": "Compare every field read from the document with its image.",
+      "s3": "Approve if everything is right. Otherwise reject it with a reason."
+    },
+    "upload": {
+      "s1": "Choose the document type. Add the land ID if you know it.",
+      "s2": "Pick the scanned file and press “Upload”.",
+      "s3": "Once it is read, the document goes to a reviewer's list."
+    },
+    "mutations": {
+      "s1": "Use the tabs to pick applications by status.",
+      "s2": "Use the area filter to see your office's applications.",
+      "s3": "Open an application, read its pre-check, then decide."
+    }
+  },
+  "statistics": {
+    "title": "Statistics",
+    "purpose": "A sample picture of how much this demo's services are used.",
+    "updated": "Last updated: {date}",
+    "sampleBadge": "Sample data",
+    "sampleTitle": "These are sample figures.",
+    "sampleBody": "They were made up for the demo. This is not an official government record or report.",
+    "sourcesLink": "See the data sources",
+    "kpiTitle": "At a glance",
+    "kpi": {
+      "verifications": "Land checks",
+      "applications": "Mutation applications",
+      "settled": "Mutations settled",
+      "settledShare": "Applications settled"
+    },
+    "divisionTitle": "By division",
+    "divisionIntro": "How many land checks were made in each division. The darker the tile, the more checks.",
+    "mapCaption": "Rough position of each division, not to scale. Each tile shows its number of land checks.",
+    "legend": "Colour key",
+    "bands": {
+      "below": "Under {n}",
+      "between": "{from} to {to}",
+      "atLeast": "{n} or more"
+    },
+    "tableCaption": "Figures by division (sample data)",
+    "col": {
+      "division": "Division",
+      "total": "Total",
+      "settled": "Settled"
+    }
   }
 }

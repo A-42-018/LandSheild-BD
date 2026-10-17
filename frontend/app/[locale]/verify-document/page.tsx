@@ -11,7 +11,7 @@ export default async function VerifyDocumentPage({ params: { locale } }: { param
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
   return (
-    <ServiceLayout service="verifyDoc" title={t("nav.verifyDoc")} purpose={t("page.verifyDocPurpose")} art={<DeedArt />}>
+    <ServiceLayout service="verifyDoc" title={t("nav.verifyDoc")} purpose={t("page.verifyDocPurpose")} art={<DeedArt />} tip="verifyDoc">
       <VerifyDocumentView />
     </ServiceLayout>
   );

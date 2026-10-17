@@ -61,6 +61,7 @@ export default function Footer() {
             <ul className={`${LIST} mt-3`}>
               <li><Link href="/about" className={LINK}>{t("footer.howItWorks")}</Link></li>
               <li><Link href="/data-sources" className={LINK}>{t("footer.dataSources")}</Link></li>
+              <li><Link href="/statistics" className={LINK}>{t("statistics.title")}</Link></li>
             </ul>
           </div>
           <div>

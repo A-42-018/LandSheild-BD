@@ -9,7 +9,7 @@ const axePath = join(process.cwd(), "node_modules/axe-core/axe.min.js");
 // U5.4: every route in app/[locale] (dynamic ones with a seeded id). Keep in step when a page is added.
 const PUBLIC = [
   "", "about", "faq", "accessibility", "privacy", "terms", "data-sources", "sitemap", "services", "feedback",
-  "verify", "map", "guide", "track", "verify-document", "tools", "tools/units", "tools/fees", "tools/inheritance",
+  "verify", "map", "guide", "statistics", "track", "verify-document", "tools", "tools/units", "tools/fees", "tools/inheritance",
   "login", "signup", "officer-login", "officer-signup", "no-such-page", "v/LP-10001",
 ];
 const SIGNED_IN: [DemoRole, string[]][] = [

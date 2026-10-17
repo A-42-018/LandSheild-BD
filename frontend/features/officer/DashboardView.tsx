@@ -1,6 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
+import PageTip from "@/components/PageTip";
 import { useAuth } from "@/features/auth/AuthContext";
 import Activity from "./Activity";
 import Alerts from "./Alerts";
@@ -15,6 +16,7 @@ export default function DashboardView() {
   return (
     <div className="flex flex-col gap-6">
       <OfficerPageHeader root title={t(titleKey)} purpose={t("purpose")} />
+      <PageTip page="officer" />
       <KpiCards />
       <Charts />
       <QueueTable />

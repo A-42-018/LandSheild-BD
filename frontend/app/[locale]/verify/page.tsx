@@ -10,7 +10,7 @@ export default async function VerifyPage({ params: { locale } }: { params: { loc
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
   return (
-    <ServiceLayout service="verify" title={t("nav.verify")} purpose={t("page.verifyPurpose")} art={<PlotSearchArt />}>
+    <ServiceLayout service="verify" title={t("nav.verify")} purpose={t("page.verifyPurpose")} art={<PlotSearchArt />} tip="verify">
       {/* U2.2: public. Visitors get a masked summary; the full result page still needs sign-in. */}
       <VerifyForm />
     </ServiceLayout>
