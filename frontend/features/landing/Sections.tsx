@@ -30,12 +30,13 @@ import { useLocale, useTranslations } from "next-intl";
 import Reveal from "@/components/Reveal";
 import ArtCard from "@/components/ArtCard";
 import NoticeList from "@/features/notices/NoticeList";
-import { localDigits } from "@/lib/intl-locale";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import FaqList from "@/features/info/FaqList";
 import { HOME_FAQ_IDS } from "@/features/info/pages";
 import { HOTLINE } from "@/features/help/help";
+import { totals } from "@/features/statistics/sample";
+import { intlLocale, localDigits } from "@/lib/intl-locale";
 import { SERVICE_ART, TOOL_ART } from "./Illustrations";
 
 /** Services whose route is not built yet stay hidden until their F-phase lands (track = F2c, now live). */
@@ -134,6 +135,36 @@ export function CitizenTools() {
         ))}
       </ul>
       <MoreLink href="/tools">{t("cta")}</MoreLink>
+    </Band>
+  );
+}
+
+const STAT_KEYS = ["verifications", "applications", "settledShare"] as const;
+
+/** তথ্যচিত্র teaser (U4.3, roadmap §4: after নাগরিক টুলস): three sample totals from /statistics, labelled as sample data. Server-rendered, no JS. */
+export function StatsBand() {
+  const t = useTranslations("landing.stats");
+  const k = useTranslations("statistics.kpi");
+  const locale = useLocale();
+  const sum = totals();
+  const n = new Intl.NumberFormat(intlLocale(locale));
+  const pct = new Intl.NumberFormat(intlLocale(locale), { style: "percent", maximumFractionDigits: 0 });
+  return (
+    <Band id="stats-title">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <h2 id="stats-title" className={h2}>{t("title")}</h2>
+        <span data-testid="stats-sample" className="rounded-full border border-gold bg-gold-soft px-2.5 py-0.5 text-sm font-semibold text-brand-deep">{t("sample")}</span>
+      </div>
+      <p className="mt-3 max-w-3xl text-ink-muted">{t("intro")}</p>
+      <ul className="mt-6 grid gap-3 sm:grid-cols-3">
+        {STAT_KEYS.map((key) => (
+          <li key={key} data-testid="home-stat" className="glass-card min-w-0 p-4">
+            <p className="text-sm text-ink-muted">{k(key)}</p>
+            <p className="font-display text-3xl font-bold leading-tight text-ink">{key === "settledShare" ? pct.format(sum.settledShare) : n.format(sum[key])}</p>
+          </li>
+        ))}
+      </ul>
+      <MoreLink href="/statistics">{t("more")}</MoreLink>
     </Band>
   );
 }

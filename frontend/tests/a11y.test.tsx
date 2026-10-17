@@ -15,7 +15,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import Navbar from "@/features/landing/Navbar";
 import Footer from "@/features/landing/Footer";
 import Hero from "@/features/landing/Hero";
-import { HowItWorks, NoticeBoard, ServiceTiles, Trust, WhatWeCheck } from "@/features/landing/Sections";
+import { CitizenTools, HowItWorks, NoticeBoard, ServiceTiles, StatsBand, Trust, WhatWeCheck } from "@/features/landing/Sections";
 import VerifyForm from "@/features/verify/VerifyForm";
 import ResultView from "@/features/result/ResultView";
 import ReportView from "@/features/report/ReportView";
@@ -195,6 +195,8 @@ const CASES: Case[] = [
           <ServiceTiles />
           <NoticeBoard />
           <WhatWeCheck />
+          <CitizenTools />
+          <StatsBand />
           <HowItWorks />
           <Trust />
         </main>

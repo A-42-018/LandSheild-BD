@@ -693,6 +693,12 @@
       "intro": "Free calculators for buying, selling and inheriting land.",
       "cta": "All tools"
     },
+    "stats": {
+      "title": "Statistics",
+      "sample": "Sample data",
+      "intro": "How the service is used, at a glance. The numbers are made up for the demo, not official figures.",
+      "more": "See all"
+    },
     "help": {
       "title": "Still stuck? Call us.",
       "body": "The land services hotline answers questions about land records, mutation and fees.",

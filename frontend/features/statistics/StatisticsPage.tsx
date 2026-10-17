@@ -48,11 +48,11 @@ export default function StatisticsPage() {
     <article className="mx-auto flex max-w-6xl flex-col gap-5">
       <PageHeader title={t("title")} purpose={t("purpose")} art={<ScaleArt />} meta={[t("updated", { date: updated }), t("sampleBadge")]} />
 
-      <p role="note" data-testid="sample-notice" className="flex items-start gap-3 rounded-card border border-gold bg-gold-soft p-4 text-ink">
-        <Info aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-ink" />
+      <p role="note" data-testid="sample-notice" className="flex items-start gap-3 rounded-card border border-gold bg-gold-soft p-4 text-brand-deep">
+        <Info aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
         <span>
           <strong className="font-semibold">{t("sampleTitle")}</strong> {t("sampleBody")}{" "}
-          <Link href="/data-sources" className="text-link underline underline-offset-2">{t("sourcesLink")}</Link>
+          <Link href="/data-sources" className="font-semibold underline underline-offset-2">{t("sourcesLink")}</Link>
         </span>
       </p>
 

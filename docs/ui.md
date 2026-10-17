@@ -636,4 +636,17 @@ Every state says what happened and what to do next, in plain words. No page prom
 ## Also
 - `scripts/audit-hardcoded.mjs` now allows `A`, `R`, `N`. These are the `<kbd>` shortcut keys on the review screen from U3.3, and they made `npm run check:i18n` fail on main.
 - Tests: `components/PageTip.test.tsx`, `features/statistics/statistics.test.tsx`; `tests/a11y.test.tsx` has `page-tips` (all nine, opened) and `statistics`, in EN and BN.
-- Not done: the e2e axe run on `/statistics` (added to the list, not run here); a home-page তথ্যচিত্র band (roadmap §4 home order) linking to the page; real figures from the API.
+- Tests: `features/landing/landing.test.tsx` has the home তথ্যচিত্র band (EN and BN), and the `home` case in `tests/a11y.test.tsx` now also renders `CitizenTools` and `StatsBand`.
+
+## Home-page তথ্যচিত্র band (U4.3 follow-up)
+- `StatsBand` in `features/landing/Sections.tsx` sits after নাগরিক টুলস (roadmap §4 order). It shows three totals from `totals()` in `features/statistics/sample.ts`: ভূমি যাচাই, নামজারির আবেদন and আবেদনের মধ্যে নিষ্পত্তি. A gold "নমুনা তথ্য" chip sits beside the heading, and the intro says the numbers are made up. "সব দেখুন" links to `/statistics`. Copy is in `landing.stats`; the labels reuse `statistics.kpi`.
+- It is a server component, so it adds no JS: home JS is 174.6 KB of 200 KB (`npm run check:budget`).
+- The notice board still sits higher up, after the service tiles (U3.6 placement). Only the তথ্যচিত্র band was added here.
+
+## Checked in a real browser
+- **e2e axe** (`PW_CHANNEL=chrome`, 360 px, light): `/statistics`, `/` and the four staff tip pages, EN and BN. 12 of 12 pass.
+- **Every theme**: a separate axe run on `/statistics` and `/` in light, dark, light high-contrast and dark high-contrast (16 runs). No violations. The division tiles were fully measured in all four themes.
+- **Fixed: gold band in dark mode.** `gold-soft` is the same in both themes, but `text-ink` and `text-link` turn light in dark. The sample note on `/statistics` was 1.2 : 1 in dark (about 1.1–1.4 : 1 in dark high-contrast). The note and the home chip now use `text-brand-deep` (9.6 : 1 in every theme), with an underlined, bold link. The e2e run missed this: it only checks light, and axe marks text it cannot measure (here, under the help button) as "incomplete", not as a failure.
+- Axe cannot measure text on `glass-card` (a gradient). Worked out by hand, muted text there is at least 5.9 : 1 in every theme.
+- **Staff tips** (BN, 360 px, seeded officer and reviewer, backend on its own `/tmp` SQLite db): officer dashboard, reviewer "আজকের কাজ", upload and ই-নামজারি queue. On each page the tip is right under the page header, the summary is 52 px tall, it opens to its three steps, and there is no sideways scroll. At A+ (125 %) the tip wraps cleanly (summary 92 px).
+- Not done: real figures from the API. Found but not fixed (not part of this work): at A+ on a 360 px screen, the top strip's language switch spills 45 px past the edge on every page.

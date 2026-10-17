@@ -10,7 +10,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import type { ApiClient } from "@/lib/api";
 import Footer from "./Footer";
 import Backdrop, { KANTHA_TILE } from "./Backdrop";
-import { HelpStrip, HomeFaq, HowItWorks, NoticeBoard, ServiceTiles, Trust, WhatWeCheck } from "./Sections";
+import { HelpStrip, HomeFaq, HowItWorks, NoticeBoard, ServiceTiles, StatsBand, Trust, WhatWeCheck } from "./Sections";
 import { HOME_FAQ_IDS } from "@/features/info/pages";
 import { NOTICES } from "@/features/notices/notices";
 import AboutPage from "../../app/[locale]/about/page";
@@ -127,6 +127,17 @@ describe("landing sections (U5)", () => {
     fireEvent.click(items[0].querySelector("summary")!);
     expect(items[0].open).toBe(true);
     expect(screen.getByRole("link", { name: m.landing.faq.more })).toHaveAttribute("href", "/faq");
+  });
+  it.each(["en", "bn"] as const)("তথ্যচিত্র band: three sample totals, a sample-data label and a link to /statistics (U4.3, %s)", (loc) => {
+    const m = loc === "en" ? en : bn;
+    render(wrap(<StatsBand />, loc, null));
+    expect(screen.getByRole("heading", { level: 2, name: m.landing.stats.title })).toBeInTheDocument();
+    expect(screen.getByTestId("stats-sample")).toHaveTextContent(m.landing.stats.sample);
+    const stats = screen.getAllByTestId("home-stat");
+    expect(stats.map((li) => li.firstChild?.textContent)).toEqual([m.statistics.kpi.verifications, m.statistics.kpi.applications, m.statistics.kpi.settledShare]);
+    expect(stats[0]).toHaveTextContent(loc === "bn" ? "১৭,৮১০" : "17,810");
+    expect(stats[2]).toHaveTextContent(loc === "bn" ? "৮২%" : "82%");
+    expect(screen.getByRole("link", { name: m.landing.stats.more })).toHaveAttribute("href", "/statistics");
   });
   it("about page has purpose, limitations, demo data and non-legal notice", () => {
     render(wrap(<AboutPage params={{ locale: "en" }} />));
