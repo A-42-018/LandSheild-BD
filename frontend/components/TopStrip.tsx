@@ -59,7 +59,8 @@ export default function TopStrip() {
             </>
           )}
         </p>
-        <div className="flex items-center gap-3">
+        {/* Wraps (the language pill drops to a second line) when A+ touch targets outgrow a 360 px screen; no sideways scroll. */}
+        <div data-testid="strip-controls" className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <div role="group" aria-label={t("textSize")} className="inline-flex items-center gap-0.5">
             <button type="button" aria-label={t("smaller")} title={t("smaller")} disabled={idx <= 0} onClick={() => chooseSize(TEXT_SIZES[idx - 1])} className={BTN}>
               <span aria-hidden="true" className="text-xs">{t("glyphSmaller")}</span>

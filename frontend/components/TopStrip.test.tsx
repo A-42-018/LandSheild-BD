@@ -90,4 +90,12 @@ describe("TopStrip (U1.1)", () => {
     expect(document.documentElement.classList.contains("contrast")).toBe(false);
     expect(window.localStorage.getItem("ls-contrast")).toBeNull();
   });
+
+  it("controls row may wrap, so A+ touch targets never widen a 360 px page (e2e/mobile.spec.ts measures it)", () => {
+    render(wrap("bn"));
+    const row = screen.getByTestId("strip-controls");
+    expect(row).toHaveClass("flex-wrap");
+    expect(row).toContainElement(screen.getByRole("navigation", { name: bn.common.language }));
+    expect(row).toContainElement(screen.getByRole("button", { name: bn.strip.contrast }));
+  });
 });

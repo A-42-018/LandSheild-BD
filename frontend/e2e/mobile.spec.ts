@@ -53,6 +53,28 @@ test.describe("mobile viewport (375 px)", () => {
   });
 });
 
+test.describe("text size A+ on a 360 px phone", () => {
+  // the top strip's 3rem touch targets grow to 60 px at 125 %; the controls row must wrap, not widen the page
+  test.use({ viewport: { width: 360, height: 740 } });
+  for (const size of ["125", "112.5"]) {
+    for (const locale of ["bn", "en"]) {
+      test(`${size} % in ${locale}: strip controls stay on screen, no sideways scroll`, async ({ page }) => {
+        await page.addInitScript((s) => window.localStorage.setItem("ls-text-size", s), size);
+        await page.goto(`/${locale}`);
+        const strip = page.getByTestId("top-strip");
+        await expect(strip.getByRole("link", { name: "English" })).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.style.fontSize)).toBe(`${size}%`);
+        for (const el of await strip.locator("button, a").all()) {
+          const box = (await el.boundingBox())!;
+          expect(box.x + box.width).toBeLessThanOrEqual(360);
+          expect(box.height).toBeGreaterThanOrEqual(44);
+        }
+        await expectNoHorizontalScroll(page);
+      });
+    }
+  }
+});
+
 test.describe("UI v2 mobile patterns (375 px)", () => {
   test("track page: What you need collapses above the form; Bangla form fits", async ({ page }) => {
     await page.goto("/bn/track");
