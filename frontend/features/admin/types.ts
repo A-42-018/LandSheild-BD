@@ -1,3 +1,5 @@
+import type { Office } from "@/features/officers/types";
+
 export interface AuditLogItem {
   id: string;
   action: string;
@@ -94,4 +96,8 @@ export interface LedgerVerify {
   reason: string | null;
   entity_type: string | null;
   entity_id: string | null;
+}
+
+export interface AdminOffice extends Office {
+  officers: number;
 }

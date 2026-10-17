@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { API, apiLogin, signIn } from "./fixtures";
 
-const STAFF_PAGES = ["/en/officer", "/en/officer/upload", "/en/officer/audit-logs", "/en/officer/admin"];
+const STAFF_PAGES = ["/en/officer", "/en/officer/upload", "/en/officer/audit-logs", "/en/admin"];
 
 test.describe("anonymous visitors", () => {
   for (const path of STAFF_PAGES) {
     test(`${path} → login with next=`, async ({ page }) => {
       await page.goto(path);
-      await expect(page).toHaveURL(/\/en\/login\?next=/);
-      await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+      await expect(page).toHaveURL(/\/en\/officer-login\?next=/);
+      await expect(page.getByRole("heading", { name: "Staff sign in" })).toBeVisible();
     });
   }
 
@@ -42,20 +42,40 @@ test.describe("role ladder", () => {
     await signIn(page, "officer");
     await page.goto("/en/officer");
     await expect(page.getByRole("heading", { name: "Officer dashboard" })).toBeVisible();
-    await page.goto("/en/officer/admin");
+    await page.goto("/en/admin");
     await expect(page.getByText("You don't have permission to perform this action.").first()).toBeVisible();
   });
 
   test("admin reaches the admin console", async ({ page }) => {
     await signIn(page, "admin");
-    await page.goto("/en/officer/admin");
+    await page.goto("/en/admin");
     await expect(page.getByText("You don't have permission to perform this action.")).toHaveCount(0);
-    await expect(page.getByRole("tab").first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Administration" })).toBeVisible();
   });
 
   test("reviewer cannot upload", async ({ page }) => {
     await signIn(page, "reviewer");
     await page.goto("/en/officer/upload");
+    await expect(page.getByText("You don't have permission to perform this action.").first()).toBeVisible();
+  });
+});
+
+test.describe("citizen area /my (U3.2)", () => {
+  test("anonymous → citizen sign-in with next=", async ({ page }) => {
+    await page.goto("/en/my/watchlist");
+    await expect(page).toHaveURL(/\/en\/login\?next=%2Fmy%2Fwatchlist/);
+  });
+
+  test("citizen sees their dashboard", async ({ page }) => {
+    await signIn(page, "citizen");
+    await page.goto("/en/my");
+    await expect(page.getByRole("heading", { level: 1, name: /^Hello, / })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "My land services" })).toBeVisible();
+  });
+
+  test("staff get the permission message", async ({ page }) => {
+    await signIn(page, "officer");
+    await page.goto("/en/my");
     await expect(page.getByText("You don't have permission to perform this action.").first()).toBeVisible();
   });
 });

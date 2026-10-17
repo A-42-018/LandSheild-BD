@@ -1,7 +1,7 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  AlertOctagon, BadgeCheck, Bell, Database, FileClock, Gavel, Hourglass, Link2, Link2Off, type LucideIcon,
+  AlertOctagon, BadgeCheck, Bell, CalendarClock, CheckCheck, Database, FileClock, Gavel, Hourglass, Link2, Link2Off, type LucideIcon,
 } from "lucide-react";
 import { ApiError } from "@/lib/api";
 import { ErrorState, LoadingState } from "@/components/ui";
@@ -9,7 +9,7 @@ import { useOfficerStats } from "./useOfficerData";
 import type { OfficerStats } from "./types";
 import { intlLocale } from "@/lib/intl-locale";
 
-type NumKey = "total_records" | "pending_review" | "high_risk" | "verified" | "open_alerts" | "pending_mutations" | "active_encumbrances";
+type NumKey = "total_records" | "pending_review" | "high_risk" | "verified" | "open_alerts" | "pending_mutations" | "active_encumbrances" | "settled_this_month" | "hearings_upcoming";
 
 /** Glass tiles (UI v2): icon chip carries the status colour; the grid fills by rem width, so it also holds when the browser font size is raised. */
 const KPIS: { key: NumKey; chip: string; Icon: LucideIcon }[] = [
@@ -20,6 +20,8 @@ const KPIS: { key: NumKey; chip: string; Icon: LucideIcon }[] = [
   { key: "open_alerts", chip: "bg-review-soft text-review", Icon: Bell },
   { key: "pending_mutations", chip: "bg-primary-soft text-primary", Icon: FileClock },
   { key: "active_encumbrances", chip: "bg-critical-soft text-critical", Icon: Gavel },
+  { key: "settled_this_month", chip: "bg-verified-soft text-verified", Icon: CheckCheck },
+  { key: "hearings_upcoming", chip: "bg-review-soft text-review", Icon: CalendarClock },
 ];
 const TILE = "glass-card flex h-full min-w-0 flex-col items-start gap-3 p-4";
 

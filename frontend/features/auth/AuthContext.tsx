@@ -26,6 +26,8 @@ interface AuthValue {
   api: ApiClient;
   login: (email: string, password: string) => Promise<ApiUser>;
   logout: () => Promise<void>;
+  /** Replace the signed-in user after a profile change (U3.2), so the header shows the new name at once. */
+  updateUser: (user: ApiUser) => void;
 }
 
 const Ctx = createContext<AuthValue | null>(null);
@@ -84,7 +86,12 @@ export function AuthProvider({ children, client }: { children: ReactNode; client
     }
   }, [api]);
 
-  const value = useMemo(() => ({ status, user, api, login, logout }), [status, user, api, login, logout]);
+  const updateUser = useCallback((u: ApiUser) => setUser(u), []);
+
+  const value = useMemo(
+    () => ({ status, user, api, login, logout, updateUser }),
+    [status, user, api, login, logout, updateUser],
+  );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

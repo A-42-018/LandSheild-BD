@@ -10,16 +10,24 @@ import { ApiError } from "@/lib/api";
 import { useAuth } from "./AuthContext";
 import AuthShell from "./AuthShell";
 import PasswordInput from "./PasswordInput";
-import { hasRole, REVIEW_UP } from "./roles";
+import { redirectFor } from "./roles";
+
+export type LoginAudience = "citizen" | "staff";
 
 /** Seeded demo users (README "Demo accounts"); the password is never shown in the UI. */
-export const DEMO_ACCOUNTS = ["citizen", "reviewer", "officer", "admin"].map((r) => `${r}@demo.landshield.test`);
+const demoEmails = (roles: string[]) => roles.map((r) => `${r}@demo.landshield.test`);
+export const DEMO_ACCOUNTS_BY_AUDIENCE: Record<LoginAudience, string[]> = {
+  citizen: demoEmails(["citizen"]),
+  staff: demoEmails(["reviewer", "officer", "admin"]),
+};
+export const DEMO_ACCOUNTS = [...DEMO_ACCOUNTS_BY_AUDIENCE.citizen, ...DEMO_ACCOUNTS_BY_AUDIENCE.staff];
 
 export function safeNext(next: string | null): string {
   return next && next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : "/";
 }
 
-export default function LoginForm() {
+/** `audience` picks the page copy, the demo accounts and the shell tab; any role can sign in on either page and lands on its own home. */
+export default function LoginForm({ audience = "citizen" }: { audience?: LoginAudience }) {
   const t = useTranslations("auth");
   const ti = useTranslations("auth.idle");
   const tr = useTranslations("roles");
@@ -29,15 +37,15 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [touched, setTouched] = useState(false);
-  // Header "Sign in ▾" → Officer sign in. Same form and same API; only the heading and intro speak to officers.
-  const officer = params.get("as") === "officer";
+  // Older links used /login?as=officer for the staff copy; they now get the staff page too.
+  const staff = audience === "staff" || params.get("as") === "officer";
 
   const m = useMutation({
     mutationFn: () => login(email, password),
-    // An explicit ?next= wins; otherwise reviewers/officers/admins land on their dashboard.
+    // An explicit ?next= wins; otherwise the role's home (redirectFor).
     onSuccess: (user) => {
       const next = params.get("next");
-      router.replace(next ? safeNext(next) : hasRole(user.role, REVIEW_UP) ? "/officer" : "/");
+      router.replace(next ? safeNext(next) : redirectFor(user.role));
     },
   });
 
@@ -66,10 +74,10 @@ export default function LoginForm() {
   }
 
   return (
-    <AuthShell mode="login">
+    <AuthShell mode={staff ? "staff" : "login"}>
       <div>
-        <h1 className="text-heading-2 text-ink">{t(officer ? "officerLoginTitle" : "loginTitle")}</h1>
-        <p className="mt-1 text-ink-muted">{t(officer ? "officerLoginIntro" : "loginIntro")}</p>
+        <h1 className="text-heading-2 text-ink">{t(staff ? "staffTitle" : "loginTitle")}</h1>
+        <p className="mt-1 text-ink-muted">{t(staff ? "staffIntro" : "loginIntro")}</p>
       </div>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         {params.get("expired") === "1" && (
@@ -112,7 +120,7 @@ export default function LoginForm() {
         </p>
         <p className="mt-1 text-ink-muted">{t("demoHint")}</p>
         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-          {DEMO_ACCOUNTS.map((e) => (
+          {DEMO_ACCOUNTS_BY_AUDIENCE[audience].map((e) => (
             <li key={e}>
               <button
                 type="button"

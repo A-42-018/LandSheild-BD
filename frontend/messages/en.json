@@ -40,7 +40,12 @@
     "notices": "Notices",
     "contact": "Contact",
     "citizenLogin": "Citizen sign in",
-    "officerLogin": "Officer sign in"
+    "officerLogin": "Officer sign in",
+    "myArea": "My land services",
+    "admin": "Administration",
+    "myDashboard": "My dashboard",
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {count} unread"
   },
   "errors": {
     "generic": "We couldn't process this document. Please check the file and try again.",
@@ -179,6 +184,8 @@
   "auth": {
     "loginTitle": "Sign in",
     "loginIntro": "Use your account to verify land records.",
+    "staffTitle": "Staff sign in",
+    "staffIntro": "For reviewers, land office officers and administrators.",
     "email": "Email",
     "password": "Password",
     "submit": "Sign in",
@@ -206,9 +213,7 @@
       "expired": "You were signed out after a period of inactivity. Please sign in again."
     },
     "citizenPrompt": "Don't have an account?",
-    "citizenLink": "Create a citizen account",
-    "officerLoginTitle": "Officer sign in",
-    "officerLoginIntro": "Use your officer account for land office work."
+    "citizenLink": "Create a citizen account"
   },
   "verify": {
     "title": "Verify Land",
@@ -525,7 +530,13 @@
       "doc": "Document",
       "fields": "Fields"
     },
-    "splitter": "Resize the document and fields panes"
+    "splitter": "Resize the document and fields panes",
+    "toolbar": {
+      "back": "Today's work",
+      "next": "Next document",
+      "noNext": "No other document is waiting.",
+      "keys": "Keys: A approve · R reject · N next document"
+    }
   },
   "landing": {
     "disclaimerTitle": "Disclaimer",
@@ -666,7 +677,8 @@
           "title": "Citizen tools added",
           "body": "Land unit converter, fee calculator and inheritance shares."
         }
-      }
+      },
+      "empty": "No notices have been published yet."
     }
   },
   "officer": {
@@ -683,7 +695,9 @@
       "admin": "Administration",
       "mutations": "Mutations",
       "archive": "Archive search",
-      "feedback": "Feedback and grievance"
+      "feedback": "Feedback and grievance",
+      "today": "Today's work",
+      "hearings": "Hearing calendar"
     },
     "kpi": {
       "title": "Key figures",
@@ -697,7 +711,9 @@
       "ledger": "Ledger integrity",
       "ledgerIntact": "Intact",
       "ledgerBroken": "Broken",
-      "ledgerEntries": "{count} entries"
+      "ledgerEntries": "{count} entries",
+      "settled_this_month": "Settled this month",
+      "hearings_upcoming": "Hearings in the next 7 days"
     },
     "queue": {
       "title": "Verification queue",
@@ -929,6 +945,67 @@
         "reasonHint": "The applicant sees this reason when they try to sign in.",
         "empty": "No requests.",
         "error": "Could not update the request. Please try again."
+      },
+      "dataTitle": "Records and documents",
+      "dataPurpose": "Read-only lists of land records and uploaded documents.",
+      "offices": {
+        "title": "Land offices",
+        "hint": "Every land office in the system and the number of active officers tied to it.",
+        "filters": "Office filters",
+        "empty": "No offices match.",
+        "cols": {
+          "name": "Office",
+          "type": "Type",
+          "place": "Place",
+          "code": "Code",
+          "officers": "Officers"
+        }
+      },
+      "content": {
+        "title": "Notices, FAQ and guides",
+        "hint": "Write the public notices, FAQ answers and guides here, in Bangla and English. Only published items appear on the public pages.",
+        "kindsLabel": "Type of content",
+        "kinds": {
+          "NOTICE": "Notices",
+          "FAQ": "FAQ",
+          "GUIDE": "Guides"
+        },
+        "kindHint": {
+          "NOTICE": "Shown newest first on the home page notice board. Tick \"Show in ticker\" to also scroll a notice under the header.",
+          "FAQ": "Shown on /faq and, for the first five, on the home page. Lower position comes first. Until you add one, the built-in answers are shown.",
+          "GUIDE": "Guides are saved and will fill the guide pages when those are built. They do not appear on a public page yet."
+        },
+        "add": "Add",
+        "addTitle": "Add {kind}",
+        "editTitle": "Edit item",
+        "edit": "Edit",
+        "delete": "Delete",
+        "editAria": "Edit {title}",
+        "deleteAria": "Delete {title}",
+        "deleteTitle": "Delete this item?",
+        "deleteBody": "\"{title}\" will be removed from the public pages. This cannot be undone.",
+        "empty": "Nothing here yet.",
+        "published": "Published",
+        "draft": "Draft",
+        "inTicker": "In ticker",
+        "cols": {
+          "title": "Title",
+          "date": "Date",
+          "position": "Position",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "fields": {
+          "titleBn": "Title (Bangla)",
+          "titleEn": "Title (English)",
+          "bodyBn": "Text (Bangla)",
+          "bodyEn": "Text (English)",
+          "date": "Date",
+          "ticker": "Show in ticker",
+          "position": "Position",
+          "positionHint": "Lower numbers come first.",
+          "published": "Published (visible to everyone)"
+        }
       }
     },
     "ledger": {
@@ -946,6 +1023,54 @@
         "RECORD_MODIFIED": "The live record differs from what the ledger recorded.",
         "RECORD_MISSING": "A recorded entry no longer exists in the database.",
         "UNKNOWN": "The ledger does not match the stored records."
+      }
+    },
+    "nav": {
+      "label": "Administration",
+      "overview": "Overview",
+      "users": "Users",
+      "officerRequests": "Officer requests",
+      "offices": "Offices",
+      "content": "Notices, FAQ and guides",
+      "records": "Records and documents",
+      "audit": "Audit log",
+      "settings": "Settings"
+    },
+    "overview": {
+      "title": "Administration",
+      "purpose": "Accounts, officer requests and system health at a glance.",
+      "tilesLabel": "Key counts",
+      "shortcuts": "Shortcuts",
+      "tiles": {
+        "pending": "Officer requests waiting",
+        "users": "Accounts",
+        "records": "Land records",
+        "documents": "Uploaded documents"
+      },
+      "links": {
+        "officerArea": "Officer area",
+        "audit": "Audit log",
+        "settings": "Settings"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "purpose": "The rules the system applies to staff accounts and sessions.",
+      "readonly": "These settings are shown for reference. They are set in the system configuration and cannot be changed here yet.",
+      "session": {
+        "title": "Staff sessions",
+        "idle": "Staff are signed out after {minutes} minutes without activity. A warning appears two minutes before."
+      },
+      "languages": {
+        "title": "Languages",
+        "body": "The site is available in English and Bangla. Each person's choice is saved with their account."
+      },
+      "roles": {
+        "title": "Roles",
+        "CITIZEN": "Searches land, tracks mutations and keeps watched land and reports.",
+        "REVIEWER": "Reviews extracted documents and escalates alerts. Works from the review queue.",
+        "OFFICER": "Decides mutation cases, schedules hearings and sees their own office's figures.",
+        "ADMIN": "Manages accounts, approves officer requests and reads the audit log."
       }
     }
   },
@@ -1074,6 +1199,10 @@
       "layerParcels": "Land parcels (risk colours)",
       "shownNow": "shown now",
       "zoom": "Zoom",
+      "north": "N",
+      "south": "S",
+      "east": "E",
+      "west": "W",
       "loadError": "We couldn't load the boundary data. Please try again.",
       "boundaryNote": "Boundaries are third-party open data (geoBoundaries, via ifahimreza/bangladesh-geojson), simplified for this prototype. They are not official survey or cadastral boundaries.",
       "fullscreen": "Fullscreen",
@@ -1966,8 +2095,9 @@
   },
   "authShell": {
     "switcher": "Account options",
-    "tabLogin": "Sign in",
+    "tabLogin": "Citizen sign in",
     "tabSignup": "Citizen sign up",
+    "tabStaff": "Staff sign in",
     "tabOfficer": "Officer request",
     "showPassword": "Show",
     "hidePassword": "Hide",
@@ -1977,5 +2107,225 @@
     "p2": "Every result links to the evidence behind it.",
     "p3": "Officer and reviewer access is role-based and audited.",
     "notice": "Demo e-governance prototype. Not a government website."
+  },
+  "my": {
+    "nav": {
+      "label": "My land services",
+      "dashboard": "My dashboard",
+      "searches": "My searches",
+      "watchlist": "Watched land",
+      "reports": "My reports",
+      "notifications": "Notifications",
+      "profile": "Profile and security"
+    },
+    "dashboard": {
+      "greeting": "Hello, {name}",
+      "intro": "What would you like to do today?",
+      "actionsLabel": "Main services",
+      "actions": {
+        "verify": {
+          "title": "Verify land",
+          "desc": "Find a parcel and see its owner, cases and risk."
+        },
+        "check": {
+          "title": "Check before you buy",
+          "desc": "A checklist to go through before you pay anyone."
+        },
+        "track": {
+          "title": "Mutation status",
+          "desc": "See which step your mutation application is at."
+        }
+      },
+      "stats": "At a glance",
+      "statSearches": "Searches",
+      "statWatching": "Watched land",
+      "statReports": "Reports",
+      "statUnread": "New notifications",
+      "recent": "Recent activity",
+      "recentSearches": "Last searched",
+      "recentReports": "Latest reports",
+      "latestNotes": "Latest notifications",
+      "seeAll": "See all",
+      "emptyRecent": "Nothing here yet. Start by verifying a parcel.",
+      "loadError": "We couldn't load your dashboard."
+    },
+    "parcel": {
+      "place": "{mouza}, {upazila}, {district}",
+      "numbers": "Khatian {khatian} · Dag {dag}",
+      "dag": "Dag {dag}"
+    },
+    "searches": {
+      "title": "My searches",
+      "purpose": "Every parcel you have looked up. Open one again in one tap.",
+      "lastSearched": "Last opened {date}",
+      "count": "{count, plural, one {Opened # time} other {Opened # times}}",
+      "open": "Open again",
+      "clear": "Clear history",
+      "clearTitle": "Clear your search history?",
+      "clearBody": "This removes the list of parcels you have looked up. Your reports and watched land stay.",
+      "clearConfirm": "Yes, clear",
+      "cancel": "Cancel",
+      "cleared": "Search history cleared.",
+      "empty": "You have not looked up any parcel yet.",
+      "emptyAction": "Verify a parcel",
+      "loadError": "We couldn't load your searches."
+    },
+    "watch": {
+      "title": "Watched land",
+      "purpose": "We tell you when a new sale, case or mutation appears on these parcels.",
+      "add": "Watch this land",
+      "remove": "Stop watching",
+      "watching": "Watching",
+      "added": "You are now watching {land}.",
+      "removed": "You stopped watching {land}.",
+      "full": "You can watch up to {limit} parcels. Stop watching one first.",
+      "error": "We couldn't update your watched land. Try again.",
+      "since": "Watching since {date}",
+      "unread": "{count, plural, one {# new update} other {# new updates}}",
+      "note": "Note: {note}",
+      "open": "Open record",
+      "used": "{count} of {limit} used",
+      "empty": "You are not watching any land yet.",
+      "emptyHint": "Open a parcel and press “Watch this land”. We will tell you when something changes.",
+      "loadError": "We couldn't load your watched land."
+    },
+    "reports": {
+      "title": "My reports",
+      "purpose": "Every report you have made. Open one to print it or show its QR code.",
+      "made": "Made on {date}",
+      "open": "Open report",
+      "failed": "This report could not be made.",
+      "empty": "You have not made a report yet.",
+      "emptyHint": "Open a parcel and press “Generate verification report”.",
+      "loadError": "We couldn't load your reports."
+    },
+    "notes": {
+      "title": "Notifications",
+      "purpose": "Changes on your watched land and your finished reports.",
+      "markAll": "Mark all as read",
+      "unreadOnly": "Show unread only",
+      "new": "New",
+      "open": "Open",
+      "empty": "No notifications yet.",
+      "emptyUnread": "You have read everything.",
+      "loadError": "We couldn't load your notifications.",
+      "kind": {
+        "WATCH_TRANSACTION": "New transaction recorded on {land}: {type}.",
+        "WATCH_MUTATION": "A mutation application ({no}) was filed on {land}.",
+        "WATCH_MUTATION_STATUS": "Mutation {no} on {land} is now at this step: {status}.",
+        "WATCH_ENCUMBRANCE": "New burden on {land}: {type}.",
+        "REPORT_READY": "Your report for {land} is ready. Risk: {level}.",
+        "OTHER": "Update about {land}."
+      }
+    },
+    "profile": {
+      "title": "Profile and security",
+      "purpose": "Your name, mobile number, language and password.",
+      "details": "Your details",
+      "name": "Full name",
+      "phone": "Mobile number",
+      "phoneHint": "For example: 01711000000. Optional.",
+      "language": "Language for the site",
+      "email": "Email",
+      "emailNote": "You sign in with your email, so it cannot be changed here.",
+      "save": "Save details",
+      "saved": "Your details are saved.",
+      "noChange": "Nothing changed.",
+      "password": "Change password",
+      "current": "Current password",
+      "new": "New password",
+      "newHint": "At least 8 characters.",
+      "confirm": "Type the new password again",
+      "changePassword": "Change password",
+      "changed": "Your password is changed. Use it next time you sign in.",
+      "errors": {
+        "nameRequired": "Write your name.",
+        "phone": "Write an 11-digit mobile number that starts with 01, for example 01711000000.",
+        "currentRequired": "Write your current password.",
+        "short": "The new password needs at least 8 characters.",
+        "mismatch": "The two new passwords do not match. Type them again.",
+        "WRONG_PASSWORD": "Your current password is not correct. Check it and try again.",
+        "PASSWORD_UNCHANGED": "The new password is the same as the current one. Choose a different one.",
+        "RATE_LIMITED": "Too many tries. Wait one minute and try again.",
+        "generic": "We couldn't save. Check your connection and try again."
+      }
+    }
+  },
+  "reviewer": {
+    "title": "Today's work",
+    "purpose": "Documents waiting for your decision, oldest first. Start from the top.",
+    "count": "{count, plural, =0 {Nothing waiting} one {{n} document waiting} other {{n} documents waiting}}",
+    "queue": {
+      "title": "Waiting for review",
+      "legend": "Waiting time",
+      "legendItem": {
+        "fresh": "Up to 2 days",
+        "aging": "3 to 7 days",
+        "late": "More than 7 days"
+      },
+      "band": {
+        "fresh": "Up to 2 days",
+        "aging": "3 to 7 days",
+        "late": "More than 7 days"
+      },
+      "age": {
+        "today": "Today",
+        "days": "{count, plural, one {# day} other {# days}}"
+      },
+      "startOldest": "Start with the oldest",
+      "review": "Review",
+      "openRow": "Review {name}",
+      "noLand": "Unassigned",
+      "lowConfidence": "Check fields",
+      "emptyTitle": "All clear",
+      "emptyBody": "No document is waiting for review right now.",
+      "more": "Showing the oldest {shown} of {total}."
+    },
+    "history": {
+      "title": "My review history",
+      "empty": "You have not approved or rejected any document yet.",
+      "noLand": "Unassigned",
+      "cols": {
+        "land": "Land ID",
+        "type": "Document",
+        "decision": "Decision",
+        "reason": "Reason for rejection",
+        "when": "Decided"
+      }
+    }
+  },
+  "hearings": {
+    "title": "Hearing calendar",
+    "purpose": "See which mutation case is heard on which day.",
+    "area": "Show by area",
+    "monthNav": "Change month",
+    "prev": "Previous month",
+    "next": "Next month",
+    "today": "Today",
+    "gridLabel": "Hearings in {month}",
+    "dayWith": "{date}, {count, plural, one {# hearing} other {# hearings}}",
+    "noDay": "No day selected",
+    "noneThisDay": "No hearings on this day.",
+    "open": "Open mutation {no}",
+    "unscheduled": {
+      "title": "No date yet",
+      "hint": "These cases are in hearing, but no day has been set.",
+      "none": "No hearings without a date"
+    },
+    "panel": {
+      "title": "Hearing date",
+      "none": "Not scheduled yet",
+      "date": "Date",
+      "time": "Time",
+      "set": "Set date",
+      "move": "Change date",
+      "saved": "Hearing date saved.",
+      "hint": "In Bangladesh time.",
+      "errors": {
+        "past": "The date cannot be in the past.",
+        "required": "Enter a date.",
+        "failed": "Could not save the date. Try again."
+      }
+    }
   }
 }

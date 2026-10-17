@@ -8,13 +8,13 @@ const axePath = join(process.cwd(), "node_modules/axe-core/axe.min.js");
 
 const PUBLIC = [
   "", "about", "faq", "accessibility", "privacy", "terms", "data-sources", "sitemap", "services", "feedback",
-  "track", "verify-document", "tools", "tools/units", "tools/fees", "tools/inheritance", "login", "officer-signup",
+  "track", "verify-document", "tools", "tools/units", "tools/fees", "tools/inheritance", "login", "officer-login", "officer-signup",
   "no-such-page", "v/LP-10001",
 ];
 const SIGNED_IN: [DemoRole, string[]][] = [
   ["citizen", ["verify", "check", "map", "verify/result?land_id=LP-10240", "verify/graph?land_id=LP-10240"]],
   ["officer", ["officer", "officer/upload", "officer/mutations", "officer/archive", "officer/audit-logs", "officer/feedback"]],
-  ["admin", ["officer/admin"]],
+  ["admin", ["admin", "admin/users", "admin/officer-requests", "admin/offices", "admin/records", "admin/audit-logs", "admin/settings"]],
 ];
 
 test.use({ viewport: { width: 360, height: 800 } });

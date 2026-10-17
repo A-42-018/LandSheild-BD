@@ -4,7 +4,7 @@ import type * as Leaflet from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { buildPopup, type PopupLabels } from "./popup";
 import { riskColor, type MapFeatureDto } from "./types";
-import { formatCoords, formatZoom } from "./gis/coords";
+import { formatCoords, formatZoom, type Hemispheres } from "./gis/coords";
 import { BD_BOUNDS, LEVEL_STYLE, type GisFeatureDto, type GisLevel } from "./gis/types";
 
 type LeafletNS = typeof Leaflet;
@@ -29,6 +29,8 @@ export interface MapCanvasProps {
   /** Legacy parcel view fits to the parcels; the national map does not. Default true. */
   fitParcels?: boolean;
   zoomLabel?: string;
+  /** Hemisphere words for the cursor readout (default N/S/E/W); its digits go through `labels.digits`. */
+  hemispheres?: Hemispheres;
   attribution?: string;
   /** Overrides the default box size classes (the national page fills the viewport). */
   className?: string;
@@ -37,7 +39,7 @@ export interface MapCanvasProps {
 /** Leaflet is imported inside an effect only, so nothing touches `window` during SSR. */
 export default function MapCanvas(props: MapCanvasProps) {
   const { features, selectedId, onSelect, onOpen, hrefFor, labels, ariaLabel, tileUrl } = props;
-  const { admin, labelOf, onAdminPick, fitBounds, fitKey, zoomLabel, attribution } = props;
+  const { admin, labelOf, onAdminPick, fitBounds, fitKey, zoomLabel, hemispheres, attribution } = props;
   const fitParcels = props.fitParcels !== false;
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Leaflet.Map | null>(null);
@@ -45,13 +47,14 @@ export default function MapCanvas(props: MapCanvasProps) {
   const adminRef = useRef<Leaflet.FeatureGroup | null>(null);
   const tilesRef = useRef<Leaflet.TileLayer | null>(null);
   const readoutRef = useRef<HTMLDivElement | null>(null);
+  const repaintRef = useRef<(() => void) | null>(null);
   const layers = useRef(new Map<string, Leaflet.GeoJSON>());
   const libRef = useRef<LeafletNS | null>(null);
   const [ready, setReady] = useState(false);
 
   // keep the latest callbacks without re-creating the map
-  const cb = useRef({ onSelect, onOpen, hrefFor, labels, onAdminPick, labelOf, zoomLabel });
-  cb.current = { onSelect, onOpen, hrefFor, labels, onAdminPick, labelOf, zoomLabel };
+  const cb = useRef({ onSelect, onOpen, hrefFor, labels, onAdminPick, labelOf, zoomLabel, hemispheres });
+  cb.current = { onSelect, onOpen, hrefFor, labels, onAdminPick, labelOf, zoomLabel, hemispheres };
 
   useEffect(() => {
     let cancelled = false;
@@ -76,16 +79,20 @@ export default function MapCanvas(props: MapCanvasProps) {
         },
       });
       new Readout({ position: "bottomleft" }).addTo(map);
+      let last: Leaflet.LatLng | undefined;
       const paint = (ll?: Leaflet.LatLng) => {
         const c = ll ?? map!.getCenter();
+        last = c;
         if (readoutRef.current) {
-          readoutRef.current.textContent = `${formatCoords(c.lat, c.lng)}, ${cb.current.zoomLabel ?? "Zoom"}: ${formatZoom(map!.getZoom())}`;
+          const { labels: l, zoomLabel: z, hemispheres: h } = cb.current;
+          readoutRef.current.textContent = l.digits(`${formatCoords(c.lat, c.lng, h)}, ${z ?? "Zoom"}: ${formatZoom(map!.getZoom())}`);
         }
       };
       map.on("mousemove", (e: Leaflet.LeafletMouseEvent) => paint(e.latlng));
       map.on("move zoom", () => paint());
       map.fitBounds(BD_BOUNDS);
       paint();
+      repaintRef.current = () => paint(last);
       libRef.current = L;
       mapRef.current = map;
       setReady(true);
@@ -97,12 +104,18 @@ export default function MapCanvas(props: MapCanvasProps) {
       adminRef.current = null;
       tilesRef.current = null;
       readoutRef.current = null;
+      repaintRef.current = null;
       mapRef.current = null;
       libRef.current = null;
       map?.remove();
       setReady(false);
     };
   }, [attribution]);
+
+  // relabel the readout in place when the locale changes (no map rebuild, cursor position kept)
+  useEffect(() => {
+    repaintRef.current?.();
+  }, [labels, zoomLabel, hemispheres]);
 
   // street basemap on/off without rebuilding the map
   useEffect(() => {

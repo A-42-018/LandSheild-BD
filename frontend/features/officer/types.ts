@@ -6,6 +6,8 @@ export interface OfficerStats {
   open_alerts: number;
   pending_mutations: number;
   active_encumbrances: number;
+  settled_this_month: number;
+  hearings_upcoming: number;
   ledger_status: "INTACT" | "BROKEN";
   ledger_entries: number;
 }
@@ -95,3 +97,19 @@ export const KNOWN_ACTIONS = [
   "TRANSACTION_RECORDED", "TRANSACTION_FLAGGED", "RISK_ALERT_UPDATE", "VERIFICATION_CREATE", "USER_CREATE", "USER_UPDATE",
   "FEEDBACK_SUBMIT", "FEEDBACK_UPDATE",
 ];
+
+export interface DecisionItem {
+  id: string;
+  document_id: string;
+  land_id: string | null;
+  document_type: string | null;
+  decision: "APPROVED" | "REJECTED";
+  reason: string | null;
+  created_at: string;
+}
+export interface DecisionList {
+  items: DecisionItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}

@@ -10,6 +10,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { hasRole, OFFICER_UP } from "@/features/auth/roles";
 import { formatArea, formatDateTime } from "@/features/result/format";
 import { bi, officePath, type Office } from "@/features/officers/types";
+import HearingPanel from "@/features/hearings/HearingPanel";
 import NoteModal from "./NoteModal";
 import ReasonModal from "./ReasonModal";
 import { useMutationAppeal, useMutationDetail, useMutationRecommend, useMutationTransition } from "./useMutations";
@@ -89,6 +90,10 @@ export default function MutationDetail({ id }: { id: string }) {
           <Link href={`/verify/result?land_id=${encodeURIComponent(m.land_id)}`} className="text-link underline">{t("openLand")}</Link>
         </p>
       </Card>
+
+      {(m.status === "HEARING" || m.hearing_at) && (
+        <HearingPanel id={id} hearingAt={m.hearing_at} canSet={canAct && m.status === "HEARING"} />
+      )}
 
       <Card title={t("checklist")}>
         {m.checklist ? (

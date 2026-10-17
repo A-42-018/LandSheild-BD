@@ -325,3 +325,28 @@ def test_zila_and_upozila_officers_approve_documents_beneath_them(env, jobs):
     assert env.get(f"/api/v1/documents/{other}/extraction", headers=district).status_code == 200
     rj = env.post(f"/api/v1/documents/{other}/reject", headers=district, json={"reason": "Unclear scan"})
     assert rj.status_code == 200 and rj.json()["processing_status"] == "REJECTED"
+
+
+def test_admin_office_list_filters_and_counts_officers(env):
+    ao = f"{ADM.rsplit('/', 1)[0]}/offices"
+    assert env.get(ao).status_code == 401
+    assert env.get(ao, headers=_h(env, "OFFICER")).status_code == 403
+    assert env.get(ao, headers=_h(env, "CITIZEN")).status_code == 403
+    adm = _h(env, "ADMIN")
+    r = env.get(f"{ao}?limit=5", headers=adm)
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["items"]) == 5 and body["total"] > 5 and body["limit"] == 5
+    assert {"code", "name_bn", "office_type", "officers"} <= set(body["items"][0])
+    assert all(i["officers"] == 0 for i in body["items"])
+
+    t = env.get(f"{ao}?office_type=Union Land Office&q=savar&limit=100", headers=adm).json()
+    assert t["total"] >= 1 and all(i["office_type"] == "Union Land Office" for i in t["items"])
+    assert env.get(f"{ao}?q=%25_%25", headers=adm).json()["total"] == 0  # wildcards are escaped
+
+    # an approved officer shows up in their office's count
+    rid = env.post(f"{OFF}/officer-requests", json=_body(env)).json()["id"]
+    assert env.post(f"{ADM}/{rid}/approve", headers=adm).status_code == 200
+    office_id = _body(env)["office_id"]
+    rows = env.get(f"{ao}?office_type=Union Land Office&q=savar&limit=100", headers=adm).json()["items"]
+    assert {i["id"]: i["officers"] for i in rows}[office_id] == 1

@@ -123,6 +123,88 @@ Contrast of the level word (WCAG, needs ≥ 4.5; locked in `tests/ui-regression.
 
 Tests: `components/domain/RiskIndicator.test.tsx` checks every level × size × locale for tone, a hidden icon, the word and the "Risk:" prefix, and that no digits appear. It also checks distinct icon shapes, the unknown fallback, Bangla strings and axe. `features/risk/risk.test.tsx` checks the level headline and the Bangla-digit score line.
 
+# Office dashboard + hearing calendar (U3.4, 2026-10-17)
+
+Roadmap §4.4 / §6 Phase 3. Officers land on `/officer` ("অফিস ড্যাশবোর্ড"); the hearing calendar is `/officer/hearings` (officers and admins; in their menu as "শুনানির ক্যালেন্ডার").
+
+- **Office-scoped KPIs**: `GET /officer/stats` now follows the same scope as the queue and the case list. An office officer counts their own office and the offices beneath it (district > upazila > union); admins, reviewers and the seeded demo officer count everything. The ledger tile stays system-wide because the chain is one chain. Two new tiles: "এই মাসে নিষ্পত্তি" (mutation cases approved or rejected since the 1st, Dhaka time) and "আগামী ৭ দিনে শুনানি". The existing tiles already cover অপেক্ষমাণ পর্যালোচনা, ঝুঁকি সতর্কতা and নামজারি সিদ্ধান্ত বাকি (`pending_mutations`).
+- **Hearing date** (new column `mutation_records.hearing_at`, migration 0014). Set with `to: HEARING` + optional `hearing_at` on `POST /mutations/{id}/transition`, or later with `POST /mutations/{id}/hearing` (OFFICER_UP, only while the case is in HEARING, not in the past, audited as `MUTATION_HEARING_SET` with the old and new value). Moving a case into HEARING again clears the old date. Cases the pre-checks send to HEARING have no date until an officer sets one. Stored in UTC, whatever offset was sent.
+- **Calendar** (`features/hearings/`): `GET /mutations/hearings?month=YYYY-MM[&division&district&upazila&office_id]` returns the month's cases (month edges in Dhaka time, office-scoped) and `unscheduled` (HEARING with no date). The page is a Sunday-first grid (রবি … শনি), Bangla digits and month names through `Intl`, a count on each day, a panel for the open day (time, case, land, applicant, status) and a "তারিখ ঠিক হয়নি" list. Day and time are read in Bangladesh time, so a hearing at 00:30 on the 21st does not land on the 20th. Division / district / upazila filter reuses `AreaFilter`. Case page (`HearingPanel`): shows the date; officers can set or move it.
+- Not done: বঙ্গাব্দ month names in the grid (Gregorian grid with Bangla labels only), notifying the applicant of a hearing date (U3.7 bell), reminders. The reviewer menu does not show the calendar.
+- **Still open** (from U3.3): the officer dashboard still shows the alert list to reviewers, because they can escalate alerts there. Roadmap §4.3 says to hide office-wide alerts from reviewers. Decide before U3.5.
+- Tests: backend `tests/test_hearings.py` (transition + set + move audited, validation, month edges, roles, office scope, scoped stats), authz matrix and audit-coverage rows for the two routes; frontend `features/hearings/hearings.test.tsx` (Dhaka-day grouping, Sunday-first grid, Bangla digits, month change, set-date form, axe).
+- Not run: browser check, Playwright e2e, screen reader.
+
+# Admin console `/admin` (U3.5, 2026-10-17)
+
+Roadmap §4.5 / §6 Phase 3. Administrators get their own area with its own shell (`features/admin/AdminShell.tsx`: side menu on desktop, a sideways-scrolling tab row on phones, same pattern as `/my`). Admins only; `redirectFor("ADMIN")` is now `/admin`, and the old `/officer/admin` redirects there. The officer sidebar keeps one "প্রশাসন" link to `/admin` for admins.
+
+| Page | Route | What it shows |
+|---|---|---|
+| সারসংক্ষেপ | `/admin` | Four count tiles (waiting officer requests, accounts, land records, documents; each links to its page) and the ledger-integrity check |
+| ব্যবহারকারী | `/admin/users` | The existing users table with create / edit (unchanged) |
+| কর্মকর্তার আবেদন | `/admin/officer-requests` | The existing approve / reject list (unchanged) |
+| অফিস | `/admin/offices` | **New.** All land offices, searchable and filterable by type, with the number of active officers tied to each |
+| রেকর্ড ও নথি | `/admin/records` | Land records and documents (were tabs of the old page; kept because the roadmap list did not say where they go) |
+| অডিট লগ | `/admin/audit-logs` | The audit table; officers keep `/officer/audit-logs` |
+| সেটিংস | `/admin/settings` | **Read-only.** Staff idle timeout, languages, what each role may do |
+
+- Backend: `GET /admin/offices?q&office_type&limit&offset` (ADMIN only, added to the authz matrix). The public `/offices` route needs a division and district, so it cannot list everything.
+- Settings are read-only on purpose and say so on the page; there is no settings table yet, so a form would have nothing to save to. `STAFF_IDLE_MINUTES` is now exported from `IdleTimeout` so the page and the timer agree.
+- Offices cannot be created or edited here (the list is the bundled `land_offices.json`).
+- **Still open** (from U3.3 / U3.4): reviewers still see the office-wide alert list on `/officer`, because they can escalate alerts there. Not changed in U3.5, since it concerns the officer area.
+- Tests: backend `tests/test_officer_offices.py::test_admin_office_list_filters_and_counts_officers` (roles, paging, filters, wildcard escaping, officer count); frontend `features/admin/admin.test.tsx` (nav, overview counts, offices table query, settings, redirect), `auth.test.tsx` redirect, e2e specs pointed at `/admin/*`.
+- Not run: browser check (the preview tool refused to start more dev servers), Playwright e2e, screen reader.
+
+# Reviewer home `/officer/review` — "আজকের কাজ" (U3.3, 2026-10-17)
+
+Roadmap §4.3 / §6 Phase 3. Reviewers land here after sign-in (`redirectFor("REVIEWER")` = `/officer/review`); the sidebar has "আজকের কাজ" first (reviewers only). Officers and admins can open the URL but it is not in their menu.
+
+- **Queue** (`features/reviewer/TodayQueue.tsx`): `GET /officer/queue?filter=pending&sort=created_at&order=asc&limit=50`, so the oldest document is on top. A count badge in the header says how many wait. Each row has an age chip: up to 2 days (green), 3–7 days (amber), more than 7 days (red). The chip always carries the words ("৯ দিন", "আজ") and a screen-reader band name, never colour alone. "সবচেয়ে পুরোনোটি দিয়ে শুরু করুন" opens the top row. "তথ্য মিলিয়ে দেখুন" marks low-confidence documents. Bands live in `features/reviewer/ageing.ts`.
+- **My history** (`MyHistory.tsx`): `GET /officer/my-decisions` (new, REVIEW_UP, paged): the caller's own `DOCUMENT_APPROVE` / `DOCUMENT_REJECT` audit rows, newest first, with land ID, document type, decision, the rejection reason (from the audit row's `new_value.reason`) and time. Nothing else from the audit row is exposed.
+- **Review screen** (`/officer/review/{id}`): the two-pane layout and low-confidence highlighting already existed. New: a toolbar (`ReviewToolbar.tsx`) with "← আজকের কাজ", "পরবর্তী নথি" and a key reminder. **A** approves, **R** opens the reject dialog, **N** goes to the next waiting document (the one after this in the queue, else the oldest other one). `useReviewShortcuts` matches the physical key (`e.code`), so it works on a Bangla keyboard layout. It ignores keys while typing in a field, with Ctrl / Cmd / Alt, and while a dialog is open. A is also ignored when Approve is disabled (invalid data, own upload, request running). Approve / reject now refresh the `["officer"]` queries so the queue and history update.
+- Not changed: the officer dashboard (`/officer`) still shows the alert list to reviewers, because reviewers can escalate alerts there (existing test). The roadmap says "hide office-wide alerts from the reviewer"; decide before U3.4. Upload and admin were already hidden from reviewers.
+- Tests: backend `tests/test_review.py::test_my_decisions_lists_only_own_with_rejection_reason`, authz matrix row for the new route; frontend `features/reviewer/reviewer.test.tsx` (bands, order, count, history, Bangla digits, axe, N key), `features/review/review-actions.test.tsx` (A / R), `features/auth/auth.test.tsx` (reviewer → `/officer/review`).
+- Not run: browser check (the preview server limit was reached), Playwright e2e, screen reader.
+
+# Citizen area `/my` — "আমার ভূমি সেবা" (U3.2, 2026-10-17)
+
+Roadmap §4.2 / §6 Phase 3. Citizens land here after sign-in (`redirectFor("CITIZEN")` = `/my`); the account menu has "আমার ভূমি সেবা" (`nav.myArea`, citizens only). Staff opening `/my` get the permission message; anonymous visitors go to `/login?next=…`.
+
+| Route | Screen (BN / EN) | What it shows |
+|---|---|---|
+| `/my` | আমার ড্যাশবোর্ড / My dashboard | Greeting, 3 big buttons (জমি যাচাই · কেনার আগে যাচাই · নামজারির অবস্থা), 4 count tiles, latest notifications, last searched parcels, latest reports |
+| `/my/searches` | আমার অনুসন্ধান / My searches | Parcels the citizen opened, newest first, with "আবার দেখুন" and the watch button; "ইতিহাস মুছুন" asks first |
+| `/my/watchlist` | নজরে রাখা জমি / Watched land | Watched parcels (max 20), note, "since" date, unread-update badge |
+| `/my/reports` | আমার প্রতিবেদন / My reports | Own verification reports with the risk indicator; opens `/report/{id}` (print/PDF + QR live there) |
+| `/my/notifications` | বিজ্ঞপ্তি / Notifications | Inbox; unread rows tinted with a "নতুন" chip; opening one marks it read; "সব পড়া হয়েছে"; "শুধু না-পড়া দেখুন" filter |
+| `/my/profile` | প্রোফাইল ও নিরাপত্তা / Profile and security | Name, mobile (Bangla digits accepted), site language (switches the locale when changed), password change |
+
+- Shell `features/my/MyShell.tsx`: sticky side menu on desktop with the name card; on phones the six sections are a row of tabs that scrolls sideways and always keeps the current one in view (no hidden drawer). The Notifications tab carries the unread count in BN digits.
+- Result page: "নজরে রাখুন / নজর থেকে সরান" (`features/my/WatchButton.tsx`) next to "যাচাই প্রতিবেদন তৈরি করুন". Secondary style, so the report stays the one primary button. Hidden for staff.
+- Data (backend migration `0013`): `search_history` (one row per user + parcel; a repeat within 60 s counts once, so search → result page is one visit), `watchlist` (`checked_at` = window already turned into notifications), `notifications` (`kind` + `data` codes, `read_at`), `users.phone`. Only CITIZEN accounts collect history and notifications.
+- Notification kinds: `WATCH_TRANSACTION`, `WATCH_MUTATION`, `WATCH_MUTATION_STATUS`, `WATCH_ENCUMBRANCE` (made when the citizen opens the area, from records newer than `checked_at`), `REPORT_READY` (on `POST /verification`). Sentences in `my.notes.kind.*` reuse `result.txType`, `result.encType`, `status`, `risk.level`. Two requests checking at once (badge + inbox) claim the window with a conditional update in the same transaction as the inserts, so nothing doubles and the loser reads the finished inbox.
+- Not here (later tasks): bell icon in the header (U3.7), SMS/e-mail delivery, editing a watch note in the UI (the API accepts `note`), "কেনার আগে যাচাই (পূর্ণ)" stays at `/check`.
+- Tests: backend `tests/test_me.py` (24) + authz matrix and audit coverage rows for the 11 routes; frontend `features/my/my.test.tsx` (19, incl. axe on dashboard, searches, reports, notifications, profile), `features/auth/auth.test.tsx` (citizen → `/my`), e2e `guards.spec.ts` (`/my` guard, not run here).
+- Checked in the browser (dev server on a fresh migrated DB, BN + EN): citizen sign-in lands on `/my`; watching LP-10100 and generating a report fill the dashboard; a court case, mortgage and acquisition added to LP-10100 appear once each in the inbox with the badge in step; mark-all-read; profile save with a Bangla-digit mobile number; 375 px has no sideways scroll. Not run: Playwright e2e, screen reader.
+
+# Role-based sign-in (U3.1, 2026-10-17)
+
+Roadmap §6 Phase 3. Two sign-in pages, one form.
+
+| Route | Page | Demo accounts shown | Shell tab |
+|---|---|---|---|
+| `/login` | "Sign in" (citizens) | citizen | Citizen sign in |
+| `/officer-login` | "Staff sign in" (reviewer, officer, admin) | reviewer, officer, admin | Staff sign in |
+
+- `LoginForm` takes `audience="citizen" | "staff"` (copy, demo accounts, active tab). Both pages accept every role: the account decides where you land, not the page you used.
+- After sign-in: explicit `?next=` (checked by `safeNext`) wins, otherwise `redirectFor(role)` in `features/auth/roles.ts`: CITIZEN → `/` (`/my` since U3.2), REVIEWER / OFFICER / ADMIN → `/officer`. ADMIN → `/admin` since U3.5.
+- `RequireRole` sends anonymous visitors to `loginPathFor(roles)`: `/officer-login?next=…` when only staff roles are allowed, `/login?next=…` otherwise. The idle-timeout sign-out and the officer-request "Sign in" links also go to `/officer-login`.
+- `AuthShell` has four tabs (2 × 2 on phones): Citizen sign in · Citizen sign up · Staff sign in · Officer request. New keys: `auth.staffTitle|staffIntro`, `authShell.tabStaff`; `authShell.tabLogin` now reads "Citizen sign in" / "নাগরিক সাইন ইন".
+- Sitemap lists the staff sign-in. Header and footer still link to `/login` (U1.2 turns the header link into a citizen / staff menu).
+- Tests: `features/auth/auth.test.tsx` (role → home table, audience copy and demo accounts, guard target), `tests/a11y.test.tsx` (`staff-login`), e2e `guards.spec.ts`, `a11y.spec.ts`, `visual.spec.ts`.
+- Checked in the browser (dev server, EN): anonymous `/officer` → `/officer-login?next=%2Fofficer`; reviewer signing in on `/officer-login` lands on `/officer`. Not run: Bangla page in a browser, Playwright e2e, phone widths for the 2 × 2 tab grid.
+
 # Design v2 (UI REDESIGN V2, 2026-10-15)
 
 Source of truth = the landing page `/` and the sign-in pages. Every inner page now uses the same language; older sections below describe the earlier flat U1–U7 look and stay for history.
@@ -242,6 +324,8 @@ cards get a lucide icon chip (`aria-hidden`); trust section is a gradient band. 
 
 ## Map polish (UD7) — `features/map/*`
 Search menu = themed panel with a blue gradient title bar (`.header-gradient`, white text), primary Search button, outlined Reset button (icons). Legend is a floating card bottom-right on the map (still `role=region`, named "Map legend", text for every level). Fullscreen button (top-right, `aria-pressed`, Esc leaves; the page root drops its CSS transform while fullscreen so `position: fixed` works). Parcel list rows are cards with a risk-coloured left edge (`data-risk`; level is also text). Leaflet popups are themed in `app/globals.css` (`.ls-popup`, unlayered so they beat leaflet.css). New keys `map.gis.fullscreen|exitFullscreen`.
+
+Bangla digits on the map (2026-10-17): the popup and the parcel list under the map show dag, khatian and area in Bangla digits under `bn` (`localDigits`; the popup gets it as `PopupLabels.digits`, so `buildPopup` stays locale-free). Land IDs (`LP-10001`) are identifiers and stay as stored; the "View details" query string keeps ASCII numbers. Tests: `features/map/map.test.tsx` (popup + list, bn and en), `features/map/canvas.test.tsx` (real Leaflet popup, bn and en). The bottom-left cursor/zoom readout is localised too: `MapCanvas` runs the whole readout string through `labels.digits` (so `MapCanvas` stays locale-free), the zoom word comes from `zoomLabel` (`map.gis.zoom`: Zoom / জুম) and the hemisphere letters from the `hemispheres` prop (`map.gis.north|south|east|west`: N S E W / উত্তর দক্ষিণ পূর্ব পশ্চিম, passed to `formatCoords`, which stays ASCII). Under bn it reads `২৩° ৪৮′ ০০″ উত্তর ৯০° ১৮′ ০০″ পূর্ব, জুম: ৭.০০`; en is unchanged. The readout is read through the latest-callback ref and repainted at the last cursor position when the labels change, so switching locale never rebuilds the map. Tests: `canvas.test.tsx` (readout bn, en and in-place relabel), `gis/gis.test.tsx` (`formatCoords` hemispheres).
 
 ## Verify / result / report (UD5)
 Verify form: card with icon + primary accent on a soft gradient panel, full-width submit with icon. Result: land info rows are tinted tiles with icons; ownership timeline has ring dots and a green rail for the current owner; RiskCard gets an accent by level, a 4xl coloured score and a bar with tick marks at 30 and 60 (`role=meter` unchanged); EvidenceList items have a severity icon (octagon / triangle / info) + coloured left edge, badge text unchanged. Report keeps the A4 print rules (`.report`), icons are decorative, print forces the light palette.
@@ -378,3 +462,20 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 - One place for the number and links: `features/help/help.ts` (`HOTLINE`, `HELP_LINKS`). The number shows in Bangla digits under `bn` (`localDigits`) but the `tel:` link always dials the ASCII number. Copy: `help` (button and panel) and `landing.help` (strip), both locales. The strip's Bangla note avoids the Bangla brand spelling on purpose (`tests/i18n-parity.test.ts` allows it only in `common.brand`).
 - Not checked: the button against the Leaflet controls on `/map` (they are `z-1000` inside the map, so they would sit on top of the button where they overlap; `/map` needs sign-in until U2.3), and the real opening hours of 16122, which the copy does not claim.
 - Tests: `components/HelpButton.test.tsx` (closed by default, links, Bangla digits with ASCII `tel:`, Escape and focus, outside click and navigation, axe closed and open in EN and BN), `landing.test.tsx` (strip in EN and BN).
+
+## U3.6 — Admin content management (roadmap §6, Phase 3)
+- **Data**: table `content_items` (migration 0015, `models/content.py`): `kind` NOTICE / FAQ / GUIDE, title and text in both languages, `published_on` (notices), `ticker` (notices), `published`, `position`. The migration seeds the four demo notices that used to be static text, so the live site looks the same on day one.
+- **API**: public `GET /content?kind=` (no sign-in, published rows only, `Cache-Control: max-age=60`; notices newest first, FAQ and guides by `position`). Admin only: `GET/POST /admin/content`, `PATCH/DELETE /admin/content/{id}`. A notice needs a date; `ticker` is forced off for FAQ and guides; `kind` cannot be changed after creation; unknown fields are refused. Create, update and delete write `CONTENT_CREATE` / `CONTENT_UPDATE` / `CONTENT_DELETE` audit rows (old and new values on update). Both are in the authz matrix and the audit-coverage test.
+- **Admin page** `/admin/content` (new "নোটিশ ও নির্দেশিকা" item in the admin menu): a Notices / FAQ / Guides switch, a table with Published / Draft / "In ticker" badges, and one add/edit dialog (Bangla and English title and text, date and ticker for notices, position for FAQ and guides, published checkbox). Delete asks first. The Save button stays off until both languages are filled (and the date, for a notice).
+- **Public pages**: `features/content/content.ts` fetches in the browser after mount (the pages are statically generated) and shares one request between the ticker, the board and the FAQ. `useNotices()` feeds `NoticeTicker` and `NoticeBoard`; `FaqList` reads the FAQ. Anchors are now `#notice-<id>` with the server id.
+- **Fallbacks** (so the demo never shows a blank page): while loading or when the API cannot be reached, the built-in copy is shown (`NOTICES` + `landing.notices.items`, `info.faq.*`). Once the server answers, an empty *notice* list means "no notices" (board says so, ticker hides); an empty *FAQ* list keeps the built-in answers until the first FAQ entry is added, after which the admin's entries replace them (home page shows the first five by position).
+- **Guides** are stored and served (`kind=GUIDE`) but no public page shows them yet: that page is U4.1.
+- Not done: reordering by drag, a preview, scheduling a notice for a future date (a future `published_on` shows now), rich text (plain text; line breaks kept in FAQ answers only). The 30-second request cache means a new notice can take up to a minute to appear for a visitor who already has the page open.
+- Tests: `backend/tests/test_content.py`, `features/admin/content.test.tsx`, `features/notices/useNotices.test.tsx`; the old ticker, landing and FAQ tests pass unchanged on the fallback.
+
+## U3.7 — Role-aware header (roadmap §6, Phase 3)
+- **Role badge**: the Bangla role name (নাগরিক / পর্যালোচক / কর্মকর্তা / প্রশাসক, from `roles.*`) now sits in the header bar beside the account button (hidden below 640 px; the account panel shows it only at those widths).
+- **Bell** (`components/NotificationBell.tsx`): citizens only. Links to `/my/notifications`, shows the unread count (`useUnreadCount`: `GET /me/notifications?unread_only=true&limit=1`, refreshed every minute and on tab focus, capped at "99+", Bangla digits in bn) and an accessible name "বিজ্ঞপ্তি, Nটি অপঠিত" (`nav.bellUnread`), and is marked as the current page on the inbox. Staff have no watch list, so a bell would always be empty; it is not shown to them or to anonymous visitors.
+- **"আমার ড্যাশবোর্ড"** is the first entry in the account panel for every role and goes to `redirectFor(role)` (`/my`, `/officer/review`, `/officer`, `/admin`). The list below it drops that page and any parent of it (a reviewer's start page is `/officer/review`, so the plain "ড্যাশবোর্ড" `/officer` entry is not shown to reviewers in the panel; the officer side menu still has it).
+- Not done: push updates (the count is polled once a minute), a notification drop-down preview, a bell for staff.
+- Tests: `components/header.test.tsx` (badge per role, shortcut target per role, bell visibility/count/cap).

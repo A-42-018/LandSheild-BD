@@ -226,6 +226,12 @@ const CASES: Case[] = [
     ready: (m) => screen.findByRole("button", { name: m.auth.submit }),
   },
   {
+    name: "staff-login",
+    role: null,
+    ui: () => <main><LoginForm audience="staff" /></main>,
+    ready: (m) => screen.findByRole("button", { name: m.auth.submit }),
+  },
+  {
     name: "review",
     role: "REVIEWER",
     ui: () => <main><ReviewView id="d1" /></main>,
