@@ -2,6 +2,7 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, ChevronDown, CirclePlay, LockKeyhole, LockKeyholeOpen } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import ReadAloud from "@/components/ReadAloud";
 import { Link } from "@/i18n/navigation";
 import { ChecklistArt } from "@/features/landing/Illustrations";
 import { localDigits } from "@/lib/intl-locale";
@@ -73,6 +74,7 @@ function GuideSection({ guide }: { guide: Guide }) {
             {t(signIn ? "signIn" : "noSignIn")}
           </p>
         </div>
+        <ReadAloud targetId={anchor} subject={t(`items.${id}.title`)} className="shrink-0" />
       </div>
       <p className="mt-3 max-w-[70ch] text-ink-muted">{t(`items.${id}.intro`)}</p>
       <GuideVideo guide={guide} />
@@ -98,7 +100,7 @@ function GuideSection({ guide }: { guide: Guide }) {
           </li>
         ))}
       </ol>
-      <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2">
+      <div data-no-speech className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2">
         <Link
           href={href}
           className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-primary px-5 py-2 font-medium text-primary-fg shadow-[0_6px_16px_-6px_rgb(var(--primary)/0.55)] hover:bg-primary-hover"
