@@ -15,6 +15,8 @@ export interface ApiUser {
   name: string;
   email: string;
   role: "CITIZEN" | "REVIEWER" | "OFFICER" | "ADMIN";
+  /** optional mobile number (U3.2 profile) */
+  phone?: string | null;
   preferred_language: string;
   /** set for an approved officer: the land office they work in */
   office?: {
@@ -189,6 +191,7 @@ export function createApiClient(opts: ApiClientOptions = {}) {
     get: <T>(path: string) => request<T>(path),
     post: <T>(path: string, body?: unknown) => request<T>(path, { method: "POST", body: body ?? {} }),
     patch: <T>(path: string, body?: unknown) => request<T>(path, { method: "PATCH", body: body ?? {} }),
+    del: <T = void>(path: string) => request<T>(path, { method: "DELETE" }),
     refresh,
     async login(email: string, password: string): Promise<TokenResponse> {
       const s = await request<TokenResponse>("/auth/login", { body: { email, password }, anonymous: true });

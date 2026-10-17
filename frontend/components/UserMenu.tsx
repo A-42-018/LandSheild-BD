@@ -1,18 +1,20 @@
 "use client";
-import { LogIn, LogOut } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Badge } from "@/components/ui";
 import HeaderDropdown from "./HeaderDropdown";
 import { useAuth } from "@/features/auth/AuthContext";
-import { activeNavHref, navItemsFor } from "@/features/auth/roles";
+import { activeNavHref, navItemsFor, redirectFor, type NavItem } from "@/features/auth/roles";
+import NotificationBell from "./NotificationBell";
 
 const ICON_BTN =
   "inline-flex h-11 w-11 items-center justify-center rounded-lg border border-gold/60 bg-black/20 text-gold-soft transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
 
 /**
- * Right-most header control (UD10 sketch): a user icon.
+ * Right-most header control (UD10 sketch): a user icon, with the role badge (U3.7) before it; the panel repeats the role only
+ * below 640 px, where the bar badge is hidden.
  * Anonymous → "Sign in ▾" asking who they are (citizen / officer). Signed in → opens a panel with name + role, the pages that are
  * not in the header bar (role-filtered) and Sign out.
  */
@@ -53,19 +55,26 @@ export default function UserMenu() {
         icon={<LogIn aria-hidden="true" className="h-4 w-4" />}
         items={[
           { href: "/login", label: t("nav.citizenLogin") },
-          { href: "/login?as=officer", label: t("nav.officerLogin") },
+          { href: "/officer-login", label: t("nav.officerLogin") },
         ]}
       />
     );
   }
   if (status !== "authenticated" || !user) return null;
 
-  const all = navItemsFor(user.role);
-  const active = activeNavHref(pathname ?? "/", all);
-  const more = all.filter((i) => !i.primary);
+  // "আমার ড্যাশবোর্ড" (U3.7) leads the panel and goes to the role's start page. Items it covers are dropped: the start page
+  // itself and any parent of it (a reviewer's /officer/review makes the plain "ড্যাশবোর্ড" /officer redundant).
+  const home = redirectFor(user.role);
+  const items: NavItem[] = [
+    { href: home, labelKey: "nav.myDashboard" },
+    ...navItemsFor(user.role).filter((i) => !i.primary && i.href !== home && !home.startsWith(`${i.href}/`)),
+  ];
+  const active = activeNavHref(pathname ?? "/", items);
 
   return (
-    <div ref={root} className="min-[1280px]:relative">
+    <div ref={root} className="flex items-center gap-2 min-[1280px]:relative">
+      <Badge tone="pending" className="hidden sm:inline-flex" data-testid="role-badge">{t(`roles.${user.role}`)}</Badge>
+      {user.role === "CITIZEN" && <NotificationBell className={ICON_BTN} />}
       <button
         type="button"
         aria-expanded={open}
@@ -89,26 +98,25 @@ export default function UserMenu() {
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{user.name}</p>
             <p className="truncate text-xs text-ink-muted">{user.email}</p>
-            <Badge tone="pending" className="mt-1">{t(`roles.${user.role}`)}</Badge>
+            <Badge tone="pending" className="mt-1 sm:hidden">{t(`roles.${user.role}`)}</Badge>
           </div>
         </div>
-        {more.length > 0 && (
-          <ul className="my-1 space-y-0.5">
-            {more.map((i) => (
-              <li key={i.href}>
-                <Link
-                  href={i.href}
-                  aria-current={i.href === active ? "page" : undefined}
-                  className={`flex min-h-11 items-center rounded-md px-2 py-1.5 text-sm hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
-                    i.href === active ? "bg-primary-soft font-semibold text-primary" : "text-ink"
-                  }`}
-                >
-                  {t(i.labelKey)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ul className="my-1 space-y-0.5">
+          {items.map((i) => (
+            <li key={i.href}>
+              <Link
+                href={i.href}
+                aria-current={i.href === active ? "page" : undefined}
+                className={`flex min-h-11 items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                  i.href === active ? "bg-primary-soft font-semibold text-primary" : "text-ink"
+                }`}
+              >
+                {i.href === home && <LayoutDashboard aria-hidden="true" className="h-4 w-4" />}
+                {t(i.labelKey)}
+              </Link>
+            </li>
+          ))}
+        </ul>
         <div className="border-t border-line" />
         <button
           type="button"

@@ -7,6 +7,7 @@ import StatusBadge from "@/components/domain/StatusBadge";
 import { ErrorState, LoadingState } from "@/components/ui";
 import DocumentPreview from "./DocumentPreview";
 import ExtractionPanel from "./ExtractionPanel";
+import ReviewToolbar from "./ReviewToolbar";
 import StalledActions from "./StalledActions";
 import { EXTRACTION_READY, IN_PROGRESS } from "./types";
 import { useDocumentStatus, useExtraction } from "./useReviewData";
@@ -100,6 +101,7 @@ export default function ReviewView({ id }: { id: string }) {
           `${t("docType")}: ${d.document_type}${d.land_id ? ` · ${d.land_id}` : ""}`,
         ]}
       />
+      <ReviewToolbar id={id} />
       <div role="tablist" aria-label={t("panes.label")} className="grid grid-cols-2 gap-1 rounded-xl bg-primary-soft p-1 md:hidden">
         {(["fields", "doc"] as const).map((k) => (
           <button

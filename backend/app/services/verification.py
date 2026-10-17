@@ -19,6 +19,7 @@ from app.schemas.report import (
 )
 from app.services import audit
 from app.services import land as land_svc
+from app.services import me as me_svc
 from app.services import ownership as own_svc
 from app.services import risk as risk_svc
 
@@ -74,6 +75,10 @@ def create_verification(db: Session, land_id: str, user: User, ip: str | None) -
         req.id,
         new={"land_id": land.land_id, "risk_level": assessment.risk_level},
         ip=ip,
+    )
+    me_svc.notify(
+        db, user, "REPORT_READY", land_id=land.land_id, ref_id=req.id,
+        data={"risk_level": assessment.risk_level},
     )
     db.commit()
     return _out(req, land.land_id)

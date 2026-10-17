@@ -29,7 +29,8 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import Reveal from "@/components/Reveal";
 import ArtCard from "@/components/ArtCard";
-import { NOTICES, noticeAnchor } from "@/features/notices/notices";
+import { noticeAnchor } from "@/features/notices/notices";
+import { useNotices } from "@/features/notices/useNotices";
 import { intlLocale, localDigits } from "@/lib/intl-locale";
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
@@ -206,21 +207,23 @@ export function Trust() {
   );
 }
 
-/** Dated demo notices (synthetic): what changed in the prototype. */
+/** Dated notices: admin-managed (U3.6), with the built-in demo samples as the fallback. */
 export function NoticeBoard() {
   const t = useTranslations("landing.notices");
   const locale = useLocale();
+  const notices = useNotices();
   const fmt = new Intl.DateTimeFormat(intlLocale(locale), { dateStyle: "long", timeZone: "UTC" });
   return (
     <Band id="notices-title">
       <h2 id="notices-title" className={h2}>{t("title")}</h2>
       <p className="mt-3 max-w-3xl text-ink-muted">{t("intro")}</p>
+      {notices.length === 0 && <p className="mt-6 text-ink-muted">{t("empty")}</p>}
       <ul className="mt-6 grid gap-4 sm:grid-cols-2">
-        {NOTICES.map((n) => (
+        {notices.map((n) => (
           <li key={n.id} id={noticeAnchor(n.id)} data-testid="notice-item" className="glass-card scroll-mt-28 border-l-4 !border-l-primary p-4">
             <time dateTime={n.date} className="inline-block rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-semibold text-primary">{fmt.format(new Date(n.date))}</time>
-            <p className="mt-1 font-semibold text-ink">{t(`items.${n.id}.title`)}</p>
-            <p className="mt-1 text-sm text-ink-muted">{t(`items.${n.id}.body`)}</p>
+            <p className="mt-1 font-semibold text-ink">{n.title}</p>
+            <p className="mt-1 text-sm text-ink-muted">{n.body}</p>
           </li>
         ))}
       </ul>
@@ -237,7 +240,7 @@ export function HomeFaq() {
       <h2 id="faq-title" className={h2}>{t("title")}</h2>
       <p className="mt-3 max-w-3xl text-ink-muted">{t("intro")}</p>
       <div className="mt-6 max-w-3xl">
-        <FaqList ids={HOME_FAQ_IDS} testId="faq-item" />
+        <FaqList ids={HOME_FAQ_IDS} limit={HOME_FAQ_IDS.length} testId="faq-item" />
       </div>
       <MoreLink href="/faq">{t("more")}</MoreLink>
     </Band>

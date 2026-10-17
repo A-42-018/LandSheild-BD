@@ -1,13 +1,6 @@
-import { setRequestLocale } from "next-intl/server";
-import RequireRole from "@/features/auth/RequireRole";
-import { ADMIN_ONLY } from "@/features/auth/roles";
-import AdminView from "@/features/admin/AdminView";
+import { redirect } from "@/i18n/navigation";
 
-export default function AdminPage({ params: { locale } }: { params: { locale: string } }) {
-  setRequestLocale(locale);
-  return (
-    <RequireRole roles={ADMIN_ONLY}>
-      <AdminView />
-    </RequireRole>
-  );
+/** The admin console moved to /admin (U3.5); old bookmarks land there. */
+export default function OldAdminPage({ params: { locale } }: { params: { locale: string } }) {
+  redirect({ href: "/admin", locale });
 }

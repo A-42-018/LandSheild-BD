@@ -6,11 +6,12 @@ import { Link } from "@/i18n/navigation";
 import { contours } from "@/features/landing/Backdrop";
 import { ShieldArt } from "@/features/landing/Illustrations";
 
-export type AuthMode = "login" | "signup" | "officer";
+export type AuthMode = "login" | "signup" | "staff" | "officer";
 
 const TABS: { mode: AuthMode; href: string; key: string }[] = [
   { mode: "login", href: "/login", key: "tabLogin" },
   { mode: "signup", href: "/signup", key: "tabSignup" },
+  { mode: "staff", href: "/officer-login", key: "tabStaff" },
   { mode: "officer", href: "/officer-signup", key: "tabOfficer" },
 ];
 
@@ -58,7 +59,7 @@ export default function AuthShell({ mode, children }: { mode: AuthMode; children
         </div>
       </aside>
       <div className="flex flex-col gap-5 bg-surface/60 p-5 sm:p-8">
-        <nav aria-label={t("switcher")} className="grid grid-cols-3 gap-1 rounded-xl border border-line/80 bg-surface-muted/80 p-1">
+        <nav aria-label={t("switcher")} className="grid grid-cols-2 gap-1 sm:grid-cols-4 rounded-xl border border-line/80 bg-surface-muted/80 p-1">
           {TABS.map((tab) => (
             <Link
               key={tab.mode}

@@ -5,10 +5,13 @@ import { Button, Modal } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
 import { useAuth } from "./AuthContext";
 
+/** Staff sessions end after this many idle minutes (shown read-only in the admin settings). */
+export const STAFF_IDLE_MINUTES = 15;
+
 const ACTIVITY = ["pointerdown", "keydown", "scroll", "touchstart"] as const;
 
 /** Signs an officer out after `idleMinutes` without activity; warns `warnSeconds` before, with a live countdown. */
-export default function IdleTimeout({ idleMinutes = 15, warnSeconds = 120 }: { idleMinutes?: number; warnSeconds?: number }) {
+export default function IdleTimeout({ idleMinutes = STAFF_IDLE_MINUTES, warnSeconds = 120 }: { idleMinutes?: number; warnSeconds?: number }) {
   const t = useTranslations("auth.idle");
   const { logout } = useAuth();
   const router = useRouter();
@@ -35,7 +38,7 @@ export default function IdleTimeout({ idleMinutes = 15, warnSeconds = 120 }: { i
       if (remaining <= 0) {
         window.clearInterval(id);
         setLeft(null);
-        logout().finally(() => router.replace("/login?expired=1"));
+        logout().finally(() => router.replace("/officer-login?expired=1"));
       } else setLeft(remaining <= warnSeconds ? remaining : null);
     }, 1000);
     return () => window.clearInterval(id);
@@ -49,7 +52,7 @@ export default function IdleTimeout({ idleMinutes = 15, warnSeconds = 120 }: { i
       title={t("title")}
       footer={
         <div className="flex flex-wrap justify-end gap-3">
-          <Button variant="secondary" onClick={() => { void logout().finally(() => router.replace("/login")); }}>{t("signOut")}</Button>
+          <Button variant="secondary" onClick={() => { void logout().finally(() => router.replace("/officer-login")); }}>{t("signOut")}</Button>
           <Button onClick={stay}>{t("stay")}</Button>
         </div>
       }

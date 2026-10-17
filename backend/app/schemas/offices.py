@@ -38,6 +38,17 @@ class OfficeList(BaseModel):
     total: int
 
 
+class AdminOffice(OfficeOut):
+    officers: int = 0  # active OFFICER accounts tied to this office
+
+
+class AdminOfficeList(BaseModel):
+    items: list[AdminOffice]
+    total: int
+    limit: int
+    offset: int
+
+
 class OfficerRequestIn(BaseModel):
     model_config = ConfigDict(extra="ignore")  # a client-sent role is ignored
 

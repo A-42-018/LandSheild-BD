@@ -18,6 +18,7 @@ import EncumbranceTable from "./EncumbranceTable";
 import { formatDate } from "./format";
 import RiskCard from "@/features/risk/RiskCard";
 import GenerateReportButton from "@/features/report/GenerateReportButton";
+import WatchButton from "@/features/my/WatchButton";
 import type { RiskAssessment } from "@/features/risk/types";
 import type { EncumbranceEntry, LandInfo, MutationEntry, OwnershipEntry, TransactionEntry } from "./types";
 
@@ -130,7 +131,10 @@ export default function ResultView({ landId }: { landId?: string }) {
         />
         <p className="text-sm text-ink-muted">{t("risk.disclaimer")}</p>
         <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:rounded-card sm:border sm:shadow-glass print:hidden">
-          <GenerateReportButton landId={land.data.land_id} />
+          <div className="flex flex-wrap items-start gap-3">
+            <GenerateReportButton landId={land.data.land_id} />
+            <WatchButton landId={land.data.land_id} />
+          </div>
           {back}
         </div>
       </>

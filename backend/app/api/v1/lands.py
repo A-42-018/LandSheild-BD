@@ -12,6 +12,7 @@ from app.schemas.ownership import OwnershipResponse, TransactionsResponse
 from app.schemas.pre_purchase import PrePurchaseCheck
 from app.services import graph as graph_svc
 from app.services import land as svc
+from app.services import me as me_svc
 from app.services import ownership as own_svc
 from app.services import pre_purchase as pp_svc
 
@@ -28,9 +29,11 @@ def search_lands(
     user: User = Depends(require_roles(*ANY_AUTH)),
     db: Session = Depends(get_db),
 ) -> LandPublic:
-    return svc.search_land(
+    land = svc.search_land(
         db, district=district, upazila=upazila, mouza=mouza, khatian=khatian, dag=dag, viewer=user
     )
+    me_svc.record_lookup(db, user, land.land_id)  # U3.2 "my searches" (citizens only)
+    return land
 
 
 @router.get("/{land_id}", response_model=LandPublic)
@@ -39,7 +42,9 @@ def get_land(
     user: User = Depends(require_roles(*ANY_AUTH)),
     db: Session = Depends(get_db),
 ) -> LandPublic:
-    return svc.get_land(db, land_id, user)
+    land = svc.get_land(db, land_id, user)
+    me_svc.record_lookup(db, user, land.land_id)
+    return land
 
 
 @router.get("/{land_id}/ownership", response_model=OwnershipResponse)

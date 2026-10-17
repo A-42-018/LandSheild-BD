@@ -9,6 +9,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import { navItemsFor } from "@/features/auth/roles";
 import MapView from "./MapView";
 import { route } from "./test-utils";
+import { localDigits } from "@/lib/intl-locale";
 import { buildPopup, type PopupLabels } from "./popup";
 import { filterFeatures, riskColor, type MapCollectionDto, type MapFeatureDto } from "./types";
 
@@ -30,6 +31,7 @@ vi.mock("./MapCanvas", () => ({
       data-admin-selected={p.admin?.selectedId ?? ""}
       data-fit-key={p.fitKey ?? ""}
       data-tiles={p.tileUrl ?? ""}
+      data-digits={p.labels.digits("101")}
       aria-label={p.ariaLabel}
     >
       {p.features.map((f: any) => (
@@ -87,7 +89,7 @@ describe("filterFeatures / riskColor", () => {
 describe("buildPopup", () => {
   const labels: PopupLabels = {
     landId: "Land ID", dag: "Dag", khatian: "Khatian", area: "Area", status: "Status", risk: "Risk", view: "View details",
-    statusText: (c) => c, riskText: (c) => c, unitText: (c) => c,
+    statusText: (c) => c, riskText: (c) => c, unitText: (c) => c, digits: (v) => String(v),
   };
   it("shows the six public fields and a details link, text only", () => {
     const open = vi.fn();
@@ -100,6 +102,14 @@ describe("buildPopup", () => {
     a.dispatchEvent(ev);
     expect(ev.defaultPrevented).toBe(true);
     expect(open).toHaveBeenCalledWith("LP-10100");
+  });
+  it("shows dag, khatian and area in Bangla digits under bn; the land ID stays as stored", () => {
+    const bnLabels: PopupLabels = { ...labels, digits: (v) => localDigits(v, "bn") };
+    const p = feat("LP-10001", "LOW", { dag_no: "101", khatian_no: "501", area: 15.5 }).properties;
+    const dds = [...buildPopup(p, bnLabels, "/x", vi.fn()).querySelectorAll("dd")].map((d) => d.textContent);
+    expect(dds.slice(0, 4)).toEqual(["LP-10001", "১০১", "৫০১", "১৫.৫ decimal"]);
+    const en = [...buildPopup(p, labels, "/x", vi.fn()).querySelectorAll("dd")].map((d) => d.textContent);
+    expect(en.slice(0, 4)).toEqual(["LP-10001", "101", "501", "15.5 decimal"]);
   });
   it("never turns stored values into markup", () => {
     const evil = feat("<img src=x onerror=alert(1)>", "LOW", { dag_no: "<b>1</b>" }).properties;
@@ -185,6 +195,23 @@ describe("MapView", () => {
     await waitFor(() => expect(screen.getByTestId("map-canvas")).toHaveAttribute("aria-label", bn.map.canvasLabel));
   });
 
+  it("parcel list and popup numbers use Bangla digits under bn, land IDs unchanged", async () => {
+    wrap(client(ok(DATA)), bn, "bn");
+    const row = await screen.findByTestId("parcel-LP-10240");
+    expect(row).toHaveTextContent(`${bn.map.popup.dag} ২১০ · ${bn.map.popup.khatian} ৬১০ · ২০ ${bn.result.units.decimal}`);
+    expect(row).toHaveTextContent("LP-10240");
+    expect(row.textContent).not.toMatch(/\b(210|610)\b/);
+    expect(screen.getByTestId("map-canvas")).toHaveAttribute("data-digits", "১০১");
+  });
+
+  it("parcel list and popup numbers stay Latin under en", async () => {
+    wrap(client(ok(DATA)));
+    const row = await screen.findByTestId("parcel-LP-10240");
+    expect(row).toHaveTextContent(`${en.map.popup.dag} 210 · ${en.map.popup.khatian} 610 · 20 ${en.result.units.decimal}`);
+    expect(row.textContent).not.toMatch(/[০-৯]/);
+    expect(screen.getByTestId("map-canvas")).toHaveAttribute("data-digits", "101");
+  });
+
   it("is in the nav for everyone, including visitors (U2.3)", () => {
     const has = (r: any) => navItemsFor(r).some((i) => i.href === "/map");
     expect(has(null)).toBe(true);
@@ -260,7 +287,7 @@ describe("MapView as a visitor (U2.3)", () => {
   it("popup shows only the numbers", () => {
     const labels: PopupLabels = {
       landId: "Land ID", dag: "Dag", khatian: "Khatian", area: "Area", status: "Status", risk: "Risk", view: "View",
-      statusText: (c) => c, riskText: (c) => c, unitText: (c) => c,
+      statusText: (c) => c, riskText: (c) => c, unitText: (c) => c, digits: (v) => String(v),
     };
     const text = buildPopup(PUB.features[0].properties, labels, "/x", vi.fn()).textContent ?? "";
     expect(text).toContain("610");

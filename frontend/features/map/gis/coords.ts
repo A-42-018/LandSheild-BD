@@ -9,9 +9,18 @@ function dms(value: number, pos: string, neg: string): string {
   return `${dd}° ${String(mm).padStart(2, "0")}′ ${String(ss).padStart(2, "0")}″ ${value >= 0 ? pos : neg}`;
 }
 
-/** "24° 07′ 41″ N 91° 20′ 04″ E" (readout under the map, as on the reference portal). */
-export function formatCoords(lat: number, lng: number): string {
-  return `${dms(lat, "N", "S")} ${dms(lng, "E", "W")}`;
+/** Hemisphere words for the readout; English uses the compass letters. */
+export interface Hemispheres {
+  n: string;
+  s: string;
+  e: string;
+  w: string;
+}
+const COMPASS: Hemispheres = { n: "N", s: "S", e: "E", w: "W" };
+
+/** "24° 07′ 41″ N 91° 20′ 04″ E" (readout under the map, as on the reference portal). ASCII digits; callers localise. */
+export function formatCoords(lat: number, lng: number, h: Hemispheres = COMPASS): string {
+  return `${dms(lat, h.n, h.s)} ${dms(lng, h.e, h.w)}`;
 }
 
 export function formatZoom(z: number): string {

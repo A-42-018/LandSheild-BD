@@ -46,8 +46,8 @@ test.describe("mobile viewport (375 px)", () => {
     await page.goto("/en/officer/mutations");
     await expect(page.getByRole("tab").first()).toBeVisible();
     await expectNoHorizontalScroll(page);
-    await page.goto("/en/officer/admin");
-    await expect(page.getByRole("tab").first()).toBeVisible();
+    await page.goto("/en/admin");
+    await expect(page.getByRole("heading", { name: "Administration" })).toBeVisible();
     await expectNoHorizontalScroll(page);
   });
   });
