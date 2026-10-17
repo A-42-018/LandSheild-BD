@@ -35,7 +35,8 @@ NDIGITS = 4
 # its district centre; applied after the automatic matching.
 # Keys: a source upazila id for a polygon the source tagged, "loose:<name>" for an untagged one.
 # Values: ("src", source upazila id) = take id, district and Bangla name from that source upazila;
-#         ("new", district name, id)  = a city thana the source has no upazila for.
+#         ("new", district name, id[, Bangla]) = a place the source has no upazila for
+#         (a city thana, Singra).
 FIXES: dict[str, tuple[str, ...]] = {
     "315": ("src", "162"),  # tagged Sreepur/Magura is Gazipur's Sreepur ...
     "loose:Sreepur": ("src", "315"),  # ... and the untagged one is Magura's
@@ -63,6 +64,14 @@ FIXES: dict[str, tuple[str, ...]] = {
     "loose:Lalmonirhat Sadar": ("src", "424"),
     "loose:Kanthalia": ("src", "25"),
     "loose:Narayanganj Sadar": ("src", "223"),
+    # the nearest-polygon fallback put these in the neighbouring district
+    "loose:Kawkhali (Betbunia)": ("src", "144"),  # Rangamati's Kawkhali, not Chattogram
+    "loose:Singra": ("new", "Natore", "", "সিংড়া"),  # Natore's, not Sirajganj; no source upazila
+}
+# Bangla spellings the source gets wrong
+BN_FIXES = {
+    "Roypura": "রায়পুরা", "Senbagh": "সেনবাগ", "Subarnachar": "সুবর্ণচর",
+    "Narayanganj Sadar": "নারায়ণগঞ্জ সদর",
 }
 for _n in (
     "Adabor Badda Cantonment Dhanmondi Gulshan Kafrul Kalabagan Khilgaon Khilkhet Pallabi Ramna "
@@ -178,7 +187,7 @@ def main() -> None:
             resolved[i] = (f, u["id"], u["district_id"], name, u["bn_name"])
         else:
             nid = fix[2] or uid
-            resolved[i] = (f, nid, by_dist_name[fix[1]], name, "")
+            resolved[i] = (f, nid, by_dist_name[fix[1]], name, fix[3] if len(fix) > 3 else "")
 
     dist_parts: dict[str, list] = {}
     upa_feats: list[dict] = []
@@ -195,7 +204,7 @@ def main() -> None:
                     "district_id": did,
                     "division_id": dists[did]["division_id"],
                     "name": name.strip(),
-                    "bn_name": bn.strip(),
+                    "bn_name": BN_FIXES.get(name.strip(), bn.strip()),
                 },
             )
         )

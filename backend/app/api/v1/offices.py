@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
@@ -25,7 +25,10 @@ router = APIRouter(prefix="/offices", tags=["offices"])
 admin_router = APIRouter(prefix="/admin/officer-requests", tags=["admin"])
 admin_offices_router = APIRouter(prefix="/admin/offices", tags=["admin"])
 Admin = Depends(require_roles(*ADMIN_ONLY))
-Name = Query(min_length=1, max_length=100)
+# Annotated, not a shared `= Query(...)` default: FastAPI binds one Query object to one
+# parameter name, so reusing it made `district` read the `division` value
+# (Dhaka > Rajbari listed Dhaka's upazilas).
+Name = Annotated[str, Query(min_length=1, max_length=100)]
 
 
 def _ip(request: Request) -> str | None:
@@ -38,21 +41,21 @@ def divisions(db: Session = Depends(get_db)) -> list[Place]:
 
 
 @router.get("/districts", response_model=list[Place])
-def districts(division: str = Name, db: Session = Depends(get_db)) -> list[Place]:
+def districts(division: Name, db: Session = Depends(get_db)) -> list[Place]:
     return svc.districts(db, division)
 
 
 @router.get("/upazilas", response_model=list[Place])
 def upazilas(
-    division: str = Name, district: str = Name, db: Session = Depends(get_db)
+    division: Name, district: Name, db: Session = Depends(get_db)
 ) -> list[Place]:
     return svc.upazilas(db, division, district)
 
 
 @router.get("", response_model=OfficeList)
 def offices(
-    division: str = Name,
-    district: str = Name,
+    division: Name,
+    district: Name,
     upazila: str | None = Query(default=None, max_length=100),
     db: Session = Depends(get_db),
 ) -> OfficeList:
