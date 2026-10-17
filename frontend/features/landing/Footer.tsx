@@ -49,6 +49,7 @@ export default function Footer() {
               <li><Link href="/track" className={LINK}>{t("nav.track")}</Link></li>
               <li><Link href="/map" className={LINK}>{t("nav.map")}</Link></li>
               <li><Link href="/tools" className={LINK}>{t("tools.title")}</Link></li>
+              <li><Link href="/guide" className={LINK}>{t("nav.guide")}</Link></li>
               <li><Link href="/faq" className={LINK}>{t("footer.faq")}</Link></li>
               <li><Link href="/sitemap" className={LINK}>{t("info.sitemap.title")}</Link></li>
             </ul>
