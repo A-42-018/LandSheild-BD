@@ -31,8 +31,9 @@ class Settings(BaseSettings):
     upload_rate_limit_per_hour: int = 20  # per user (R4)
     cors_origins: str = "http://localhost:3000"
     storage_path: str = "./storage"
-    # auto = demo fixture -> pdf-text -> tesseract; also tesseract | mock (tests)
+    # auto = demo fixture -> checked pdf-text -> tesseract; also tesseract | mock (tests)
     ocr_provider: str = "auto"
+    ocr_profile: str = "modern"  # modern | historical (old-scan clean-up); H3 picks per document
     demo_fixtures: str = "on"  # on = saved demo files return their stored result; off = real OCR
     # auto = claude if ANTHROPIC_API_KEY else rules; also rules | claude | mock
     document_ai_provider: str = "auto"

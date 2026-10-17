@@ -8,7 +8,7 @@ Setup for OCR: see `ocr-setup.md`.
 | Stage | Code | Switch | Notes |
 |---|---|---|---|
 | Preprocess (optional) | `ai/preprocessing/` | `PREPROCESS=on` | OpenCV grayscale, denoise, CLAHE, deskew, autocrop; PDFs rendered with PyMuPDF (max 20 pages) |
-| OCR | `ai/ocr/` (`mock`, `tesseract`) | `OCR_PROVIDER` | `paddle` is a known name but not implemented (the API answers 503 `PROVIDER_NOT_AVAILABLE`); Tesseract languages from `TESSERACT_LANG` (`ben+eng`), missing ones are dropped with a warning |
+| OCR | `ai/ocr/` (`auto`, `mock`, `tesseract`) | `OCR_PROVIDER`, `OCR_PROFILE` | `auto` = demo fixture → PDF text layer if it passes the quality gate → Tesseract with ruled-table cells and missed-line recovery (H2, below); `paddle` is a known name but not implemented (the API answers 503 `PROVIDER_NOT_AVAILABLE`); Tesseract languages from `TESSERACT_LANG` (`ben+eng`), missing ones are dropped with a warning |
 | Extraction | `ai/extraction/` (`mock`, `rules`) | `DOCUMENT_AI_PROVIDER` | `rules` = regex/label patterns over OCR text; `vlm`, `remote` are known names but not implemented (503). Each field gets a confidence |
 | Review | `backend/app/services/review.py` | `REVIEW_CONF_THRESHOLD` (0.85) | Fields below the threshold, and not corrected by a human, raise `LOW_EXTRACTION_CONFIDENCE` (INFO, 0 points) |
 | Posting | `backend/app/services/posting.py` | approval | Creates deed, transaction and ownership history from the **human-approved** values |
@@ -329,3 +329,78 @@ sections A–J); its JSON Schema is `docs/lhdr-v1.schema.json`.
 - **Check:** `python -m ai.extraction.lhdr check database/sample_data/historical/*.gold.json` (all 7
   gold files: no issues, derived core = gold `core`). After changing a model, regenerate the schema
   with `python -m ai.extraction.lhdr schema`; `backend/tests/test_lhdr.py` fails if it is stale.
+
+### OCR input quality (H2)
+
+The sample deed failed first of all at the input: its PDF text layer had damaged Bangla and was
+trusted at 0.99, and page OCR turned the schedule table into noise. H2 fixes the input, not the
+extractor.
+
+- **Text-layer gate** (`ai/ocr/quality.py`): `assess(text)` multiplies three 0..1 signals:
+  - invalid Bangla mark sequences per Bangla character (vowel sign at word start or after another
+    vowel sign, doubled `া`/`ং`/`ঃ`…): up to 0.5 % is free, 2 % scores 0. Measured: Tesseract output
+    ≤ 0.4 %, the four Chrome-printed historical PDFs 2.5–3.2 %
+  - dictionary: deed words with conjuncts (`বিক্রেতা`, `পশ্চিম`, `ধর্ম`…) found intact versus only as
+    their "skeleton" with the conjuncts dropped (`বিেতা`, `পিম`, `ধম`), the exact damage pattern
+  - junk: `U+FFFD`, private-use glyphs, control characters
+
+  Threshold 0.8. All four historical PDF layers score 0.0; every modern demo fixture and every
+  Tesseract reading of a typed deed scores 1.0.
+- **Router** (`ai/ocr/router.py`): demo → text layer if it passes (confidence 0.99 × score, tables
+  from PyMuPDF's table finder) → Tesseract. When a layer fails, both are scored and the better kept:
+  Tesseract with warning `TEXT_LAYER_REJECTED`, or the layer with `TEXT_LAYER_SUSPECT` (also when
+  Tesseract is missing or returns < 50 characters). Both warnings show on the review screen.
+- **Tables** (`ai/ocr/table.py`): ruling lines by morphological opening (kernels longer than a
+  word's headline), a group with ≥ 3 horizontal and ≥ 3 vertical lines is a table (page border and
+  stamp box are not), cells per row band with `colspan`/`rowspan`; a faint line the ink mask misses
+  is still seen as a darker ridge in the grayscale. Tables are painted out before the page pass and
+  each cell is read alone (psm 6, `ben`-only re-read when Latin letters/digits appear: `0.80` →
+  `০.৪০`). `OCRResult.tables` keeps `(row, col, colspan, rowspan, text, confidence, bbox)`; the
+  text gets the table as `header: value` lines in reading order (`মৌজা: ভবানীপুর`).
+- **Missed-line recovery** (`tesseract.py`): Tesseract 5.5 returns nothing for some clean lines at
+  one text size (the sample's `ইসলাম, জাতীয়তা- …` reads at 0.7× and 1.5×, not at 1×) while the page
+  confidence stays high. Ink rows with no word are re-read as strips (1.5×, then 0.7×, max 10 per
+  page); a strip no scale reads is cut at its middle word gap and the halves are read (one segment,
+  `উত্তরে- নিতাই` on hd04, made Tesseract drop the whole line).
+- **Historical profile** (`OCR_PROFILE=historical`, `ai/preprocessing/historical.py`; H3 will choose
+  it per document): colour render, red seals and stamps removed by colour, background flattening
+  (yellowing, blotches, shadow → white), faint watermark faded out (levels, white point 215), deskew;
+  phone photos get perspective correction when a page outline is found. Left out after measuring:
+  median denoise, upscaling, the red channel as grayscale, and 300 dpi PDF renders (all lowered the
+  found values, e.g. sample deed 33 → 29 of 37 at 300 dpi).
+- **Effect on today's rule extractor (unchanged):** core 13 on the set 7.1 % → 40.9 %, sample deed
+  1/13 → 7/13 (`run_eval.py --set historical --ocr auto`), only from the table lines. `upazila`
+  (`থানা`) and the parties need H4's parser.
+
+<!-- HIST-OCR:BEGIN -->
+
+### Historical deeds: input quality (H2)
+
+Share of the gold values (Bangla text and numbers that are printed on the page) found verbatim in the
+OCR text, i.e. what any extractor could at best read. Independent of the extractor.
+
+- **before**: pre-H2 router (text layer trusted at >= 50 characters; Tesseract without tables / line recovery)
+- **modern**, **historical**: H2 router (checked text layer, table cells, missed-line recovery) with `OCR_PROFILE`
+
+| File | Variant | before | modern | historical | Source (modern) | Tables |
+|---|---|---|---|---|---|---|
+| Historical_Land_Deed.pdf | typed | 28/39 | 35/39 | 35/39 | tesseract (TEXT_LAYER_REJECTED) | 1 |
+| Historical_Land_Deed.png | render | 30/39 | 35/39 | 33/39 | tesseract | 1 |
+| Historical_Land_Deed_scan.jpg | scanned | 15/39 | 16/39 | 33/39 | tesseract | 1 |
+| Historical_Land_Deed_Sample.pdf | typed | 30/46 | 29/46 | 29/46 | tesseract (TEXT_LAYER_REJECTED) | 1 |
+| hd02_gift_1938.png | typed | 25/36 | 30/36 | 30/36 | tesseract | 1 |
+| hd03_sale_rupee_1962.pdf | typed | 32/43 | 34/43 | 34/43 | tesseract (TEXT_LAYER_REJECTED) | 1 |
+| hd03_sale_rupee_1962.png | render | 21/43 | 34/43 | 37/43 | tesseract | 1 |
+| hd03_sale_rupee_1962_scan.jpg | scanned | 9/43 | 20/43 | 31/43 | tesseract | 1 |
+| hd04_multiplot_1958.png | typed | 33/61 | 55/61 | 55/61 | tesseract | 1 |
+| hd05_archaic_units_1931.png | typed | 27/45 | 33/45 | 32/45 | tesseract | 1 |
+| hd05_archaic_units_1931_scan.jpg | scanned | 22/45 | 26/45 | 32/45 | tesseract | 1 |
+| hd06_mortgage_2page_1965.pdf | typed | 40/55 | 41/55 | 42/55 | tesseract (TEXT_LAYER_REJECTED) | 1 |
+
+**All files:** before 58.4% (312/534) · modern 72.7% (388/534) · historical 79.2% (423/534)
+**Scanned only:** before 36.2% (46/127) · modern 48.8% (62/127) · historical 75.6% (96/127)
+
+Reproduce: `python ai/evaluation/run_eval.py --set historical --input-quality`
+
+<!-- HIST-OCR:END -->
+

@@ -143,3 +143,67 @@ def test_pdf_to_image_and_pipeline():
     with pytest.raises(ProviderError) as e:
         pdf_to_array(b"%PDF-garbage")
     assert e.value.code == "PDF_RENDER_FAILED"
+
+
+# ---- H2: historical-scan clean-up ---------------------------------------------------------------
+
+from ai.preprocessing import historical as hist  # noqa: E402
+
+
+def _deed_rgb() -> np.ndarray:
+    """Yellow paper with a shadow gradient, black 'text' bars and a red seal across them."""
+    h, w = 600, 400
+    paper = np.zeros((h, w, 3), np.uint8)
+    paper[:] = (236, 222, 180)  # RGB yellowed paper
+    paper = (paper * np.linspace(0.75, 1.0, w)[None, :, None]).astype(np.uint8)  # shadow
+    for y in range(100, 500, 40):
+        cv2.rectangle(paper, (60, y), (340, y + 12), (25, 25, 25), -1)
+    cv2.circle(paper, (200, 300), 80, (200, 30, 40), 6)
+    return paper
+
+
+def test_red_seal_removed_black_text_kept():
+    rgb = _deed_rgb()
+    assert hist.red_mask(rgb)[300, 120].item() == 255 and hist.red_mask(rgb)[106, 100].item() == 0
+    out = hist.prepare(rgb)
+    assert out.ndim == 2 and out.dtype == np.uint8
+    assert out[300, 120] > 200  # seal ring (on paper) gone
+    assert out[106, 100] < 80  # text bar still dark
+
+
+def test_flatten_and_whiten_make_paper_white():
+    gray = cv2.cvtColor(_deed_rgb(), cv2.COLOR_RGB2GRAY)
+    flat = hist.whiten(hist.flatten(gray))
+    paper = flat[60:90, 10:390]
+    assert paper.min() >= 240  # shadow and yellow gone across the whole width
+    assert hist.whiten(np.array([[230, 50]], np.uint8)).tolist() == [[255, 59]]
+
+
+def test_photo_perspective_corrected():
+    page = np.full((560, 400, 3), 240, np.uint8)
+    for y in range(80, 480, 40):
+        cv2.rectangle(page, (50, y), (350, y + 10), (20, 20, 20), -1)
+    canvas = np.full((800, 700, 3), 60, np.uint8)  # dark table under the page
+    src = np.float32([[0, 0], [399, 0], [399, 559], [0, 559]])
+    dst = np.float32([[120, 90], [560, 140], [600, 720], [80, 680]])
+    m = cv2.getPerspectiveTransform(src, dst)
+    canvas = cv2.warpPerspective(
+        page, m, (700, 800), dst=canvas, borderMode=cv2.BORDER_TRANSPARENT
+    )
+    quad = hist.page_quad(canvas)
+    assert quad is not None and np.abs(quad - dst).max() < 15
+    flat = cv2.cvtColor(hist.unwarp(canvas, quad), cv2.COLOR_RGB2GRAY)
+    bars = (flat < 100).mean(axis=1) > 0.5  # rows mostly text bar: only if the bars are level
+    assert int(np.count_nonzero(bars[1:] & ~bars[:-1])) == 10
+
+
+def test_whole_frame_is_not_a_page_outline():
+    assert hist.page_quad(_deed_rgb()) is None
+    assert hist.prepare(cv2.cvtColor(_deed_rgb(), cv2.COLOR_RGB2GRAY)).ndim == 2  # gray input works
+
+
+def test_unknown_profile_falls_back_to_modern():
+    from ai.ocr.tesseract import TesseractOCRProvider
+
+    assert TesseractOCRProvider(profile="bogus").profile == "modern"
+    assert TesseractOCRProvider(profile="historical").profile == "historical"

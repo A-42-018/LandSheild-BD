@@ -599,6 +599,8 @@
       "note": "Low-confidence fields are checked by a reviewer.",
       "warnings": {
         "PAGES_TRUNCATED": "Only the first pages of this PDF were read.",
+        "TEXT_LAYER_REJECTED": "The text stored inside this PDF was damaged, so the page image was read instead.",
+        "TEXT_LAYER_SUSPECT": "The text stored inside this PDF looks damaged and could not be re-read from the image. Check every field.",
         "CLAUDE_FALLBACK": "The optional AI reader was unavailable; the rule-based reader was used."
       }
     },

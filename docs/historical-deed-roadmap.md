@@ -1,6 +1,6 @@
 # Historical Land Deed Digitisation — Roadmap (H0–H10)
 
-Status: **H0, H1 done (2026-10-18), H2–H10 not started** (updated 2026-10-18; all decisions D1–D6 made, see §5).
+Status: **H0, H1, H2 done (2026-10-18), H3–H10 not started** (updated 2026-10-18; all decisions D1–D6 made, see §5).
 Trigger: mentor feedback:
 1. LandShield cannot digitise a historical (pre-1971 / pre-1947) land deed. There is no digital
    format for one, and the extractor read only 1 of 13 fields from the sample
@@ -144,6 +144,7 @@ Each phase can be merged on its own. Branch per phase: `h<N>-<slug>`, worktree `
 - **Table reading**: find the table grid with OpenCV line detection, OCR each cell (psm 6/7), and keep `(row, col)` so header → value mapping is exact. This fixes the lost schedule table.
 - **Historical-scan preprocessing** (opt-in by profile): 300 dpi render; remove the yellow/brown background; separate red stamps by colour; suppress the faint diagonal watermark; deskew; phone-photo perspective correction for JPG/PNG.
 - **Done when:** on the sample PDF, the chosen OCR text contains `বিক্রেতা`, `তপশিল`, `১২০` and `৪৫৫`, and the table cells come back as a grid.
+- **Done (2026-10-18).** `ai/ocr/quality.py` (gate: invalid Bangla marks, conjunct dictionary vs dropped-conjunct skeleton, junk share; all 4 historical PDF layers score 0, all modern fixtures 1), router demo → checked layer → Tesseract with `TEXT_LAYER_REJECTED` / `TEXT_LAYER_SUSPECT`, `ai/ocr/table.py` (grid with colspan/rowspan, `OCRResult.tables`, `header: value` text lines; PyMuPDF tables for good text layers), `ai/preprocessing/historical.py` (`OCR_PROFILE=historical`). Sample PDF: done-criteria test in `backend/tests/test_ocr_table.py`, 4×5 grid exact. Found beyond the plan: Tesseract 5.5 silently drops some clean lines (the religion/nationality lines of both parties), fixed by missed-line recovery with strip re-reads and word-gap splits. Deviations after measuring: PDFs stay at 200 dpi (300 dpi lowered results), no median denoise or upscaling in the historical profile. Gold values found in OCR text: 58.4 % → 72.7 % (modern) → 79.2 % (historical); scans 36.2 % → 75.6 %. Core 13 with the unchanged rule extractor: 7.1 % → 40.9 % (sample deed 1/13 → 7/13). Reference and tables in `docs/ai-pipeline.md`.
 
 ### H3 — Detecting a historical deed
 - `ai/extraction/classify.py` returns `deed_profile: modern | historical`, `deed_kind`, `era`, and a score.

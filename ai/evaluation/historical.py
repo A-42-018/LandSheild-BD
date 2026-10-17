@@ -113,13 +113,14 @@ def score_doc(pred_core: dict[str, str | None], gold: dict) -> dict:
     return {"core": (ok, n), "sections": dict(sections), "missed_core": missed}
 
 
-def run(ocr_name: str = "auto", lang: str = "ben+eng", only: str | None = None) -> dict:
+def run(ocr_name: str = "auto", lang: str = "ben+eng", only: str | None = None, profile: str = "modern") -> dict:
     """Run today's pipeline (OCR -> rule extractor) over the set and score it."""
     from ai.extraction.rules import RuleBasedDocumentAIProvider
     from ai.ocr.router import AutoOCRProvider
     from ai.ocr.tesseract import TesseractOCRProvider
 
-    ocr = AutoOCRProvider(demo_fixtures=False, lang=lang) if ocr_name == "auto" else TesseractOCRProvider(lang=lang)
+    ocr = (AutoOCRProvider(demo_fixtures=False, lang=lang, profile=profile) if ocr_name == "auto"
+           else TesseractOCRProvider(lang=lang, profile=profile))
     ext = RuleBasedDocumentAIProvider()
     rows = []
     for item in load_set():
@@ -168,4 +169,123 @@ def render(result: dict, ocr_name: str = "auto") -> str:
     a, b = sum(v[0] for v in tot.values()), sum(v[1] for v in tot.values())
     out += [f"| **All values** | **{_pct(a, b)}** |", "",
             "Reproduce: `python ai/evaluation/run_eval.py --set historical`"]
+    return "\n".join(out)
+
+
+# ---- H2: input quality (is the deed's text in the OCR output at all?) --------------------------
+
+_EN2BN = str.maketrans("0123456789", "০১২৩৪৫৬৭৮৯")
+_NOT_VERBATIM = {"gregorian_from", "gregorian_to", "precision", "decimal_equiv", "pages", "month_no"}
+
+
+def text_values(gold: dict) -> list[str]:
+    """Gold values that must appear verbatim in a correct reading of the page: Bangla text and
+    numbers (in Bangla digits). Codes (`SELLER`, `acre`), booleans, computed values (Gregorian
+    range, modern mapping, core) are not on the page and are skipped."""
+    out: set[str] = set()
+
+    def walk(o, key: str = "") -> None:
+        if key in _NOT_VERBATIM or key.startswith("_"):
+            return
+        if isinstance(o, dict):
+            for k, v in o.items():
+                if k not in ("core", "modern_mapping", "schema", "document"):
+                    walk(v, k)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v, key)
+        elif isinstance(o, bool) or o is None:
+            return
+        elif isinstance(o, int | float):
+            out.add((f"{o:.2f}" if isinstance(o, float) and o != int(o) else str(int(o))).translate(_EN2BN))
+        elif isinstance(o, str) and o.strip():
+            if re.search(r"[ঀ-৿]", o):
+                out.add(o)
+            elif re.fullmatch(r"[0-9][0-9./-]*", o):
+                out.add(o.translate(_EN2BN))
+
+    walk(gold)
+    return sorted(out)
+
+
+def found(values: list[str], text: str) -> int:
+    flat = re.sub(r"\s+", " ", text)
+    return sum(re.sub(r"\s+", " ", v) in flat for v in values)
+
+
+def _legacy(lang: str):
+    """The pre-H2 path: text layer trusted when >= 50 chars, else plain Tesseract (no tables,
+    no missed-line recovery). Kept here only as the 'before' column."""
+    from ai.ocr.router import MIN_TEXT_CHARS
+    from ai.ocr.tesseract import TesseractOCRProvider
+    from ai.preprocessing.pdf import pdf_text_layer
+
+    tess = TesseractOCRProvider(lang=lang, preprocess=True, layout=False)
+
+    def read(data: bytes, ext: str) -> tuple[str, str, int]:
+        if ext == "pdf":
+            t = pdf_text_layer(data)
+            if t and len("".join(t.split())) >= MIN_TEXT_CHARS:
+                return t, "pdf-text", 0
+        return tess.recognize(data, ext).text, "tesseract", 0
+
+    return read
+
+
+def input_quality(lang: str = "ben+eng", only: str | None = None) -> dict:
+    """Gold values found in the OCR text: before H2, H2 modern profile, H2 historical profile."""
+    from ai.ocr.router import AutoOCRProvider
+
+    legacy = _legacy(lang)
+    readers = {"before": legacy}
+    for prof in ("modern", "historical"):
+        ocr = AutoOCRProvider(demo_fixtures=False, lang=lang, profile=prof)
+
+        def read(data: bytes, ext: str, _o=ocr) -> tuple[str, str, int]:
+            r = _o.recognize(data, ext)
+            src = r.provider + "".join(f" ({w})" for w in r.warnings if w.startswith("TEXT_LAYER"))
+            return r.text, src, len(r.tables)
+
+        readers[prof] = read
+    rows = []
+    for item in load_set():
+        if only and only not in item["file"]:
+            continue
+        data, ext = item["path"].read_bytes(), item["path"].suffix.lstrip(".")
+        vals = text_values(item["gold"])
+        row = {"file": item["file"], "variant": item["variant"], "n": len(vals)}
+        for name, read in readers.items():
+            text, src, tables = read(data, ext)
+            row[name] = {"found": found(vals, text), "source": src, "tables": tables}
+        rows.append(row)
+    return {"rows": rows}
+
+
+def render_input(result: dict) -> str:
+    rows = result["rows"]
+    out = ["### Historical deeds: input quality (H2)", "",
+           "Share of the gold values (Bangla text and numbers that are printed on the page) found verbatim in the",
+           "OCR text, i.e. what any extractor could at best read. Independent of the extractor.", "",
+           "- **before**: pre-H2 router (text layer trusted at >= 50 characters; Tesseract without tables / line recovery)",
+           "- **modern**, **historical**: H2 router (checked text layer, table cells, missed-line recovery) with `OCR_PROFILE`",
+           "",
+           "| File | Variant | before | modern | historical | Source (modern) | Tables |", "|---|---|---|---|---|---|---|"]
+    tot = {k: 0 for k in ("before", "modern", "historical")}
+    tot_scan = dict(tot)
+    n = n_scan = 0
+    for r in rows:
+        out.append(f"| {r['file']} | {r['variant']} | {r['before']['found']}/{r['n']} | {r['modern']['found']}/{r['n']} | "
+                   f"{r['historical']['found']}/{r['n']} | {r['modern']['source']} | {r['modern']['tables']} |")
+        n += r["n"]
+        for k in tot:
+            tot[k] += r[k]["found"]
+        if r["variant"] == "scanned":
+            n_scan += r["n"]
+            for k in tot:
+                tot_scan[k] += r[k]["found"]
+    out += ["", f"**All files:** before {_pct(tot['before'], n)} · modern {_pct(tot['modern'], n)} · "
+                f"historical {_pct(tot['historical'], n)}",
+            f"**Scanned only:** before {_pct(tot_scan['before'], n_scan)} · modern {_pct(tot_scan['modern'], n_scan)} · "
+            f"historical {_pct(tot_scan['historical'], n_scan)}", "",
+            "Reproduce: `python ai/evaluation/run_eval.py --set historical --input-quality`"]
     return "\n".join(out)
