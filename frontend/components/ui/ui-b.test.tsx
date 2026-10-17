@@ -81,16 +81,17 @@ describe("Table", () => {
   });
   it("shows empty state when no rows", () => {
     wrap(<Table columns={columns} rows={[]} rowKey={(r: Row) => r.id} />);
-    expect(screen.getByText("No records found.")).toBeInTheDocument();
+    expect(screen.getByText(en.common.empty)).toBeInTheDocument();
   });
 });
 
 describe("states", () => {
   it("Empty/Loading/Error use i18n defaults in EN and BN", () => {
     const { unmount } = wrap(<><EmptyState /><LoadingState /><ErrorState onRetry={() => {}} /></>);
-    expect(screen.getByText("No records found.")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("Processing…");
-    expect(screen.getByRole("alert")).toHaveTextContent("We couldn't process this document.");
+    expect(screen.getByText(en.common.empty)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(en.common.loading);
+    expect(screen.getByRole("alert")).toHaveTextContent(en.errors.generic);
+    expect(screen.getByRole("alert")).toHaveTextContent(en.errors.genericHint);
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
     unmount();
     wrap(<ErrorState />, "bn");

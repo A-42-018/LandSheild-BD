@@ -6,7 +6,6 @@ import { Button, EmptyState, ErrorState, LoadingState, Select } from "@/componen
 import RiskIndicator from "@/components/domain/RiskIndicator";
 import { useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
-import { ApiError } from "@/lib/api";
 import { localDigits } from "@/lib/intl-locale";
 import ParcelList from "./ParcelList";
 import SearchMenu from "./gis/SearchMenu";
@@ -150,17 +149,10 @@ export default function MapView() {
     parcels = <LoadingState />;
   } else if (q.isError) {
     parcels = (
-      <ErrorState
-        message={
-          q.error instanceof ApiError && q.error.status === 403
-            ? t("errors.permission")
-            : t("map.loadError")
-        }
-        onRetry={() => void q.refetch()}
-      />
+      <ErrorState error={q.error} message={t("map.loadError")} onRetry={() => void q.refetch()} />
     );
   } else if (q.data.features.length === 0) {
-    parcels = <EmptyState title={t("common.empty")} />;
+    parcels = <EmptyState title={t("map.noParcels")} />;
   } else {
     parcels = (
       <>
@@ -214,10 +206,7 @@ export default function MapView() {
 
       {gisFailed && (
         <div>
-          <ErrorState
-            message={t("map.gis.loadError")}
-            onRetry={() => void divisions.refetch()}
-          />
+          <ErrorState error={divisions.error} message={t("map.gis.loadError")} onRetry={() => void divisions.refetch()} />
         </div>
       )}
 

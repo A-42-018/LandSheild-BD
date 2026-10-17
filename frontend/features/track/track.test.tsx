@@ -112,9 +112,9 @@ describe("TrackView", () => {
     const request = vi.fn().mockRejectedValueOnce(new ApiError(404, "MUTATION_NOT_FOUND", "x")).mockRejectedValueOnce(new ApiError(429, "RATE_LIMITED", "x"));
     wrap(request as any);
     submit("MUT-2026-0001");
-    expect(await screen.findByText("No application found with this number.")).toBeInTheDocument();
+    expect(await screen.findByText(en.track.errors.notFound)).toBeInTheDocument();
     submit("MUT-2026-0002");
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Too many requests"));
+    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(en.track.errors.rateLimited));
   });
 
   it("renders in Bangla", async () => {

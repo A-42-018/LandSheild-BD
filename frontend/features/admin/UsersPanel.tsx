@@ -160,7 +160,7 @@ export default function UsersPanel() {
         {q.isLoading ? (
           <LoadingState />
         ) : q.isError || !q.data ? (
-          <ErrorState message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined} onRetry={() => q.refetch()} />
+          <ErrorState error={q.error} onRetry={() => q.refetch()} />
         ) : (
           <div aria-busy={q.isFetching} data-testid="users-table">
             <Table

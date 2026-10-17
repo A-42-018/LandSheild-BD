@@ -164,7 +164,7 @@ describe("MapView", () => {
 
   it("empty dataset", async () => {
     wrap(client(ok({ type: "FeatureCollection", features: [] })));
-    expect(await screen.findByText(en.common.empty)).toBeInTheDocument();
+    expect(await screen.findByText(en.map.noParcels)).toBeInTheDocument();
     expect(screen.queryAllByTestId("canvas-feature")).toHaveLength(0);
   });
 

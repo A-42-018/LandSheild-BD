@@ -43,13 +43,8 @@ export default function ReportView({ id }: { id: string }) {
     if (status === 404 || (e instanceof ApiError && e.code === "VERIFICATION_NOT_FOUND")) {
       body = <EmptyState title={t("report.notFound")} action={back} />;
     } else {
-      const msg =
-        e instanceof ApiError && e.code === "VERIFICATION_NOT_READY"
-          ? t("report.notReady")
-          : status === 403
-            ? t("errors.permission")
-            : t("report.loadError");
-      body = <ErrorState message={msg} onRetry={() => void q.refetch()} />;
+      const notReady = e instanceof ApiError && e.code === "VERIFICATION_NOT_READY";
+      body = <ErrorState error={notReady ? undefined : e} message={notReady ? t("report.notReady") : t("report.loadError")} onRetry={() => void q.refetch()} />;
     }
   } else {
     const r = q.data;

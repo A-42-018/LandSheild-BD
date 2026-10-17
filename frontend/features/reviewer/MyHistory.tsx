@@ -37,7 +37,7 @@ export default function MyHistory() {
       {q.isLoading ? (
         <LoadingState />
       ) : q.isError || !q.data ? (
-        <ErrorState onRetry={() => q.refetch()} />
+        <ErrorState error={q.error} onRetry={() => q.refetch()} />
       ) : (
         <div aria-busy={q.isFetching} data-testid="history-table">
           <Table

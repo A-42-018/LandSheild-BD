@@ -503,3 +503,37 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 - Button: "শুনুন" / "থামান" (EN Listen / Stop), accessible name "শুনুন: <subject>" (starts with the visible word). One reader at a time; speech stops on Stop, when the last line ends, on leaving the page and on language switch. Hidden in print.
 - Strings: `readAloud.*` (both locales). Tests: `components/ReadAloud.test.tsx`, plus a case each in `features/guide/guide.test.tsx` and `features/result/result.test.tsx`.
 - Not verified: real Bangla voices (needs a phone or a browser with a Bangla voice installed). Result summary / "এখন আপনার করণীয়" from U2.4 will be read automatically once merged, because the whole `#result-readable` region is read.
+
+# Empty, loading and error states (U4.5, 2026-10-17)
+Every state says what happened and what to do next, in plain words. No page promises a feature "for later".
+
+## Shared components (`components/ui/`)
+- `ErrorState` takes `error` (the thrown error) and `message` (what failed on this screen). `lib/error-kind.ts` sorts the error into a kind, and each kind gets its own sentence and next step:
+
+| Kind | Cause | Shows | Retry button |
+|---|---|---|---|
+| `offline` | `NETWORK_ERROR`, or the browser reports offline | `errors.offline` + `errors.offlineHint` ("ইন্টারনেট সংযোগ নেই। সংযোগ দেখে আবার চেষ্টা করুন।") | yes |
+| `signedOut` | 401 | `errors.signedOut` + hint, and a "সাইন ইন" link | no |
+| `forbidden` | 403 | `errors.permission` | no |
+| `tooMany` | 429 | `errors.tooMany` + hint (wait a minute) | yes |
+| `server` | 5xx | `errors.server`, then the screen's `message` or `errors.serverHint` | yes |
+| other | anything else | the screen's `message`; without one, `errors.generic` + `errors.genericHint` | yes |
+  Pass `error={query.error}` instead of testing `status === 403` in each screen. `data-kind` is set for tests.
+- `LoadingState`: "তথ্য আনা হচ্ছে। একটু অপেক্ষা করুন।" After 8 s it adds "ইন্টারনেট ধীর হলে এমন হয়" (`common.slow`), for low-bandwidth phones.
+- `EmptyState`: always give `title` (what is missing) and, when there is something to do, `description` or `action`. Table `emptyText` for a filtered list says to change the filter. A bare "কোনো রেকর্ড পাওয়া যায়নি" is no longer used anywhere (tested).
+- `common.empty` is now only a last-resort default ("এখানে এখনো কিছু নেই।"). Land not found has its own `result.notFound` + `result.notFoundHint` (used on result and graph).
+
+## Wording rules for state strings (checked by `tests/state-copy.test.ts`)
+- Bangla: no "অনুগ্রহ করে", "লোড"/"রিলোড", "প্রক্রিয়াকরণ", "ব্যর্থ", "সম্পন্ন করা যায়নি", "নথিভুক্ত নেই". Say "আনা যায়নি", "পড়া", "হয়নি", "নেই". ("আপলোড" stays on staff screens.)
+- Under 20 words per sentence, both languages. A failure ends with a next step (আবার চেষ্টা করুন / দেখে নিন / সাইন ইন করুন).
+- An empty filtered list says which filter to change. An empty personal list says how to fill it (already so in `my.*`).
+- No message may contain placeholder wording ("later phase", "under construction", "নির্মাণ কাজ চলমান" ...). The unused `common.placeholderNote` was deleted. All footer, menu and sitemap links go to built pages.
+- `errors.documentFailed` is the text for a document that could not be read (review screen). `errors.generic` used to say that for every failure, including a failed map load.
+
+## What changed
+- 103 state strings rewritten in both locales; new keys `errors.{genericHint,signedOut,signedOutHint,offline,offlineHint,server,serverHint,tooMany,tooManyHint,documentFailed}`, `common.slow`, `result.notFound`, `result.notFoundHint`, `map.noParcels`. Removed: `common.placeholderNote`, `publicVerify.rateLimited` (now `errors.tooMany`).
+- 30 screens pass `error` to `ErrorState` instead of testing for 403 themselves; they now also tell a lost connection from a server fault.
+- Behaviour changes to know: a 403 no longer shows a Retry button; `LedgerCard`, `OfficerRequestsPanel`, `FeedbackAdmin`, `MyHistory` and the officer charts show the specific kind instead of one generic text.
+- Tests: `components/ui/states.test.tsx` (kinds × EN/BN, retry rules, slow note, axe), `tests/state-copy.test.ts`; existing tests now read the strings from the message files instead of copying them.
+- Checked in a browser (Bangla, local dev server): unknown land id → "এই আইডির কোনো জমি পাওয়া যায়নি" with an example and a link back to search; lost connection → "ইন্টারনেট সংযোগ নেই। সংযোগ দেখে আবার চেষ্টা করুন।" with a retry button.
+- Not done: the slow-connection note and the 401 link were tested in jsdom only; the u2.x public pages (public verify card, track stepper) are in other branches and need the same `error` prop when merged.
