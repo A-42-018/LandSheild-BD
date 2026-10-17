@@ -9,6 +9,12 @@ const nextConfig = {
   poweredByHeader: false,
   async headers() {
     return [
+      // Files in public/ are not content-hashed (Next serves them with max-age=0 by default), so a repeat visit on a slow phone
+      // re-asked for the hero photo every time. A day fresh, a week usable while it is refreshed in the background (U5.3).
+      ...["landing", "guide", "icons", "brand"].map((dir) => ({
+        source: `/${dir}/:path*`,
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
+      })),
       // the worker file itself is never served from a cache, so a new version is picked up on the next visit
       { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, max-age=0" }, { key: "Service-Worker-Allowed", value: "/" }] },
       {
