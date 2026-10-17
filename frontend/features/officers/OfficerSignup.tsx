@@ -8,6 +8,7 @@ import { normalizeDigits } from "@/lib/intl-locale";
 import { Button, Input } from "@/components/ui";
 import AuthShell from "@/features/auth/AuthShell";
 import PasswordInput from "@/features/auth/PasswordInput";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import OfficeCascade from "./OfficeCascade";
 import { bi, officePath, type Office } from "./types";
 import { useOfficerRequest } from "./useOffices";
@@ -47,10 +48,11 @@ export default function OfficerSignup() {
   };
   const invalid = Object.values(errs).some(Boolean);
 
+  const focus = useFocusFirstInvalid();
   function onSubmit(ev: FormEvent) {
     ev.preventDefault();
     setTouched(true);
-    if (invalid || !office) return;
+    if (invalid || !office) return focus.request();
     submit.mutate(
       {
         name: f.name.trim(),
@@ -94,7 +96,7 @@ export default function OfficerSignup() {
         <h1 className="text-heading-2 text-ink">{t("title")}</h1>
         <p className="mt-1 text-ink-muted">{t("intro")}</p>
       </div>
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+      <form ref={focus.ref} onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
 
         <fieldset className="flex flex-col gap-3 rounded-lg border border-line p-3">
           <legend className="flex items-center gap-2 px-1 text-sm font-semibold"><MapPin aria-hidden="true" className="h-4 w-4" />{t("officeStep")}</legend>

@@ -24,6 +24,7 @@ const CHECK_ICON: Record<string, JSX.Element> = {
 
 export default function MutationDetail({ id }: { id: string }) {
   const t = useTranslations("mutation");
+  const tRes = useTranslations("result");
   const locale = useLocale();
   const { user } = useAuth();
   const q = useMutationDetail(id);
@@ -47,6 +48,7 @@ export default function MutationDetail({ id }: { id: string }) {
     else go(to);
   };
   const dt = (v: string | null) => formatDateTime(v, locale, "—");
+  const unit = (u: string) => (tRes.has(`units.${u}`) ? tRes(`units.${u}`) : u);
   const timeline = [
     { key: "applied", at: m.applied_at },
     { key: "changed", at: m.status_changed_at },
@@ -73,7 +75,7 @@ export default function MutationDetail({ id }: { id: string }) {
         <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <Row label={t("cols.land")}><span className="font-mono">{m.land_id}</span></Row>
           <Row label={t("cols.applicant")}>{m.applicant}</Row>
-          <Row label={t("cols.area")}>{formatArea(m.area, m.area_unit, locale, m.area_unit)}</Row>
+          <Row label={t("cols.area")}>{formatArea(m.area, m.area_unit, locale, unit(m.area_unit))}</Row>
           <Row label={t("khatian")}>{`${m.previous_khatian_no ?? "—"} → ${m.new_khatian_no ?? "—"}`}</Row>
           <Row label={t("office")}>{m.ac_land_office ?? "—"}</Row>
           {m.holder_office && (

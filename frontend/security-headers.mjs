@@ -42,7 +42,7 @@ export function securityHeaders(options = {}) {
     { key: "X-Content-Type-Options", value: "nosniff" },
     // origin-only on cross-origin requests (map tile servers need a referer, nothing leaks a path)
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-    { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+    { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(), payment=()" },
     { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   ];
   if (!options.dev && (options.siteUrl ?? "").startsWith("https://")) {

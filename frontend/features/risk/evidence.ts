@@ -1,4 +1,5 @@
 import { formatDate } from "@/features/result/format";
+import { localDigits } from "@/lib/intl-locale";
 import type { Evidence } from "./types";
 
 type T = {
@@ -44,36 +45,38 @@ export function evidenceValues(e: Evidence, t: T, locale: string): Record<string
   const na = t("result.unknownDate");
   const unit = (u: unknown) => (t.has(`result.units.${str(u)}`) ? t(`result.units.${str(u)}`) : str(u));
   const d = (v: unknown) => formatDate(typeof v === "string" ? v : null, locale, na);
+  // Counts, areas and day spans are UI numerals; deed/reference numbers stay as recorded.
+  const n = (v: unknown) => localDigits(str(v), locale);
   return {
     code: e.code,
-    count: str(p.transaction_count),
-    total: str(p.total_area),
-    recorded: str(p.recorded_area),
+    count: n(p.transaction_count),
+    total: n(p.total_area),
+    recorded: n(p.recorded_area),
     unit: unit(p.area_unit ?? p.parcel_unit),
     date: d(p.transaction_date),
     deedNo: str(p.deed_no),
     kind: str(p.kind),
     fromSurvey: str(p.from_survey),
     toSurvey: str(p.to_survey),
-    unlinked: str(p.unlinked_owners),
-    owners: str(p.owners_in_later_survey),
+    unlinked: n(p.unlinked_owners),
+    owners: n(p.owners_in_later_survey),
     reason: str(p.reason),
-    heldDays: str(p.held_days),
+    heldDays: n(p.held_days),
     acquiredOn: d(p.acquired_on),
     referenceNo: str(p.reference_no),
     firstStart: d(p.first_start),
     firstEnd: d(p.first_end),
     secondStart: d(p.second_start),
     secondEnd: d(p.second_end),
-    documentArea: str(p.document_area),
-    previousArea: str(p.previous_area),
-    windowDays: str(p.window_days),
+    documentArea: n(p.document_area),
+    previousArea: n(p.previous_area),
+    windowDays: n(p.window_days),
     firstDate: d(p.first_date),
     lastDate: d(p.last_date),
-    graceDays: str(p.grace_days),
-    mutationArea: str(p.mutation_area),
+    graceDays: n(p.grace_days),
+    mutationArea: n(p.mutation_area),
     mutationUnit: unit(p.mutation_unit),
-    deedArea: str(p.deed_area),
+    deedArea: n(p.deed_area),
     deedUnit: unit(p.deed_unit),
     units: Array.isArray(p.units) ? (p.units as unknown[]).map(unit).join(", ") : "",
   };

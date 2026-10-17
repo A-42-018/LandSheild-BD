@@ -154,7 +154,9 @@ describe("GraphView", () => {
   it("renders in Bangla with translated labels", async () => {
     wrap(client(okGet(GRAPH)), "LP-10240", bn, "bn");
     fireEvent.click(await screen.findByRole("button", { name: bn.graph.viewList }));
-    expect(screen.getByRole("heading", { name: bn.graph.title })).toBeInTheDocument();
+    // the H1 lives in app/[locale]/verify/graph/page.tsx; the view must not add a second one (U5.4)
+    expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
+    expect(screen.getByText(bn.graph.backToResult)).toBeInTheDocument();
     expect(screen.getAllByText(`⚑ ${bn.graph.flagged}`).length).toBe(1);
     expect(screen.getByText("Rahim Uddin")).toBeInTheDocument();
   });

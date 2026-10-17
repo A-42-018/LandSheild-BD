@@ -2,6 +2,9 @@ import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
 import LoginForm from "@/features/auth/LoginForm";
 import { LoadingState } from "@/components/ui";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("auth.staffTitle");
 
 /** Staff sign in (reviewer, officer, admin): same form as /login with staff copy and demo accounts. */
 export default function OfficerLoginPage({ params: { locale } }: { params: { locale: string } }) {

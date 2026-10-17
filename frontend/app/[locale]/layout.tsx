@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Bengali, Plus_Jakarta_Sans } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
@@ -11,7 +11,9 @@ import PublicBackdrop from "@/features/landing/PublicBackdrop";
 import Footer from "@/features/landing/Footer";
 import HelpButton from "@/components/HelpButton";
 import PageHelpful from "@/features/feedback/PageHelpful";
+import { BRAND_COLOR } from "@/lib/theme";
 import Providers from "@/features/Providers";
+import ServiceWorker from "@/features/pwa/ServiceWorker";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -23,6 +25,8 @@ const bengali = Noto_Sans_Bengali({
   display: "swap",
 });
 
+export const viewport: Viewport = { themeColor: BRAND_COLOR };
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -33,7 +37,8 @@ export async function generateMetadata({
   params: { locale: string };
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "common" });
-  return { title: t("appName"), description: t("tagline") };
+  // pages set their own part with lib/page-title.ts (U5.4); the home page keeps the bare name
+  return { title: { default: t("appName"), template: `%s | ${t("appName")}` }, description: t("tagline") };
 }
 
 export default async function LocaleLayout({
@@ -76,6 +81,7 @@ export default async function LocaleLayout({
           </main>
           <Footer />
           <HelpButton />
+          <ServiceWorker />
           </Providers>
         </NextIntlClientProvider>
       </body>

@@ -10,6 +10,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { ApiError, type ApiUser } from "@/lib/api";
 import { localDigits, normalizeDigits } from "@/lib/intl-locale";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 
 // Same rule as the backend (schemas/me.py): 01XXXXXXXXX, optionally +880 / 880 in front.
 const BD_MOBILE = /^(?:\+?880|0)1[3-9]\d{8}$/;
@@ -46,10 +47,11 @@ function DetailsForm() {
     },
   });
 
+  const focus = useFocusFirstInvalid();
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     setTouched(true);
-    if (!name.trim() || (phoneVal && !BD_MOBILE.test(phoneVal))) return;
+    if (!name.trim() || (phoneVal && !BD_MOBILE.test(phoneVal))) return focus.request();
     const body: Record<string, string> = {};
     if (name.trim() !== user?.name) body.name = name.trim();
     if (phoneVal !== (user?.phone ?? "")) body.phone = phoneVal;
@@ -59,7 +61,7 @@ function DetailsForm() {
   };
 
   return (
-    <form onSubmit={onSubmit} noValidate aria-labelledby="profile-details" className="glass-card flex flex-col gap-4 p-5">
+    <form ref={focus.ref} onSubmit={onSubmit} noValidate aria-labelledby="profile-details" className="glass-card flex flex-col gap-4 p-5">
       <h2 id="profile-details" className="text-heading-3 text-ink">{t("details")}</h2>
       <Input label={t("name")} value={name} onChange={(e) => setName(e.target.value)} error={nameErr} required autoComplete="name" maxLength={200} />
       <Input
@@ -118,15 +120,16 @@ function PasswordForm() {
     },
   });
 
+  const focus = useFocusFirstInvalid();
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     setTouched(true);
-    if (!current || next.length < 8 || again !== next) return;
+    if (!current || next.length < 8 || again !== next) return focus.request();
     m.mutate();
   };
 
   return (
-    <form onSubmit={onSubmit} noValidate aria-labelledby="profile-password" className="glass-card flex flex-col gap-4 p-5">
+    <form ref={focus.ref} onSubmit={onSubmit} noValidate aria-labelledby="profile-password" className="glass-card flex flex-col gap-4 p-5">
       <h2 id="profile-password" className="text-heading-3 text-ink">{t("password")}</h2>
       <PasswordInput label={t("current")} value={current} onChange={(e) => setCurrent(e.target.value)} error={errs.current} autoComplete="current-password" required />
       <PasswordInput label={t("new")} hint={t("newHint")} value={next} onChange={(e) => setNext(e.target.value)} error={errs.next} autoComplete="new-password" required />

@@ -1,5 +1,8 @@
 import { setRequestLocale } from "next-intl/server";
 import MapView from "@/features/map/MapView";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("map.title");
 
 export default function MapPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);

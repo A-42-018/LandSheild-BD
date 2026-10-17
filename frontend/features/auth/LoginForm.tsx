@@ -7,6 +7,7 @@ import { AlertCircle, Info, LogIn } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { Badge, Button, Input } from "@/components/ui";
 import { ApiError } from "@/lib/api";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { useAuth } from "./AuthContext";
 import AuthShell from "./AuthShell";
 import PasswordInput from "./PasswordInput";
@@ -66,10 +67,11 @@ export default function LoginForm({ audience = "citizen" }: { audience?: LoginAu
     return "network";
   })();
 
+  const focus = useFocusFirstInvalid();
   function onSubmit(ev: FormEvent) {
     ev.preventDefault();
     setTouched(true);
-    if (!email.trim() || !password) return;
+    if (!email.trim() || !password) return focus.request();
     m.mutate();
   }
 
@@ -79,7 +81,7 @@ export default function LoginForm({ audience = "citizen" }: { audience?: LoginAu
         <h1 className="text-heading-2 text-ink">{t(staff ? "staffTitle" : "loginTitle")}</h1>
         <p className="mt-1 text-ink-muted">{t(staff ? "staffIntro" : "loginIntro")}</p>
       </div>
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+      <form ref={focus.ref} onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         {params.get("expired") === "1" && (
           <p role="status" className="rounded-md border border-line bg-primary-soft px-3 py-2 text-sm text-ink">{ti("expired")}</p>
         )}

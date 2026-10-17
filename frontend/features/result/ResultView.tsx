@@ -10,6 +10,7 @@ import RiskIndicator from "@/components/domain/RiskIndicator";
 import { Link } from "@/i18n/navigation";
 import ReadAloud from "@/components/ReadAloud";
 import { ApiError } from "@/lib/api";
+import { useStickyBar } from "@/lib/sticky-bar";
 import { useAuth } from "@/features/auth/AuthContext";
 import LandInfoCard from "./LandInfoCard";
 import OwnershipTimeline from "./OwnershipTimeline";
@@ -32,6 +33,7 @@ function tabPanel(q: Pick<UseQueryResult, "isPending" | "isError" | "error" | "r
 
 export default function ResultView({ landId }: { landId?: string }) {
   const t = useTranslations();
+  const barRef = useStickyBar();
   const locale = useLocale();
   const { api } = useAuth();
   const enc = landId ? encodeURIComponent(landId) : "";
@@ -129,7 +131,7 @@ export default function ResultView({ landId }: { landId?: string }) {
           ]}
         />
         <p className="text-sm text-ink-muted">{t("risk.disclaimer")}</p>
-        <div data-no-speech className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:rounded-card sm:border sm:shadow-glass print:hidden">
+        <div ref={barRef} data-no-speech data-sticky-bar className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:rounded-card sm:border sm:shadow-glass print:hidden">
           <div className="flex flex-wrap items-start gap-3">
             <GenerateReportButton landId={land.data.land_id} />
             <WatchButton landId={land.data.land_id} />

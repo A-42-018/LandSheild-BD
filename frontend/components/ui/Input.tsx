@@ -50,9 +50,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       </div>
       {hint && <p id={hintId} className="text-xs text-ink-muted">{hint}</p>}
       {error && (
-        <p id={errorId} role="alert" className="flex items-center gap-1 text-xs text-critical">
+        // the alert names its field (U5.4): several fields can fail at once, and five bare "এই তথ্যটি আবশ্যক।"
+        // in a row do not say which is which. aria-describedby points at the message only.
+        <p role="alert" className="flex items-center gap-1 text-xs text-critical">
           <AlertCircle aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-          <span>{error}</span>
+          <span className="sr-only">{label}: </span>
+          <span id={errorId}>{error}</span>
         </p>
       )}
     </div>

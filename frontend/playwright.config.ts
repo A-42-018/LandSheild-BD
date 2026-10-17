@@ -12,7 +12,8 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   reporter: [["list"]],
   use: { baseURL: WEB, trace: "retain-on-failure", screenshot: "only-on-failure" },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // PW_CHANNEL=chrome runs the installed Google Chrome instead of Playwright's own (no `npm run e2e:install`)
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], channel: process.env.PW_CHANNEL || undefined } }],
   webServer: [
     {
       // fresh e2e.db: migrate + seed, then serve (mock OCR/AI providers, relaxed login limiter)

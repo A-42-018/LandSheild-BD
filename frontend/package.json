@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
+    "check:budget": "node scripts/check-budget.mjs",
     "check:i18n": "node scripts/check-i18n.mjs && node scripts/audit-hardcoded.mjs",
     "e2e": "playwright test",
     "e2e:install": "playwright install chromium"

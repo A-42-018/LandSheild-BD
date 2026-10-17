@@ -13,11 +13,13 @@ import { daysSince, MUTATION_STATUSES, PAGE_SIZE, type MutationQueueItem } from 
 
 export default function MutationQueue() {
   const t = useTranslations("mutation");
+  const tRes = useTranslations("result");
   const locale = useLocale();
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [area, setArea] = useState<Area>(NO_AREA);
   const q = useMutationQueue(status, page, area);
+  const unit = (u: string) => (tRes.has(`units.${u}`) ? tRes(`units.${u}`) : u);
 
   const columns: Column<MutationQueueItem>[] = [
     {
@@ -41,7 +43,7 @@ export default function MutationQueue() {
         </span>
       ),
     },
-    { key: "area", header: t("cols.area"), render: (r) => formatArea(r.area, r.area_unit, locale, r.area_unit) },
+    { key: "area", header: t("cols.area"), render: (r) => formatArea(r.area, r.area_unit, locale, unit(r.area_unit)) },
     {
       key: "days",
       header: t("cols.days"),

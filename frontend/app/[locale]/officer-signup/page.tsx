@@ -1,5 +1,8 @@
 import { setRequestLocale } from "next-intl/server";
 import OfficerSignup from "@/features/officers/OfficerSignup";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("officerSignup.title");
 
 /** Public: an officer picks their land office and requests an account; an admin approves it. */
 export default function OfficerSignupPage({ params: { locale } }: { params: { locale: string } }) {

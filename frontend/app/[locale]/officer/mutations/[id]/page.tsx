@@ -2,6 +2,9 @@ import { setRequestLocale } from "next-intl/server";
 import RequireRole from "@/features/auth/RequireRole";
 import { REVIEW_UP } from "@/features/auth/roles";
 import MutationDetail from "@/features/mutation/MutationDetail";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("mutation.detailTitle");
 
 export default function MutationDetailPage({ params: { locale, id } }: { params: { locale: string; id: string } }) {
   setRequestLocale(locale);

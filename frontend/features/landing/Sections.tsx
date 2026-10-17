@@ -94,7 +94,7 @@ function Band({ id, panel, children }: { id: string; panel?: boolean; children: 
 function MoreLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <p className="mt-6">
-      <Link href={href} className={`group inline-flex items-center gap-1.5 rounded-md font-semibold text-primary underline-offset-4 hover:underline ${focus}`}>
+      <Link href={href} className={`group inline-flex min-h-touch items-center gap-1.5 rounded-md font-semibold text-primary underline-offset-4 hover:underline ${focus}`}>
         {children}
         <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </Link>
@@ -158,6 +158,7 @@ export function WhatWeCheck() {
 
 export function HowItWorks() {
   const t = useTranslations("landing.how");
+  const locale = useLocale();
   return (
     <Band id="how-title">
       <h2 id="how-title" className={h2}>{t("title")}</h2>
@@ -169,8 +170,8 @@ export function HowItWorks() {
             className="relative flex gap-3 lg:flex-col lg:before:absolute lg:before:left-14 lg:before:right-2 lg:before:top-5 lg:before:border-t-2 lg:before:border-dashed lg:before:border-primary/30 lg:last:before:hidden"
           >
             <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-hover font-bold text-primary-fg shadow-[0_6px_16px_-6px_rgb(var(--primary)/0.7)] ring-4 ring-primary/10">
-              <span className="sr-only">{t("step", { n: i + 1 })}: </span>
-              <span aria-hidden="true">{i + 1}</span>
+              <span className="sr-only">{t("step", { n: localDigits(i + 1, locale) })}: </span>
+              <span aria-hidden="true">{localDigits(i + 1, locale)}</span>
             </span>
             <span>
               <span className="flex items-center gap-2 font-semibold text-ink">

@@ -3,6 +3,9 @@ import RequireRole from "@/features/auth/RequireRole";
 import { OFFICER_UP } from "@/features/auth/roles";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import UploadForm from "@/features/upload/UploadForm";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("upload.title");
 
 export default async function UploadPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);

@@ -29,12 +29,19 @@ export default function UserMenu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
 
   useEffect(() => setOpen(false), [pathname]);
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      // focus on a link in the panel would fall to <body> once it is hidden (U5.4): give it back to the button
+      const inside = document.getElementById("account-menu")?.contains(document.activeElement);
+      setOpen(false);
+      if (inside) button.current?.focus();
+    };
     const onDown = (e: MouseEvent) => {
       if (root.current && !root.current.contains(e.target as Node)) setOpen(false);
     };
@@ -76,6 +83,7 @@ export default function UserMenu() {
       <Badge tone="pending" className="hidden sm:inline-flex" data-testid="role-badge">{t(`roles.${user.role}`)}</Badge>
       {user.role === "CITIZEN" && <NotificationBell className={ICON_BTN} />}
       <button
+        ref={button}
         type="button"
         aria-expanded={open}
         aria-controls="account-menu"

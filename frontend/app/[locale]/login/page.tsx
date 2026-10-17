@@ -2,6 +2,9 @@ import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
 import LoginForm from "@/features/auth/LoginForm";
 import { LoadingState } from "@/components/ui";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("auth.loginTitle");
 
 /** Sign in: glass auth card (AuthShell) over the landing topographic backdrop. */
 export default function LoginPage({ params: { locale } }: { params: { locale: string } }) {

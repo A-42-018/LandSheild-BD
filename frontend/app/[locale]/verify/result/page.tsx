@@ -1,6 +1,9 @@
 import { setRequestLocale } from "next-intl/server";
 import RequireRole from "@/features/auth/RequireRole";
 import ResultView from "@/features/result/ResultView";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("result.title");
 
 export default function ResultPage({
   params: { locale },

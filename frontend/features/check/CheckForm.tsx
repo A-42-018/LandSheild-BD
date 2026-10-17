@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { ApiError } from "@/lib/api";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { DISTRICTS, DIVISIONS, districtsOf, divisionOf, labelOf, upazilasOf } from "@/lib/geo";
 import { useAuth } from "@/features/auth/AuthContext";
 import { checkSchema, type CheckInput, type CheckValues } from "./schema";
@@ -28,7 +29,10 @@ export default function CheckForm() {
   } = useForm<CheckInput, unknown, CheckValues>({
     resolver: zodResolver(checkSchema),
     defaultValues: { district: "", upazila: "", mouza: "", khatian: "", dag: "", seller: "" },
+    // U5.4: focus by screen order like every other form (react-hook-form would use registration order)
+    shouldFocusError: false,
   });
+  const focus = useFocusFirstInvalid();
 
   const district = watch("district") as string;
   // Division is a UI-only filter: picking one narrows the districts; picking a district fills it in.
@@ -57,7 +61,7 @@ export default function CheckForm() {
   return (
     <div className="flex flex-col gap-4">
       <Card title={t("title")} icon={<ListChecks />}>
-        <form onSubmit={handleSubmit((v) => m.mutate(v))} noValidate className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+        <form ref={focus.ref} onSubmit={handleSubmit((v) => m.mutate(v), focus.request)} noValidate className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
           <p className="text-ink-muted md:col-span-2">{t("intro")}</p>
           <Select
             label={tv("division")}
