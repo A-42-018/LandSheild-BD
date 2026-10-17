@@ -5,6 +5,7 @@ import { AlertTriangle, ListChecks, Pencil } from "lucide-react";
 import { Badge, Button, Card, Input } from "@/components/ui";
 import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { BAND_TONE, bandFor, percent } from "./confidence";
+import DeedProfileSwitch from "./DeedProfileSwitch";
 import EngineBadge from "./EngineBadge";
 import ReviewActions, { REVIEWABLE } from "./ReviewActions";
 import PartyNidPanel from "./PartyNidPanel";
@@ -165,6 +166,7 @@ export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
         </div>
       )}
       <EngineBadge data={data} />
+      <DeedProfileSwitch data={data} actions={actions} />
       <Card title={t("fieldsTitle")} icon={<ListChecks />}>
         <dl className="divide-y divide-line">
           {data.fields.map((f) => (

@@ -4,7 +4,9 @@
 `run_processing` is the background job: it opens its own session (the request session is
 closed by then), runs OCR then Document-AI, and always ends in REVIEW_REQUIRED or FAILED.
 Deeds (not khatian / porcha) are classified modern | historical on the OCR text (H3, D1: the
-document_type stays DEED) and the verdict is stored in extraction_json.
+document_type stays DEED) and the verdict is stored in extraction_json. A reviewer's reprocess
+with `profile` (modern | historical) reads with that Tesseract profile instead of OCR_PROFILE and
+stores it as deed_profile with profile_overridden (deed_class keeps the classifier's verdict).
 """
 import logging
 from collections.abc import Callable
@@ -22,7 +24,7 @@ from app.schemas.document import DocumentOut
 from app.services import audit, record_assist
 from app.services.documents import _to_out
 from app.services.extraction import build_extraction, is_survey_doc
-from app.services.providers import Providers
+from app.services.providers import Providers, with_ocr_profile
 from app.services.storage import StorageService
 
 logger = logging.getLogger("landshield.processing")
@@ -76,8 +78,10 @@ def run_processing(
     storage: StorageService,
     providers: Providers,
     document_id: str,
+    profile: str | None = None,
 ) -> None:
-    """Background job. Never raises: any provider/storage error becomes status FAILED."""
+    """Background job. Never raises: any provider/storage error becomes status FAILED.
+    `profile` forces the deed's Tesseract profile (reviewer switch); None = OCR_PROFILE."""
     with session_factory() as db:
         doc = db.get(Document, document_id)
         if doc is None or doc.processing_status != DocumentStatus.PROCESSING.value:
@@ -85,8 +89,11 @@ def run_processing(
         try:
             data = storage.read(doc.file_path)
             file_type = doc.file_path.rsplit(".", 1)[-1]
-            ocr = providers.ocr.recognize(data, file_type)
-            deed_class = None if is_survey_doc(doc) else classify(ocr.text, ocr.tables)
+            survey = is_survey_doc(doc)
+            override = None if survey else profile
+            ocr_provider = with_ocr_profile(providers.ocr, override) if override else providers.ocr
+            ocr = ocr_provider.recognize(data, file_type)
+            deed_class = None if survey else classify(ocr.text, ocr.tables)
             result = providers.ai.extract(data, ocr)
             try:  # best effort: check misread values against the land records, never fail the document
                 alts = reread.candidates(data, result.fields)
@@ -97,7 +104,7 @@ def run_processing(
                 logger.warning("record_assist_failed", extra={"id": document_id}, exc_info=True)
             doc.ocr_text = ocr.text
             doc.ocr_confidence = ocr.confidence
-            doc.extraction_json = build_extraction(result, ocr, deed_class)
+            doc.extraction_json = build_extraction(result, ocr, deed_class, override)
             # every document needs human approval regardless of confidence (R4)
             doc.processing_status = DocumentStatus.REVIEW_REQUIRED.value
             audit.log(
@@ -108,7 +115,8 @@ def run_processing(
                     "ocr_provider": ocr.provider,
                     "ai_provider": result.provider,
                     "model": result.model,
-                    "deed_profile": deed_class.deed_profile if deed_class else None,
+                    "deed_profile": override or (deed_class.deed_profile if deed_class else None),
+                    "profile_overridden": override is not None,
                     "warnings": [*ocr.warnings, *result.warnings],
                 },
             )  # fmt: skip

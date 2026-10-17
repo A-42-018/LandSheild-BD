@@ -43,6 +43,8 @@ class Extraction(BaseModel):
     deed_profile: str | None = None  # modern | historical
     deed_class: dict[str, Any] | None = None
     ocr_profile: str | None = None  # Tesseract profile that produced the text (None = no image OCR)
+    # True: a reviewer forced deed_profile on reprocess (deed_class keeps the classifier's verdict)
+    profile_overridden: bool = False
 
     def dump(self) -> dict[str, Any]:
         return self.model_dump(mode="json")
@@ -74,6 +76,7 @@ class ExtractionOut(BaseModel):
     deed_profile: str | None = None  # H3: modern | historical (None = not classified)
     deed_class: dict[str, Any] | None = None
     ocr_profile: str | None = None
+    profile_overridden: bool = False  # deed_profile was set by a reviewer, not detected
     threshold: float
     fields: list[ExtractedFieldOut]
     edited_by_human: bool

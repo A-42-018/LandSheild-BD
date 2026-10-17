@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -53,6 +54,15 @@ class RejectBody(BaseModel):
         if len(v) > 500:
             raise ValueError("reason too long")
         return v
+
+
+class ReprocessBody(BaseModel):
+    """Optional body of POST /reprocess. `profile` forces the deed's Tesseract profile instead of
+    OCR_PROFILE (the reviewer's modern <-> historical switch, H3 D1); omitted = detect again."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    profile: Literal["modern", "historical"] | None = None
 
 
 class PartyNidIn(BaseModel):

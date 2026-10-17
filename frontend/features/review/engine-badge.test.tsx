@@ -42,6 +42,11 @@ describe("EngineBadge", () => {
     expect(screen.getByTestId("warning-CLAUDE_FALLBACK")).toBeInTheDocument();
   });
 
+  it("says when an old deed was re-read with the old-scan setting", () => {
+    show({ ocr_source: "tesseract", extractor: "rules", warnings: ["HISTORICAL_PROFILE"] });
+    expect(screen.getByTestId("warning-HISTORICAL_PROFILE")).toHaveTextContent(en.review.engine.warnings.HISTORICAL_PROFILE);
+  });
+
   it("renders nothing for old results without engine data", () => {
     show({});
     expect(screen.queryByTestId("engine-badge")).toBeNull();

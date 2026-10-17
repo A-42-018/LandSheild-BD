@@ -39,9 +39,14 @@ EDITABLE_STATUSES = (DocumentStatus.REVIEW_REQUIRED.value, DocumentStatus.EXTRAC
 
 
 def build_extraction(
-    result: ExtractionResult, ocr: OCRResult | None = None, deed_class: DeedClass | None = None
+    result: ExtractionResult,
+    ocr: OCRResult | None = None,
+    deed_class: DeedClass | None = None,
+    profile_override: str | None = None,
 ) -> dict:
-    """Provider output -> stored JSON (all 13 fields, absent -> value None / confidence 0)."""
+    """Provider output -> stored JSON (all 13 fields, absent -> value None / confidence 0).
+    `profile_override` (reviewer's switch) replaces the detected deed_profile; deed_class keeps
+    the classifier's own verdict."""
     by = {f.field: f for f in result.fields}
     fields = [
         ExtractedField(
@@ -63,9 +68,10 @@ def build_extraction(
         fields=fields,
         survey_type=survey,
         extras=extras,
-        deed_profile=deed_class.deed_profile if deed_class else None,
+        deed_profile=profile_override or (deed_class.deed_profile if deed_class else None),
         deed_class=deed_class.to_dict() if deed_class else None,
         ocr_profile=ocr.profile if ocr else None,
+        profile_overridden=profile_override is not None,
     )
     return ex.dump()
 
@@ -200,6 +206,7 @@ def _to_out(
         deed_profile=ex.deed_profile,
         deed_class=ex.deed_class,
         ocr_profile=ex.ocr_profile,
+        profile_overridden=ex.profile_overridden,
         threshold=threshold,
         fields=fields,
         edited_by_human=ex.edited_by_human,

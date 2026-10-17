@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
-import type { ExtractionOut, FieldError } from "./types";
+import type { DeedProfile, ExtractionOut, FieldError } from "./types";
 
 /** Field-level errors from a 422 (EXTRACTION_VALIDATION_FAILED / EXTRACTION_INVALID); [] otherwise. */
 export function toFieldErrors(e: unknown): FieldError[] {
@@ -31,8 +31,10 @@ export function useReviewActions(id: string) {
     mutationFn: (reason) => api.post(`/documents/${id}/reject`, { reason }),
     onSuccess: () => Promise.all([refresh(), refreshQueue()]),
   });
-  const reprocess = useMutation<unknown, ApiError, void>({
-    mutationFn: () => api.post(`/documents/${id}/reprocess`),
+  // no profile: detect the deed type again; a profile forces that reading (modern <-> historical switch)
+  const reprocess = useMutation<unknown, ApiError, DeedProfile | void>({
+    mutationFn: (profile) =>
+      profile ? api.post(`/documents/${id}/reprocess`, { profile }) : api.post(`/documents/${id}/reprocess`),
     onSuccess: () => {
       qc.removeQueries({ queryKey: ["document", id, "extraction"] }); // edits are discarded server-side
       return refresh();

@@ -7,6 +7,7 @@ OCR: auto (demo fixture -> pdf-text -> Tesseract, O1) | tesseract (no mock fallb
 Document AI: auto (Claude when ANTHROPIC_API_KEY is set, else rules; demo samples keep their
 stored result) | rules | claude (falls back to rules on any failure) | mock (tests).
 """
+import copy
 import logging
 import sys
 from dataclasses import dataclass
@@ -56,6 +57,16 @@ class AutoDocumentAIProvider:
         if self.demo_fixtures and ocr.provider == "demo" and is_demo_fixture(data):
             return MockDocumentAIProvider().extract(data, ocr)
         return self.primary.extract(data, ocr)
+
+
+def with_ocr_profile(ocr: OCRProvider, profile: str) -> OCRProvider:
+    """A copy of `ocr` that reads with this Tesseract profile (modern | historical) instead of
+    OCR_PROFILE. Providers without a profile (mock) are returned as they are."""
+    if not hasattr(ocr, "profile"):
+        return ocr
+    forced = copy.copy(ocr)
+    forced.profile = profile  # type: ignore[attr-defined]  # Auto / Tesseract providers
+    return forced
 
 
 def _unavailable(kind: str, value: str, known: tuple[str, ...]) -> AppError:

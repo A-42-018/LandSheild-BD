@@ -461,6 +461,17 @@ detected on its first reading, `auto` gives the historical column above (79.2 % 
 scans 75.6 %) while modern documents keep the modern reading. Tests: `backend/tests/test_classify.py`
 (the Tesseract-backed done-criteria test is skipped where Tesseract is missing).
 
-Not in H3: the reviewer's "modern ↔ historical" switch on the review screen (re-run with the other
-profile) needs the review UI (H6); H4 will use `deed_profile` to pick the historical parser.
+**Reviewer's switch.** When detection is wrong, the review screen shows the profile ("Deed type:
+Historical deed · detected automatically") with a "Read again as a modern / historical deed" button.
+It calls `POST /documents/{id}/reprocess` with `{"profile": "modern" | "historical"}` (no body =
+detect again, as before). The job then reads with that Tesseract profile instead of `OCR_PROFILE`
+(no classifier re-read) and stores `deed_profile` = the chosen profile, `profile_overridden: true`;
+`deed_class` keeps the classifier's own verdict and `ocr_profile` the profile Tesseract actually
+used (`null` when a demo fixture or an accepted PDF text layer was used, which no profile changes).
+Like any reprocess it discards manual edits; the audit trail records the chosen profile
+(`DOCUMENT_REPROCESS_REQUEST`, `DOCUMENT_EXTRACTED`). Khatian / porcha have no profile: a
+`profile` for them is refused with 422 `PROFILE_NOT_APPLICABLE`. Tests:
+`backend/tests/test_profile_switch.py`, `frontend/features/review/deed-profile.test.tsx`.
+
+H4 will use `deed_profile` to pick the historical parser.
 
