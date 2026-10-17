@@ -3,7 +3,6 @@ import { useState, type FormEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ListChecks, Search } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api";
 import StatusBadge from "@/components/domain/StatusBadge";
 import RiskIndicator from "@/components/domain/RiskIndicator";
 import { Badge, Button, Card, ErrorState, Input, LoadingState, Select, Table, type Column } from "@/components/ui";
@@ -17,7 +16,6 @@ const INITIAL: QueueParams = { filter: "", q: "", sort: "created_at", order: "de
 export default function QueueTable() {
   const t = useTranslations("officer.queue");
   const tt = useTranslations("upload.types");
-  const te = useTranslations("errors");
   const locale = useLocale();
   const [params, setParams] = useState<QueueParams>(INITIAL);
   const [search, setSearch] = useState("");
@@ -88,7 +86,7 @@ export default function QueueTable() {
           <LoadingState />
         ) : q.isError || !q.data ? (
           <ErrorState
-            message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined}
+            error={q.error}
             onRetry={() => q.refetch()}
           />
         ) : (

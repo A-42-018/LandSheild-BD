@@ -1,9 +1,18 @@
+# Validate (U6, 2026-10-17)
+
+Phase 6 of `docs/ui-ux-roadmap.md`. Kit and results: `docs/usability.md`. Real-participant sessions and the U0.4 baseline are **not done**; the before/after table there is empty.
+
+- `frontend/e2e/validate.spec.ts` (run with `USABILITY=1`): the five §7 tasks as an anonymous Bangla visitor at 360 × 800 touch, plus the automatable §8 lines (no sideways scroll, no Latin digits, 48 px targets on 12 public pages). Writes screenshots and `automated.json` to `docs/usability/after/`. All pass.
+- `frontend/scripts/usability-score.mjs` (+ `tests/usability-score.test.ts`): turns `tasks.csv` and `sus.csv` per run into the before/after table with the §7 targets. Templates in `docs/usability/templates/`.
+- Fixed from the pass: hero → `/track?no=` showed nothing in dev (Strict Mode); Latin step digits on the home page; 32 px top-strip buttons, 29 px "more" links, 40 px footer brand link, 44 px file button and 30 px Leaflet zoom on touch. Rule to keep: a utility `min-h-*` on a control beats the global 48 px net, so add `[@media(pointer:coarse)]:min-h-touch` next to it.
+- Open: map scale bar "100 km" (fixed on `u4.2` / `u4.3`, not merged here); Latin mouza names on the public summary.
+
 # Bangla copy rules and glossary (U0.1, 2026-10-16)
 
-Applies to `frontend/messages/bn.json`. Enforced in review; based on §5 of `docs/ui-ux-roadmap.md`.
+Applies to `frontend/messages/bn.json`. Enforced in review; based on §5 of `docs/ui-ux-roadmap.md`. The digit rule is also enforced by `frontend/tests/bn-digits.test.ts` (U0.2).
 
 ## Rules
-- Bangla digits in every value (`১২৪৫`, `১০ এমবি`). Numbers that come from code go through `Intl.NumberFormat("bn-BD")` / `localDigits`.
+- Bangla digits in every value (`১২৪৫`, `১০ এমবি`). Numbers and dates that come from code go through `lib/intl-locale.ts`: `Intl.NumberFormat(intlLocale(locale))`, `localDigits`, `formatDate`, `formatDateTime`. Typed input goes through `normalizeDigits` before validating.
 - One idea per sentence, under 20 words. Split clauses joined by `;` into separate sentences.
 - Plain spoken words over Sanskritised or English terms. If a citizen would not say it at a land office, rewrite it.
 - Keys and ICU placeholders (`{date}`, `{count, plural, …}`, `#`) never change. Only the text around them does.
@@ -41,17 +50,23 @@ Applies to `frontend/messages/bn.json`. Enforced in review; based on §5 of `doc
 **Accepted loanwords** (widely used, no clearer Bangla): সাইন ইন, সাইন আপ, সাইন আউট, ইমেইল, পাসওয়ার্ড, অ্যাকাউন্ট, মোবাইল, ফাইল, পিডিএফ, স্ক্যান, কপি, লিংক, মেনু, আইডি, আইপি, কুকি, ক্লিক, এআই. Staff screens only: ড্যাশবোর্ড, আপলোড, ফিল্টার, অডিট লগ, লেজার, এন্ট্রি, রিসেট, প্রিভিউ, জুম. Citizen screens say "জমা দিন" instead of "আপলোড".
 
 **Latin script allowed only for:**
-- Codes the user must type exactly: `LP-10100`, `MUT-2026-0001`, `FB-2026-00001`, phone `+8801711000000`. The validators accept ASCII only (`LAND_ID_RE`, `MUTATION_NO`, `PHONE`), so the hint text says "ইংরেজি অঙ্কে".
+- Codes the user must type exactly: `LP-10100`, `MUT-2026-0001`, `FB-2026-00001`. The letters must be Latin; the digits may be typed in Bangla or English, because the land ID, tracking number and officer phone inputs run `normalizeDigits` before validating (U0.2). The phone example is written in Bangla digits.
 - Proper names: LandShield BD, OpenStreetMap, geoBoundaries, Tesseract, Claude, GNU FreeSans, README; file types JPG / PNG / PDF; licences MIT, ODbL, CC BY 4.0.
+
+## Automated check (U0.2)
+- `frontend/tests/bn-digits.test.ts` fails if any `bn.json` value has a Latin digit `0-9` in its text. ICU syntax is ignored: argument names, `=0` / `offset:` selectors, number/date styles and `#`. Text inside plural/select branches is still checked.
+- The allowlist is per key, and each key lists the exact tokens that may carry Latin digits: `upload.landIdHint`, `upload.errors.LAND_ID` (`LP-10100`); `track.numberHint` (`MUT-2026-0001`, `FB-2026-00001`); `track.errors.format`, `track.example` (`MUT-2026-0001`); `info.dataSources.s2.items.i1` (`CC BY 4.0`). Any other digit in those strings still fails. A second test fails if an allowlisted key or token disappears, so stale entries get removed.
+- To allow a new code, add the key and token to `ALLOWED` in the test and to the list above.
+- Runs with the rest of the unit tests: `npm test` or `npx vitest run` in `frontend/`.
 
 ## Audit result (U0.1)
 - 230 strings rewritten in `bn.json`. Keys and placeholders are unchanged; a script checked placeholder sets per key.
-- Latin digits remaining: only the allowlist above (7 strings).
+- Latin digits remaining: only the allowlist above (7 strings at U0.1; 6 after U0.2 moved the phone example to Bangla digits).
 - Sentences over 20 words: 0. Before the audit there were 2 (`about.purpose.body`, `info.privacy.s3.body`).
 - Tests updated for the new wording: `features/review/engine-badge.test.tsx`, `features/risk/risk.test.tsx`.
 - Open items for later tasks:
-  - U0.2 should turn the Latin-digit rule into a test that uses this allowlist.
-  - Phone, land ID and mutation number inputs should accept Bangla digits (normalise like `features/verify/schema.ts`).
+  - ~~U0.2 should turn the Latin-digit rule into a test that uses this allowlist.~~ Done, see "Automated check (U0.2)".
+  - ~~Phone, land ID and mutation number inputs should accept Bangla digits.~~ Done in U0.2.
   - Brand: roadmap §5 asks for "ল্যান্ডশিল্ড বিডি", but `tests/i18n-parity.test.ts` currently requires `LandShield BD` and forbids the Bangla spelling. This needs a decision before U1.
 
 # Design tokens + risk indicator (U0.3, 2026-10-17)
@@ -116,6 +131,88 @@ Contrast of the level word (WCAG, needs ≥ 4.5; locked in `tests/ui-regression.
 | pending / pending-soft · surface | 5.6 · 6.5 | 5.9 · 6.8 |
 
 Tests: `components/domain/RiskIndicator.test.tsx` checks every level × size × locale for tone, a hidden icon, the word and the "Risk:" prefix, and that no digits appear. It also checks distinct icon shapes, the unknown fallback, Bangla strings and axe. `features/risk/risk.test.tsx` checks the level headline and the Bangla-digit score line.
+
+# Office dashboard + hearing calendar (U3.4, 2026-10-17)
+
+Roadmap §4.4 / §6 Phase 3. Officers land on `/officer` ("অফিস ড্যাশবোর্ড"); the hearing calendar is `/officer/hearings` (officers and admins; in their menu as "শুনানির ক্যালেন্ডার").
+
+- **Office-scoped KPIs**: `GET /officer/stats` now follows the same scope as the queue and the case list. An office officer counts their own office and the offices beneath it (district > upazila > union); admins, reviewers and the seeded demo officer count everything. The ledger tile stays system-wide because the chain is one chain. Two new tiles: "এই মাসে নিষ্পত্তি" (mutation cases approved or rejected since the 1st, Dhaka time) and "আগামী ৭ দিনে শুনানি". The existing tiles already cover অপেক্ষমাণ পর্যালোচনা, ঝুঁকি সতর্কতা and নামজারি সিদ্ধান্ত বাকি (`pending_mutations`).
+- **Hearing date** (new column `mutation_records.hearing_at`, migration 0014). Set with `to: HEARING` + optional `hearing_at` on `POST /mutations/{id}/transition`, or later with `POST /mutations/{id}/hearing` (OFFICER_UP, only while the case is in HEARING, not in the past, audited as `MUTATION_HEARING_SET` with the old and new value). Moving a case into HEARING again clears the old date. Cases the pre-checks send to HEARING have no date until an officer sets one. Stored in UTC, whatever offset was sent.
+- **Calendar** (`features/hearings/`): `GET /mutations/hearings?month=YYYY-MM[&division&district&upazila&office_id]` returns the month's cases (month edges in Dhaka time, office-scoped) and `unscheduled` (HEARING with no date). The page is a Sunday-first grid (রবি … শনি), Bangla digits and month names through `Intl`, a count on each day, a panel for the open day (time, case, land, applicant, status) and a "তারিখ ঠিক হয়নি" list. Day and time are read in Bangladesh time, so a hearing at 00:30 on the 21st does not land on the 20th. Division / district / upazila filter reuses `AreaFilter`. Case page (`HearingPanel`): shows the date; officers can set or move it.
+- Not done: বঙ্গাব্দ month names in the grid (Gregorian grid with Bangla labels only), notifying the applicant of a hearing date (U3.7 bell), reminders. The reviewer menu does not show the calendar.
+- **Still open** (from U3.3): the officer dashboard still shows the alert list to reviewers, because they can escalate alerts there. Roadmap §4.3 says to hide office-wide alerts from reviewers. Decide before U3.5.
+- Tests: backend `tests/test_hearings.py` (transition + set + move audited, validation, month edges, roles, office scope, scoped stats), authz matrix and audit-coverage rows for the two routes; frontend `features/hearings/hearings.test.tsx` (Dhaka-day grouping, Sunday-first grid, Bangla digits, month change, set-date form, axe).
+- Not run: browser check, Playwright e2e, screen reader.
+
+# Admin console `/admin` (U3.5, 2026-10-17)
+
+Roadmap §4.5 / §6 Phase 3. Administrators get their own area with its own shell (`features/admin/AdminShell.tsx`: side menu on desktop, a sideways-scrolling tab row on phones, same pattern as `/my`). Admins only; `redirectFor("ADMIN")` is now `/admin`, and the old `/officer/admin` redirects there. The officer sidebar keeps one "প্রশাসন" link to `/admin` for admins.
+
+| Page | Route | What it shows |
+|---|---|---|
+| সারসংক্ষেপ | `/admin` | Four count tiles (waiting officer requests, accounts, land records, documents; each links to its page) and the ledger-integrity check |
+| ব্যবহারকারী | `/admin/users` | The existing users table with create / edit (unchanged) |
+| কর্মকর্তার আবেদন | `/admin/officer-requests` | The existing approve / reject list (unchanged) |
+| অফিস | `/admin/offices` | **New.** All land offices, searchable and filterable by type, with the number of active officers tied to each |
+| রেকর্ড ও নথি | `/admin/records` | Land records and documents (were tabs of the old page; kept because the roadmap list did not say where they go) |
+| অডিট লগ | `/admin/audit-logs` | The audit table; officers keep `/officer/audit-logs` |
+| সেটিংস | `/admin/settings` | **Read-only.** Staff idle timeout, languages, what each role may do |
+
+- Backend: `GET /admin/offices?q&office_type&limit&offset` (ADMIN only, added to the authz matrix). The public `/offices` route needs a division and district, so it cannot list everything.
+- Settings are read-only on purpose and say so on the page; there is no settings table yet, so a form would have nothing to save to. `STAFF_IDLE_MINUTES` is now exported from `IdleTimeout` so the page and the timer agree.
+- Offices cannot be created or edited here (the list is the bundled `land_offices.json`).
+- **Still open** (from U3.3 / U3.4): reviewers still see the office-wide alert list on `/officer`, because they can escalate alerts there. Not changed in U3.5, since it concerns the officer area.
+- Tests: backend `tests/test_officer_offices.py::test_admin_office_list_filters_and_counts_officers` (roles, paging, filters, wildcard escaping, officer count); frontend `features/admin/admin.test.tsx` (nav, overview counts, offices table query, settings, redirect), `auth.test.tsx` redirect, e2e specs pointed at `/admin/*`.
+- Not run: browser check (the preview tool refused to start more dev servers), Playwright e2e, screen reader.
+
+# Reviewer home `/officer/review` — "আজকের কাজ" (U3.3, 2026-10-17)
+
+Roadmap §4.3 / §6 Phase 3. Reviewers land here after sign-in (`redirectFor("REVIEWER")` = `/officer/review`); the sidebar has "আজকের কাজ" first (reviewers only). Officers and admins can open the URL but it is not in their menu.
+
+- **Queue** (`features/reviewer/TodayQueue.tsx`): `GET /officer/queue?filter=pending&sort=created_at&order=asc&limit=50`, so the oldest document is on top. A count badge in the header says how many wait. Each row has an age chip: up to 2 days (green), 3–7 days (amber), more than 7 days (red). The chip always carries the words ("৯ দিন", "আজ") and a screen-reader band name, never colour alone. "সবচেয়ে পুরোনোটি দিয়ে শুরু করুন" opens the top row. "তথ্য মিলিয়ে দেখুন" marks low-confidence documents. Bands live in `features/reviewer/ageing.ts`.
+- **My history** (`MyHistory.tsx`): `GET /officer/my-decisions` (new, REVIEW_UP, paged): the caller's own `DOCUMENT_APPROVE` / `DOCUMENT_REJECT` audit rows, newest first, with land ID, document type, decision, the rejection reason (from the audit row's `new_value.reason`) and time. Nothing else from the audit row is exposed.
+- **Review screen** (`/officer/review/{id}`): the two-pane layout and low-confidence highlighting already existed. New: a toolbar (`ReviewToolbar.tsx`) with "← আজকের কাজ", "পরবর্তী নথি" and a key reminder. **A** approves, **R** opens the reject dialog, **N** goes to the next waiting document (the one after this in the queue, else the oldest other one). `useReviewShortcuts` matches the physical key (`e.code`), so it works on a Bangla keyboard layout. It ignores keys while typing in a field, with Ctrl / Cmd / Alt, and while a dialog is open. A is also ignored when Approve is disabled (invalid data, own upload, request running). Approve / reject now refresh the `["officer"]` queries so the queue and history update.
+- Not changed: the officer dashboard (`/officer`) still shows the alert list to reviewers, because reviewers can escalate alerts there (existing test). The roadmap says "hide office-wide alerts from the reviewer"; decide before U3.4. Upload and admin were already hidden from reviewers.
+- Tests: backend `tests/test_review.py::test_my_decisions_lists_only_own_with_rejection_reason`, authz matrix row for the new route; frontend `features/reviewer/reviewer.test.tsx` (bands, order, count, history, Bangla digits, axe, N key), `features/review/review-actions.test.tsx` (A / R), `features/auth/auth.test.tsx` (reviewer → `/officer/review`).
+- Not run: browser check (the preview server limit was reached), Playwright e2e, screen reader.
+
+# Citizen area `/my` — "আমার ভূমি সেবা" (U3.2, 2026-10-17)
+
+Roadmap §4.2 / §6 Phase 3. Citizens land here after sign-in (`redirectFor("CITIZEN")` = `/my`); the account menu has "আমার ভূমি সেবা" (`nav.myArea`, citizens only). Staff opening `/my` get the permission message; anonymous visitors go to `/login?next=…`.
+
+| Route | Screen (BN / EN) | What it shows |
+|---|---|---|
+| `/my` | আমার ড্যাশবোর্ড / My dashboard | Greeting, 3 big buttons (জমি যাচাই · কেনার আগে যাচাই · নামজারির অবস্থা), 4 count tiles, latest notifications, last searched parcels, latest reports |
+| `/my/searches` | আমার অনুসন্ধান / My searches | Parcels the citizen opened, newest first, with "আবার দেখুন" and the watch button; "ইতিহাস মুছুন" asks first |
+| `/my/watchlist` | নজরে রাখা জমি / Watched land | Watched parcels (max 20), note, "since" date, unread-update badge |
+| `/my/reports` | আমার প্রতিবেদন / My reports | Own verification reports with the risk indicator; opens `/report/{id}` (print/PDF + QR live there) |
+| `/my/notifications` | বিজ্ঞপ্তি / Notifications | Inbox; unread rows tinted with a "নতুন" chip; opening one marks it read; "সব পড়া হয়েছে"; "শুধু না-পড়া দেখুন" filter |
+| `/my/profile` | প্রোফাইল ও নিরাপত্তা / Profile and security | Name, mobile (Bangla digits accepted), site language (switches the locale when changed), password change |
+
+- Shell `features/my/MyShell.tsx`: sticky side menu on desktop with the name card; on phones the six sections are a row of tabs that scrolls sideways and always keeps the current one in view (no hidden drawer). The Notifications tab carries the unread count in BN digits.
+- Result page: "নজরে রাখুন / নজর থেকে সরান" (`features/my/WatchButton.tsx`) next to "যাচাই প্রতিবেদন তৈরি করুন". Secondary style, so the report stays the one primary button. Hidden for staff.
+- Data (backend migration `0013`): `search_history` (one row per user + parcel; a repeat within 60 s counts once, so search → result page is one visit), `watchlist` (`checked_at` = window already turned into notifications), `notifications` (`kind` + `data` codes, `read_at`), `users.phone`. Only CITIZEN accounts collect history and notifications.
+- Notification kinds: `WATCH_TRANSACTION`, `WATCH_MUTATION`, `WATCH_MUTATION_STATUS`, `WATCH_ENCUMBRANCE` (made when the citizen opens the area, from records newer than `checked_at`), `REPORT_READY` (on `POST /verification`). Sentences in `my.notes.kind.*` reuse `result.txType`, `result.encType`, `status`, `risk.level`. Two requests checking at once (badge + inbox) claim the window with a conditional update in the same transaction as the inserts, so nothing doubles and the loser reads the finished inbox.
+- Not here (later tasks): bell icon in the header (U3.7), SMS/e-mail delivery, editing a watch note in the UI (the API accepts `note`), "কেনার আগে যাচাই (পূর্ণ)" stays at `/check`.
+- Tests: backend `tests/test_me.py` (24) + authz matrix and audit coverage rows for the 11 routes; frontend `features/my/my.test.tsx` (19, incl. axe on dashboard, searches, reports, notifications, profile), `features/auth/auth.test.tsx` (citizen → `/my`), e2e `guards.spec.ts` (`/my` guard, not run here).
+- Checked in the browser (dev server on a fresh migrated DB, BN + EN): citizen sign-in lands on `/my`; watching LP-10100 and generating a report fill the dashboard; a court case, mortgage and acquisition added to LP-10100 appear once each in the inbox with the badge in step; mark-all-read; profile save with a Bangla-digit mobile number; 375 px has no sideways scroll. Not run: Playwright e2e, screen reader.
+
+# Role-based sign-in (U3.1, 2026-10-17)
+
+Roadmap §6 Phase 3. Two sign-in pages, one form.
+
+| Route | Page | Demo accounts shown | Shell tab |
+|---|---|---|---|
+| `/login` | "Sign in" (citizens) | citizen | Citizen sign in |
+| `/officer-login` | "Staff sign in" (reviewer, officer, admin) | reviewer, officer, admin | Staff sign in |
+
+- `LoginForm` takes `audience="citizen" | "staff"` (copy, demo accounts, active tab). Both pages accept every role: the account decides where you land, not the page you used.
+- After sign-in: explicit `?next=` (checked by `safeNext`) wins, otherwise `redirectFor(role)` in `features/auth/roles.ts`: CITIZEN → `/` (`/my` since U3.2), REVIEWER / OFFICER / ADMIN → `/officer`. ADMIN → `/admin` since U3.5.
+- `RequireRole` sends anonymous visitors to `loginPathFor(roles)`: `/officer-login?next=…` when only staff roles are allowed, `/login?next=…` otherwise. The idle-timeout sign-out and the officer-request "Sign in" links also go to `/officer-login`.
+- `AuthShell` has four tabs (2 × 2 on phones): Citizen sign in · Citizen sign up · Staff sign in · Officer request. New keys: `auth.staffTitle|staffIntro`, `authShell.tabStaff`; `authShell.tabLogin` now reads "Citizen sign in" / "নাগরিক সাইন ইন".
+- Sitemap lists the staff sign-in. Header and footer still link to `/login` (U1.2 turns the header link into a citizen / staff menu).
+- Tests: `features/auth/auth.test.tsx` (role → home table, audience copy and demo accounts, guard target), `tests/a11y.test.tsx` (`staff-login`), e2e `guards.spec.ts`, `a11y.spec.ts`, `visual.spec.ts`.
+- Checked in the browser (dev server, EN): anonymous `/officer` → `/officer-login?next=%2Fofficer`; reviewer signing in on `/officer-login` lands on `/officer`. Not run: Bangla page in a browser, Playwright e2e, phone widths for the 2 × 2 tab grid.
 
 # Design v2 (UI REDESIGN V2, 2026-10-15)
 
@@ -236,6 +333,8 @@ cards get a lucide icon chip (`aria-hidden`); trust section is a gradient band. 
 
 ## Map polish (UD7) — `features/map/*`
 Search menu = themed panel with a blue gradient title bar (`.header-gradient`, white text), primary Search button, outlined Reset button (icons). Legend is a floating card bottom-right on the map (still `role=region`, named "Map legend", text for every level). Fullscreen button (top-right, `aria-pressed`, Esc leaves; the page root drops its CSS transform while fullscreen so `position: fixed` works). Parcel list rows are cards with a risk-coloured left edge (`data-risk`; level is also text). Leaflet popups are themed in `app/globals.css` (`.ls-popup`, unlayered so they beat leaflet.css). New keys `map.gis.fullscreen|exitFullscreen`.
+
+Bangla digits on the map (2026-10-17): the popup and the parcel list under the map show dag, khatian and area in Bangla digits under `bn` (`localDigits`; the popup gets it as `PopupLabels.digits`, so `buildPopup` stays locale-free). Land IDs (`LP-10001`) are identifiers and stay as stored; the "View details" query string keeps ASCII numbers. Tests: `features/map/map.test.tsx` (popup + list, bn and en), `features/map/canvas.test.tsx` (real Leaflet popup, bn and en). The bottom-left cursor/zoom readout is localised too: `MapCanvas` runs the whole readout string through `labels.digits` (so `MapCanvas` stays locale-free), the zoom word comes from `zoomLabel` (`map.gis.zoom`: Zoom / জুম) and the hemisphere letters from the `hemispheres` prop (`map.gis.north|south|east|west`: N S E W / উত্তর দক্ষিণ পূর্ব পশ্চিম, passed to `formatCoords`, which stays ASCII). Under bn it reads `২৩° ৪৮′ ০০″ উত্তর ৯০° ১৮′ ০০″ পূর্ব, জুম: ৭.০০`; en is unchanged. The readout is read through the latest-callback ref and repainted at the last cursor position when the labels change, so switching locale never rebuilds the map. Tests: `canvas.test.tsx` (readout bn, en and in-place relabel), `gis/gis.test.tsx` (`formatCoords` hemispheres).
 
 ## Verify / result / report (UD5)
 Verify form: card with icon + primary accent on a soft gradient panel, full-width submit with icon. Result: land info rows are tinted tiles with icons; ownership timeline has ring dots and a green rail for the current owner; RiskCard gets an accent by level, a 4xl coloured score and a bar with tick marks at 30 and 60 (`role=meter` unchanged); EvidenceList items have a severity icon (octagon / triangle / info) + coloured left edge, badge text unchanged. Report keeps the A4 print rules (`.report`), icons are decorative, print forces the light palette.
@@ -391,3 +490,128 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 - **Stepper**: unchanged markup and test ids. Below 640 px it stays vertical; from `sm` the four steps sit in a row with a dashed line between them (`sm:flex-row`). The step label still carries icon + word + date, never colour alone.
 - Checked 2026-10-17 in the browser (bn, stubbed HEARING response): sentence and horizontal stepper at 1100 px, vertical stepper and no horizontal scroll at 360 px. Not run: Playwright, EN walk, dark theme, feedback references (`FB-…`), which keep their own card without a sentence.
 - Dev note: `.claude/launch.json` entry `frontend-u2.5` uses port 3025, which the backend's CORS list does not include; start the backend with `CORS_ORIGINS` containing it, or stub `fetch`.
+
+## U3.6 — Admin content management (roadmap §6, Phase 3)
+- **Data**: table `content_items` (migration 0015, `models/content.py`): `kind` NOTICE / FAQ / GUIDE, title and text in both languages, `published_on` (notices), `ticker` (notices), `published`, `position`. The migration seeds the four demo notices that used to be static text, so the live site looks the same on day one.
+- **API**: public `GET /content?kind=` (no sign-in, published rows only, `Cache-Control: max-age=60`; notices newest first, FAQ and guides by `position`). Admin only: `GET/POST /admin/content`, `PATCH/DELETE /admin/content/{id}`. A notice needs a date; `ticker` is forced off for FAQ and guides; `kind` cannot be changed after creation; unknown fields are refused. Create, update and delete write `CONTENT_CREATE` / `CONTENT_UPDATE` / `CONTENT_DELETE` audit rows (old and new values on update). Both are in the authz matrix and the audit-coverage test.
+- **Admin page** `/admin/content` (new "নোটিশ ও নির্দেশিকা" item in the admin menu): a Notices / FAQ / Guides switch, a table with Published / Draft / "In ticker" badges, and one add/edit dialog (Bangla and English title and text, date and ticker for notices, position for FAQ and guides, published checkbox). Delete asks first. The Save button stays off until both languages are filled (and the date, for a notice).
+- **Public pages**: `features/content/content.ts` fetches in the browser after mount (the pages are statically generated) and shares one request between the ticker, the board and the FAQ. `useNotices()` feeds `NoticeTicker` and `NoticeBoard`; `FaqList` reads the FAQ. Anchors are now `#notice-<id>` with the server id.
+- **Fallbacks** (so the demo never shows a blank page): while loading or when the API cannot be reached, the built-in copy is shown (`NOTICES` + `landing.notices.items`, `info.faq.*`). Once the server answers, an empty *notice* list means "no notices" (board says so, ticker hides); an empty *FAQ* list keeps the built-in answers until the first FAQ entry is added, after which the admin's entries replace them (home page shows the first five by position).
+- **Guides** are stored and served (`kind=GUIDE`) but no public page shows them yet: that page is U4.1.
+- Not done: reordering by drag, a preview, scheduling a notice for a future date (a future `published_on` shows now), rich text (plain text; line breaks kept in FAQ answers only). The 30-second request cache means a new notice can take up to a minute to appear for a visitor who already has the page open.
+- Tests: `backend/tests/test_content.py`, `features/admin/content.test.tsx`, `features/notices/useNotices.test.tsx`; the old ticker, landing and FAQ tests pass unchanged on the fallback.
+
+## U3.7 — Role-aware header (roadmap §6, Phase 3)
+- **Role badge**: the Bangla role name (নাগরিক / পর্যালোচক / কর্মকর্তা / প্রশাসক, from `roles.*`) now sits in the header bar beside the account button (hidden below 640 px; the account panel shows it only at those widths).
+- **Bell** (`components/NotificationBell.tsx`): citizens only. Links to `/my/notifications`, shows the unread count (`useUnreadCount`: `GET /me/notifications?unread_only=true&limit=1`, refreshed every minute and on tab focus, capped at "99+", Bangla digits in bn) and an accessible name "বিজ্ঞপ্তি, Nটি অপঠিত" (`nav.bellUnread`), and is marked as the current page on the inbox. Staff have no watch list, so a bell would always be empty; it is not shown to them or to anonymous visitors.
+- **"আমার ড্যাশবোর্ড"** is the first entry in the account panel for every role and goes to `redirectFor(role)` (`/my`, `/officer/review`, `/officer`, `/admin`). The list below it drops that page and any parent of it (a reviewer's start page is `/officer/review`, so the plain "ড্যাশবোর্ড" `/officer` entry is not shown to reviewers in the panel; the officer side menu still has it).
+- Not done: push updates (the count is polled once a minute), a notification drop-down preview, a bell for staff.
+- Tests: `components/header.test.tsx` (badge per role, shortcut target per role, bell visibility/count/cap).
+
+## U4.1 — Picture guides and videos at /guide (roadmap §6, Phase 4)
+- **Page** `/guide` (`features/guide/GuidePage.tsx`, public, statically generated): six big icon tiles "কোন কাজে সাহায্য চান?" jump to one guide per public service, in the order a citizen meets them: ভূমি যাচাই, কেনার আগে যাচাই, নামজারির অবস্থা, দলিলের কপি যাচাই, ভূমির মানচিত্র, হিসাব-সহায়ক (`GUIDES` in `features/guide/guides.ts`). Each guide: a "সাইন ইন লাগবে / লাগবে না" chip, one line on what it is for, a collapsed "ভিডিওতে দেখুন (৪২ সেকেন্ড)", three numbered steps (ধাপ ১–৩, Bangla digits) each with a phone screenshot, and a primary "এখন নিজে করুন" button to the service. Anchors `#guide-<id>` let other pages link straight to one guide.
+- **Pictures**: real screenshots of the running app on a 390 px phone screen (saved at 2×, WebP, ~30 KB each), in Bangla for `/bn` and English for `/en` (`public/guide/{bn,en}/<id>-s<n>.webp`). The field or button the step talks about has a gold outline. Bangla runs type Bangla digits (৫০১, MUT-২০২৩-০০০৭), as a citizen would. Each picture has its own alt text (`guide.items.<id>.steps.<s>.alt`), describing what the picture shows, not repeating the step text.
+- **Videos** (`public/guide/video/<id>.mp4`, 39–44 s, ~0.5 MB each, H.264 + AAC): the same flow on the Bangla screens, with a Bangla voice-over in the macOS voice "Piya" (bn-IN, a computer voice; the page says so). Captions in both languages (`<id>.bn.vtt`, `<id>.en.vtt`, one cue per sentence), the page language's track on by default. `preload="none"` and a WebP poster: nothing heavy loads until the visitor presses play. Lengths are in `features/guide/media.json`.
+- **One source of words**: step titles and text live in messages `guide.items.<id>`; the voice-over and captions are generated from those same strings, so the page, the voice and the captions cannot drift apart unless someone edits the copy and does not re-run the script.
+- **Making the media**: `scripts/guide_media.sh` starts its own fresh seeded backend (:8011, temporary SQLite) and a production build of the frontend (:3051, no dev overlay), runs `scripts/record_guides.cjs`, then stops both. `scripts/guide_media.sh track map` redoes only some guides; `--serve` just starts the two servers. Needs ffmpeg, cwebp, Google Chrome and the Piya voice. The deed-copy guide first records `Doc1.png` as an officer and approves it as a reviewer (through the API, off camera), so checking `Doc1_altered.png` shows a real "মেলেনি: জমির পরিমাণ" result. Video frames come from Chrome's screencast directly, because Playwright 1.48's `recordVideo` crashes with Chrome 155. **Re-run the script after changing any guided page or the guide copy.**
+- **Admin guides** (U3.6, `kind=GUIDE`): listed under "আরও নির্দেশিকা" as an accordion, below the picture guides, in the page language. The section does not appear until at least one is published, and a server that cannot be reached leaves the page as it is.
+- **Links**: the header নির্দেশিকা and the floating help button now open `/guide` (they pointed at `/faq`); the footer and the sitemap list it; every service page's "যা লাগবে" card and every service on `/services` has "ছবি ও ভিডিওতে দেখুন কীভাবে করবেন" → `/guide#guide-<id>`.
+- **Also fixed** (from U3.6): `NoticeBoard` called the client hook `useNotices` from the server-rendered `Sections.tsx`, so `next build` failed on the home page in both languages. The notice cards are now `features/notices/NoticeList.tsx` (client); the band around them stays on the server.
+- Not done / known gaps: a human Bangla voice (replace the audio by re-muxing a recorded track over the same timings); the browser's own file-picker button reads "Choose file" in the Bangla pictures (headless Chrome ignores `--lang`); the map popup in the pictures shows Latin digits (101, 501), which is how the map draws them today; guides for signed-in staff work (upload, review) are out of scope for a citizen page. Offline guide pages are U5.2; read-aloud is U4.4.
+- Tests: `features/guide/guide.test.tsx` (tiles and anchors, three pictured steps per guide in the page language, Bangla step numbers and video length, video `preload`/poster/caption tracks, admin guides shown and hidden, server down, axe in EN and BN, every picture/video/caption file present on disk, Bangla captions match the copy, the "যা লাগবে" link); `header.test.tsx` and `HelpButton.test.tsx` now expect `/guide`.
+
+# Read aloud — "শুনুন" (U4.4, 2026-10-17)
+`components/ReadAloud.tsx` + `lib/speech.ts`. Browser speech synthesis only: no audio file, no network call.
+
+- `<ReadAloud targetId="…" subject="…" />` reads the visible text of the element with that `id`. Used on the result page (`#result-readable`, subject "জমির ফলাফল") and on each guide section (`#guide-<id>`).
+- What is read: headings, paragraphs, list items and table cells, each as its own sentence (a full stop or "।" is added so the voice pauses). Long lines are split at sentence ends to pieces of at most 180 characters, because Chrome stops long utterances.
+- What is left out: `aria-hidden`, `hidden`, buttons, anything marked `data-no-speech` (the result action bar, the guide link row), tab rows (`role="tablist"`), nav, pictures, video, and the body of a closed `<details>` (its `<summary>` is read). Mark any extra control row with `data-no-speech`.
+- Voice: the page language decides (`bn-BD` / `en-US`); the best installed voice for it is picked. Voices load late in Chrome, so the list is refreshed on `voiceschanged`.
+- If the browser cannot speak, nothing is rendered. If the device has voices but none for Bangla (common on desktops), one plain sentence (`readAloud.noVoice`) replaces the button, so it never stays silent or reads Bangla in an English voice.
+- Button: "শুনুন" / "থামান" (EN Listen / Stop), accessible name "শুনুন: <subject>" (starts with the visible word). One reader at a time; speech stops on Stop, when the last line ends, on leaving the page and on language switch. Hidden in print.
+- Strings: `readAloud.*` (both locales). Tests: `components/ReadAloud.test.tsx`, plus a case each in `features/guide/guide.test.tsx` and `features/result/result.test.tsx`.
+- Not verified: real Bangla voices (needs a phone or a browser with a Bangla voice installed). Result summary / "এখন আপনার করণীয়" from U2.4 will be read automatically once merged, because the whole `#result-readable` region is read.
+
+# Empty, loading and error states (U4.5, 2026-10-17)
+Every state says what happened and what to do next, in plain words. No page promises a feature "for later".
+
+## Shared components (`components/ui/`)
+- `ErrorState` takes `error` (the thrown error) and `message` (what failed on this screen). `lib/error-kind.ts` sorts the error into a kind, and each kind gets its own sentence and next step:
+
+| Kind | Cause | Shows | Retry button |
+|---|---|---|---|
+| `offline` | `NETWORK_ERROR`, or the browser reports offline | `errors.offline` + `errors.offlineHint` ("ইন্টারনেট সংযোগ নেই। সংযোগ দেখে আবার চেষ্টা করুন।") | yes |
+| `signedOut` | 401 | `errors.signedOut` + hint, and a "সাইন ইন" link | no |
+| `forbidden` | 403 | `errors.permission` | no |
+| `tooMany` | 429 | `errors.tooMany` + hint (wait a minute) | yes |
+| `server` | 5xx | `errors.server`, then the screen's `message` or `errors.serverHint` | yes |
+| other | anything else | the screen's `message`; without one, `errors.generic` + `errors.genericHint` | yes |
+  Pass `error={query.error}` instead of testing `status === 403` in each screen. `data-kind` is set for tests.
+- `LoadingState`: "তথ্য আনা হচ্ছে। একটু অপেক্ষা করুন।" After 8 s it adds "ইন্টারনেট ধীর হলে এমন হয়" (`common.slow`), for low-bandwidth phones.
+- `EmptyState`: always give `title` (what is missing) and, when there is something to do, `description` or `action`. Table `emptyText` for a filtered list says to change the filter. A bare "কোনো রেকর্ড পাওয়া যায়নি" is no longer used anywhere (tested).
+- `common.empty` is now only a last-resort default ("এখানে এখনো কিছু নেই।"). Land not found has its own `result.notFound` + `result.notFoundHint` (used on result and graph).
+
+## Wording rules for state strings (checked by `tests/state-copy.test.ts`)
+- Bangla: no "অনুগ্রহ করে", "লোড"/"রিলোড", "প্রক্রিয়াকরণ", "ব্যর্থ", "সম্পন্ন করা যায়নি", "নথিভুক্ত নেই". Say "আনা যায়নি", "পড়া", "হয়নি", "নেই". ("আপলোড" stays on staff screens.)
+- Under 20 words per sentence, both languages. A failure ends with a next step (আবার চেষ্টা করুন / দেখে নিন / সাইন ইন করুন).
+- An empty filtered list says which filter to change. An empty personal list says how to fill it (already so in `my.*`).
+- No message may contain placeholder wording ("later phase", "under construction", "নির্মাণ কাজ চলমান" ...). The unused `common.placeholderNote` was deleted. All footer, menu and sitemap links go to built pages.
+- `errors.documentFailed` is the text for a document that could not be read (review screen). `errors.generic` used to say that for every failure, including a failed map load.
+
+## What changed
+- 103 state strings rewritten in both locales; new keys `errors.{genericHint,signedOut,signedOutHint,offline,offlineHint,server,serverHint,tooMany,tooManyHint,documentFailed}`, `common.slow`, `result.notFound`, `result.notFoundHint`, `map.noParcels`. Removed: `common.placeholderNote`, `publicVerify.rateLimited` (now `errors.tooMany`).
+- 30 screens pass `error` to `ErrorState` instead of testing for 403 themselves; they now also tell a lost connection from a server fault.
+- Behaviour changes to know: a 403 no longer shows a Retry button; `LedgerCard`, `OfficerRequestsPanel`, `FeedbackAdmin`, `MyHistory` and the officer charts show the specific kind instead of one generic text.
+- Tests: `components/ui/states.test.tsx` (kinds × EN/BN, retry rules, slow note, axe), `tests/state-copy.test.ts`; existing tests now read the strings from the message files instead of copying them.
+- Checked in a browser (Bangla, local dev server): unknown land id → "এই আইডির কোনো জমি পাওয়া যায়নি" with an example and a link back to search; lost connection → "ইন্টারনেট সংযোগ নেই। সংযোগ দেখে আবার চেষ্টা করুন।" with a retry button.
+- Not done: the slow-connection note and the 401 link were tested in jsdom only; the u2.x public pages (public verify card, track stepper) are in other branches and need the same `error` prop when merged.
+
+## U5.1 — Mobile pass at 360 px (2026-10-17)
+- **Audit first**: at 360 px (Bangla) the home page, verify, map, track, guide and fee calculator have no sideways scroll. Tables already stack into label/value cards (`components/ui/Table.tsx`), and the result page and review screen already pin their action bar to the bottom (`env(safe-area-inset-bottom)` padding). Nothing needed changing there.
+- **QR camera scan** (`features/qr/QrScanner.tsx`, in the Deed / QR tab of the home search): a "ক্যামেরায় কিউআর কোড স্ক্যান করুন" button opens the rear camera and reads the code with the browser's built-in `BarcodeDetector`, so no library is added. The code goes through `qrTarget` like a pasted link, so only our own `/v/{id}` page can open. The camera stops when a code is read, on "ক্যামেরা বন্ধ করুন", or when the page closes.
+- The button shows only where `BarcodeDetector` and `getUserMedia` exist (Chromium on Android and desktop). Where they do not (iPhone Safari, Firefox), it is absent and the paste field stays; the iPhone camera app opens QR links by itself. A blocked camera or a failed start shows a message pointing at the paste field.
+- **Security header**: `Permissions-Policy` was `camera=()`, which blocks the camera everywhere. It is now `camera=(self)`; microphone, geolocation and payment stay off.
+- Tests: `features/qr/scanner.test.tsx` (hidden when unsupported, reads once and releases the camera, blocked camera, close stops the stream); `tests/security-headers.test.ts` expects `camera=(self)`.
+- Not checked: a real camera scan on a phone. The scanner was tested in jsdom with a fake `BarcodeDetector`; in the browser pane only the button, layout and 360 px width were checked.
+
+## U5.2 — PWA basics, offline guides (2026-10-17)
+- **Installable**: `app/manifest.ts` (name, standalone, start page `/bn`, theme `BRAND_COLOR` from `lib/theme.ts`, shortcuts to Verify and Guide); icons in `public/icons/` (192, 512, and a maskable 512 with the shield on brand green) and `app/apple-icon.png` (180), all rendered from `public/brand/logo-mark.svg`. `viewport.themeColor` colours the phone toolbar.
+- **Offline**: `public/sw.js`, registered by `features/pwa/ServiceWorker.tsx` after page load, production only (a worker under `next dev` would serve stale pages).
+  - It stores **only** `/bn/guide` and `/en/guide` plus what they need: scripts, styles, fonts, step pictures and video poster frames (about 5.8 MB for both languages, measured). Videos are not stored (3 MB each, and they only load on play); they need the network.
+  - Guide page: network first, and the stored copy answers when the network fails or takes over 4 s (low-bandwidth phones). Every successful visit refreshes the stored copy and its assets, so the two never drift apart after a deploy.
+  - Any other page with no network shows `public/offline.html` (Bangla, English line, retry button, link to the guide). Nothing from `/api/`, the signed-in areas, the map or results is ever cached, so a land record never sits in a browser cache.
+  - Bump `VERSION` in `sw.js` to drop everything an older worker stored. `next.config.mjs` serves `/sw.js` with `no-cache` so a new version is picked up on the next visit.
+- Tests: `tests/pwa.test.ts` (manifest, icons exist, what counts as a guide page, which URLs are collected, fonts from CSS).
+- Checked in the browser (production build, `next start`): worker active, 79 entries stored (both guide pages, 36 pictures, 6 posters, 17 scripts, 2 stylesheets, 14 fonts, `offline.html`, no video). With the server stopped, `/bn/guide` still opened fully styled with its pictures, and `/bn/verify` showed the offline page.
+- Not done: an "Install app" button (browsers show their own install prompt once the manifest and worker are valid); no real-phone install test; the first visit is never offline (the worker installs after it).
+
+## U5.3 — Performance budget (2026-10-17)
+- **Result**: the home page already met the budget, so no feature code was cut. Measured on a production build (`npm run build`): home-page JavaScript is **174 KB gzipped** (limit 200 KB; about 0.9 s on Lighthouse "Fast 3G", 1.6 Mbit/s). The hero photo is already compressed WebP in two sizes: `hero-800.webp` 24 KB for phones, `hero-1456.webp` 62 KB for wide screens, as a CSS background (no `<img>`).
+- **Guard**: `npm run build && npm run check:budget` (`scripts/check-budget.mjs`) sums the gzipped scripts of the home page from `.next/app-build-manifest.json`, checks the two hero files (≤ 40 KB and ≤ 90 KB), prints the three largest chunks, and exits 1 over a limit or when the build is missing. Limits are in `BUDGET` at the top of the script. `tests/budget.test.ts` covers pass, over-limit, grown or missing photo, and a missing build. Nothing runs it automatically (the repo has no CI): run it before a deploy.
+- **Repeat visits**: Next serves `public/` files with `max-age=0`, so a returning phone asked for the hero photo again every time. `next.config.mjs` now sends `public, max-age=86400, stale-while-revalidate=604800` for `/landing`, `/guide`, `/icons`, `/brand` (checked with `curl -I` on `next start`). `/_next/static` was already `immutable`. **Side effect**: the guide pictures and videos are re-recorded under the same file names, so after `scripts/guide_media.sh` a returning visitor can see the old ones for up to a day (a week in the background-refresh window); rename the files if that matters.
+- **Found, not fixed**: the home HTML is 94 KB gzipped (484 KB raw). About 35 KB of it is the full Bangla message file (1,856 keys, including staff-only `admin`, `officer`, `review`, `mutation`) that `app/[locale]/layout.tsx` hands to `NextIntlClientProvider` on every page. Sending each route only the namespaces its client components use would cut the first page by roughly a quarter, but a missing namespace breaks a screen at run time, so it needs its own change with a per-route check.
+- **Also found**: in a real browser the home page fetched 204 KB of scripts, not 174 KB, because Next prefetches the chunks of linked pages after the page is up (low priority, not part of the manifest number the guard uses). Fonts add about 204 KB (four WOFF2 files, one 105 KB).
+
+## U5.4 — Accessibility audit: axe, keyboard, Bangla screen reader (2026-10-17)
+- **How it was checked**: `e2e/a11y.spec.ts` (axe-core in Chrome, colour contrast included, 360 px) now covers every route in `app/[locale]`, in both languages: 50 pages, 100 runs. Routes added: `/verify`, `/map`, `/guide`, `/signup`, all of `/my`, the reviewer's `/officer/review`, `/officer/hearings`, `/admin/content`. Keyboard: Tab / Shift+Tab / Enter / Escape / arrow keys through the header, home search, forms, menus and the result page. Screen reader: what Chrome's accessibility tree and the live regions give a reader in Bangla (names, titles, route announcements, error alerts, focus moves).
+- **Run it** without `npm run e2e:install`: `PW_CHANNEL=chrome npm run e2e -- e2e/a11y.spec.ts e2e/keyboard.spec.ts` uses the installed Google Chrome (about 7 min). The backend script needs a Python with the backend packages on `PATH`. Stop any `next dev` already running in the same `frontend/` first; two dev servers share `.next`.
+- **Already fine (no change)**: skip link (visible on focus, jumps to `<main>`), `lang` on `<html>`, every field labelled, the home search tabs (arrow keys, one tab stop), modal focus trap and return, ticker copy hidden from readers, header dropdown and help button return focus on Escape, 48 px touch targets, the text-size and contrast buttons (`aria-pressed`).
+
+| Found | Who it hurt | Fix |
+|---|---|---|
+| Every page had the same `<title>` "LandShield BD" | Screen reader: Next's route announcer only speaks when the title changes, so a link click said **nothing** (checked: empty announcement). Tabs and history could not be told apart (WCAG 2.4.2) | `lib/page-title.ts`: `export const generateMetadata = pageTitle("<key>")` on all 52 pages, usually the page's H1 key; the layout adds " \| LandShield BD". Home keeps the bare name. Now a click announces e.g. "ভূমি যাচাই \| LandShield BD" |
+| `/verify/graph` drew its header twice (page and `GraphView`) | Two H1s and two "অবস্থান-পথ" navs (axe `landmark-unique`, the only axe failure) | One header, in the page, with the full breadcrumb (Verify › Result) |
+| Shift+Tab put a control under the 65 px sticky header (FAQ: the "হ্যাঁ / না" buttons fully hidden) | Keyboard users (WCAG 2.2 AA 2.4.11 focus not obscured) | `html { scroll-padding-top: 5rem }` in `globals.css`. It also offsets `#anchor` jumps, so the `scroll-mt-*` on guide / info / verify sections were removed |
+| A control already on screen behind the sticky bottom bar (result, report, review; 169 px tall in Bangla at 360 px) stayed behind it on Tab | Keyboard users on phones (2.4.11) | `lib/sticky-bar.ts` `useStickyBar()` measures the bar while it is sticky and sets `--sticky-bar-h`, added to `scroll-padding-bottom`. 0 where the bar is static (from `sm` on result / report) |
+| Empty home search: five `role="alert"` errors at once, all "এই তথ্যটি আবশ্যক।" | Screen reader heard the same sentence five times with no field name | `Input` / `Select` alerts start with the field label in `sr-only` ("জেলা: এই তথ্যটি আবশ্যক।"); `aria-describedby` still points at the message only, so focus does not read the label twice. Applies to every form |
+| Same form: focus went to মৌজা (third field), skipping the empty জেলা / উপজেলা | Screen reader and keyboard: the first thing heard was not the first problem | `VerifyForm` focuses the first wrong field in screen order (`onInvalid`); react-hook-form uses registration order and মৌজা is registered first |
+| Escape from a link in the phone menu or the account panel hid the panel and dropped focus to `<body>` | Keyboard users restarted from the top of the page (2.4.3) | `HeaderMenu` / `UserMenu` give focus back to their button when it was inside the panel |
+
+- **Tests**: `tests/page-titles.test.ts` (every page has a title key, a plain string in both languages); `lib/sticky-bar.test.tsx`; field-name alert and description in `components/ui/ui.test.tsx`; first-field focus in `features/verify/verify.test.tsx`; focus return in `components/header.test.tsx`; graph has no H1 of its own in `features/graph/graph.test.tsx`. In Chrome (`e2e/keyboard.spec.ts`): focus never under the header or bottom bar (FAQ with Shift+Tab, result at 360 px with Tab) and a control behind the bar scrolls clear (each test was run with its CSS rule removed and failed); a link click changes the title and the announcer says the new page.
+- **Results**: axe 100 / 100, keyboard 6 / 6, unit 779 + new tests.
+- **Focus on the first wrong field, every form** (follow-up): `lib/focus-first-invalid.ts` (`useFocusFirstInvalid`) puts a ref on the form; the submit handler calls `request()` when validation fails, and a layout effect focuses the first enabled `[aria-invalid="true"]` once the errors are on screen (same render for useState forms, the next for react-hook-form, which publishes errors after `onInvalid`; a request that finds nothing expires after two renders). Used by Verify, Check, the hero's track and QR boxes, Track, login, citizen and officer sign-up, profile and password, feedback, hearing date, upload and the review field editor. `OfficeCascade` also flags the first empty step (division, then zila), because the office list is disabled until then and cannot take focus; the upload file input is now `aria-invalid` on a file error. Not touched: filter and search boxes (no field errors), the unit and fee tools (live, no submit) and the admin dialogs, whose Save stays disabled until the form is valid. Tests: `lib/focus-first-invalid.test.tsx`, plus login, officer sign-up, feedback (Bangla) and track; unit 789.
+- **Not done / known gaps**:
+  - No run with a real screen reader and Bangla voice (NVDA, TalkBack, VoiceOver). What a reader gets was checked from Chrome's accessibility tree and live regions; a phone test with TalkBack in Bangla is still needed.
+  - Place names in the dropdowns read "Dhaka (ঢাকা)" in Bangla too (a choice from commit c0dde36). A Bangla voice reads the Latin part first and badly. `<option>` cannot carry its own `lang`, so the fix would be to put the Bangla name first under `bn`; left for a product decision.
+  - Brand words in Latin inside Bangla text ("LandShield", "MIT") have no `lang="en"`; minor.
+  - The map and the ownership graph are mouse-first; the parcel list and the graph's list view are the keyboard routes (unchanged).

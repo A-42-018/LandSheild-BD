@@ -81,7 +81,7 @@ describe("audit logs", () => {
 
   it("shows empty, permission and generic error states", async () => {
     const { unmount } = wrap(vi.fn().mockResolvedValue(LIST([])));
-    expect(await screen.findByText("No audit entries match these filters.")).toBeInTheDocument();
+    expect(await screen.findByText(en.admin.audit.empty)).toBeInTheDocument();
     unmount();
     wrap(vi.fn().mockRejectedValue(new ApiError(403, "FORBIDDEN", "no", null)));
     expect(await screen.findByText(en.errors.permission)).toBeInTheDocument();

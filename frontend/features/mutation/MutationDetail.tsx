@@ -10,6 +10,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { hasRole, OFFICER_UP } from "@/features/auth/roles";
 import { formatArea, formatDateTime } from "@/features/result/format";
 import { bi, officePath, type Office } from "@/features/officers/types";
+import HearingPanel from "@/features/hearings/HearingPanel";
 import NoteModal from "./NoteModal";
 import ReasonModal from "./ReasonModal";
 import { useMutationAppeal, useMutationDetail, useMutationRecommend, useMutationTransition } from "./useMutations";
@@ -23,7 +24,7 @@ const CHECK_ICON: Record<string, JSX.Element> = {
 
 export default function MutationDetail({ id }: { id: string }) {
   const t = useTranslations("mutation");
-  const te = useTranslations("errors");
+  const tRes = useTranslations("result");
   const locale = useLocale();
   const { user } = useAuth();
   const q = useMutationDetail(id);
@@ -36,7 +37,7 @@ export default function MutationDetail({ id }: { id: string }) {
   if (q.isLoading) return <LoadingState />;
   if (q.isError || !q.data) {
     const nf = q.error instanceof ApiError && q.error.status === 404;
-    return <ErrorState message={nf ? t("notFound") : q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined} onRetry={() => q.refetch()} />;
+    return nf ? <ErrorState message={t("notFound")} /> : <ErrorState error={q.error} onRetry={() => q.refetch()} />;
   }
   const m = q.data;
   const canAct = hasRole(user?.role, OFFICER_UP);
@@ -47,6 +48,7 @@ export default function MutationDetail({ id }: { id: string }) {
     else go(to);
   };
   const dt = (v: string | null) => formatDateTime(v, locale, "—");
+  const unit = (u: string) => (tRes.has(`units.${u}`) ? tRes(`units.${u}`) : u);
   const timeline = [
     { key: "applied", at: m.applied_at },
     { key: "changed", at: m.status_changed_at },
@@ -73,7 +75,7 @@ export default function MutationDetail({ id }: { id: string }) {
         <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <Row label={t("cols.land")}><span className="font-mono">{m.land_id}</span></Row>
           <Row label={t("cols.applicant")}>{m.applicant}</Row>
-          <Row label={t("cols.area")}>{formatArea(m.area, m.area_unit, locale, m.area_unit)}</Row>
+          <Row label={t("cols.area")}>{formatArea(m.area, m.area_unit, locale, unit(m.area_unit))}</Row>
           <Row label={t("khatian")}>{`${m.previous_khatian_no ?? "—"} → ${m.new_khatian_no ?? "—"}`}</Row>
           <Row label={t("office")}>{m.ac_land_office ?? "—"}</Row>
           {m.holder_office && (
@@ -89,6 +91,10 @@ export default function MutationDetail({ id }: { id: string }) {
           <Link href={`/verify/result?land_id=${encodeURIComponent(m.land_id)}`} className="text-link underline">{t("openLand")}</Link>
         </p>
       </Card>
+
+      {(m.status === "HEARING" || m.hearing_at) && (
+        <HearingPanel id={id} hearingAt={m.hearing_at} canSet={canAct && m.status === "HEARING"} />
+      )}
 
       <Card title={t("checklist")}>
         {m.checklist ? (

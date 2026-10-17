@@ -7,8 +7,10 @@ from app.models.enums import MutationStatus
 from app.models.land_parcel import LandParcel
 from app.models.user import User
 from app.schemas.mutation import (
+    HearingCalendar,
     MutationAppealIn,
     MutationDetail,
+    MutationHearingIn,
     MutationList,
     MutationRecommendIn,
     MutationTransitionIn,
@@ -37,6 +39,22 @@ def list_mutations(
     )
 
 
+@router.get("/hearings", response_model=HearingCalendar)
+def hearings(
+    month: str = Query(pattern=r"^\d{4}-(0[1-9]|1[0-2])$"),
+    division: str | None = Query(default=None, max_length=100),
+    district: str | None = Query(default=None, max_length=100),
+    upazila: str | None = Query(default=None, max_length=100),
+    office_id: str | None = Query(default=None, max_length=36),
+    user: User = Depends(require_roles(*OFFICER_UP)),
+    db: Session = Depends(get_db),
+) -> HearingCalendar:
+    return svc.hearing_calendar(
+        db, month, land_scope(user),
+        area_filter(LandParcel.office_id, division, district, upazila, office_id),
+    )
+
+
 @router.get("/{mutation_id}", response_model=MutationDetail)
 def get_mutation(
     mutation_id: str,
@@ -56,7 +74,21 @@ def transition_mutation(
 ) -> MutationDetail:
     svc.get_mutation(db, mutation_id, land_scope(user))  # 404 outside the officer's offices
     ip = request.client.host if request.client else None
-    svc.transition(db, mutation_id, body.to.value, user, body.reason, ip)
+    svc.transition(db, mutation_id, body.to.value, user, body.reason, ip, body.hearing_at)
+    return svc.get_mutation(db, mutation_id, None, user)
+
+
+@router.post("/{mutation_id}/hearing", response_model=MutationDetail)
+def schedule_hearing(
+    mutation_id: str,
+    body: MutationHearingIn,
+    request: Request,
+    user: User = Depends(require_roles(*OFFICER_UP)),
+    db: Session = Depends(get_db),
+) -> MutationDetail:
+    svc.get_mutation(db, mutation_id, land_scope(user))
+    ip = request.client.host if request.client else None
+    svc.schedule_hearing(db, mutation_id, user, body.hearing_at, ip)
     return svc.get_mutation(db, mutation_id, None, user)
 
 

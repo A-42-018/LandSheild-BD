@@ -19,6 +19,8 @@ vi.mock("@/i18n/navigation", () => ({
   ),
 }));
 vi.mock("@/features/auth/AuthContext", () => ({ useAuth: () => auth }));
+let unread = 0;
+vi.mock("@/features/my/useMy", () => ({ useUnreadCount: () => ({ data: unread }) }));
 
 const wrap = (ui: React.ReactNode, locale: "en" | "bn" = "en") => (
   <NextIntlClientProvider locale={locale} messages={locale === "en" ? en : bn}>
@@ -28,6 +30,7 @@ const wrap = (ui: React.ReactNode, locale: "en" | "bn" = "en") => (
 
 beforeEach(() => {
   pathname = "/";
+  unread = 0;
   logout.mockClear();
   auth = { status: "anonymous", user: null, logout };
   window.localStorage.clear();
@@ -80,7 +83,7 @@ describe("Navbar (UD3)", () => {
     render(wrap(<Navbar />));
     expect(screen.getByRole("link", { name: en.nav.home })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: en.nav.tools })).toHaveAttribute("href", "/tools");
-    expect(screen.getByRole("link", { name: en.nav.guide })).toHaveAttribute("href", "/faq");
+    expect(screen.getByRole("link", { name: en.nav.guide })).toHaveAttribute("href", "/guide");
     expect(screen.getByRole("link", { name: en.nav.notices })).toHaveAttribute("href", "/#notices-title");
     expect(screen.getByRole("link", { name: en.nav.contact })).toHaveAttribute("href", "/feedback");
     cleanup();
@@ -154,7 +157,7 @@ describe("Navbar (UD3)", () => {
     fireEvent.click(btn);
     expect(btn).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("link", { name: en.nav.citizenLogin })).toHaveAttribute("href", "/login");
-    expect(screen.getByRole("link", { name: en.nav.officerLogin })).toHaveAttribute("href", "/login?as=officer");
+    expect(screen.getByRole("link", { name: en.nav.officerLogin })).toHaveAttribute("href", "/officer-login");
     expect(screen.queryByRole("button", { name: en.nav.account })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: en.nav.logout })).not.toBeInTheDocument();
   });
@@ -181,11 +184,65 @@ describe("Navbar (UD3)", () => {
     fireEvent.click(btn);
     expect(btn).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByText("Olivia Officer")).toBeVisible();
-    expect(screen.getByText(en.roles.OFFICER)).toBeVisible();
+    expect(screen.getAllByText(en.roles.OFFICER)).toHaveLength(2); // bar badge + panel
     expect(screen.getByRole("link", { name: en.nav.upload })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: en.nav.dashboard })).not.toHaveAttribute("aria-current");
+    // The role's own start page is the "My dashboard" shortcut, not a second list entry.
+    expect(screen.getByRole("link", { name: en.nav.myDashboard })).toHaveAttribute("href", "/officer");
+    expect(screen.getByRole("link", { name: en.nav.myDashboard })).not.toHaveAttribute("aria-current");
+    expect(screen.queryByRole("link", { name: en.nav.dashboard })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: en.nav.logout }));
     expect(logout).toHaveBeenCalledTimes(1);
+  });
+
+  it("role badge sits in the bar; the dashboard shortcut goes to each role's own start page", () => {
+    for (const [role, href] of [["CITIZEN", "/my"], ["REVIEWER", "/officer/review"], ["OFFICER", "/officer"], ["ADMIN", "/admin"]] as const) {
+      cleanup();
+      auth = { status: "authenticated", user: { name: "U", role }, logout };
+      render(wrap(<Navbar />, "bn"));
+      expect(screen.getByTestId("role-badge")).toHaveTextContent(bn.roles[role]);
+      fireEvent.click(screen.getByRole("button", { name: bn.nav.account }));
+      expect(screen.getByRole("link", { name: bn.nav.myDashboard })).toHaveAttribute("href", href);
+    }
+    expect(bn.nav.myDashboard).toBe("আমার ড্যাশবোর্ড");
+  });
+
+  it("reviewer: the shortcut is the current page on আজকের কাজ, and the plain Dashboard entry is not listed twice", () => {
+    auth = { status: "authenticated", user: { name: "R", role: "REVIEWER" }, logout };
+    pathname = "/officer/review/abc";
+    render(wrap(<Navbar />));
+    fireEvent.click(screen.getByRole("button", { name: en.nav.account }));
+    expect(screen.getByRole("link", { name: en.nav.myDashboard })).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("link", { name: en.nav.dashboard })).not.toBeInTheDocument();
+  });
+
+  it("bell: citizens only, links to the inbox and shows the unread count", () => {
+    auth = { status: "authenticated", user: { name: "C", role: "CITIZEN" }, logout };
+    render(wrap(<Navbar />));
+    expect(screen.getByRole("link", { name: en.nav.bell })).toHaveAttribute("href", "/my/notifications");
+    expect(screen.getByRole("link", { name: en.nav.bell })).not.toHaveAttribute("aria-current");
+    expect(screen.queryByTestId("bell-badge")).not.toBeInTheDocument();
+    cleanup();
+    pathname = "/my/notifications";
+    render(wrap(<Navbar />));
+    expect(screen.getByRole("link", { name: en.nav.bell })).toHaveAttribute("aria-current", "page");
+    cleanup();
+    pathname = "/";
+    unread = 3;
+    render(wrap(<Navbar />));
+    expect(screen.getByRole("link", { name: "Notifications, 3 unread" })).toBeInTheDocument();
+    expect(screen.getByTestId("bell-badge")).toHaveTextContent("3");
+    cleanup();
+    unread = 120;
+    render(wrap(<Navbar />));
+    expect(screen.getByTestId("bell-badge")).toHaveTextContent("99+");
+    cleanup();
+    auth = { status: "authenticated", user: { name: "O", role: "OFFICER" }, logout };
+    render(wrap(<Navbar />));
+    expect(screen.queryByRole("link", { name: en.nav.bell })).not.toBeInTheDocument();
+    cleanup();
+    auth = { status: "anonymous", user: null, logout };
+    render(wrap(<Navbar />));
+    expect(screen.queryByRole("link", { name: en.nav.bell })).not.toBeInTheDocument();
   });
 
   it("account panel closes on Escape", () => {
@@ -195,6 +252,27 @@ describe("Navbar (UD3)", () => {
     fireEvent.click(btn);
     fireEvent.keyDown(document, { key: "Escape" });
     expect(btn).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("Escape from a link inside the account panel or the phone menu gives focus back to its button (U5.4)", () => {
+    auth = { status: "authenticated", user: { name: "C", role: "CITIZEN" }, logout };
+    render(wrap(<Navbar />));
+    const account = screen.getByRole("button", { name: en.nav.account });
+    fireEvent.click(account);
+    screen.getByRole("link", { name: en.nav.myDashboard }).focus();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(account).toHaveFocus();
+
+    const menu = screen.getByRole("button", { name: en.nav.menuOpen });
+    fireEvent.click(menu);
+    document.getElementById("site-menu")!.querySelector<HTMLElement>("a[href]")!.focus();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(menu).toHaveFocus();
+    // Escape with focus outside a panel leaves focus where it is
+    fireEvent.click(menu);
+    menu.focus();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(menu).toHaveFocus();
   });
 
   it("citizen does not see officer links in the account panel", () => {

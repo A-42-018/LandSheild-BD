@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { AlertCircle, CheckCircle2, UserPlus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { Button, Input } from "@/components/ui";
 import { useAuth } from "./AuthContext";
 import AuthShell from "./AuthShell";
@@ -46,10 +47,12 @@ export default function CitizenSignup() {
       }),
   });
 
+  const focus = useFocusFirstInvalid();
   function onSubmit(ev: FormEvent) {
     ev.preventDefault();
     setTouched(true);
     if (!invalid) m.mutate();
+    else focus.request();
   }
 
   if (m.isSuccess) {
@@ -73,7 +76,7 @@ export default function CitizenSignup() {
         <h1 className="text-heading-2 text-ink">{t("title")}</h1>
         <p className="mt-1 text-ink-muted">{t("intro")}</p>
       </div>
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+      <form ref={focus.ref} onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
         <Input label={t("name")} required autoComplete="name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} error={touched && errs.name ? t("required") : undefined} />
         <Input label={t("email")} type="email" required autoComplete="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} error={touched && errs.email ? t("emailInvalid") : undefined} />
         <PasswordInput label={t("password")} required autoComplete="new-password" hint={t("passwordHint")} value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} error={touched && errs.password ? t("passwordShort") : undefined} />

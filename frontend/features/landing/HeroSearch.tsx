@@ -4,7 +4,9 @@ import { useTranslations } from "next-intl";
 import { FileSearch, QrCode, Search } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button, Input, Tabs } from "@/components/ui";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import VerifyForm from "@/features/verify/VerifyForm";
+import QrScanner from "@/features/qr/QrScanner";
 import { FEEDBACK_REF } from "@/features/feedback/types";
 import { MUTATION_NO, normaliseNo } from "@/features/track/types";
 
@@ -28,8 +30,10 @@ function TrackTab() {
   const router = useRouter();
   const [no, setNo] = useState("");
   const [invalid, setInvalid] = useState(false);
+  const focus = useFocusFirstInvalid();
   return (
     <form
+      ref={focus.ref}
       noValidate
       aria-label={t("formTitle")}
       className="grid grid-cols-1 items-start gap-3 sm:grid-cols-[1fr_auto]"
@@ -39,6 +43,7 @@ function TrackTab() {
         const ok = MUTATION_NO.test(n) || FEEDBACK_REF.test(n);
         setInvalid(!ok);
         if (ok) router.push(`/track?no=${encodeURIComponent(n)}`);
+        else focus.request();
       }}
     >
       <Input
@@ -63,6 +68,13 @@ function DocTab() {
   const router = useRouter();
   const [code, setCode] = useState("");
   const [invalid, setInvalid] = useState(false);
+  const focus = useFocusFirstInvalid();
+  const open = (raw: string) => {
+    const to = qrTarget(raw);
+    setInvalid(!to);
+    if (to) router.push(to);
+    else focus.request();
+  };
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
       <div className="flex flex-col items-start gap-3">
@@ -77,16 +89,16 @@ function DocTab() {
         </Link>
       </div>
       <form
+        ref={focus.ref}
         noValidate
         aria-label={t("qrTitle")}
         className="flex flex-col gap-3 border-t border-line pt-5 lg:border-l lg:border-t-0 lg:ps-5 lg:pt-0"
         onSubmit={(e) => {
           e.preventDefault();
-          const to = qrTarget(code);
-          setInvalid(!to);
-          if (to) router.push(to);
+          open(code);
         }}
       >
+        <QrScanner onResult={open} />
         <Input
           label={t("qrLabel")}
           autoComplete="off"

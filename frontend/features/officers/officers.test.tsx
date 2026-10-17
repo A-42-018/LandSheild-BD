@@ -80,10 +80,32 @@ describe("officer signup", () => {
     fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "long-enough-1" } });
     fireEvent.change(screen.getByLabelText(/Designation/), { target: { value: "Tahsildar" } });
     fireEvent.change(screen.getByLabelText(/employee ID/), { target: { value: "EMP-1" } });
-    fireEvent.change(screen.getByLabelText(/Mobile/), { target: { value: "+8801711000000" } });
+    fireEvent.change(screen.getByLabelText(/Mobile/), { target: { value: "+৮৮০১৭১১০০০০০০" } }); // Bangla digits are sent as ASCII
     fireEvent.click(screen.getByRole("button", { name: "Send request" }));
-    await waitFor(() => expect(post).toHaveBeenCalledWith("/offices/officer-requests", expect.objectContaining({ office_id: "o1", email: "rina@office.gov.bd" })));
+    await waitFor(() => expect(post).toHaveBeenCalledWith("/offices/officer-requests", expect.objectContaining({ office_id: "o1", email: "rina@office.gov.bd", phone: "+8801711000000" })));
     expect(await screen.findByTestId("signup-done")).toHaveTextContent("Your account stays inactive");
+  });
+
+  it("U5.4: a failed submit focuses the first step still missing, even with the office list disabled", async () => {
+    mount(<OfficerSignup />, { get } as any);
+    const division = await screen.findByLabelText(/Division/);
+    await within(division).findByText("Dhaka / ঢাকা");
+    const send = screen.getByRole("button", { name: "Send request" });
+    fireEvent.click(send);
+    expect(screen.getByLabelText(/Land office/)).toBeDisabled();
+    expect(division).toHaveFocus();
+    fireEvent.change(division, { target: { value: "Dhaka" } });
+    await waitFor(() => expect(screen.getByLabelText(/Zila/)).toBeEnabled());
+    send.focus();
+    fireEvent.click(send);
+    expect(screen.getByLabelText(/Zila/)).toHaveFocus();
+    fireEvent.change(screen.getByLabelText(/Zila/), { target: { value: "Dhaka" } });
+    const office = await screen.findByLabelText(/Land office/);
+    await within(office).findByText(/Ashulia/);
+    fireEvent.change(office, { target: { value: "o1" } });
+    send.focus();
+    fireEvent.click(send);
+    expect(screen.getByLabelText(/Full name/)).toHaveFocus();
   });
 
   it("explains a taken email", async () => {

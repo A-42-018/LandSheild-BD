@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { AlertTriangle, ListChecks, Pencil } from "lucide-react";
 import { Badge, Button, Card, Input } from "@/components/ui";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { BAND_TONE, bandFor, percent } from "./confidence";
 import EngineBadge from "./EngineBadge";
 import ReviewActions, { REVIEWABLE } from "./ReviewActions";
@@ -34,6 +35,8 @@ function FieldRow({
   const [serverErrors, setServerErrors] = useState<FieldError[]>([]);
   const [saveFailed, setSaveFailed] = useState(false);
   const band = bandFor(f.confidence, threshold);
+  // the input is disabled while saving and so loses focus; give it back when the save is refused
+  const focus = useFocusFirstInvalid();
 
   const open = () => {
     setDraft(f.value ?? "");
@@ -53,6 +56,7 @@ function FieldRow({
       const fe = toFieldErrors(e);
       setServerErrors(fe);
       setSaveFailed(fe.length === 0);
+      focus.request();
     } finally {
       setSaving(false);
     }
@@ -71,6 +75,7 @@ function FieldRow({
       <dd className="flex min-w-0 flex-1 flex-col gap-1">
         {editing ? (
           <form
+            ref={focus.ref}
             className="flex flex-col gap-2"
             onSubmit={(e) => {
               e.preventDefault();

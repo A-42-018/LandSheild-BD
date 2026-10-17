@@ -32,12 +32,22 @@ AUDIT = {
     ("PATCH", f"{P}/risk-alerts/{{alert_id}}"): "RISK_ALERT_UPDATE",
     ("POST", f"{P}/mutations/{{mutation_id}}/transition"): "MUTATION_TRANSITION",
     ("POST", f"{P}/mutations/{{mutation_id}}/recommend"): "MUTATION_RECOMMEND",
+    ("POST", f"{P}/mutations/{{mutation_id}}/hearing"): "MUTATION_HEARING_SET",
     ("POST", f"{P}/mutations/{{mutation_id}}/appeal"): "MUTATION_TRANSITION",
     ("POST", f"{P}/admin/users"): "USER_CREATE",
     ("PATCH", f"{P}/admin/users/{{user_id}}"): "USER_UPDATE",
     ("POST", f"{P}/offices/officer-requests"): "OFFICER_REQUEST",
     ("POST", f"{P}/admin/officer-requests/{{request_id}}/approve"): "OFFICER_REQUEST_APPROVE",
     ("POST", f"{P}/admin/officer-requests/{{request_id}}/reject"): "OFFICER_REQUEST_REJECT",
+    ("POST", f"{P}/admin/content"): "CONTENT_CREATE",
+    ("PATCH", f"{P}/admin/content/{{item_id}}"): "CONTENT_UPDATE",
+    ("DELETE", f"{P}/admin/content/{{item_id}}"): "CONTENT_DELETE",
+    ("DELETE", f"{P}/me/searches"): "SEARCH_HISTORY_CLEAR",
+    ("POST", f"{P}/me/watchlist"): "WATCHLIST_ADD",
+    ("DELETE", f"{P}/me/watchlist/{{land_id}}"): "WATCHLIST_REMOVE",
+    ("POST", f"{P}/me/notifications/read"): None,  # U3.2: own inbox read state, nothing anyone else sees; would drown the log
+    ("PATCH", f"{P}/me/profile"): "PROFILE_UPDATE",
+    ("POST", f"{P}/me/password"): "PASSWORD_CHANGE",
 }
 
 
@@ -121,6 +131,10 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     _audited(env, "MUTATION_RECOMMEND", lambda: env.post(
         f"{P}/mutations/{mid}/recommend", json={"decision": "REJECT", "note": "audit"}, headers=off))  # fmt: skip
     mark("POST", f"{P}/mutations/{{mutation_id}}/recommend")
+    env.post(f"{P}/mutations/{mid}/transition", json={"to": "HEARING", "reason": "audit"}, headers=off)
+    _audited(env, "MUTATION_HEARING_SET", lambda: env.post(
+        f"{P}/mutations/{mid}/hearing", json={"hearing_at": "2099-01-01T10:00:00+06:00"}, headers=off))  # fmt: skip
+    mark("POST", f"{P}/mutations/{{mutation_id}}/hearing")
     # the recommender may not also decide (four-eyes), so an admin decides; then the appeal
     _audited(env, "MUTATION_TRANSITION", lambda: env.post(
         f"{P}/mutations/{mid}/transition", json={"to": "REJECTED", "reason": "audit"}, headers=heads["ADMIN"]))  # fmt: skip
@@ -168,6 +182,18 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
         f"{P}/admin/officer-requests/{rid[1]}/reject", json={"reason": "Not verified"}, headers=adm))  # fmt: skip
     mark("POST", f"{P}/admin/officer-requests/{{request_id}}/reject")
 
+    note = {
+        "kind": "FAQ", "title_en": "Audit item", "title_bn": "অডিট আইটেম",
+        "body_en": "Audit body text", "body_bn": "অডিট বিবরণ",
+    }
+    item = _audited(env, "CONTENT_CREATE", lambda: env.post(f"{P}/admin/content", json=note, headers=adm))
+    mark("POST", f"{P}/admin/content")
+    cid = item.json()["id"]
+    _audited(env, "CONTENT_UPDATE", lambda: env.patch(f"{P}/admin/content/{cid}", json={"position": 2}, headers=adm))
+    mark("PATCH", f"{P}/admin/content/{{item_id}}")
+    _audited(env, "CONTENT_DELETE", lambda: env.delete(f"{P}/admin/content/{cid}", headers=adm))
+    mark("DELETE", f"{P}/admin/content/{{item_id}}")
+
     fb = _audited(env, "FEEDBACK_SUBMIT", lambda: env.post(f"{P}/public/feedback", json={
         "kind": "GRIEVANCE", "subject": "Audit subject", "message": "Audit message body"}))  # fmt: skip
     mark("POST", f"{P}/public/feedback")
@@ -180,6 +206,23 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     _audited(env, "FEEDBACK_UPDATE", lambda: env.patch(
         f"{P}/feedback/{fid}", json={"status": "IN_REVIEW"}, headers=off))  # fmt: skip
     mark("PATCH", f"{P}/feedback/{{feedback_id}}")
+
+    cit = heads["CITIZEN"]
+    _audited(env, "WATCHLIST_ADD", lambda: env.post(f"{P}/me/watchlist", json={"land_id": "LP-10001"}, headers=cit))
+    mark("POST", f"{P}/me/watchlist")
+    _audited(env, "WATCHLIST_REMOVE", lambda: env.delete(f"{P}/me/watchlist/LP-10001", headers=cit))
+    mark("DELETE", f"{P}/me/watchlist/{{land_id}}")
+    _audited(env, "SEARCH_HISTORY_CLEAR", lambda: env.delete(f"{P}/me/searches", headers=cit))
+    mark("DELETE", f"{P}/me/searches")
+    before = _ids(env)
+    assert env.post(f"{P}/me/notifications/read", json={}, headers=cit).status_code == 200
+    mark("POST", f"{P}/me/notifications/read")
+    assert _ids(env) == before, "marking notifications read must not write audit rows"
+    _audited(env, "PROFILE_UPDATE", lambda: env.patch(f"{P}/me/profile", json={"phone": "01711000000"}, headers=cit))
+    mark("PATCH", f"{P}/me/profile")
+    _audited(env, "PASSWORD_CHANGE", lambda: env.post(f"{P}/me/password", json={
+        "current_password": "correct-horse-1", "new_password": "correct-horse-2"}, headers=cit))  # fmt: skip
+    mark("POST", f"{P}/me/password")
 
     assert ran == set(AUDIT), f"write routes with no scenario: {set(AUDIT) - ran}"
 

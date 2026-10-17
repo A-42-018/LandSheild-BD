@@ -30,6 +30,9 @@ export default function OfficeCascade({
   const wait = (q: { isLoading: boolean }, ready: string) => (q.isLoading ? t("loadingList") : ready);
   const failed = (q: { isError: boolean }) => (q.isError ? t("loadError") : undefined);
   const chosen = items.find((o) => o.id === officeId) ?? null;
+  // U5.4: the office list stays disabled until a district is picked, and a disabled field cannot take focus;
+  // with a required-office error, also flag the first empty step so a failed submit lands there.
+  const flag = (q: { isError: boolean }, missing: boolean) => (q.isError || (!!error && missing) ? true : undefined);
 
   const pick = (setter: (v: string) => void, ...reset: ((v: string) => void)[]) => (v: string) => {
     setter(v);
@@ -49,6 +52,7 @@ export default function OfficeCascade({
             disabled={divisions.isLoading}
             placeholder={wait(divisions, t("selectDivision"))}
             error={failed(divisions)}
+            aria-invalid={flag(divisions, !division)}
             options={options(divisions.data)}
             onChange={(e) => pick(setDivision, setDistrict, setUpazila)(e.target.value)}
           />
@@ -59,6 +63,7 @@ export default function OfficeCascade({
             disabled={!division || districts.isLoading}
             placeholder={wait(districts, t("selectDistrict"))}
             error={failed(districts)}
+            aria-invalid={flag(districts, !!division && !district)}
             options={options(districts.data)}
             onChange={(e) => pick(setDistrict, setUpazila)(e.target.value)}
           />

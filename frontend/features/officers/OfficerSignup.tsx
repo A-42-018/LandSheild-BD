@@ -4,9 +4,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { AlertCircle, CheckCircle2, MapPin, UserPlus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
+import { normalizeDigits } from "@/lib/intl-locale";
 import { Button, Input } from "@/components/ui";
 import AuthShell from "@/features/auth/AuthShell";
 import PasswordInput from "@/features/auth/PasswordInput";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import OfficeCascade from "./OfficeCascade";
 import { bi, officePath, type Office } from "./types";
 import { useOfficerRequest } from "./useOffices";
@@ -40,16 +42,17 @@ export default function OfficerSignup() {
     email: !EMAIL.test(f.email.trim()),
     password: f.password.length < 8,
     designation: f.designation.trim().length < 2,
-    phone: !PHONE.test(f.phone.trim()),
+    phone: !PHONE.test(normalizeDigits(f.phone.trim())),
     employee_id: f.employee_id.trim().length < 2,
     office: !officeId,
   };
   const invalid = Object.values(errs).some(Boolean);
 
+  const focus = useFocusFirstInvalid();
   function onSubmit(ev: FormEvent) {
     ev.preventDefault();
     setTouched(true);
-    if (invalid || !office) return;
+    if (invalid || !office) return focus.request();
     submit.mutate(
       {
         name: f.name.trim(),
@@ -58,7 +61,7 @@ export default function OfficerSignup() {
         preferred_language: locale === "bn" ? "bn" : "en",
         office_id: officeId,
         designation: f.designation.trim(),
-        phone: f.phone.trim(),
+        phone: normalizeDigits(f.phone.trim()),
         employee_id: f.employee_id.trim(),
         proof_note: f.proof_note.trim() || undefined,
       },
@@ -81,7 +84,7 @@ export default function OfficerSignup() {
             <span className="text-ink-muted">{officePath(done)}</span>
           </p>
           <p className="text-sm text-ink-muted">{t("doneHint")}</p>
-          <Link href="/login" className="text-link underline underline-offset-2">{t("toLogin")}</Link>
+          <Link href="/officer-login" className="text-link underline underline-offset-2">{t("toLogin")}</Link>
         </div>
       </AuthShell>
     );
@@ -93,7 +96,7 @@ export default function OfficerSignup() {
         <h1 className="text-heading-2 text-ink">{t("title")}</h1>
         <p className="mt-1 text-ink-muted">{t("intro")}</p>
       </div>
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+      <form ref={focus.ref} onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
 
         <fieldset className="flex flex-col gap-3 rounded-lg border border-line p-3">
           <legend className="flex items-center gap-2 px-1 text-sm font-semibold"><MapPin aria-hidden="true" className="h-4 w-4" />{t("officeStep")}</legend>
@@ -127,7 +130,7 @@ export default function OfficerSignup() {
         )}
         <Button type="submit" loading={submit.isPending} icon={<UserPlus />} className="h-12 w-full rounded-lg shadow-[0_8px_18px_-8px_rgb(var(--primary)/0.7)]">{t("submit")}</Button>
         <p className="text-sm text-ink-muted">
-          {t("haveAccount")} <Link href="/login" className="text-link underline underline-offset-2">{t("toLogin")}</Link>
+          {t("haveAccount")} <Link href="/officer-login" className="text-link underline underline-offset-2">{t("toLogin")}</Link>
         </p>
       </form>
     </AuthShell>

@@ -7,6 +7,7 @@ import { Button, Card, Input } from "@/components/ui";
 import ServiceLayout from "@/components/ServiceLayout";
 import { RouteArt } from "@/features/landing/Illustrations";
 import { ApiError } from "@/lib/api";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { useAuth } from "@/features/auth/AuthContext";
 import { formatDate } from "@/features/result/format";
 import { FEEDBACK_REF, type PublicFeedbackStatus } from "@/features/feedback/types";
@@ -83,6 +84,7 @@ export default function TrackView() {
   const { api } = useAuth();
   const [no, setNo] = useState("");
   const [invalid, setInvalid] = useState(false);
+  const focus = useFocusFirstInvalid();
 
   const m = useMutation<MutationStatusDto, ApiError, string>({
     mutationFn: (n) => api.request<MutationStatusDto>(`/public/mutation-status/${encodeURIComponent(n)}`, { anonymous: true }),
@@ -106,7 +108,7 @@ export default function TrackView() {
     const isFeedback = FEEDBACK_REF.test(n);
     const ok = isFeedback || MUTATION_NO.test(n);
     setInvalid(!ok);
-    if (!ok) return;
+    if (!ok) return focus.request();
     m.reset();
     f.reset();
     if (isFeedback) f.mutate(n);
@@ -116,7 +118,9 @@ export default function TrackView() {
     e.preventDefault();
     lookUp(no);
   };
-  // U1.3: the home-page search card sends `?no=`; fill the box and look it up straight away (once, even in Strict Mode).
+  // U1.3: the home-page search card sends `?no=`; fill the box and look it up straight away.
+  // Strict Mode (dev) unmounts and remounts the effect: the first call's result is dropped with its observer, so the
+  // cleanup re-arms the guard and the second run asks again. In production it runs once.
   const arrived = useRef(false);
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("no");
@@ -124,6 +128,9 @@ export default function TrackView() {
     arrived.current = true;
     setNo(q);
     lookUp(q);
+    return () => {
+      arrived.current = false;
+    };
   }, []);
 
   const d = m.data;
@@ -134,7 +141,7 @@ export default function TrackView() {
         {t("demoNote")}
       </p>
       <Card title={t("formTitle")} icon={<Route />}>
-        <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+        <form ref={focus.ref} onSubmit={submit} noValidate className="flex flex-col gap-4">
           <Input
             label={t("number")}
             required

@@ -57,6 +57,7 @@ const submit = (v: string) => {
 describe("mutation number", () => {
   it("accepts MUT-YYYY-NNNN only, case and space tolerant", () => {
     expect(MUTATION_NO.test(normaliseNo("  mut-2026-0009 "))).toBe(true);
+    expect(normaliseNo("MUT-২০২৬-০০০৯")).toBe("MUT-2026-0009");
     for (const bad of ["MUT-26-9", "LP-10240", "MUT-2026-00091", ""]) expect(MUTATION_NO.test(normaliseNo(bad))).toBe(false);
   });
 });
@@ -112,9 +113,9 @@ describe("TrackView", () => {
     const request = vi.fn().mockRejectedValueOnce(new ApiError(404, "MUTATION_NOT_FOUND", "x")).mockRejectedValueOnce(new ApiError(429, "RATE_LIMITED", "x"));
     wrap(request as any);
     submit("MUT-2026-0001");
-    expect(await screen.findByText("No application found with this number.")).toBeInTheDocument();
+    expect(await screen.findByText(en.track.errors.notFound)).toBeInTheDocument();
     submit("MUT-2026-0002");
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Too many requests"));
+    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(en.track.errors.rateLimited));
   });
 
   it("renders in Bangla", async () => {

@@ -9,6 +9,7 @@ import { Link } from "@/i18n/navigation";
 import { ScaleArt } from "@/features/landing/Illustrations";
 import { ApiError } from "@/lib/api";
 import { localDigits } from "@/lib/intl-locale";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { useAuth } from "@/features/auth/AuthContext";
 import { FEEDBACK_KINDS, type FeedbackKind, type FeedbackReceipt } from "./types";
 
@@ -34,6 +35,7 @@ export default function FeedbackForm() {
       }),
   });
 
+  const focus = useFocusFirstInvalid();
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const next: typeof errors = {};
@@ -42,6 +44,7 @@ export default function FeedbackForm() {
     if (email.trim() && !/^\S+@\S+$/.test(email.trim())) next.email = t("errors.email");
     setErrors(next);
     if (Object.keys(next).length === 0) m.mutate();
+    else focus.request();
   };
 
   const apiErr = m.error ? (m.error.status === 429 ? "rateLimited" : m.error.code === "NETWORK_ERROR" ? "network" : "generic") : null;
@@ -65,7 +68,7 @@ export default function FeedbackForm() {
         </Card>
       ) : (
         <Card title={t("formTitle")} icon={<MessageSquare />}>
-          <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+          <form ref={focus.ref} onSubmit={submit} noValidate className="flex flex-col gap-4">
             <Select
               label={t("kind")}
               value={kind}

@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { intlLocale } from "@/lib/intl-locale";
-import { NOTICES, noticeAnchor } from "@/features/notices/notices";
+import { noticeAnchor } from "@/features/notices/notices";
+import { useNotices } from "@/features/notices/useNotices";
 
-const TICKER = NOTICES.filter((n) => n.ticker);
 const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded";
 const TARGET = "min-h-9 [@media(pointer:coarse)]:min-h-touch";
 
@@ -16,25 +16,26 @@ const TARGET = "min-h-9 [@media(pointer:coarse)]:min-h-touch";
  *  hidden from screen readers and out of the tab order. */
 export default function NoticeTicker() {
   const t = useTranslations("ticker");
-  const tn = useTranslations("landing.notices");
   const locale = useLocale();
+  const ticker = useNotices().filter((n) => n.ticker);
   const [paused, setPaused] = useState(false);
   const fmt = new Intl.DateTimeFormat(intlLocale(locale), { dateStyle: "medium", timeZone: "UTC" });
 
   const list = (copy: boolean) => (
     <ul aria-hidden={copy || undefined} className={`flex shrink-0 items-center gap-8 pr-8 ${copy ? "ticker-copy" : ""}`}>
-      {TICKER.map((n) => (
+      {ticker.map((n) => (
         <li key={n.id} className="whitespace-nowrap">
           <Link href={`/#${noticeAnchor(n.id)}`} tabIndex={copy ? -1 : undefined} className={`inline-flex items-center gap-2 text-sm text-ink hover:text-primary ${TARGET} ${FOCUS}`}>
             <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
             <time dateTime={n.date} className="font-semibold text-primary">{fmt.format(new Date(n.date))}</time>
-            <span>{tn(`items.${n.id}.title`)}</span>
+            <span>{n.title}</span>
           </Link>
         </li>
       ))}
     </ul>
   );
 
+  if (ticker.length === 0) return null;
   return (
     <div role="region" aria-label={t("label")} data-testid="notice-ticker" data-paused={paused} className="ticker border-b border-primary/15 bg-primary-soft print:hidden">
       <div className="mx-auto flex max-w-[75rem] items-center gap-3 px-4">

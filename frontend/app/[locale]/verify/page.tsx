@@ -2,6 +2,9 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import ServiceLayout from "@/components/ServiceLayout";
 import { PlotSearchArt } from "@/features/landing/Illustrations";
 import VerifyForm from "@/features/verify/VerifyForm";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("nav.verify");
 
 export default async function VerifyPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);

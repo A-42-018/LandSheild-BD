@@ -12,6 +12,8 @@ export interface PopupLabels {
   statusText: (code: string) => string;
   riskText: (code: string) => string;
   unitText: (code: string) => string;
+  /** Locale digits for numbers (dag, khatian, area); land IDs are identifiers and stay as stored. */
+  digits: (value: string | number) => string;
 }
 
 /**
@@ -33,11 +35,11 @@ export function buildPopup(
   const dl = document.createElement("dl");
   const rows: [string, string][] = [
     [labels.landId, p.land_id],
-    [labels.dag, p.dag_no],
-    [labels.khatian, p.khatian_no],
+    [labels.dag, labels.digits(p.dag_no)],
+    [labels.khatian, labels.digits(p.khatian_no)],
   ];
   // The public map has no area / status / risk: show only what came.
-  if (p.area !== undefined) rows.push([labels.area, `${p.area} ${labels.unitText(p.area_unit ?? "")}`]);
+  if (p.area !== undefined) rows.push([labels.area, `${labels.digits(p.area)} ${labels.unitText(p.area_unit ?? "")}`]);
   if (p.status) rows.push([labels.status, labels.statusText(p.status)]);
   if (p.risk_level) rows.push([labels.risk, labels.riskText(p.risk_level)]);
   for (const [k, v] of rows) {

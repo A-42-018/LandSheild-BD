@@ -46,7 +46,7 @@ export default function Charts() {
       {stats.isLoading ? (
         <LoadingState />
       ) : stats.isError || !stats.data ? (
-        <ErrorState onRetry={() => stats.refetch()} />
+        <ErrorState error={stats.error} onRetry={() => stats.refetch()} />
       ) : (
         <ChartCard
           testId="chart-status"
@@ -62,7 +62,7 @@ export default function Charts() {
       {totals.isLoading ? (
         <LoadingState />
       ) : totals.isError || !totals.data ? (
-        <ErrorState onRetry={() => totals.refetch()} />
+        <ErrorState error={totals.error} onRetry={() => totals.refetch()} />
       ) : (
         <ChartCard
           testId="chart-risk"

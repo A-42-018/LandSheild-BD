@@ -93,7 +93,7 @@ describe("PublicVerifyView", () => {
   });
   it("429 → rate-limit message", async () => {
     wrap(<PublicVerifyView landId="LP-10240" />, { request: vi.fn().mockRejectedValue(new ApiError(429, "RATE_LIMITED", "x")) } as any);
-    await waitFor(() => expect(screen.getByText(en.publicVerify.rateLimited)).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(en.errors.tooMany)).toBeTruthy());
   });
   it("error → retry refetches", async () => {
     const request = vi.fn().mockRejectedValueOnce(new ApiError(500, "X", "x")).mockResolvedValue(DTO);

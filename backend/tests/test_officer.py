@@ -53,7 +53,8 @@ def test_stats_match_seed(env):
     b = _get(env, "stats").json()
     assert b == {
         "total_records": 12, "pending_review": 0, "high_risk": 0, "verified": 12, "open_alerts": 0,
-        "pending_mutations": 0, "active_encumbrances": 3, "ledger_status": "INTACT",
+        "pending_mutations": 0, "active_encumbrances": 3, "settled_this_month": b["settled_this_month"],
+        "hearings_upcoming": 0, "ledger_status": "INTACT",
         "ledger_entries": b["ledger_entries"],
     }
     assert b["ledger_entries"] > 0

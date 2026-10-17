@@ -17,6 +17,7 @@ class MutationRecord(IdMixin, CreatedMixin, Base):
         Index("ix_mutation_records_transaction_id", "transaction_id"),
         Index("ix_mutation_records_applicant_owner_id", "applicant_owner_id"),
         Index("ix_mutation_records_status", "status"),
+        Index("ix_mutation_records_hearing_at", "hearing_at"),
     )
 
     mutation_no: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
@@ -61,6 +62,7 @@ class MutationRecord(IdMixin, CreatedMixin, Base):
     decided_by: Mapped[str | None] = mapped_column(
         String(UUID_LEN), ForeignKey("users.id"), nullable=True
     )
+    hearing_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)  # U3.4
     appeal_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
     appealed_by: Mapped[str | None] = mapped_column(
         String(UUID_LEN), ForeignKey("users.id"), nullable=True

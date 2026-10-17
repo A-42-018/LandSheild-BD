@@ -63,6 +63,9 @@ describe("Input", () => {
     expect(ids).toHaveLength(2);
     expect(document.getElementById(ids[0])).toHaveTextContent("Digits only");
     expect(screen.getByRole("alert")).toHaveTextContent("Required");
+    // U5.4: the alert names its field; the description is the message alone
+    expect(screen.getByRole("alert")).toHaveTextContent("Dag: Required");
+    expect(i).toHaveAccessibleDescription("Digits only Required");
   });
   it("no aria-invalid without error", () => {
     render(<Input label="X" />);
@@ -84,6 +87,8 @@ describe("Select", () => {
     );
     const s = screen.getByRole("combobox", { name: "District" });
     expect(s).toHaveAttribute("aria-invalid", "true");
+    expect(s).toHaveAccessibleDescription("Pick one");
+    expect(screen.getByRole("alert")).toHaveTextContent("District: Pick one");
     expect(screen.getAllByRole("option")).toHaveLength(3);
     fireEvent.change(s, { target: { value: "ctg" } });
     expect((s as HTMLSelectElement).value).toBe("ctg");

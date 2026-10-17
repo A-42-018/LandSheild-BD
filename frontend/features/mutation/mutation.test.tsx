@@ -57,12 +57,13 @@ describe("MutationQueue", () => {
 
   it("shows the empty state", async () => {
     wrap(<MutationQueue />, vi.fn().mockResolvedValue({ total: 0, items: [] }));
-    expect(await screen.findByText("No mutation applications in this status.")).toBeInTheDocument();
+    expect(await screen.findByText(en.mutation.empty)).toBeInTheDocument();
   });
 
   it("renders in Bangla", async () => {
     wrap(<MutationQueue />, vi.fn().mockResolvedValue({ total: 1, items: [item()] }), vi.fn(), "OFFICER", bn, "bn");
     expect(await screen.findByText("দ্রুত নিষ্পত্তি")).toBeInTheDocument();
+    expect(screen.getByText("৫ শতাংশ")).toBeInTheDocument();
   });
 });
 
@@ -75,6 +76,11 @@ describe("MutationDetail", () => {
     expect(screen.getAllByText("Not checked")).toHaveLength(2);
     expect(screen.getByText("D-77")).toBeInTheDocument();
     expect(screen.getByTestId("mutation-timeline").children).toHaveLength(2);
+  });
+
+  it("shows the area with a Bangla unit label in Bangla", async () => {
+    wrap(<MutationDetail id="m1" />, vi.fn().mockResolvedValue(detail()), vi.fn(), "OFFICER", bn, "bn");
+    expect(await screen.findByText("৫ শতাংশ")).toBeInTheDocument();
   });
 
   it("approve calls the transition endpoint without a reason", async () => {

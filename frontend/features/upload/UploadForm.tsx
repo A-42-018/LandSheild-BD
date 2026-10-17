@@ -12,6 +12,7 @@ import {
   ACCEPT,
   DOCUMENT_TYPES,
   LAND_ID_RE,
+  normaliseLandId,
   errorCodeFromApi,
   formatBytes,
   validateFile,
@@ -23,6 +24,7 @@ import { TERMINAL_STATUSES, type DocumentUploadOut } from "./types";
 import { Link } from "@/i18n/navigation";
 import OfficeCascade from "@/features/officers/OfficeCascade";
 import { bi, officePath, type Office } from "@/features/officers/types";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { useDocumentStatus } from "./useDocumentStatus";
 
 function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
@@ -146,7 +148,7 @@ export default function UploadForm() {
       const form = new FormData();
       form.append("file", f);
       form.append("document_type", docType);
-      if (landId.trim()) form.append("land_id", landId.trim().toUpperCase());
+      if (landId.trim()) form.append("land_id", normaliseLandId(landId));
       if (!myOffice && office) form.append("office_id", office.id);
       setProgress(0);
       return api.upload<DocumentUploadOut>("/documents/upload", form, { onProgress: setProgress });
@@ -183,16 +185,20 @@ export default function UploadForm() {
     if (inputRef.current) inputRef.current.value = "";
   }
 
+  const focus = useFocusFirstInvalid();
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) return setFileError("EMPTY_FILE");
+    if (!file) {
+      setFileError("EMPTY_FILE");
+      return focus.request();
+    }
     const fe = validateFile(file);
     setFileError(fe);
-    const badLand = landId.trim() !== "" && !LAND_ID_RE.test(landId.trim().toUpperCase());
+    const badLand = landId.trim() !== "" && !LAND_ID_RE.test(normaliseLandId(landId));
     setLandIdError(badLand);
     const noOffice = needsOffice && !office;
     setOfficeError(noOffice);
-    if (fe || badLand || noOffice) return;
+    if (fe || badLand || noOffice) return focus.request();
     m.mutate(file);
   }
 
@@ -211,7 +217,7 @@ export default function UploadForm() {
 
   return (
     <Card title={t("title")} icon={<UploadCloud />}>
-      <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+      <form ref={focus.ref} onSubmit={submit} noValidate className="flex flex-col gap-4">
         <p className="text-ink-muted">{t("intro")}</p>
 
         <div
@@ -241,6 +247,7 @@ export default function UploadForm() {
             type="file"
             accept={ACCEPT}
             className="sr-only"
+            aria-invalid={fileError ? true : undefined}
             aria-describedby={`${fileId}-hint`}
             onChange={(e) => pick(e.target.files?.[0])}
           />

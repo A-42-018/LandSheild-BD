@@ -3,8 +3,6 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button, EmptyState, ErrorState, LoadingState } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
-import PageHeader from "@/components/PageHeader";
-import { ShieldArt } from "@/features/landing/Illustrations";
 import { ApiError } from "@/lib/api";
 import GraphCanvas from "./GraphCanvas";
 import GraphDetail from "./GraphDetail";
@@ -30,19 +28,16 @@ export default function GraphView({ landId }: { landId?: string }) {
 
   let body: React.ReactNode;
   if (!landId) {
-    body = <EmptyState title={t("common.empty")} action={back} />;
+    body = <EmptyState title={t("result.notFound")} description={t("result.notFoundHint")} action={back} />;
   } else if (q.isPending) {
     body = <LoadingState />;
   } else if (q.isError) {
     const e = q.error;
     body =
       e instanceof ApiError && (e.status === 404 || e.code === "LAND_NOT_FOUND") ? (
-        <EmptyState title={t("common.empty")} action={back} />
+        <EmptyState title={t("result.notFound")} description={t("result.notFoundHint")} action={back} />
       ) : (
-        <ErrorState
-          message={e instanceof ApiError && e.status === 403 ? t("errors.permission") : t("graph.loadError")}
-          onRetry={() => void q.refetch()}
-        />
+        <ErrorState error={e} message={t("graph.loadError")} onRetry={() => void q.refetch()} />
       );
   } else if (q.data.edges.length === 0 && q.data.nodes.length <= 1) {
     body = <EmptyState title={t("graph.emptyGraph")} action={back} />;
@@ -80,11 +75,6 @@ export default function GraphView({ landId }: { landId?: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader
-        title={t("graph.title")}
-        art={<ShieldArt />}
-        crumbs={landId ? [{ label: t("nav.verify"), href: "/verify" }, { label: t("result.title"), href: `/verify/result?land_id=${enc}` }] : [{ label: t("nav.verify"), href: "/verify" }]}
-      />
       <p role="note" className="glass-card px-4 py-2 text-sm font-medium text-ink">
         {t("common.demoLabel")}
       </p>

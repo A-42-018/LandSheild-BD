@@ -30,7 +30,7 @@ export default function Footer() {
       </svg>
       <div className="relative mx-auto max-w-[75rem] px-4 pb-4 pt-10">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <Link href="/" className="inline-flex items-center gap-2.5 rounded-md text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
+          <Link href="/" className="inline-flex min-h-touch items-center gap-2.5 rounded-md text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/brand/logo-mark.svg" alt="" width={64} height={64} className="h-10 w-10 object-contain drop-shadow-[0_2px_6px_rgb(0_0_0/0.45)]" />
             <span className="font-display text-[1.1rem] font-extrabold uppercase tracking-[0.045em]">{t("common.brand")}</span>
@@ -49,6 +49,7 @@ export default function Footer() {
               <li><Link href="/track" className={LINK}>{t("nav.track")}</Link></li>
               <li><Link href="/map" className={LINK}>{t("nav.map")}</Link></li>
               <li><Link href="/tools" className={LINK}>{t("tools.title")}</Link></li>
+              <li><Link href="/guide" className={LINK}>{t("nav.guide")}</Link></li>
               <li><Link href="/faq" className={LINK}>{t("footer.faq")}</Link></li>
               <li><Link href="/sitemap" className={LINK}>{t("info.sitemap.title")}</Link></li>
             </ul>

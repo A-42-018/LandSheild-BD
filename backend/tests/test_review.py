@@ -160,3 +160,21 @@ def test_extraction_tells_the_uploader_approve_is_blocked(env, jobs):
     assert _get(env, doc_id, role="ADMIN").json()["self_approval_blocked"] is False
     r = _patch(env, doc_id, {"mouza": "Barmi"}, role="OFFICER")
     assert r.status_code == 200 and r.json()["self_approval_blocked"] is True
+
+
+def test_my_decisions_lists_only_own_with_rejection_reason(env, jobs):
+    rejected = _ready(env, b"Doc1")
+    assert _post(env, rejected, "reject", json={"reason": "Blurry scan"}).status_code == 200
+    approved = _ready(env, b"Doc2")
+    assert _fill(env, approved)["validation"]["valid"] is True
+    assert _post(env, approved, "approve", role="ADMIN").status_code == 200
+
+    mine = env.get("/api/v1/officer/my-decisions", headers=_h(env, "REVIEWER")).json()
+    assert mine["total"] == 1
+    item = mine["items"][0]
+    assert item["document_id"] == rejected
+    assert item["decision"] == "REJECTED" and item["reason"] == "Blurry scan"
+    other = env.get("/api/v1/officer/my-decisions", headers=_h(env, "ADMIN")).json()
+    assert [(i["document_id"], i["decision"], i["reason"]) for i in other["items"]] == [
+        (approved, "APPROVED", None)
+    ]

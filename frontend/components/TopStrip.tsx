@@ -16,7 +16,7 @@ import {
 } from "@/lib/theme";
 
 const BTN =
-  "inline-flex min-h-8 min-w-8 items-center justify-center rounded px-1.5 font-semibold text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 disabled:opacity-40 disabled:hover:bg-transparent aria-pressed:bg-white/20";
+  "inline-flex min-h-8 min-w-8 [@media(pointer:coarse)]:min-h-touch [@media(pointer:coarse)]:min-w-touch items-center justify-center rounded px-1.5 font-semibold text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 disabled:opacity-40 disabled:hover:bg-transparent aria-pressed:bg-white/20";
 
 /** Top strip (U1.1): today's Bangla + Gregorian date on the left; text size A− A A+, high contrast and the বাং | EN pill on the right.
  *  Not sticky: it scrolls away so the main header keeps its height. */

@@ -20,6 +20,8 @@ from app.models.land_office import LandOffice, OfficerRequest
 from app.models.land_parcel import LandParcel
 from app.models.user import User
 from app.schemas.offices import (
+    AdminOffice,
+    AdminOfficeList,
     AdminOfficerRequest,
     AdminOfficerRequestList,
     OfficeList,
@@ -28,6 +30,7 @@ from app.schemas.offices import (
     Place,
 )
 from app.services import audit
+from app.services.admin import _contains as contains
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "data" / "land_offices.json"
 _NS = uuid.UUID("5a1d5e1d-0000-4000-8000-1a4d5b1e1d01")
@@ -94,6 +97,49 @@ def offices(db: Session, division: str, district: str, upazila: str | None) -> O
         select(LandOffice).where(*cond).order_by(LandOffice.office_type, LandOffice.name_en)
     ).all()
     return OfficeList(items=[OfficeOut.model_validate(r) for r in rows], total=len(rows))
+
+
+def list_offices(
+    db: Session, q: str | None, office_type: str | None, limit: int, offset: int
+) -> AdminOfficeList:
+    """Admin view of every land office, with the number of active officers tied to each."""
+    ensure_offices(db)
+    cond = []
+    q = (q or "").strip()
+    if q:
+        cond.append(
+            or_(
+                *(
+                    contains(c, q)
+                    for c in (
+                        LandOffice.name_en, LandOffice.name_bn, LandOffice.code,
+                        LandOffice.district_en, LandOffice.upazila_en,
+                    )
+                )
+            )
+        )  # fmt: skip
+    if office_type:
+        cond.append(LandOffice.office_type == office_type)
+    total = db.scalar(select(func.count()).select_from(LandOffice).where(*cond)) or 0
+    rows = db.scalars(
+        select(LandOffice).where(*cond)
+        .order_by(LandOffice.division_en, LandOffice.district_en, LandOffice.upazila_en,
+                  LandOffice.office_type, LandOffice.name_en)
+        .limit(limit).offset(offset)
+    ).all()  # fmt: skip
+    counts = dict(
+        db.execute(
+            select(User.office_id, func.count())
+            .where(User.role == Role.OFFICER.value, User.is_active.is_(True),
+                   User.office_id.in_([r.id for r in rows]))
+            .group_by(User.office_id)
+        ).all()
+    )  # fmt: skip
+    items = [
+        AdminOffice(**OfficeOut.model_validate(r).model_dump(), officers=counts.get(r.id, 0))
+        for r in rows
+    ]
+    return AdminOfficeList(items=items, total=total, limit=limit, offset=offset)
 
 
 def user_office(user: User) -> LandOffice | None:

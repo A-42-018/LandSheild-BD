@@ -6,6 +6,7 @@ import { Button, Card, EmptyState, ErrorState, LoadingState } from "@/components
 import StatusBadge from "@/components/domain/StatusBadge";
 import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
+import { useStickyBar } from "@/lib/sticky-bar";
 import { useAuth } from "@/features/auth/AuthContext";
 import LandInfoCard from "@/features/result/LandInfoCard";
 import OwnershipTimeline from "@/features/result/OwnershipTimeline";
@@ -19,6 +20,7 @@ import type { VerificationReport } from "./types";
 
 export default function ReportView({ id }: { id: string }) {
   const t = useTranslations();
+  const barRef = useStickyBar();
   const locale = useLocale();
   const { api } = useAuth();
   const q = useQuery({
@@ -43,13 +45,8 @@ export default function ReportView({ id }: { id: string }) {
     if (status === 404 || (e instanceof ApiError && e.code === "VERIFICATION_NOT_FOUND")) {
       body = <EmptyState title={t("report.notFound")} action={back} />;
     } else {
-      const msg =
-        e instanceof ApiError && e.code === "VERIFICATION_NOT_READY"
-          ? t("report.notReady")
-          : status === 403
-            ? t("errors.permission")
-            : t("report.loadError");
-      body = <ErrorState message={msg} onRetry={() => void q.refetch()} />;
+      const notReady = e instanceof ApiError && e.code === "VERIFICATION_NOT_READY";
+      body = <ErrorState error={notReady ? undefined : e} message={notReady ? t("report.notReady") : t("report.loadError")} onRetry={() => void q.refetch()} />;
     }
   } else {
     const r = q.data;
@@ -102,7 +99,7 @@ export default function ReportView({ id }: { id: string }) {
           <p className="mt-2 text-sm text-ink-muted">{t("risk.disclaimer")}</p>
         </Card>
         <p className="border-t border-line pt-3 text-xs text-ink-muted" data-testid="report-footer">{t("report.generatedFooter")}</p>
-        <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center gap-4 border-t border-line bg-surface/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:rounded-card sm:border sm:shadow-glass print:hidden">
+        <div ref={barRef} data-sticky-bar className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center gap-4 border-t border-line bg-surface/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:rounded-card sm:border sm:shadow-glass print:hidden">
           <Button size="lg" icon={<Download />} onClick={() => window.print()}>{t("report.print")}</Button>
           <Link href={`/verify/result?land_id=${encodeURIComponent(r.land_id)}`} className="text-sm font-medium text-link underline">
             {t("report.backToResult")}

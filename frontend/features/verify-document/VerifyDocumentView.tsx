@@ -76,7 +76,7 @@ export default function VerifyDocumentView() {
               type="file"
               accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf"
               data-testid="doc-file"
-              className="w-full max-w-xs text-sm text-ink file:mr-3 file:min-h-11 file:rounded-xl file:border-0 file:bg-primary file:px-4 file:font-medium file:text-primary-fg"
+              className="w-full max-w-xs text-sm text-ink file:mr-3 file:min-h-touch file:rounded-xl file:border-0 file:bg-primary file:px-4 file:font-medium file:text-primary-fg"
               onChange={(e) => {
                 setFile(e.target.files?.[0] ?? null);
                 m.reset();

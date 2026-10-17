@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "@/i18n/navigation";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { ApiError } from "@/lib/api";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { DISTRICTS, DIVISIONS, districtsOf, divisionOf, labelOf, upazilasOf } from "@/lib/geo";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useGisSearch, useMouzas } from "@/features/map/gis/useGis";
@@ -58,6 +59,8 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   } = useForm<VerifyInput, unknown, VerifyValues>({
     resolver: zodResolver(verifySchema),
     defaultValues: { district: "", upazila: "", mouza: "", khatian: "", dag: "" },
+    // react-hook-form focuses in registration order, and mouza is registered first (mouzaField); see focus below
+    shouldFocusError: false,
   });
 
   const district = watch("district") as string;
@@ -130,7 +133,9 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
     pub.reset();
     pub.mutate(v);
   };
-  const submit = handleSubmit(onValid);
+  // U5.4: focus the first wrong field in screen order (district before mouza), so a screen reader starts at the top
+  const focus = useFocusFirstInvalid();
+  const submit = handleSubmit(onValid, focus.request);
 
   useEffect(() => {
     if (!autoRun.current || status === "loading") return;
@@ -159,6 +164,7 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   const hint = compact ? undefined : t("numericHint");
   const form = (
       <form
+        ref={focus.ref}
         onSubmit={submit}
         noValidate
         aria-label={compact ? t("title") : undefined}
@@ -298,7 +304,7 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
         {form}
       </Card>
       {pub.data && (
-        <div ref={summaryRef} className="scroll-mt-24">
+        <div ref={summaryRef}>
           <PublicSummary data={pub.data} />
         </div>
       )}

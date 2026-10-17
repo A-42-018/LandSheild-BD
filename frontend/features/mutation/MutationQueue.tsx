@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { FileCheck2, Zap } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { Badge, Card, ErrorState, LoadingState, Table, Tabs, type Column } from "@/components/ui";
@@ -14,12 +13,13 @@ import { daysSince, MUTATION_STATUSES, PAGE_SIZE, type MutationQueueItem } from 
 
 export default function MutationQueue() {
   const t = useTranslations("mutation");
-  const te = useTranslations("errors");
+  const tRes = useTranslations("result");
   const locale = useLocale();
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [area, setArea] = useState<Area>(NO_AREA);
   const q = useMutationQueue(status, page, area);
+  const unit = (u: string) => (tRes.has(`units.${u}`) ? tRes(`units.${u}`) : u);
 
   const columns: Column<MutationQueueItem>[] = [
     {
@@ -43,7 +43,7 @@ export default function MutationQueue() {
         </span>
       ),
     },
-    { key: "area", header: t("cols.area"), render: (r) => formatArea(r.area, r.area_unit, locale, r.area_unit) },
+    { key: "area", header: t("cols.area"), render: (r) => formatArea(r.area, r.area_unit, locale, unit(r.area_unit)) },
     {
       key: "days",
       header: t("cols.days"),
@@ -55,7 +55,7 @@ export default function MutationQueue() {
   const content = q.isLoading ? (
     <LoadingState />
   ) : q.isError || !q.data ? (
-    <ErrorState message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined} onRetry={() => q.refetch()} />
+    <ErrorState error={q.error} onRetry={() => q.refetch()} />
   ) : (
     <div aria-busy={q.isFetching} data-testid="mutation-queue">
       <Table

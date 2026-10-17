@@ -7,6 +7,20 @@ export const REVIEW_UP: Role[] = ["REVIEWER", "OFFICER", "ADMIN"];
 export const OFFICER_UP: Role[] = ["OFFICER", "ADMIN"];
 export const ADMIN_ONLY: Role[] = ["ADMIN"];
 
+/** Where a signed-in user lands when no `?next=` was given (U3.1). Citizens get "আমার ভূমি সেবা" (U3.2),
+ *  reviewers "আজকের কাজ" (U3.3), admins the console (U3.5). */
+export function redirectFor(role: Role | null | undefined): string {
+  if (role === "CITIZEN") return "/my";
+  if (role === "REVIEWER") return "/officer/review";
+  if (role === "ADMIN") return "/admin";
+  return hasRole(role, REVIEW_UP) ? "/officer" : "/";
+}
+
+/** Staff-only pages send anonymous visitors to the staff sign-in; everything else uses the citizen one. */
+export function loginPathFor(allowed?: Role[]): "/login" | "/officer-login" {
+  return allowed && allowed.length > 0 && allowed.every((r) => REVIEW_UP.includes(r)) ? "/officer-login" : "/login";
+}
+
 export interface NavItem {
   href: string;
   labelKey: string;
@@ -25,8 +39,10 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/track", labelKey: "nav.track", primary: true },
   { href: "/verify-document", labelKey: "nav.verifyDoc", primary: true },
   { href: "/map", labelKey: "nav.map", primary: true }, // U2.3: public (outlines + numbers)
+  { href: "/my", labelKey: "nav.myArea", roles: ["CITIZEN"] },
   { href: "/officer", labelKey: "nav.dashboard", roles: REVIEW_UP },
   { href: "/officer/upload", labelKey: "nav.upload", roles: OFFICER_UP },
+  { href: "/admin", labelKey: "nav.admin", roles: ADMIN_ONLY },
 ];
 
 export function navItemsFor(role: Role | null, items: NavItem[] = NAV_ITEMS): NavItem[] {

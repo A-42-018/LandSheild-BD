@@ -42,6 +42,7 @@ class MutationQueueItem(BaseModel):
     status_changed_at: datetime
     decided_at: datetime | None = None
     source: str
+    hearing_at: datetime | None = None  # U3.4: when the hearing is held; None = not scheduled
 
 
 class MutationList(BaseModel):
@@ -71,6 +72,20 @@ class MutationDetail(MutationQueueItem):
 class MutationTransitionIn(BaseModel):
     to: MutationStatus
     reason: str | None = Field(default=None, max_length=500)
+    hearing_at: datetime | None = None  # only with to=HEARING
+
+
+class MutationHearingIn(BaseModel):
+    hearing_at: datetime
+
+
+class HearingCalendar(BaseModel):
+    """One month of hearings (month boundaries in Bangladesh time) plus the cases that are in
+    HEARING with no date yet."""
+
+    month: str  # YYYY-MM
+    items: list[MutationQueueItem]
+    unscheduled: list[MutationQueueItem]
 
 
 class MutationRecommendIn(BaseModel):

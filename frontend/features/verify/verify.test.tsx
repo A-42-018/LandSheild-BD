@@ -82,6 +82,8 @@ describe("VerifyForm", () => {
     fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
     expect((await screen.findAllByText(en.verify.errors.required)).length).toBeGreaterThan(0);
     expect(get).not.toHaveBeenCalled();
+    // U5.4: focus goes to the first wrong field on screen (district), not the first registered one (mouza)
+    expect(screen.getByRole("combobox", { name: en.verify.district })).toHaveFocus();
   });
 
   it("sends ASCII digits and navigates to the result route", async () => {

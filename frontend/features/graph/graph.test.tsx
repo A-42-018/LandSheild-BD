@@ -130,7 +130,7 @@ describe("GraphView", () => {
 
   it("404 → empty state", async () => {
     wrap(client(vi.fn(() => Promise.reject(new ApiError(404, "LAND_NOT_FOUND", "x")))), "LP-9");
-    expect(await screen.findByText(en.common.empty)).toBeInTheDocument();
+    expect(await screen.findByText(en.result.notFound)).toBeInTheDocument();
   });
 
   it("403 → permission message", async () => {
@@ -148,13 +148,15 @@ describe("GraphView", () => {
 
   it("missing land id → empty state", () => {
     wrap(client(vi.fn()), undefined);
-    expect(screen.getByText(en.common.empty)).toBeInTheDocument();
+    expect(screen.getByText(en.result.notFound)).toBeInTheDocument();
   });
 
   it("renders in Bangla with translated labels", async () => {
     wrap(client(okGet(GRAPH)), "LP-10240", bn, "bn");
     fireEvent.click(await screen.findByRole("button", { name: bn.graph.viewList }));
-    expect(screen.getByRole("heading", { name: bn.graph.title })).toBeInTheDocument();
+    // the H1 lives in app/[locale]/verify/graph/page.tsx; the view must not add a second one (U5.4)
+    expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
+    expect(screen.getByText(bn.graph.backToResult)).toBeInTheDocument();
     expect(screen.getAllByText(`⚑ ${bn.graph.flagged}`).length).toBe(1);
     expect(screen.getByText("Rahim Uddin")).toBeInTheDocument();
   });

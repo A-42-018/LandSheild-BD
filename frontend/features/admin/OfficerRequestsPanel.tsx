@@ -64,7 +64,7 @@ export default function OfficerRequestsPanel() {
             options={(["PENDING", "APPROVED", "REJECTED"] as const).map((s) => ({ value: s, label: t(`status.${s}`) }))} />
         </div>
         {error && !rejecting && <p role="alert" className="rounded-lg border border-critical/30 bg-critical-soft p-3 text-sm text-critical">{t("error")}</p>}
-        {list.isLoading ? <LoadingState /> : list.isError || !list.data ? <ErrorState onRetry={() => list.refetch()} /> : (
+        {list.isLoading ? <LoadingState /> : list.isError || !list.data ? <ErrorState error={list.error} onRetry={() => list.refetch()} /> : (
           <div aria-busy={list.isFetching} data-testid="officer-requests-table">
             <Table caption={t("title")} columns={columns} rows={list.data.items} rowKey={(r) => r.id} page={page} pageSize={ADMIN_PAGE_SIZE} total={list.data.total} onPageChange={setPage} emptyText={t("empty")} />
           </div>

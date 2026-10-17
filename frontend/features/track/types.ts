@@ -1,3 +1,5 @@
+import { normalizeDigits } from "@/lib/intl-locale";
+
 export type TrackStepName = "APPLIED" | "REVIEW" | "HEARING" | "DECIDED";
 export type TrackStepState = "done" | "current" | "pending" | "skipped";
 
@@ -16,6 +18,6 @@ export interface MutationStatusDto {
   steps: TrackStepDto[];
 }
 
-/** MUT-YYYY-NNNN, tolerant of case and surrounding spaces (the API normalises the same way). */
+/** MUT-YYYY-NNNN, tolerant of case, surrounding spaces and Bangla digits (the API normalises case and spaces the same way). */
 export const MUTATION_NO = /^MUT-\d{4}-\d{4}$/;
-export const normaliseNo = (s: string) => s.trim().toUpperCase();
+export const normaliseNo = (s: string) => normalizeDigits(s).trim().toUpperCase();

@@ -2,7 +2,6 @@
 import { useState, type FormEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { FileText, Landmark, RotateCcw, Search } from "lucide-react";
-import { ApiError } from "@/lib/api";
 import { Button, Card, ErrorState, Input, LoadingState, Select, Table, type Column, type SortState } from "@/components/ui";
 import { formatDateTime } from "@/features/result/format";
 import {
@@ -87,7 +86,7 @@ export function LandRecordsPanel() {
         {q.isLoading ? (
           <LoadingState />
         ) : q.isError || !q.data ? (
-          <ErrorState message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined} onRetry={() => q.refetch()} />
+          <ErrorState error={q.error} onRetry={() => q.refetch()} />
         ) : (
           <div aria-busy={q.isFetching} data-testid="records-table">
             <Table
@@ -137,7 +136,7 @@ export function DocumentsPanel() {
         {q.isLoading ? (
           <LoadingState />
         ) : q.isError || !q.data ? (
-          <ErrorState message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined} onRetry={() => q.refetch()} />
+          <ErrorState error={q.error} onRetry={() => q.refetch()} />
         ) : (
           <div aria-busy={q.isFetching} data-testid="documents-table">
             <Table
