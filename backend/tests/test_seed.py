@@ -9,6 +9,7 @@ import app.models  # noqa: F401
 from app.core.db import Base, make_engine
 from app.core.passwords import verify_password
 from app.models import (
+    ContentItem,
     Deed,
     Document,
     LandParcel,
@@ -73,6 +74,25 @@ def test_reset_seed_twice_identical(db):
     # plain re-seed (no reset) is idempotent too
     assert loader.seed(db, PW)["created"] == 0
     assert _snapshot(db) == first
+
+
+def test_reset_seed_keeps_public_notices(db):
+    """`seed.py --reset` runs after the migration on Render and wipes content_items."""
+    loader.seed(db, PW, do_reset=True)
+    notices = db.scalars(select(ContentItem).where(ContentItem.kind == "NOTICE")).all()
+    assert len(notices) == 4 and all(n.published for n in notices)
+    assert sorted(n.ticker for n in notices) == [False, True, True, True]
+    loader.seed(db, PW)  # plain re-seed adds nothing
+    assert db.scalar(select(func.count()).select_from(ContentItem)) == 4
+
+
+def test_seed_does_not_duplicate_migrated_notices(db):
+    db.add(ContentItem(
+        id="from-migration", kind="NOTICE", title_en="t", title_bn="t", body_en="b", body_bn="b"
+    ))
+    db.commit()
+    loader.seed(db, PW)
+    assert db.scalar(select(func.count()).select_from(ContentItem)) == 1
 
 
 def test_users_and_password(db):

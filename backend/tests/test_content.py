@@ -2,12 +2,22 @@
 import pytest
 from sqlalchemy import select
 
+from app.core.db import get_db
 from app.models.audit import AuditLog
+from app.models.content import ContentItem
 from tests.test_documents import _db  # noqa: F401
 from tests.test_lands import _h, env  # noqa: F401
 
 PUB = "/api/v1/content"
 ADM = "/api/v1/admin/content"
+
+
+@pytest.fixture(autouse=True)
+def _no_seeded_notices(env):
+    """The demo seed publishes the four sample notices; these tests start from an empty list."""
+    s = next(env.app.dependency_overrides[get_db]())
+    s.query(ContentItem).delete()
+    s.commit()
 
 
 def _notice(**kw):
