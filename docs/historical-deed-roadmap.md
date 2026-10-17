@@ -1,6 +1,6 @@
 # Historical Land Deed Digitisation — Roadmap (H0–H10)
 
-Status: **H0 done (2026-10-18), H1–H10 not started** (updated 2026-10-18; all decisions D1–D6 made, see §5).
+Status: **H0, H1 done (2026-10-18), H2–H10 not started** (updated 2026-10-18; all decisions D1–D6 made, see §5).
 Trigger: mentor feedback:
 1. LandShield cannot digitise a historical (pre-1971 / pre-1947) land deed. There is no digital
    format for one, and the extractor read only 1 of 13 fields from the sample
@@ -137,6 +137,7 @@ Each phase can be merged on its own. Branch per phase: `h<N>-<slug>`, worktree `
   - **required:** deed no OR registration ref; execution date verbatim; ≥ 1 seller; ≥ 1 buyer; ≥ 1 schedule row with mouza + (khatian or dag) + area
   - **format:** area > 0; known or archaic unit; Gregorian range not in the future; numbers only in numeric fields
 - **Done when:** the gold JSON validates and the derived core fields equal the expected 13.
+- **Done (2026-10-18).** `ai/extraction/lhdr.py` (Pydantic models A–J, `Field` with plain-value shorthand, `check()` content rules → `Issue(path, code, severity)`, CLI `python -m ai.extraction.lhdr schema|check`), `ai/extraction/derive.py` (`derive_core` / `derive_fields`), `docs/lhdr-v1.schema.json`, `backend/tests/test_lhdr.py`. All 7 gold files validate with no issues, derive the expected 13 and round-trip through `plain()`. Additions beyond §2: party roles for POA / waqf / partition / exchange (`SHARER`, `EXCHANGER`: a partition needs 2 co-sharers instead of seller + buyer), archaic units `kranti, til, chatak, dhur, pakhi`, warnings `ERA_MISMATCH` and `CORE_MISMATCH`. Reference in `docs/ai-pipeline.md`.
 
 ### H2 — Input quality: stop trusting a broken text layer; read tables
 - **Text-layer quality gate** (`ai/ocr/quality.py`). Score Bangla text for orphan vowel signs (`ি`/`ে` at word start, `েত`), a dictionary hit rate for known labels (`বিক্রেতা`, `সম্পত্তি`, `পশ্চিম`, `ধর্ম`), and the share of replacement characters. Below a threshold, OCR the rendered page instead. When both exist, keep the better score. Router order becomes: demo → **checked** text layer → Tesseract.

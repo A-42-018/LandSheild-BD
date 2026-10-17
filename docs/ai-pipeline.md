@@ -303,3 +303,29 @@ Accuracy per LHDR section (all gold values; only core fields are extracted today
 Reproduce: `python ai/evaluation/run_eval.py --set historical`
 
 <!-- HIST-EVAL:END -->
+
+### Historical deed format (LHDR v1, H1)
+
+The digital format of a historical deed is `ai/extraction/lhdr.py` (Pydantic models for roadmap §2,
+sections A–J); its JSON Schema is `docs/lhdr-v1.schema.json`.
+
+- **Field:** every leaf is `{value, verbatim, confidence, source {page, bbox}, method, legibility,
+  edited_by_human}`. A bare value is shorthand for `{"value": …}`; the gold files use it, and
+  `lhdr.plain(record)` turns a record back into it.
+- **Shape vs content:** the models reject unknown keys, wrong types and unknown enum values.
+  `lhdr.check(record)` returns content `Issue`s `(path, code, severity, message)`, so a half-read
+  machine record still loads:
+  - errors (required): `MISSING_DEED_REF` (deed no or volume), `MISSING_EXECUTION_DATE`,
+    `NO_SELLER` / `NO_BUYER` (a partition / exchange needs 2 co-sharers instead), `NO_COMPLETE_PLOT`
+    (mouza + khatian or dag + area)
+  - errors (format): `AREA_NOT_POSITIVE`, `UNKNOWN_UNIT` (modern or archaic: kani, ganda, kora…),
+    `DATE_IN_FUTURE`, `DATE_RANGE_REVERSED`, `BAD_DAY`, `NOT_NUMERIC` (khatian, dag, JL, deed no),
+    `AMOUNT_NOT_POSITIVE`
+  - warnings: `ERA_MISMATCH` (era vs execution date), `CORE_MISMATCH` (stored `core` ≠ derived)
+- **Core 13:** `ai/extraction/derive.py` fills the 13 fields from the record (first transferring
+  party, first plot, first dag; deed_date = middle of the Gregorian range, only when known to the day).
+  `derive_fields()` returns `ExtractedField`s with the source Field's confidence and bbox; a machine
+  value without a stated confidence gets 0.
+- **Check:** `python -m ai.extraction.lhdr check database/sample_data/historical/*.gold.json` (all 7
+  gold files: no issues, derived core = gold `core`). After changing a model, regenerate the schema
+  with `python -m ai.extraction.lhdr schema`; `backend/tests/test_lhdr.py` fails if it is stale.
