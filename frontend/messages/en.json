@@ -1914,6 +1914,159 @@
       }
     }
   },
+  "guide": {
+    "title": "Guides and videos",
+    "purpose": "Learn each service step by step from pictures. Every service also has a short video with a Bangla voice-over.",
+    "pickTitle": "What do you need help with?",
+    "signIn": "This service needs sign-in",
+    "noSignIn": "No sign-in needed",
+    "stepsLabel": "{title}: steps",
+    "step": "Step {n}",
+    "tryIt": "Try it now: {title}",
+    "allGuides": "All guides",
+    "demoNote": "The pictures and videos show demo data only. They contain no one's real land records.",
+    "video": {
+      "watch": "Watch the video ({length})",
+      "sec": "{s} s",
+      "minSec": "{m} min {s} s",
+      "note": "The voice-over is in Bangla, in a computer voice. English captions are on.",
+      "unsupported": "This browser cannot play the video. Follow the pictures below instead.",
+      "captionsBn": "Bangla",
+      "captionsEn": "English"
+    },
+    "more": {
+      "title": "More guides",
+      "intro": "More help on land services, written by our team."
+    },
+    "items": {
+      "verify": {
+        "title": "Verify land",
+        "intro": "Use the khatian and dag numbers to see if the land is on record. You also see whether it has a case or other claims.",
+        "steps": {
+          "s1": {
+            "title": "Choose the area",
+            "body": "Open Verify land. Pick the district and upazila from the lists. Then type the mouza name.",
+            "alt": "Verify land page with the district, upazila and mouza fields outlined."
+          },
+          "s2": {
+            "title": "Enter the khatian and dag numbers",
+            "body": "Type the khatian number and the dag number. Bangla or English digits both work. Then press Verify.",
+            "alt": "Khatian and dag fields filled in, with the Verify button outlined."
+          },
+          "s3": {
+            "title": "Read the short result",
+            "body": "The result shows how many owners there are and whether there is a case. Sign in to see the full report.",
+            "alt": "Short result card: number of owners, open case and claims."
+          }
+        }
+      },
+      "check": {
+        "title": "Check before you buy",
+        "intro": "Look for warning signs before you buy land. Take the list to the land office or a lawyer.",
+        "steps": {
+          "s1": {
+            "title": "Sign in",
+            "body": "This service needs a citizen account. If you do not have one, register for free.",
+            "alt": "Citizen sign-in page with the email and password fields outlined."
+          },
+          "s2": {
+            "title": "Enter the land details",
+            "body": "Give the area, khatian and dag numbers. Add the seller's name if you know it. Then press Run checklist.",
+            "alt": "Check before you buy form filled in, with the Run checklist button outlined."
+          },
+          "s3": {
+            "title": "Read the indicators",
+            "body": "Each row says Clear, Review or Indicator. If you see an indicator, get advice before you pay anyone.",
+            "alt": "Checklist with a red indicator on the khas land row."
+          }
+        }
+      },
+      "track": {
+        "title": "Mutation status",
+        "intro": "See which stage your mutation application has reached. You only need the application number.",
+        "steps": {
+          "s1": {
+            "title": "Open the mutation tab",
+            "body": "On the home page search card, press Mutation status. The page is also in the Services menu.",
+            "alt": "Home page search card with the Mutation status tab outlined."
+          },
+          "s2": {
+            "title": "Enter the application number",
+            "body": "Type the mutation number from your receipt, for example MUT-2023-0007. Then press Track status.",
+            "alt": "Application number typed in, with the Track status button outlined."
+          },
+          "s3": {
+            "title": "Follow the stages",
+            "body": "You see four stages: applied, review, hearing and decision. Finished stages have a tick and a date.",
+            "alt": "The four mutation stages with their state and date."
+          }
+        }
+      },
+      "verifyDoc": {
+        "title": "Verify a deed copy",
+        "intro": "If someone gives you a copy of a deed, check whether it matches the recorded deed. We do not keep the file.",
+        "steps": {
+          "s1": {
+            "title": "Choose the copy",
+            "body": "On Verify a deed copy, press the file field. Use a phone photo or a PDF, up to 10 MB.",
+            "alt": "Verify a deed copy page with the file field outlined."
+          },
+          "s2": {
+            "title": "Press Verify copy",
+            "body": "When the file name shows, press Verify copy. The answer comes within a minute.",
+            "alt": "Chosen file name and the Verify copy button outlined."
+          },
+          "s3": {
+            "title": "Read the result",
+            "body": "If it does not match, the result lists what differs. Even on a match, confirm with the registry office.",
+            "alt": "Result card: the land area on the copy does not match the recorded deed."
+          }
+        }
+      },
+      "map": {
+        "title": "Parcel map",
+        "intro": "See plot boundaries with their dag and khatian numbers. Owner names are not shown here.",
+        "steps": {
+          "s1": {
+            "title": "Open the map",
+            "body": "Open Parcel map from the Services menu. You see the whole of Bangladesh.",
+            "alt": "Parcel map page with the map of Bangladesh outlined."
+          },
+          "s2": {
+            "title": "Go to your area",
+            "body": "Press Show search menu. Pick the division, district and upazila. The map moves to that area.",
+            "alt": "Search menu with the division, district and upazila fields outlined."
+          },
+          "s3": {
+            "title": "See the plot",
+            "body": "In the parcel list below the map, press Show on map. A small card shows the dag and khatian numbers.",
+            "alt": "A small card over a plot with its dag and khatian numbers."
+          }
+        }
+      },
+      "tools": {
+        "title": "Citizen tools",
+        "intro": "Work out land units, costs and inheritance shares. What you type never leaves your phone.",
+        "steps": {
+          "s1": {
+            "title": "Open Citizen tools",
+            "body": "Press Citizen tools in the top menu. There are three: land units, costs and inheritance.",
+            "alt": "Citizen tools page with three calculator cards."
+          },
+          "s2": {
+            "title": "Enter an amount and a unit",
+            "body": "Open the Land unit converter. Type an amount, for example 10. Then pick a unit, for example decimal.",
+            "alt": "Land unit converter with 10 in the amount field and decimal as the unit."
+          },
+          "s3": {
+            "title": "Read the result",
+            "body": "The table below shows the amount in every unit at once. For example, 10 decimal is about 6 katha.",
+            "alt": "Conversion table: 10 decimal is about 6.05 katha."
+          }
+        }
+      }
+    }
+  },
   "services": {
     "title": "Citizen charter",
     "purpose": "For each online service: what you need, what it costs, how long it takes, who is responsible and how to apply.",
@@ -1921,6 +2074,7 @@
     "notice": "This is a demonstration. The offices, fees and times below describe how the prototype behaves; they are not commitments of any real government office.",
     "whatYouNeed": "What you need",
     "open": "Open this service",
+    "guideLink": "See how, with pictures and a video",
     "feeLink": "See also the fee calculator for registration and mutation fees (illustrative rates).",
     "rows": {
       "need": "Required details",

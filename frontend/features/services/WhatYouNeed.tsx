@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ChevronDown, ListChecks } from "lucide-react";
+import { ChevronDown, CirclePlay, ListChecks } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { guideAnchor } from "@/features/guide/guides";
 import type { ServiceId } from "./services";
 
 /** "What you need" card shown beside (≥ 1024 px, always open) or above (collapsible) a service form; same list as the citizen charter. */
@@ -34,6 +36,12 @@ export default function WhatYouNeed({ service }: { service: ServiceId }) {
           ))}
         </ul>
       </details>
+      <p className="border-t border-line/70 px-4 py-2 text-sm">
+        <Link href={`/guide#${guideAnchor(service)}`} className="inline-flex min-h-11 items-center gap-2 text-link underline underline-offset-2" data-testid="guide-link">
+          <CirclePlay aria-hidden="true" className="h-4 w-4 shrink-0" />
+          {t("guideLink")}
+        </Link>
+      </p>
     </aside>
   );
 }

@@ -1,8 +1,9 @@
 import { useTranslations } from "next-intl";
-import { Banknote, Building2, Clock, ListChecks, ListOrdered, type LucideIcon } from "lucide-react";
+import { Banknote, Building2, CirclePlay, Clock, ListChecks, ListOrdered, type LucideIcon } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Link } from "@/i18n/navigation";
 import { SERVICE_ART } from "@/features/landing/Illustrations";
+import { guideAnchor } from "@/features/guide/guides";
 import { SERVICE_HREF, SERVICE_IDS } from "./services";
 
 const ROWS = ["need", "fee", "time", "office", "apply"] as const;
@@ -55,9 +56,13 @@ export default function ServicesPage() {
                 );
               })}
             </dl>
-            <p className="mt-5">
+            <p className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
               <Link href={SERVICE_HREF[id]} className="inline-flex min-h-12 items-center rounded-xl bg-primary px-5 py-2 font-medium text-primary-fg shadow-[0_6px_16px_-6px_rgb(var(--primary)/0.55)] hover:bg-primary-hover">
                 {t("open")}
+              </Link>
+              <Link href={`/guide#${guideAnchor(id)}`} className="inline-flex min-h-12 items-center gap-2 text-link underline underline-offset-2">
+                <CirclePlay aria-hidden="true" className="h-4 w-4 shrink-0" />
+                {t("guideLink")}
               </Link>
             </p>
           </section>

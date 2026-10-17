@@ -5,11 +5,11 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { activeNavHref, navItemsFor } from "@/features/auth/roles";
 import HeaderDropdown, { NAV_PILL, NAV_PILL_ACTIVE, NAV_PILL_IDLE } from "./HeaderDropdown";
 
-/** Header links after the services dropdown. Guide and notices have no page of their own yet (U4.1, U3.6), so they point at the
- *  closest existing content: the FAQ, and the notice board on the home page (an anchor, never marked as the current page). */
+/** Header links after the services dropdown. Notices have no page of their own yet, so that link points at the notice board on
+ *  the home page (an anchor, never marked as the current page). */
 const EXTRA_LINKS = [
   { href: "/tools", labelKey: "nav.tools" },
-  { href: "/faq", labelKey: "nav.guide" },
+  { href: "/guide", labelKey: "nav.guide" },
   { href: "/#notices-title", labelKey: "nav.notices" },
   { href: "/feedback", labelKey: "nav.contact" },
 ] as const;

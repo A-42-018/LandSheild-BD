@@ -83,7 +83,7 @@ describe("Navbar (UD3)", () => {
     render(wrap(<Navbar />));
     expect(screen.getByRole("link", { name: en.nav.home })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: en.nav.tools })).toHaveAttribute("href", "/tools");
-    expect(screen.getByRole("link", { name: en.nav.guide })).toHaveAttribute("href", "/faq");
+    expect(screen.getByRole("link", { name: en.nav.guide })).toHaveAttribute("href", "/guide");
     expect(screen.getByRole("link", { name: en.nav.notices })).toHaveAttribute("href", "/#notices-title");
     expect(screen.getByRole("link", { name: en.nav.contact })).toHaveAttribute("href", "/feedback");
     cleanup();
