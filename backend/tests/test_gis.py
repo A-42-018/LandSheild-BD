@@ -85,6 +85,9 @@ def test_gazipur_lists_all_five_upazilas_and_name_clashes_sit_in_the_right_distr
     assert set(mag) == {"Magura Sadar", "Mohammadpur", "Shalikha", "Sreepur"} and mag["Sreepur"]["bbox"][0] < 89.6
     assert {"Gulshan", "Dhanmondi", "Mirpur", "Savar", "Dakshinkhan"} <= set(names("Dhaka"))
     assert {"Mirpur", "Daulatpur"} <= set(names("Kushtia"))
+    # Singra is Natore's (not Sirajganj's), Kawkhali is Rangamati's (not Chattogram's)
+    assert "Singra" in names("Natore") and "Singra" not in names("Sirajgonj")
+    assert "Kawkhali (Betbunia)" in names("Rangamati") and "Kawkhali (Betbunia)" not in names("Chattogram")
 
 
 def test_every_feature_has_geometry_bbox_and_valid_parent(env):

@@ -53,6 +53,16 @@ def test_cascade_lists_english_and_bangla(env):
     assert {o["office_type"] for o in d["items"]} == {"District Land Office"}
 
 
+def test_cascade_filters_by_the_chosen_district(env):
+    # a district not named like its division: the list must be that district's, not the division-named one
+    upas = env.get(f"{OFF}/upazilas", params={"division": "Dhaka", "district": "Rajbari"}).json()
+    assert {u["en"] for u in upas} == {"Baliakandi", "Goalanda", "Kalukhali", "Pangsa", "Rajbari Sadar"}
+    upas = env.get(f"{OFF}/upazilas", params={"division": "Khulna", "district": "Kushtia"}).json()
+    assert "Kushtia Sadar" in {u["en"] for u in upas} and "Dumuria" not in {u["en"] for u in upas}
+    offs = env.get(f"{OFF}", params={"division": "Dhaka", "district": "Rajbari", "upazila": "Pangsa"}).json()
+    assert offs["total"] and all(o["district_en"] == "Rajbari" and o["upazila_en"] == "Pangsa" for o in offs["items"])
+
+
 def test_request_creates_inactive_account_and_cannot_login(env):
     r = env.post(f"{OFF}/officer-requests", json=_body(env, role="ADMIN"))
     assert r.status_code == 201 and r.json()["status"] == "PENDING", r.text

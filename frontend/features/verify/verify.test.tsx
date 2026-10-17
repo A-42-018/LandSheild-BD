@@ -73,6 +73,18 @@ describe("geo", () => {
     expect(upazilasOf("Gazipur").map((u) => u.value)).toContain("Sreepur");
     expect(upazilasOf("nope")).toEqual([]);
   });
+
+  it("keeps each upazila under its own district (same as the map data)", () => {
+    const of = (d: string) => upazilasOf(d).map((u) => u.value);
+    expect(of("Meherpur")).toEqual(expect.arrayContaining(["Gangni", "Meherpur Sadar"]));
+    expect(of("Chuadanga")).not.toContain("Gangni");
+    expect(of("Noakhali")).toEqual(expect.arrayContaining(["Hatiya", "Kabirhat", "Senbagh", "Subarnachar"]));
+    expect(of("Sylhet")).not.toContain("Kabirhat");
+    expect(of("Natore")).toContain("Singra");
+    expect(of("Sirajgonj")).not.toContain("Singra");
+    expect(of("Lalmonirhat")).toContain("Lalmonirhat Sadar");
+    expect(of("Kurigram")).not.toContain("Lalmonirhat Sadar");
+  });
 });
 
 describe("VerifyForm", () => {
