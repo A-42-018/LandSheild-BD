@@ -36,6 +36,8 @@ import {
   type PartyNidErrors,
   type PartyNidValue,
 } from "./PartyNidFields";
+import DemoDocPicker from "@/features/demo-docs/DemoDocPicker";
+import { UPLOAD_DEMO_DOCS, type UploadDemoDoc } from "@/features/demo-docs/catalog";
 
 function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
   const t = useTranslations("upload");
@@ -192,6 +194,12 @@ export default function UploadForm() {
     setFileError(validateFile(f));
   }
 
+  function pickDemo(f: File, d: UploadDemoDoc) {
+    pick(f);
+    if (inputRef.current) inputRef.current.value = "";
+    setDocType(d.docType);
+  }
+
   function onDrop(e: DragEvent) {
     e.preventDefault();
     setDragging(false);
@@ -284,6 +292,7 @@ export default function UploadForm() {
           <p id={`${fileId}-hint`} className="text-sm text-ink-muted">
             {t("dropHint")}
           </p>
+          <DemoDocPicker docs={UPLOAD_DEMO_DOCS} disabled={m.isPending} onPick={pickDemo} />
           {file && (
             <p
               data-testid="selected-file"

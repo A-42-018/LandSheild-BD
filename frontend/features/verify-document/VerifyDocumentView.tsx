@@ -7,6 +7,8 @@ import { Button, Card } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
 import { DeedArt } from "@/features/landing/Illustrations";
+import DemoDocPicker from "@/features/demo-docs/DemoDocPicker";
+import { VERIFY_DEMO_DOCS } from "@/features/demo-docs/catalog";
 import type { DocVerifyDto, DocVerifyState } from "./types";
 
 const ICON: Record<DocVerifyState, LucideIcon> = {
@@ -28,6 +30,18 @@ const BANNER: Record<DocVerifyState, string> = {
   UNREADABLE: "border-l-review bg-review-soft/60",
 };
 const FIELDS = ["khatian_no", "dag_no", "land_area", "area_unit", "deed_date", "seller", "buyer"];
+
+/** Put a picked sample into the native file input so it shows the file name, not "No file chosen". */
+function showInInput(el: HTMLInputElement | null, f: File) {
+  if (!el) return;
+  try {
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    el.files = dt.files;
+  } catch {
+    el.value = ""; // no DataTransfer constructor (old browsers, jsdom): the chip below still names the file
+  }
+}
 
 export default function VerifyDocumentView() {
   const t = useTranslations("verifyDoc");
@@ -84,6 +98,17 @@ export default function VerifyDocumentView() {
             />
             <span className="text-xs font-normal text-ink-muted">{t("fileHint")}</span>
           </label>
+          <div className="-mt-2 flex justify-center">
+            <DemoDocPicker
+              docs={VERIFY_DEMO_DOCS}
+              disabled={m.isPending}
+              onPick={(f) => {
+                showInInput(input.current, f);
+                setFile(f);
+                m.reset();
+              }}
+            />
+          </div>
           {file && (
             <p data-testid="doc-file-chip" className="inline-flex max-w-full items-center gap-2 self-start rounded-full border border-primary/25 bg-primary-soft px-3 py-1 text-sm text-ink">
               <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />

@@ -5,6 +5,7 @@
 
 Outputs (PNG, seeded RNG, no timestamps -> two runs give identical bytes):
   sample_data/{Doc1,Doc2,AreaMismatch,SellerMismatch,Clean}.png   R7 demo documents
+  sample_data/Verify_{Authentic,Altered,Unreadable}.png          copies for "Verify a document copy"
   evaluation/data/eval_01..eval_20.png + ground_truth.json         OCR/extraction evaluation set
 Each PNG carries a tEXt chunk `LSMOCK:<key>` so the mock providers find their ground truth.
 """
@@ -15,7 +16,7 @@ import json
 import random
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont, PngImagePlugin
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, PngImagePlugin
 
 HERE = Path(__file__).resolve().parent
 AI_DIR = HERE.parent
@@ -76,7 +77,7 @@ def _from_fixture(key: str) -> dict[str, str]:
 
 def render(
     key: str, fields: dict[str, str], *, bn_digits: bool = False, label_mode: str = "both",
-    skew: float = 0.0, noise: float = 0.0, seed: int = 0,
+    skew: float = 0.0, noise: float = 0.0, blur: float = 0.0, seed: int = 0,
 ) -> tuple[bytes, dict]:
     """Render one deed. Returns (png_bytes, {field: bbox[x,y,w,h]})."""
     rng = random.Random(seed)
@@ -116,6 +117,8 @@ def render(
     if skew:
         img = img.rotate(skew, resample=Image.Resampling.BICUBIC, fillcolor=250)
         # bboxes are for the unskewed layout; ground truth records the skew angle
+    if blur:
+        img = img.filter(ImageFilter.GaussianBlur(blur))
 
     info = PngImagePlugin.PngInfo()
     info.add_text("LSMOCK", f"LSMOCK:{key}")  # plain tEXt chunk -> marker visible in raw bytes
@@ -173,6 +176,8 @@ def generate(sample_dir: Path, eval_dir: Path) -> list[Path]:
     p.write_bytes(png)
     written.append(p)
 
+    written += generate_verify_copies(sample_dir)
+
     rng = random.Random(SEED)
     truth = []
     for spec in _eval_specs(rng):
@@ -191,6 +196,31 @@ def generate(sample_dir: Path, eval_dir: Path) -> list[Path]:
     gt.write_text(json.dumps({"seed": SEED, "documents": truth}, indent=2, ensure_ascii=False) + "\n",
                   encoding="utf-8")
     written.append(gt)
+    return written
+
+
+# Copies of the seeded deed D-2021-0240 (LP-10240), so every verify result shows on a fresh seed:
+# key -> (file, render options). Clean.png (D-2024-0101, not recorded) covers NOT_FOUND.
+VERIFY_COPIES = {
+    "VerifyAuthentic": ("Verify_Authentic.png", {}),
+    "VerifyAltered": ("Verify_Altered.png", {}),  # area 10 -> 16
+    "VerifyUnreadable": ("Verify_Unreadable.png", {"skew": 5.0, "noise": 0.006, "blur": 7.0}),
+}
+_VERIFY_PRINTED = {  # what the page shows; the fixture holds what OCR "reads"
+    "deed_no": "D-2021-0240", "deed_date": "2021-05-10", "district": "Gazipur", "upazila": "Sreepur",
+    "mouza": "Barmi", "khatian_no": "1250", "dag_no": "790", "land_area": "10", "area_unit": "decimal",
+    "seller": "Rahim Uddin", "father_name": "Abdul Jabbar", "buyer": "Karim Mia",
+}
+
+
+def generate_verify_copies(sample_dir: Path) -> list[Path]:
+    written = []
+    for i, (key, (name, opts)) in enumerate(VERIFY_COPIES.items()):
+        fields = _from_fixture(key) if key != "VerifyUnreadable" else dict(_VERIFY_PRINTED)
+        png, _ = render(key, fields, seed=SEED + 50 + i, **opts)
+        p = sample_dir / name
+        p.write_bytes(png)
+        written.append(p)
     return written
 
 

@@ -1,5 +1,6 @@
 # ruff: noqa: F811
 import json
+from pathlib import Path
 
 import pytest
 
@@ -94,3 +95,22 @@ def test_rate_limited(env, jobs):
         for _ in range(limit + 1)
     ]
     assert codes[-1] == 429 and set(codes[:-1]) == {200}
+
+
+SAMPLES = Path(__file__).resolve().parents[2] / "database" / "sample_data"
+
+
+@pytest.mark.parametrize(
+    ("name", "state", "differing"),
+    [
+        ("Verify_Authentic.png", "AUTHENTIC", []),
+        ("Verify_Altered.png", "ALTERED", ["land_area"]),
+        ("Clean.png", "NOT_FOUND", []),
+        ("Verify_Unreadable.png", "UNREADABLE", []),
+    ],
+)
+def test_demo_picker_samples_on_a_fresh_seed(env, name, state, differing):
+    """The verify page's demo picker promises these results without any upload or approval first."""
+    r = _send(env, (SAMPLES / name).read_bytes(), name)
+    assert r.status_code == 200, r.text
+    assert r.json()["state"] == state and r.json()["differing"] == differing
