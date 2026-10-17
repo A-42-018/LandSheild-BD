@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import en from "../../messages/en.json";
 import bn from "../../messages/bn.json";
 import { ApiError, type ApiClient } from "@/lib/api";
@@ -186,6 +186,33 @@ describe("ResultView", () => {
     await openTab(bn.result.tabTransactions);
     expect(await screen.findByRole("table")).toBeInTheDocument();
     expect((await screen.findAllByText("Rahim Uddin")).length).toBeGreaterThan(0);
+  });
+});
+
+describe("read aloud (U4.4)", () => {
+  const SPEECH = () => {
+    const synth = { speak: vi.fn(), cancel: vi.fn(), getVoices: () => [{ lang: "en-US" }, { lang: "bn-BD" }], addEventListener: vi.fn(), removeEventListener: vi.fn() };
+    Object.defineProperty(window, "speechSynthesis", { value: synth, configurable: true });
+    vi.stubGlobal("SpeechSynthesisUtterance", class { constructor(public text: string) {} });
+    return synth;
+  };
+
+  afterEach(() => Reflect.deleteProperty(window, "speechSynthesis"));
+
+  it("offers Listen once the record is loaded, and reads it without the action buttons", async () => {
+    const synth = SPEECH();
+    wrap(client(okGet), "LP-10100");
+    fireEvent.click(await screen.findByRole("button", { name: `${en.readAloud.listen}: ${en.readAloud.subjectResult}` }));
+    const said = synth.speak.mock.calls.map(([u]) => u.text).join(" ");
+    expect(said).toContain("LP-10100");
+    expect(said).not.toContain(en.result.newSearch);
+  });
+
+  it("is not shown for an unknown land", async () => {
+    SPEECH();
+    wrap(client(okGet), "LP-99999");
+    await screen.findByText(en.result.notFound);
+    expect(screen.queryByTestId("read-aloud")).not.toBeInTheDocument();
   });
 });
 
