@@ -64,7 +64,7 @@ function GuideSection({ guide }: { guide: Guide }) {
   const anchor = guideAnchor(id);
   const Lock = signIn ? LockKeyhole : LockKeyholeOpen;
   return (
-    <section id={anchor} aria-labelledby={`${anchor}-h`} className="glass-card scroll-mt-28 p-5 sm:p-6" data-testid="guide-section">
+    <section id={anchor} aria-labelledby={`${anchor}-h`} className="glass-card p-5 sm:p-6" data-testid="guide-section">
       <div className="flex items-start gap-3">
         <span aria-hidden="true" className="icon-tile"><Icon className="h-5 w-5" /></span>
         <div className="min-w-0 flex-1">
@@ -120,7 +120,7 @@ export default function GuidePage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <PageHeader title={t("title")} purpose={t("purpose")} art={<ChecklistArt />} />
-      <section id={PICK} aria-labelledby={`${PICK}-h`} className="glass-card scroll-mt-28 p-5 sm:p-6">
+      <section id={PICK} aria-labelledby={`${PICK}-h`} className="glass-card p-5 sm:p-6">
         <h2 id={`${PICK}-h`} className="section-title text-xl font-semibold text-ink">{t("pickTitle")}</h2>
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {GUIDES.map(({ id, icon: Icon }) => (

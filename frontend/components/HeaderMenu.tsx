@@ -1,6 +1,6 @@
 "use client";
 import { Menu, X } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import HeaderNav from "./HeaderNav";
@@ -12,12 +12,19 @@ export default function HeaderMenu({ controls }: { controls: ReactNode }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const button = useRef<HTMLButtonElement>(null);
 
   useEffect(() => setOpen(false), [pathname]);
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      // focus inside the panel would fall to <body> once it is hidden (U5.4): give it back to the menu button
+      const inside = document.getElementById("site-menu")?.contains(document.activeElement);
+      setOpen(false);
+      if (inside) button.current?.focus();
+    };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
@@ -25,6 +32,7 @@ export default function HeaderMenu({ controls }: { controls: ReactNode }) {
   return (
     <>
       <button
+        ref={button}
         type="button"
         aria-expanded={open}
         aria-controls="site-menu"

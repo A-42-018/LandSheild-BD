@@ -1,6 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import RecordsView from "@/features/admin/RecordsView";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("admin.console.dataTitle");
 
 export default async function Page({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);

@@ -254,6 +254,27 @@ describe("Navbar (UD3)", () => {
     expect(btn).toHaveAttribute("aria-expanded", "false");
   });
 
+  it("Escape from a link inside the account panel or the phone menu gives focus back to its button (U5.4)", () => {
+    auth = { status: "authenticated", user: { name: "C", role: "CITIZEN" }, logout };
+    render(wrap(<Navbar />));
+    const account = screen.getByRole("button", { name: en.nav.account });
+    fireEvent.click(account);
+    screen.getByRole("link", { name: en.nav.myDashboard }).focus();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(account).toHaveFocus();
+
+    const menu = screen.getByRole("button", { name: en.nav.menuOpen });
+    fireEvent.click(menu);
+    document.getElementById("site-menu")!.querySelector<HTMLElement>("a[href]")!.focus();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(menu).toHaveFocus();
+    // Escape with focus outside a panel leaves focus where it is
+    fireEvent.click(menu);
+    menu.focus();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(menu).toHaveFocus();
+  });
+
   it("citizen does not see officer links in the account panel", () => {
     auth = { status: "authenticated", user: { name: "C", role: "CITIZEN" }, logout };
     render(wrap(<Navbar />));

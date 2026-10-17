@@ -37,7 +37,8 @@ export async function generateMetadata({
   params: { locale: string };
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "common" });
-  return { title: t("appName"), description: t("tagline") };
+  // pages set their own part with lib/page-title.ts (U5.4); the home page keeps the bare name
+  return { title: { default: t("appName"), template: `%s | ${t("appName")}` }, description: t("tagline") };
 }
 
 export default async function LocaleLayout({

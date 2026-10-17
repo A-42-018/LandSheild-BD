@@ -3,6 +3,9 @@ import RequireRole from "@/features/auth/RequireRole";
 import { OFFICER_UP } from "@/features/auth/roles";
 import AuditLogs from "@/features/admin/AuditLogs";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("admin.audit.title");
 
 export default async function AuditLogsPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);

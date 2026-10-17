@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api";
+import { useStickyBar } from "@/lib/sticky-bar";
 import { Button, useToast } from "@/components/ui";
 import RejectModal from "./RejectModal";
 import { useReviewShortcuts } from "./useReviewShortcuts";
@@ -18,6 +19,7 @@ export default function ReviewActions({
   actions: ReturnType<typeof useReviewActions>;
 }) {
   const t = useTranslations("review");
+  const barRef = useStickyBar();
   const [rejecting, setRejecting] = useState(false);
   const toast = useToast();
   const { approve: ap, reject: rj } = actions;
@@ -60,6 +62,8 @@ export default function ReviewActions({
       aria-label={t("actions.title")}
       className="glass-card sticky bottom-0 z-10 flex flex-col gap-2 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lift"
       data-testid="review-actions"
+      data-sticky-bar
+      ref={barRef}
     >
       <div className="flex flex-wrap gap-2">
         <Button

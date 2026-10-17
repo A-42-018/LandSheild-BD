@@ -2,6 +2,9 @@ import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import PageHeader from "@/components/PageHeader";
 import { ShieldArt } from "@/features/landing/Illustrations";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("about.title");
 
 const LIMITS = ["l1", "l2", "l3", "l4"] as const;
 const box = "glass-card p-5 sm:p-6";

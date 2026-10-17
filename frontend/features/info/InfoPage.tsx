@@ -5,7 +5,7 @@ import { ShieldArt } from "@/features/landing/Illustrations";
 import FaqList from "./FaqList";
 import { FAQ_IDS, INFO_PAGES, SITEMAP_GROUPS, type InfoSlug } from "./pages";
 
-const SECTION = "glass-card p-5 sm:p-6 scroll-mt-24";
+const SECTION = "glass-card p-5 sm:p-6";
 const LINK = "inline-flex min-h-11 items-center text-link underline underline-offset-2";
 
 function Header({ ns }: { ns: string }) {

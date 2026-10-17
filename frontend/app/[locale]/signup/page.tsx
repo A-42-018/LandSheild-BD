@@ -1,5 +1,8 @@
 import { setRequestLocale } from "next-intl/server";
 import CitizenSignup from "@/features/auth/CitizenSignup";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("citizenSignup.title");
 
 /** Public: a citizen creates an account (role is always CITIZEN on the server). */
 export default function SignupPage({ params: { locale } }: { params: { locale: string } }) {

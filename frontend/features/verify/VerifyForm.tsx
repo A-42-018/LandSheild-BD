@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Search, SearchCheck } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "@/i18n/navigation";
 import { Button, Card, Input, Select } from "@/components/ui";
@@ -58,6 +58,8 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   } = useForm<VerifyInput, unknown, VerifyValues>({
     resolver: zodResolver(verifySchema),
     defaultValues: { district: "", upazila: "", mouza: "", khatian: "", dag: "" },
+    // react-hook-form focuses in registration order, and mouza is registered first (mouzaField); see onInvalid
+    shouldFocusError: false,
   });
 
   const district = watch("district") as string;
@@ -130,7 +132,13 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
     pub.reset();
     pub.mutate(v);
   };
-  const submit = handleSubmit(onValid);
+  // U5.4: focus the first wrong field in screen order (district before mouza), so a screen reader starts at the top
+  const formRef = useRef<HTMLFormElement>(null);
+  const onInvalid = (errs: FieldErrors<VerifyInput>) => {
+    const els = Array.from(formRef.current?.elements ?? []) as HTMLElement[];
+    els.find((el) => (el as HTMLInputElement).name in errs)?.focus();
+  };
+  const submit = handleSubmit(onValid, onInvalid);
 
   useEffect(() => {
     if (!autoRun.current || status === "loading") return;
@@ -159,6 +167,7 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   const hint = compact ? undefined : t("numericHint");
   const form = (
       <form
+        ref={formRef}
         onSubmit={submit}
         noValidate
         aria-label={compact ? t("title") : undefined}
@@ -298,7 +307,7 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
         {form}
       </Card>
       {pub.data && (
-        <div ref={summaryRef} className="scroll-mt-24">
+        <div ref={summaryRef}>
           <PublicSummary data={pub.data} />
         </div>
       )}

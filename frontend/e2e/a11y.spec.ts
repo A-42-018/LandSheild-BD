@@ -6,15 +6,26 @@ import { expectNoHorizontalScroll, signIn, type DemoRole } from "./fixtures";
 // narrowest supported width (360 px).
 const axePath = join(process.cwd(), "node_modules/axe-core/axe.min.js");
 
+// U5.4: every route in app/[locale] (dynamic ones with a seeded id). Keep in step when a page is added.
 const PUBLIC = [
   "", "about", "faq", "accessibility", "privacy", "terms", "data-sources", "sitemap", "services", "feedback",
-  "track", "verify-document", "tools", "tools/units", "tools/fees", "tools/inheritance", "login", "officer-login", "officer-signup",
-  "no-such-page", "v/LP-10001",
+  "verify", "map", "guide", "track", "verify-document", "tools", "tools/units", "tools/fees", "tools/inheritance",
+  "login", "signup", "officer-login", "officer-signup", "no-such-page", "v/LP-10001",
 ];
 const SIGNED_IN: [DemoRole, string[]][] = [
-  ["citizen", ["verify", "check", "map", "verify/result?land_id=LP-10240", "verify/graph?land_id=LP-10240"]],
-  ["officer", ["officer", "officer/upload", "officer/mutations", "officer/archive", "officer/audit-logs", "officer/feedback"]],
-  ["admin", ["admin", "admin/users", "admin/officer-requests", "admin/offices", "admin/records", "admin/audit-logs", "admin/settings"]],
+  ["citizen", [
+    "check", "verify/result?land_id=LP-10240", "verify/graph?land_id=LP-10240",
+    "my", "my/searches", "my/watchlist", "my/reports", "my/notifications", "my/profile",
+  ]],
+  ["reviewer", ["officer/review"]],
+  ["officer", [
+    "officer", "officer/upload", "officer/mutations", "officer/archive", "officer/audit-logs", "officer/feedback",
+    "officer/hearings",
+  ]],
+  ["admin", [
+    "admin", "admin/users", "admin/officer-requests", "admin/offices", "admin/records", "admin/audit-logs",
+    "admin/settings", "admin/content",
+  ]],
 ];
 
 test.use({ viewport: { width: 360, height: 800 } });

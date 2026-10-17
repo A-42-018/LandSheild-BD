@@ -1,6 +1,9 @@
 import { setRequestLocale } from "next-intl/server";
 import RequireRole from "@/features/auth/RequireRole";
 import ReportView from "@/features/report/ReportView";
+import { pageTitle } from "@/lib/page-title";
+
+export const generateMetadata = pageTitle("report.title");
 
 export default function ReportPage({ params: { locale, id } }: { params: { locale: string; id: string } }) {
   setRequestLocale(locale);
