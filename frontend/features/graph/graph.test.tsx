@@ -130,7 +130,7 @@ describe("GraphView", () => {
 
   it("404 → empty state", async () => {
     wrap(client(vi.fn(() => Promise.reject(new ApiError(404, "LAND_NOT_FOUND", "x")))), "LP-9");
-    expect(await screen.findByText(en.common.empty)).toBeInTheDocument();
+    expect(await screen.findByText(en.result.notFound)).toBeInTheDocument();
   });
 
   it("403 → permission message", async () => {
@@ -148,7 +148,7 @@ describe("GraphView", () => {
 
   it("missing land id → empty state", () => {
     wrap(client(vi.fn()), undefined);
-    expect(screen.getByText(en.common.empty)).toBeInTheDocument();
+    expect(screen.getByText(en.result.notFound)).toBeInTheDocument();
   });
 
   it("renders in Bangla with translated labels", async () => {

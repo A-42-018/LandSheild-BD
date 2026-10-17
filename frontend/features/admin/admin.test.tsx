@@ -135,7 +135,7 @@ describe("admin users", () => {
 
   it("shows a permission error state", async () => {
     wrap({ get: vi.fn().mockRejectedValue(new ApiError(403, "FORBIDDEN", "no")) });
-    expect(await screen.findByText(en.admin.console.errors.permission)).toBeInTheDocument();
+    expect(await screen.findByText(en.errors.permission)).toBeInTheDocument();
   });
 });
 

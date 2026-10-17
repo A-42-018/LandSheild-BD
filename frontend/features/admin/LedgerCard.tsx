@@ -11,7 +11,6 @@ const REASONS = ["SEQ_GAP", "PREV_HASH_MISMATCH", "ENTRY_HASH_MISMATCH", "RECORD
 
 export default function LedgerCard() {
   const t = useTranslations("admin.ledger");
-  const te = useTranslations("admin.console.errors");
   const { api } = useAuth();
   const verify = useMutation<LedgerVerify, ApiError>({
     mutationFn: () => api.get<LedgerVerify>("/admin/ledger/verify"),
@@ -27,7 +26,7 @@ export default function LedgerCard() {
           </Button>
         </div>
         {verify.isError && (
-          <ErrorState message={verify.error.status === 403 ? te("permission") : te("generic")} onRetry={() => verify.mutate()} />
+          <ErrorState error={verify.error} onRetry={() => verify.mutate()} />
         )}
         {r && r.status === "INTACT" && (
           <div role="status" data-testid="ledger-result" className="flex flex-col gap-1">

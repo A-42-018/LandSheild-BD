@@ -3,7 +3,6 @@ import { useLocale, useTranslations } from "next-intl";
 import {
   AlertOctagon, BadgeCheck, Bell, CalendarClock, CheckCheck, Database, FileClock, Gavel, Hourglass, Link2, Link2Off, type LucideIcon,
 } from "lucide-react";
-import { ApiError } from "@/lib/api";
 import { ErrorState, LoadingState } from "@/components/ui";
 import { useOfficerStats } from "./useOfficerData";
 import type { OfficerStats } from "./types";
@@ -35,14 +34,12 @@ function Chip({ cls, Icon }: { cls: string; Icon: LucideIcon }) {
 
 export default function KpiCards() {
   const t = useTranslations("officer.kpi");
-  const te = useTranslations("errors");
   const locale = useLocale();
   const q = useOfficerStats();
 
   if (q.isLoading) return <LoadingState />;
   if (q.isError || !q.data) {
-    const forbidden = q.error instanceof ApiError && q.error.status === 403;
-    return <ErrorState message={forbidden ? te("permission") : undefined} onRetry={forbidden ? undefined : () => q.refetch()} />;
+    return <ErrorState error={q.error} onRetry={() => q.refetch()} />;
   }
   const fmt = new Intl.NumberFormat(intlLocale(locale));
   const s: OfficerStats = q.data;

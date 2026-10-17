@@ -28,7 +28,7 @@ export default function StalledActions({ id, status, failureCode }: { id: string
         )}
         {start.isError && (
           <p role="alert" className="text-sm text-critical">
-            {start.error instanceof ApiError && start.error.code && t.has(`failed.${start.error.code}`) ? t(`failed.${start.error.code}`) : te("generic")}
+            {start.error instanceof ApiError && start.error.code && t.has(`failed.${start.error.code}`) ? t(`failed.${start.error.code}`) : te("documentFailed")}
           </p>
         )}
       </div>
@@ -36,7 +36,7 @@ export default function StalledActions({ id, status, failureCode }: { id: string
   }
   return (
     <div role="alert" data-testid="failed-state" className="flex flex-col items-center gap-3 rounded-xl border border-critical/40 bg-surface p-6 text-center shadow-card">
-      <p className="text-critical">{failureCode && t.has(`failed.${failureCode}`) ? t(`failed.${failureCode}`) : te("generic")}</p>
+      <p className="text-critical">{failureCode && t.has(`failed.${failureCode}`) ? t(`failed.${failureCode}`) : te("documentFailed")}</p>
       {failureCode && (
         <p className="text-xs text-ink-muted" data-testid="failure-code">
           {t("failed.codeLabel")} <code className="font-mono">{failureCode}</code>

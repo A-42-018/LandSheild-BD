@@ -30,14 +30,13 @@ function useCounts() {
 
 export default function AdminOverview() {
   const t = useTranslations("admin.overview");
-  const te = useTranslations("admin.console.errors");
   const locale = useLocale();
   const counts = useCounts();
   const num = new Intl.NumberFormat(intlLocale(locale));
 
   if (counts.isLoading) return <LoadingState />;
   if (counts.isError || !counts.data) {
-    return <ErrorState message={counts.error instanceof ApiError && counts.error.status === 403 ? te("permission") : undefined} onRetry={() => counts.refetch()} />;
+    return <ErrorState error={counts.error} onRetry={() => counts.refetch()} />;
   }
   const c = counts.data;
   const tiles: { key: string; href: string; value: number; Icon: LucideIcon; attention?: boolean }[] = [

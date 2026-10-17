@@ -1,7 +1,6 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
 import { Activity as ActivityIcon, CircleDot } from "lucide-react";
-import { ApiError } from "@/lib/api";
 import { Card, EmptyState, ErrorState, LoadingState } from "@/components/ui";
 import { formatDateTime } from "@/features/result/format";
 import { useActivity } from "./useOfficerData";
@@ -9,7 +8,6 @@ import { KNOWN_ACTIONS } from "./types";
 
 export default function Activity() {
   const t = useTranslations("officer.activity");
-  const te = useTranslations("errors");
   const tr = useTranslations("roles");
   const locale = useLocale();
   const q = useActivity();
@@ -20,7 +18,7 @@ export default function Activity() {
         <LoadingState />
       ) : q.isError || !q.data ? (
         <ErrorState
-          message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined}
+          error={q.error}
           onRetry={() => q.refetch()}
         />
       ) : q.data.items.length === 0 ? (

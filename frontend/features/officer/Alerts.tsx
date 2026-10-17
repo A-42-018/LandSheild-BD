@@ -46,7 +46,7 @@ export default function Alerts() {
         <LoadingState />
       ) : q.isError || !q.data ? (
         <ErrorState
-          message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined}
+          error={q.error}
           onRetry={() => q.refetch()}
         />
       ) : q.data.items.length === 0 ? (

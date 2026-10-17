@@ -124,7 +124,7 @@ export default function ContentPanel() {
         {q.isLoading ? (
           <LoadingState />
         ) : q.isError || !q.data ? (
-          <ErrorState message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined} onRetry={() => q.refetch()} />
+          <ErrorState error={q.error} onRetry={() => q.refetch()} />
         ) : (
           <div aria-busy={q.isFetching} data-testid="content-table">
             <Table caption={t(`kinds.${kind}`)} columns={columns} rows={q.data.items} rowKey={(c) => c.id} page={page} pageSize={ADMIN_PAGE_SIZE} total={q.data.total} onPageChange={setPage} emptyText={t("empty")} />

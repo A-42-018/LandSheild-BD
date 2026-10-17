@@ -57,7 +57,7 @@ describe("MutationQueue", () => {
 
   it("shows the empty state", async () => {
     wrap(<MutationQueue />, vi.fn().mockResolvedValue({ total: 0, items: [] }));
-    expect(await screen.findByText("No mutation applications in this status.")).toBeInTheDocument();
+    expect(await screen.findByText(en.mutation.empty)).toBeInTheDocument();
   });
 
   it("renders in Bangla", async () => {

@@ -57,7 +57,7 @@ export default function FeedbackAdmin() {
     <div className="flex flex-col gap-4">
       <OfficerPageHeader title={t("title")} purpose={t("purpose")} />
       {q.isPending && <LoadingState />}
-      {q.isError && <ErrorState onRetry={() => q.refetch()} />}
+      {q.isError && <ErrorState error={q.error} onRetry={() => q.refetch()} />}
       {q.data && (
         <>
           <p className="text-sm text-ink-muted" data-testid="feedback-summary">
@@ -99,7 +99,7 @@ export default function FeedbackAdmin() {
               <textarea id="fb-reply" maxLength={1000} className={AREA} value={reply} onChange={(e) => setReply(e.target.value)} />
               <p className="text-xs text-ink-muted">{t("replyHint")}</p>
             </div>
-            {save.isError && <p role="alert" className="text-sm text-critical">{te("generic")}</p>}
+            {save.isError && <p role="alert" className="text-sm text-critical">{te("generic")} {te("genericHint")}</p>}
           </div>
         )}
       </Modal>

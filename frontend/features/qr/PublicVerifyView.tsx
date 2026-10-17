@@ -61,8 +61,7 @@ export default function PublicVerifyView({ landId }: { landId: string }) {
     if (e instanceof ApiError && (e.status === 404 || e.code === "LAND_NOT_FOUND")) {
       body = <EmptyState title={t("publicVerify.notFound")} />;
     } else {
-      const msg = e instanceof ApiError && e.status === 429 ? t("publicVerify.rateLimited") : t("publicVerify.loadError");
-      body = <ErrorState message={msg} onRetry={() => void q.refetch()} />;
+      body = <ErrorState error={e} message={t("publicVerify.loadError")} onRetry={() => void q.refetch()} />;
     }
   } else {
     const d = q.data;

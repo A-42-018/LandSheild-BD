@@ -2,7 +2,6 @@
 import { useState, type FormEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { RotateCcw, ScrollText, Search } from "lucide-react";
-import { ApiError } from "@/lib/api";
 import { Button, Card, ErrorState, Input, LoadingState, Select, Table, type Column } from "@/components/ui";
 import { formatDateTime } from "@/features/result/format";
 import { KNOWN_ACTIONS } from "@/features/officer/types";
@@ -16,7 +15,6 @@ export default function AuditLogs() {
   const t = useTranslations("admin.audit");
   const ta = useTranslations("officer.activity");
   const tr = useTranslations("roles");
-  const te = useTranslations("errors");
   const locale = useLocale();
   const [params, setParams] = useState<AuditParams>(INITIAL);
   const [draft, setDraft] = useState<AuditParams>(INITIAL);
@@ -102,7 +100,7 @@ export default function AuditLogs() {
           <LoadingState />
         ) : q.isError || !q.data ? (
           <ErrorState
-            message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined}
+            error={q.error}
             onRetry={() => q.refetch()}
           />
         ) : (

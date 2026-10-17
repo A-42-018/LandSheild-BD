@@ -2,7 +2,6 @@
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Archive, RotateCcw, Search } from "lucide-react";
-import { ApiError } from "@/lib/api";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import { Button, Card, ErrorState, Input, LoadingState, Select, Table, type Column } from "@/components/ui";
 import { ARCHIVE_PAGE_SIZE, SURVEYS, type ArchiveHit, type ArchiveParams } from "./types";
@@ -24,7 +23,6 @@ export function Snippet({ text }: { text: string }) {
 
 export default function ArchiveSearch() {
   const t = useTranslations("archive");
-  const te = useTranslations("errors");
   const [params, setParams] = useState<ArchiveParams>(INITIAL);
   const [draft, setDraft] = useState<ArchiveParams>(INITIAL);
   const q = useArchive(params);
@@ -81,7 +79,7 @@ export default function ArchiveSearch() {
             <LoadingState />
           ) : q.isError || !q.data ? (
             <ErrorState
-              message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined}
+              error={q.error}
               onRetry={() => q.refetch()}
             />
           ) : (
