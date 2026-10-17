@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-17T08:05:34.827Z",
+  "viewport": "360x800",
+  "locale": "bn",
+  "tasks": [
+    {
+      "task": "t1-search",
+      "ok": true,
+      "actions": 6,
+      "seconds": 3.7,
+      "note": "summary + sign-in prompt for the full report"
+    },
+    {
+      "task": "t2-track",
+      "ok": true,
+      "actions": 3,
+      "seconds": 2.4,
+      "note": "plain status sentence + stepper"
+    },
+    {
+      "task": "t3-units",
+      "ok": true,
+      "actions": 2,
+      "seconds": 2.4,
+      "note": "row \"কাঠা ৬.০৫০০১\""
+    },
+    {
+      "task": "t4-qr",
+      "ok": true,
+      "actions": 3,
+      "seconds": 2.8,
+      "note": "public QR page: risk word + seal state, no login"
+    },
+    {
+      "task": "t5-review",
+      "ok": true,
+      "actions": 4,
+      "seconds": 7.3,
+      "note": "two decisions in 2 s incl. page loads"
+    }
+  ],
+  "checks": [
+    {
+      "id": "360px-no-horizontal-scroll",
+      "ok": true,
+      "detail": "12 pages fit"
+    },
+    {
+      "id": "bn-no-latin-digits (runtime)",
+      "ok": true,
+      "detail": "none outside codes"
+    },
+    {
+      "id": "bn-no-latin-digits (map scale bar)",
+      "ok": false,
+      "detail": "/map: 100 km",
+      "known": "fixed on u4.2-map-bn-digits / u4.3-map-readout-bn-digits, not merged into this base"
+    },
+    {
+      "id": "touch-targets-48px",
+      "ok": true,
+      "detail": "none under 48 px"
+    },
+    {
+      "id": "public-flows-no-login",
+      "ok": true,
+      "detail": "T1, T2, T4 ran anonymously"
+    },
+    {
+      "id": "demo-disclaimer-on-track",
+      "ok": true,
+      "detail": "ডেমো তথ্য। এটি সরকারি কোনো সেবা নয়।"
+    }
+  ]
+}

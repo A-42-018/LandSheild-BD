@@ -95,7 +95,9 @@ export default function TrackView() {
     e.preventDefault();
     lookUp(no);
   };
-  // U1.3: the home-page search card sends `?no=`; fill the box and look it up straight away (once, even in Strict Mode).
+  // U1.3: the home-page search card sends `?no=`; fill the box and look it up straight away.
+  // Strict Mode (dev) unmounts and remounts the effect: the first call's result is dropped with its observer, so the
+  // cleanup re-arms the guard and the second run asks again. In production it runs once.
   const arrived = useRef(false);
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("no");
@@ -103,6 +105,9 @@ export default function TrackView() {
     arrived.current = true;
     setNo(q);
     lookUp(q);
+    return () => {
+      arrived.current = false;
+    };
   }, []);
 
   const d = m.data;

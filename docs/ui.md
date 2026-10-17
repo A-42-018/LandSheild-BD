@@ -1,3 +1,12 @@
+# Validate (U6, 2026-10-17)
+
+Phase 6 of `docs/ui-ux-roadmap.md`. Kit and results: `docs/usability.md`. Real-participant sessions and the U0.4 baseline are **not done**; the before/after table there is empty.
+
+- `frontend/e2e/validate.spec.ts` (run with `USABILITY=1`): the five §7 tasks as an anonymous Bangla visitor at 360 × 800 touch, plus the automatable §8 lines (no sideways scroll, no Latin digits, 48 px targets on 12 public pages). Writes screenshots and `automated.json` to `docs/usability/after/`. All pass.
+- `frontend/scripts/usability-score.mjs` (+ `tests/usability-score.test.ts`): turns `tasks.csv` and `sus.csv` per run into the before/after table with the §7 targets. Templates in `docs/usability/templates/`.
+- Fixed from the pass: hero → `/track?no=` showed nothing in dev (Strict Mode); Latin step digits on the home page; 32 px top-strip buttons, 29 px "more" links, 40 px footer brand link, 44 px file button and 30 px Leaflet zoom on touch. Rule to keep: a utility `min-h-*` on a control beats the global 48 px net, so add `[@media(pointer:coarse)]:min-h-touch` next to it.
+- Open: map scale bar "100 km" (fixed on `u4.2` / `u4.3`, not merged here); Latin mouza names on the public summary.
+
 # Bangla copy rules and glossary (U0.1, 2026-10-16)
 
 Applies to `frontend/messages/bn.json`. Enforced in review; based on §5 of `docs/ui-ux-roadmap.md`. The digit rule is also enforced by `frontend/tests/bn-digits.test.ts` (U0.2).

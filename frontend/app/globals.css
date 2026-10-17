@@ -410,8 +410,9 @@
     align-items: center;
     min-height: var(--touch-target);
   }
-  .leaflet-touch .leaflet-bar a,
-  .leaflet-touch .leaflet-control-layers-toggle {
+  /* .leaflet-container.leaflet-touch outranks leaflet.css `.leaflet-touch .leaflet-bar a` whatever the load order */
+  .leaflet-container.leaflet-touch .leaflet-bar a,
+  .leaflet-container.leaflet-touch .leaflet-control-layers-toggle {
     width: var(--touch-target);
     height: var(--touch-target);
     line-height: var(--touch-target);
