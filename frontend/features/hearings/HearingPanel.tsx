@@ -5,6 +5,7 @@ import { CalendarClock } from "lucide-react";
 import { ApiError } from "@/lib/api";
 import { Button, Card, Input } from "@/components/ui";
 import { normalizeDigits } from "@/lib/intl-locale";
+import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { dayLabel, dhakaDay, timeLabel, toHearingIso } from "./calendar";
 import { useScheduleHearing } from "./useHearings";
 
@@ -21,9 +22,10 @@ export default function HearingPanel({ id, hearingAt, canSet }: { id: string; he
   const day = normalizeDigits(date);
   const missing = touched && !day;
   const past = touched && !!day && day < today;
+  const focus = useFocusFirstInvalid();
   const submit = () => {
     setTouched(true);
-    if (!day || day < today) return;
+    if (!day || day < today) return focus.request();
     mut.mutate({ hearing_at: toHearingIso(day, normalizeDigits(time)) }, { onSuccess: () => setTouched(false) });
   };
   const err = missing ? t("errors.required") : past ? t("errors.past") : mut.isError ? (mut.error instanceof ApiError && mut.error.code === "HEARING_DATE_PAST" ? t("errors.past") : t("errors.failed")) : null;
@@ -35,6 +37,7 @@ export default function HearingPanel({ id, hearingAt, canSet }: { id: string; he
       </p>
       {canSet && (
         <form
+          ref={focus.ref}
           className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
           onSubmit={(e) => {
             e.preventDefault();

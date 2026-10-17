@@ -65,6 +65,17 @@ describe("LoginForm", () => {
     expect(c.login).not.toHaveBeenCalled();
   });
 
+  it("U5.4: a failed submit moves focus to the first empty field", () => {
+    wrap(<LoginForm />, fakeClient());
+    const submit = screen.getByRole("button", { name: "Sign in" });
+    fireEvent.click(submit);
+    expect(screen.getByLabelText(/Email/)).toHaveFocus();
+    fireEvent.change(screen.getByLabelText(/Email/), { target: { value: "a@b.co" } });
+    submit.focus();
+    fireEvent.click(submit);
+    expect(screen.getByLabelText(/^Password/)).toHaveFocus();
+  });
+
   it("shows the demo-accounts hint (no password) and fills the e-mail on click", () => {
     wrap(<LoginForm audience="staff" />, fakeClient());
     const hint = screen.getByTestId("demo-accounts");

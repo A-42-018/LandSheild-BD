@@ -59,6 +59,19 @@ describe("FeedbackForm", () => {
     expect(request.mock.calls[0][1].body).toMatchObject({ kind: "GRIEVANCE", contact_email: null });
   });
 
+  it("U5.4: a failed submit focuses the first wrong field, the message box included (Bangla)", () => {
+    wrap(<FeedbackForm />, { request: vi.fn() } as any, "bn");
+    const send = screen.getByRole("button", { name: bn.feedback.submit });
+    fireEvent.change(screen.getByLabelText(new RegExp(bn.feedback.subject)), { target: { value: "বিষয় লিখলাম" } });
+    fireEvent.change(screen.getByLabelText(bn.feedback.email), { target: { value: "not-an-email" } });
+    fireEvent.click(send);
+    expect(screen.getByLabelText(new RegExp(bn.feedback.message))).toHaveFocus();
+    fireEvent.change(screen.getByLabelText(new RegExp(bn.feedback.message)), { target: { value: "এটি একটি দীর্ঘ বার্তা।" } });
+    send.focus();
+    fireEvent.click(send);
+    expect(screen.getByLabelText(bn.feedback.email)).toHaveFocus();
+  });
+
   it("maps a 429 to the rate-limit message", async () => {
     const request = vi.fn().mockRejectedValue(new ApiError(429, "RATE_LIMITED", "x"));
     wrap(<FeedbackForm />, { request } as any, "bn");
@@ -94,6 +107,14 @@ describe("TrackView with a feedback reference", () => {
     expect(screen.getByTestId("feedback-state")).toHaveTextContent(en.feedback.status.RESOLVED);
     expect(screen.getByText("Corrected.")).toBeInTheDocument();
     expect(request.mock.calls[0][0]).toBe("/public/feedback/FB-2026-00042");
+  });
+  it("U5.4: a malformed number moves focus back to the number box", () => {
+    const request = vi.fn();
+    wrap(<TrackView />, { request } as any);
+    fireEvent.change(screen.getByLabelText(new RegExp(en.track.number)), { target: { value: "12" } });
+    fireEvent.click(screen.getByRole("button", { name: en.track.submit }));
+    expect(screen.getByLabelText(new RegExp(en.track.number))).toHaveFocus();
+    expect(request).not.toHaveBeenCalled();
   });
 });
 
