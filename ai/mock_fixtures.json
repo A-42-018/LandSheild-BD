@@ -8,7 +8,10 @@
   "a9289d60f95b2547e75af3fe76990e32f8efbc17587f461567ce9ad0cd00e1ef": "Doc2",
   "2cbc9e5f523dd735d29b1f41179763c122d2400cee7cc9af4d8d21be9e0613b7": "Khatian_RS",
   "74826bf07f1166f4663809df13a7d2a20a8131167a684ef6ccce824a76f962cc": "Porcha_BS",
-  "bb432cbf199f00b2a92f560f2ed342320f15cf3d3d01174c30618fa255105d28": "SellerMismatch"
+  "bb432cbf199f00b2a92f560f2ed342320f15cf3d3d01174c30618fa255105d28": "SellerMismatch",
+  "dd4866ab7360902d6330920b96232f317988c2efd8da6fcf2d51cb2047d125d5": "VerifyAuthentic",
+  "b73dd89507bdc60c56d34c8e77acbff2b8fc1cc567f4d909e25592b8fe135c01": "VerifyAltered",
+  "94af8d3b5ae8aa7edc723f609bb65505ec8ce7723897aea8059c1f88e1da5773": "VerifyUnreadable"
  },
  "by_marker": {
   "Doc1": {
@@ -453,6 +456,136 @@
      }
     ],
     "shares_complete": true
+   }
+  },
+  "VerifyAuthentic": {
+   "ocr_text": "Deed of Sale. Deed No D-2021-0240. Date 2021-05-10. District Gazipur, Upazila Sreepur, Mouza Barmi. Khatian 1250, Dag 790. Area 10 decimal. Seller Rahim Uddin. Buyer Karim Mia.",
+   "ocr_confidence": 0.93,
+   "fields": {
+    "owner_name": [
+     "Rahim Uddin",
+     0.92
+    ],
+    "father_name": [
+     "Abdul Jabbar",
+     0.88
+    ],
+    "khatian_no": [
+     "1250",
+     0.97
+    ],
+    "dag_no": [
+     "790",
+     0.97
+    ],
+    "mouza": [
+     "Barmi",
+     0.95
+    ],
+    "district": [
+     "Gazipur",
+     0.96
+    ],
+    "upazila": [
+     "Sreepur",
+     0.96
+    ],
+    "land_area": [
+     "10",
+     0.94
+    ],
+    "area_unit": [
+     "decimal",
+     0.93
+    ],
+    "deed_no": [
+     "D-2021-0240",
+     0.91
+    ],
+    "deed_date": [
+     "2021-05-10",
+     0.9
+    ],
+    "seller": [
+     "Rahim Uddin",
+     0.92
+    ],
+    "buyer": [
+     "Karim Mia",
+     0.91
+    ]
+   }
+  },
+  "VerifyAltered": {
+   "ocr_text": "Deed of Sale. Deed No D-2021-0240. Date 2021-05-10. District Gazipur, Upazila Sreepur, Mouza Barmi. Khatian 1250, Dag 790. Area 16 decimal. Seller Rahim Uddin. Buyer Karim Mia.",
+   "ocr_confidence": 0.93,
+   "fields": {
+    "owner_name": [
+     "Rahim Uddin",
+     0.92
+    ],
+    "father_name": [
+     "Abdul Jabbar",
+     0.88
+    ],
+    "khatian_no": [
+     "1250",
+     0.97
+    ],
+    "dag_no": [
+     "790",
+     0.97
+    ],
+    "mouza": [
+     "Barmi",
+     0.95
+    ],
+    "district": [
+     "Gazipur",
+     0.96
+    ],
+    "upazila": [
+     "Sreepur",
+     0.96
+    ],
+    "land_area": [
+     "16",
+     0.94
+    ],
+    "area_unit": [
+     "decimal",
+     0.93
+    ],
+    "deed_no": [
+     "D-2021-0240",
+     0.91
+    ],
+    "deed_date": [
+     "2021-05-10",
+     0.9
+    ],
+    "seller": [
+     "Rahim Uddin",
+     0.92
+    ],
+    "buyer": [
+     "Karim Mia",
+     0.91
+    ]
+   }
+  },
+  "VerifyUnreadable": {
+   "ocr_text": "Deed of S.le . . Date 20 -0 - . Dist ct Ga ipur . Khat an 12 . Sel er Ra im",
+   "ocr_confidence": 0.31,
+   "fields": {
+    "district": [
+     "Gazipur",
+     0.42
+    ],
+    "seller": [
+     "Rahim",
+     0.35
+    ]
    }
   }
  }

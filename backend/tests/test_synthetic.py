@@ -10,6 +10,7 @@ from ai.evaluation import make_synthetic as ms  # noqa: E402
 from ai.mock_fixtures import find_fixture  # noqa: E402
 
 DEMO_KEYS = ["Doc1", "Doc2", "AreaMismatch", "SellerMismatch", "Clean"]
+VERIFY_FILES = [name for name, _ in ms.VERIFY_COPIES.values()]
 
 
 @pytest.fixture(scope="module")
@@ -39,6 +40,8 @@ def test_outputs_and_marker_lookup(two_runs):
         assert data.startswith(b"\x89PNG")
         fx = find_fixture(data)
         assert fx is not None and fx["fields"]["dag_no"]
+    for name in VERIFY_FILES:
+        assert find_fixture((a / "s" / name).read_bytes()) is not None
     assert len(list((a / "e").glob("eval*.png"))) == 20
 
 
@@ -56,4 +59,4 @@ def test_committed_repo_outputs_are_current_and_small():
     sample = repo / "database" / "sample_data"
     assert sample.exists()
     total = sum(p.stat().st_size for p in [*sample.glob("*"), *(ms.HERE / "data").glob("*")])
-    assert total < 2 * 1024 * 1024
+    assert total < 2.5 * 1024 * 1024  # 2 MiB + the three verify-a-copy samples

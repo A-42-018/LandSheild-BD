@@ -36,6 +36,8 @@ import {
   type PartyNidErrors,
   type PartyNidValue,
 } from "./PartyNidFields";
+import DemoDocPicker from "@/features/demo-docs/DemoDocPicker";
+import { DEMO_OWNERS, UPLOAD_DEMO_DOCS, type UploadDemoDoc } from "@/features/demo-docs/catalog";
 
 function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
   const t = useTranslations("upload");
@@ -192,6 +194,16 @@ export default function UploadForm() {
     setFileError(validateFile(f));
   }
 
+  function pickDemo(f: File, d: UploadDemoDoc) {
+    pick(f);
+    if (inputRef.current) inputRef.current.value = "";
+    setDocType(d.docType);
+    // the parties named on the sample deed; survey records have none
+    setBuyer(d.parties ? { ...DEMO_OWNERS[d.parties.buyer] } : EMPTY_PARTY);
+    setSeller(d.parties ? { ...DEMO_OWNERS[d.parties.seller] } : EMPTY_PARTY);
+    setNidErrors({ buyer: {}, seller: {} });
+  }
+
   function onDrop(e: DragEvent) {
     e.preventDefault();
     setDragging(false);
@@ -284,6 +296,7 @@ export default function UploadForm() {
           <p id={`${fileId}-hint`} className="text-sm text-ink-muted">
             {t("dropHint")}
           </p>
+          <DemoDocPicker docs={UPLOAD_DEMO_DOCS} disabled={m.isPending} onPick={pickDemo} />
           {file && (
             <p
               data-testid="selected-file"

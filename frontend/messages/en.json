@@ -2724,5 +2724,12 @@
       "total": "Total",
       "settled": "Settled"
     }
+  },
+  "demoDocs": {
+    "open": "Choose from sample documents",
+    "title": "Sample documents",
+    "note": "These sample documents are only for easy testing. You can also pick a real document from your own device.",
+    "loading": "Attaching file…",
+    "loadError": "The file could not be loaded. Try again."
   }
 }
