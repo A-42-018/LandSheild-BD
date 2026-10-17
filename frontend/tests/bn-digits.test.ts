@@ -8,6 +8,7 @@ import bn from "../messages/bn.json";
  */
 const ALLOWED: Record<string, string[]> = {
   "upload.landIdHint": ["LP-10100"],
+  "result.notFoundHint": ["LP-10100"],
   "upload.errors.LAND_ID": ["LP-10100"],
   "track.numberHint": ["MUT-2026-0001", "FB-2026-00001"],
   "track.errors.format": ["MUT-2026-0001"],

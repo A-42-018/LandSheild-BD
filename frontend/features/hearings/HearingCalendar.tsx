@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { Button, Card, EmptyState, ErrorState, LoadingState } from "@/components/ui";
@@ -15,7 +14,6 @@ import { useHearingCalendar } from "./useHearings";
 
 export default function HearingCalendar() {
   const t = useTranslations("hearings");
-  const te = useTranslations("errors");
   const locale = useLocale();
   const [month, setMonth] = useState(() => currentMonth());
   const [area, setArea] = useState<Area>(NO_AREA);
@@ -63,7 +61,7 @@ export default function HearingCalendar() {
         {q.isLoading ? (
           <LoadingState />
         ) : q.isError || !q.data ? (
-          <ErrorState message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined} onRetry={() => q.refetch()} />
+          <ErrorState error={q.error} onRetry={() => q.refetch()} />
         ) : (
           <>
             <table className="w-full table-fixed border-separate border-spacing-1 text-center" data-testid="cal-grid">

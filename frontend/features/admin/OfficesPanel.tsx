@@ -13,7 +13,6 @@ import { ADMIN_PAGE_SIZE, type AdminOffice, type Paged } from "./types";
 export default function OfficesPanel() {
   const t = useTranslations("admin.console.offices");
   const tc = useTranslations("admin.console");
-  const te = useTranslations("admin.console.errors");
   const locale = useLocale();
   const { api } = useAuth();
   const [draft, setDraft] = useState({ q: "", type: "" });
@@ -57,7 +56,7 @@ export default function OfficesPanel() {
         {q.isLoading ? (
           <LoadingState />
         ) : q.isError || !q.data ? (
-          <ErrorState message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined} onRetry={() => q.refetch()} />
+          <ErrorState error={q.error} onRetry={() => q.refetch()} />
         ) : (
           <div aria-busy={q.isFetching} data-testid="offices-table">
             <Table caption={t("title")} columns={columns} rows={q.data.items} rowKey={(o) => o.id} page={page} pageSize={ADMIN_PAGE_SIZE} total={q.data.total} onPageChange={setPage} emptyText={t("empty")} />

@@ -56,7 +56,7 @@ export function MySearches() {
       {q.isPending ? (
         <LoadingState />
       ) : q.isError ? (
-        <ErrorState message={t("loadError")} onRetry={() => void q.refetch()} />
+        <ErrorState error={q.error} message={t("loadError")} onRetry={() => void q.refetch()} />
       ) : items.length === 0 ? (
         <EmptyState title={t("empty")} action={<Link href="/verify" className={OPEN_LINK}>{t("emptyAction")}</Link>} />
       ) : (
@@ -107,7 +107,7 @@ export function MyWatchlist() {
       {q.isPending ? (
         <LoadingState />
       ) : q.isError ? (
-        <ErrorState message={t("loadError")} onRetry={() => void q.refetch()} />
+        <ErrorState error={q.error} message={t("loadError")} onRetry={() => void q.refetch()} />
       ) : items.length === 0 ? (
         <EmptyState title={t("empty")} description={t("emptyHint")} />
       ) : (
@@ -152,7 +152,7 @@ export function MyReports() {
       {q.isPending ? (
         <LoadingState />
       ) : q.isError ? (
-        <ErrorState message={t("loadError")} onRetry={() => void q.refetch()} />
+        <ErrorState error={q.error} message={t("loadError")} onRetry={() => void q.refetch()} />
       ) : items.length === 0 ? (
         <EmptyState title={t("empty")} description={t("emptyHint")} />
       ) : (
@@ -207,7 +207,7 @@ export function MyNotifications() {
       {q.isPending ? (
         <LoadingState />
       ) : q.isError ? (
-        <ErrorState message={t("loadError")} onRetry={() => void q.refetch()} />
+        <ErrorState error={q.error} message={t("loadError")} onRetry={() => void q.refetch()} />
       ) : items.length === 0 ? (
         <EmptyState title={unreadOnly ? t("emptyUnread") : t("empty")} />
       ) : (

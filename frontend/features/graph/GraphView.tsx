@@ -30,19 +30,16 @@ export default function GraphView({ landId }: { landId?: string }) {
 
   let body: React.ReactNode;
   if (!landId) {
-    body = <EmptyState title={t("common.empty")} action={back} />;
+    body = <EmptyState title={t("result.notFound")} description={t("result.notFoundHint")} action={back} />;
   } else if (q.isPending) {
     body = <LoadingState />;
   } else if (q.isError) {
     const e = q.error;
     body =
       e instanceof ApiError && (e.status === 404 || e.code === "LAND_NOT_FOUND") ? (
-        <EmptyState title={t("common.empty")} action={back} />
+        <EmptyState title={t("result.notFound")} description={t("result.notFoundHint")} action={back} />
       ) : (
-        <ErrorState
-          message={e instanceof ApiError && e.status === 403 ? t("errors.permission") : t("graph.loadError")}
-          onRetry={() => void q.refetch()}
-        />
+        <ErrorState error={e} message={t("graph.loadError")} onRetry={() => void q.refetch()} />
       );
   } else if (q.data.edges.length === 0 && q.data.nodes.length <= 1) {
     body = <EmptyState title={t("graph.emptyGraph")} action={back} />;

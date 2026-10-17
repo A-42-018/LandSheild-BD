@@ -56,7 +56,6 @@ function Splitter({ value, onChange, label }: { value: number; onChange: (v: num
 
 export default function ReviewView({ id }: { id: string }) {
   const t = useTranslations("review");
-  const te = useTranslations("errors");
   const doc = useDocumentStatus(id);
   const status = doc.data?.processing_status;
   const ext = useExtraction(id, status);
@@ -67,8 +66,7 @@ export default function ReviewView({ id }: { id: string }) {
   if (doc.isError || !doc.data) {
     const e = doc.error;
     if (e instanceof ApiError && e.status === 404) return <ErrorState message={t("notFound")} />;
-    if (e instanceof ApiError && e.status === 403) return <ErrorState message={te("permission")} />;
-    return <ErrorState onRetry={() => doc.refetch()} />;
+    return <ErrorState error={e} onRetry={() => doc.refetch()} />;
   }
 
   const d = doc.data;
@@ -85,7 +83,7 @@ export default function ReviewView({ id }: { id: string }) {
     if (ext.isLoading) body = <LoadingState />;
     else if (ext.isError || !ext.data) {
       const notReady = ext.error instanceof ApiError && ext.error.code === "EXTRACTION_NOT_READY";
-      body = <ErrorState message={notReady ? t("processing") : undefined} onRetry={() => ext.refetch()} />;
+      body = <ErrorState error={notReady ? undefined : ext.error} message={notReady ? t("processing") : undefined} onRetry={() => ext.refetch()} />;
     } else body = <ExtractionPanel data={ext.data} />;
   } else body = <LoadingState />;
 

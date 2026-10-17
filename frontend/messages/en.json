@@ -4,14 +4,14 @@
     "tagline": "Digital Land Verification & Risk Intelligence",
     "demoLabel": "Not an official government land record.",
     "language": "Language",
-    "loading": "Processing…",
-    "empty": "No records found.",
+    "loading": "Loading. Please wait a moment.",
+    "empty": "Nothing here yet.",
     "skipToContent": "Skip to main content",
-    "placeholderNote": "This page is a placeholder. Real features arrive in later phases.",
     "close": "Close",
     "retry": "Try again",
     "subLine": "Digital land verification",
-    "brand": "LandShield BD"
+    "brand": "LandShield BD",
+    "slow": "This is taking longer than usual. A slow connection can cause this."
   },
   "nav": {
     "home": "Home",
@@ -48,11 +48,21 @@
     "bellUnread": "Notifications, {count} unread"
   },
   "errors": {
-    "generic": "We couldn't process this document. Please check the file and try again.",
-    "permission": "You don't have permission to perform this action.",
+    "generic": "That did not work.",
+    "permission": "Your account is not allowed to do this. Sign in with another account.",
     "lowConfidence": "Low-confidence extraction. Human review required.",
     "notFound": "Page not found.",
-    "officerCrumb": "Officer"
+    "officerCrumb": "Officer",
+    "genericHint": "Try again in a moment.",
+    "signedOut": "Your sign-in has timed out.",
+    "signedOutHint": "Sign in again to continue.",
+    "offline": "No internet connection.",
+    "offlineHint": "Check your connection, then try again.",
+    "server": "Our server has a problem.",
+    "serverHint": "Try again in a few minutes.",
+    "tooMany": "Too many tries in a short time.",
+    "tooManyHint": "Wait a minute, then try again.",
+    "documentFailed": "We could not read this document. Check the file and upload it again."
   },
   "status": {
     "ACTIVE": "Active",
@@ -88,9 +98,9 @@
     "score": "Risk score",
     "scoreLine": "Risk score {score} of {max}",
     "evidenceTitle": "Evidence",
-    "noEvidence": "No risk indicators found for this parcel.",
+    "noEvidence": "No warning signs were found for this land.",
     "assessedOn": "Assessed on {date}",
-    "loadError": "We couldn't load the risk assessment.",
+    "loadError": "We could not load the risk information. Try again.",
     "ml": {
       "line": "Anomaly model: {percent}% unusual compared with synthetic training data. A review hint only; it never sets a risk level on its own.",
       "points": "{points, plural, =0 {No points added to the score.} one {Adds # point to the score.} other {Adds # points to the score.}}"
@@ -210,7 +220,7 @@
       "why": "Officer pages handle land records, so idle sessions end automatically.",
       "stay": "Stay signed in",
       "signOut": "Sign out now",
-      "expired": "You were signed out after a period of inactivity. Please sign in again."
+      "expired": "You were signed out because you were away for a while. Sign in again."
     },
     "citizenPrompt": "Don't have an account?",
     "citizenLink": "Create a citizen account"
@@ -229,18 +239,18 @@
     "selectUpazila": "Select",
     "numericHint": "Digits only, e.g. 1245 or ১২৪৫",
     "submit": "Verify",
-    "searching": "Processing…",
+    "searching": "Searching…",
     "signInNote": "See a short summary without signing in. The full report needs sign-in.",
     "demoNote": "Not an official government land record.",
     "errors": {
       "required": "This field is required.",
       "tooLong": "This value is too long.",
       "numeric": "Enter digits only (e.g. 1245).",
-      "notFound": "No records found.",
-      "permission": "You don't have permission to perform this action.",
-      "network": "Cannot reach the server. Please try again.",
-      "generic": "We couldn't process this request. Please try again.",
-      "rateLimited": "Too many searches. Please try again in a minute."
+      "notFound": "No land matches this ID. Check it and search again.",
+      "permission": "Your account is not allowed to do this. Sign in with another account.",
+      "network": "No internet connection. Check your connection and try again.",
+      "generic": "That did not work. Try again in a moment.",
+      "rateLimited": "Too many searches in a short time. Wait a minute, then try again."
     },
     "summary": {
       "title": "Parcel found: short summary",
@@ -267,17 +277,17 @@
     "area": "Area",
     "status": "Status",
     "currentOwners": "Current owner(s)",
-    "noOwners": "No current owner recorded.",
+    "noOwners": "There is no current owner on record.",
     "fatherName": "Father's name",
     "ownership": "Ownership history",
-    "noOwnership": "No ownership history recorded.",
+    "noOwnership": "There is no earlier ownership on record.",
     "current": "Current",
     "present": "Present",
     "unknownDate": "Date not recorded",
     "confidence": "Confidence",
     "sourceDocument": "Source document",
     "mutations": "Mutation history",
-    "noMutations": "No mutation (khatian transfer) applications recorded yet.",
+    "noMutations": "No mutation (khatian transfer) application for this land yet.",
     "mutationNo": "Mutation no.",
     "appliedOn": "Applied",
     "decidedOn": "Decided",
@@ -285,13 +295,13 @@
     "khatianChange": "Khatian (old → new)",
     "acLandOffice": "AC (Land) office",
     "transactions": "Transaction history",
-    "noTransactions": "No transactions recorded.",
+    "noTransactions": "There are no sales or transfers on record.",
     "date": "Date",
     "type": "Type",
     "seller": "Seller",
     "buyer": "Buyer",
     "riskTitle": "Risk analysis",
-    "loadError": "We couldn't load this information. Please try again.",
+    "loadError": "We could not load this. Try again.",
     "newSearch": "Verify another land",
     "units": {
       "decimal": "decimal",
@@ -312,7 +322,7 @@
     "tabEncumbrance": "Cases / encumbrance",
     "tabEvidence": "Evidence",
     "encumbrances": "Cases and encumbrances",
-    "noEncumbrances": "No court cases, khas status, acquisition or mortgage recorded.",
+    "noEncumbrances": "No court case, mortgage, khas or acquisition on record.",
     "encType": {
       "COURT_CASE": "Court case",
       "KHAS": "Khas (government) land",
@@ -323,7 +333,9 @@
     "resolvedOn": "Resolved",
     "notResolved": "Not resolved",
     "reference": "Reference",
-    "authority": "Authority"
+    "authority": "Authority",
+    "notFound": "No land matches this ID.",
+    "notFoundHint": "Check the ID and search again. Example: LP-10100."
   },
   "report": {
     "title": "Land verification report",
@@ -339,19 +351,19 @@
     },
     "totalDocuments": "Documents on record",
     "documentsByStatus": "Documents by status",
-    "noIndicators": "No document inconsistency indicators.",
+    "noIndicators": "No sign of a mismatch in the document.",
     "disclaimerTitle": "Disclaimer",
     "disclaimer": {
       "DEMO_DECISION_SUPPORT": "LandShield provides digital record organization, consistency checks, and risk indicators. It does not establish legal ownership, certify title, or replace official government/legal verification."
     },
     "generate": "Generate verification report",
     "generating": "Generating report…",
-    "generateError": "We couldn't generate the report. Please try again.",
+    "generateError": "The report was not made. Try again.",
     "print": "Download PDF",
     "backToResult": "Back to result",
-    "notFound": "Report not found.",
+    "notFound": "We could not find this report. Check the link.",
     "notReady": "This report is not ready yet.",
-    "loadError": "We couldn't load the report. Please try again.",
+    "loadError": "We could not load the report. Try again.",
     "generatedFooter": "Generated by LandShield BD demo — not an official record.",
     "ref": "Ref. no."
   },
@@ -380,20 +392,20 @@
     "statusLabel": "Status",
     "hash": "File fingerprint",
     "startProcessing": "Start processing",
-    "processError": "We couldn't start processing. Please try again.",
-    "polling": "Checking processing status…",
-    "statusError": "We couldn't refresh the document status. Please try again later.",
+    "processError": "We could not start reading the document. Try again.",
+    "polling": "Checking how far the reading has got…",
+    "statusError": "We could not check the document status. Try again in a moment.",
     "errors": {
-      "EMPTY_FILE": "The file is empty. Please choose a valid file.",
-      "UNSUPPORTED_FILE_TYPE": "This file type is not supported. Please upload a JPG, PNG or PDF file.",
+      "EMPTY_FILE": "The file is empty. Choose another file.",
+      "UNSUPPORTED_FILE_TYPE": "This file type does not work. Use a JPG, PNG or PDF file.",
       "FILE_TYPE_MISMATCH": "The file contents do not match its extension. Please upload a genuine JPG, PNG or PDF.",
-      "FILE_TOO_LARGE": "The file is larger than 10 MB. Please choose a smaller file.",
-      "IMAGE_TOO_LARGE": "The image resolution is too high. Please upload a smaller image.",
+      "FILE_TOO_LARGE": "The file is bigger than 10 MB. Choose a smaller file.",
+      "IMAGE_TOO_LARGE": "The image is too large. Upload a smaller image.",
       "PDF_TOO_MANY_PAGES": "The PDF has too many pages (maximum 20).",
       "LAND_NOT_FOUND": "No land parcel with this ID exists. Check the ID, or leave it empty and it will be matched from the document.",
       "PERMISSION": "You don't have permission to perform this action.",
       "NETWORK": "Cannot reach the server. Please try again.",
-      "GENERIC": "We couldn't process this document. Please check the file and try again.",
+      "GENERIC": "We could not read this document. Check the file and try again.",
       "LAND_ID": "Enter a land ID like LP-10100.",
       "OFFICE_MISMATCH": "You can only upload records for your own land office, and only onto land held by it.",
       "DOCUMENT_ALREADY_FILED": "This file has already been filed in the system.",
@@ -415,11 +427,11 @@
   "review": {
     "title": "Review extraction",
     "docType": "Type",
-    "processing": "Processing…",
-    "notStarted": "Processing has not been started for this document.",
+    "processing": "Reading the document…",
+    "notStarted": "This document has not been read yet.",
     "startProcessing": "Start processing",
-    "waitingForOfficer": "Waiting for an officer to start processing this document.",
-    "notFound": "Document not found.",
+    "waitingForOfficer": "Once an officer starts reading it, the details will show here.",
+    "notFound": "We could not find this document. Go back to the list and pick it again.",
     "openReview": "Open for review",
     "fieldsTitle": "Extracted fields",
     "lowConfidenceFields": "Fields needing attention",
@@ -438,7 +450,7 @@
       "zoomOut": "Zoom out",
       "reset": "Reset",
       "alt": "Uploaded document",
-      "error": "We couldn't load the document preview.",
+      "error": "We could not load the document image. Try again.",
       "note": "Preview of the uploaded original (first page for PDFs)."
     },
     "fields": {
@@ -479,12 +491,12 @@
       "reprocess": "Request reprocessing",
       "approveBlocked": "Fix the highlighted fields before approving.",
       "reprocessHint": "Reprocessing re-runs extraction and discards manual edits.",
-      "approveFailed": "We couldn't approve this document. Please try again.",
+      "approveFailed": "We could not approve this document. Try again.",
       "selfApproval": "You uploaded this document, so another reviewer must approve it.",
-      "reprocessFailed": "We couldn't request reprocessing. Please try again.",
-      "rejectFailed": "We couldn't reject this document. Please try again.",
-      "saveFailed": "We couldn't save this change. Please try again.",
-      "notReviewable": "This document is no longer awaiting review. Reload the page."
+      "reprocessFailed": "We could not ask for a new reading. Try again.",
+      "rejectFailed": "We could not reject this document. Try again.",
+      "saveFailed": "We could not save this change. Try again.",
+      "notReviewable": "This document is no longer waiting for review. Open the page again."
     },
     "decision": {
       "APPROVED": "This document has been approved.",
@@ -721,7 +733,7 @@
       "noLand": "Unassigned",
       "noConfidence": "—",
       "lowConfidence": "Low confidence",
-      "empty": "No records found.",
+      "empty": "No document matches this filter. Change the filter and look again.",
       "cols": {
         "land": "Land ID",
         "type": "Document",
@@ -750,9 +762,9 @@
     },
     "alerts": {
       "title": "Risk alerts",
-      "empty": "No risk alerts.",
+      "empty": "No risk alerts right now.",
       "actionsLabel": "Review actions for {land}",
-      "updateError": "Could not update the alert. Please try again.",
+      "updateError": "We could not update the alert. Try again.",
       "dismissModal": {
         "title": "Dismiss the alert for {land}",
         "label": "Reason for dismissing",
@@ -810,7 +822,7 @@
       "rangeInvalid": "The start date must not be after the end date.",
       "apply": "Apply filters",
       "reset": "Reset",
-      "empty": "No audit entries match these filters.",
+      "empty": "No audit entry matches these filters. Change the filters and look again.",
       "system": "System",
       "cols": {
         "time": "Time (UTC)",
@@ -850,8 +862,8 @@
         "emailTaken": "This email is already registered.",
         "self": "You cannot change your own role or deactivate yourself.",
         "permission": "You don't have permission to perform this action.",
-        "invalid": "Please check the entered values.",
-        "generic": "Something went wrong. Please try again."
+        "invalid": "Check the details you entered.",
+        "generic": "That did not work. Try again."
       },
       "users": {
         "title": "Users",
@@ -875,7 +887,7 @@
         "selfHint": "You cannot change your own role or deactivate yourself.",
         "active": "Active",
         "inactive": "Inactive",
-        "empty": "No users match these filters.",
+        "empty": "No user matches these filters. Change the filters and look again.",
         "cols": {
           "name": "Name",
           "email": "Email",
@@ -889,7 +901,7 @@
         "title": "Land records",
         "hint": "Read-only list of land parcels. Owner details are not shown here.",
         "filters": "Land record filters",
-        "empty": "No land records match these filters.",
+        "empty": "No land record matches these filters. Change the filters and look again.",
         "cols": {
           "landId": "Land ID",
           "district": "District",
@@ -906,7 +918,7 @@
         "title": "Documents",
         "hint": "Read-only list of uploaded documents and their processing state.",
         "filters": "Document filters",
-        "empty": "No documents match these filters.",
+        "empty": "No document matches these filters. Change the filters and look again.",
         "unassigned": "Unassigned",
         "cols": {
           "landId": "Land ID",
@@ -943,8 +955,8 @@
         "rejectTitle": "Reject {name}",
         "reason": "Reason for rejection",
         "reasonHint": "The applicant sees this reason when they try to sign in.",
-        "empty": "No requests.",
-        "error": "Could not update the request. Please try again."
+        "empty": "No request is waiting.",
+        "error": "We could not update the request. Try again."
       },
       "dataTitle": "Records and documents",
       "dataPurpose": "Read-only lists of land records and uploaded documents.",
@@ -952,7 +964,7 @@
         "title": "Land offices",
         "hint": "Every land office in the system and the number of active officers tied to it.",
         "filters": "Office filters",
-        "empty": "No offices match.",
+        "empty": "No office matches. Try another name.",
         "cols": {
           "name": "Office",
           "type": "Type",
@@ -984,7 +996,7 @@
         "deleteAria": "Delete {title}",
         "deleteTitle": "Delete this item?",
         "deleteBody": "\"{title}\" will be removed from the public pages. This cannot be undone.",
-        "empty": "Nothing here yet.",
+        "empty": "Nothing has been added yet.",
         "published": "Published",
         "draft": "Draft",
         "inTicker": "In ticker",
@@ -1102,8 +1114,8 @@
     "detailTitle": "Details",
     "detailEmpty": "Select a node to see details.",
     "connections": "Connections",
-    "loadError": "We couldn't load the ownership graph. Please try again.",
-    "emptyGraph": "No ownership connections recorded for this land.",
+    "loadError": "We could not load the ownership diagram. Try again.",
+    "emptyGraph": "There is no ownership link on record for this land.",
     "flaggedNote": "Flagged means the records need human review. It is not a final finding.",
     "backToResult": "Back to verification result",
     "viewLink": "View ownership graph",
@@ -1137,9 +1149,8 @@
     "openAlerts": "Open alerts",
     "privacyNote": "This public page shows a summary only. Owner names, document details and evidence are available to signed-in users with permission.",
     "signIn": "Sign in to view the full record",
-    "notFound": "No land record found for this code.",
-    "rateLimited": "Too many requests. Please wait a minute and try again.",
-    "loadError": "We couldn't load this summary. Please try again.",
+    "notFound": "No land matches this code. Scan the QR code again.",
+    "loadError": "We could not load this summary. Try again.",
     "activeEncumbrances": "Active cases / encumbrances",
     "pendingMutations": "Pending mutations"
   },
@@ -1150,8 +1161,8 @@
     "filterLabel": "Risk level",
     "filterAll": "All levels",
     "count": "{count, plural, one {# parcel shown} other {# parcels shown}}",
-    "noMatch": "No parcels match this risk level.",
-    "loadError": "We couldn't load the parcel map. Please try again.",
+    "noMatch": "No land has this risk level. Pick another level.",
+    "loadError": "We could not load the map. Try again.",
     "mapHint": "Drag to pan, use the zoom buttons or scroll to zoom, and click a boundary to drill down. Every place is also available in the search menu.",
     "legendTitle": "Map legend",
     "hideLegend": "Hide legend",
@@ -1183,7 +1194,7 @@
       "searchPlaceholder": "Search a place",
       "searchButton": "Search",
       "searching": "Searching…",
-      "searchError": "Search failed. Please try again.",
+      "searchError": "The search did not work. Try again.",
       "searchNone": "No matching division, district or upazila found.",
       "level": {
         "division": "Division",
@@ -1199,14 +1210,15 @@
       "layerParcels": "Land parcels (risk colours)",
       "shownNow": "shown now",
       "zoom": "Zoom",
-      "loadError": "We couldn't load the boundary data. Please try again.",
+      "loadError": "We could not load the boundary data. Try again.",
       "boundaryNote": "Boundaries are third-party open data (geoBoundaries, via ifahimreza/bangladesh-geojson), simplified for this prototype. They are not official survey or cadastral boundaries.",
       "fullscreen": "Fullscreen",
       "exitFullscreen": "Exit fullscreen",
       "layerParcelsPublic": "Land parcels (outlines)"
     },
     "introPublic": "Explore Bangladesh from division down to upazila on a street map. Parcel outlines show only the parcel numbers; sign in to see risk colours.",
-    "legendNotePublic": "Outlines show where a parcel is. Choose one to look it up; sign in for its risk level."
+    "legendNotePublic": "Outlines show where a parcel is. Choose one to look it up; sign in for its risk level.",
+    "noParcels": "No land has been added to the map yet."
   },
   "theme": {
     "toDark": "Switch to dark mode",
@@ -1273,7 +1285,7 @@
     "detailTitle": "Mutation",
     "tabsLabel": "Filter by status",
     "openRow": "Open mutation {no}",
-    "empty": "No mutation applications in this status.",
+    "empty": "No mutation application in this status. Pick another status.",
     "fastTrack": "Fast-track",
     "days": "{count, plural, =0 {today} one {# day} other {# days}}",
     "cols": {
@@ -1300,7 +1312,7 @@
     "noDeed": "No deed linked",
     "openLand": "Open land record",
     "checklist": "Pre-check checklist",
-    "noChecklist": "No pre-checks recorded for this application.",
+    "noChecklist": "The first checks have not been done for this application yet.",
     "checks": {
       "SELLER_IS_RECORDED_OWNER": "Seller is the recorded owner",
       "NO_OPEN_HIGH_ALERT": "No open high-risk alert",
@@ -1340,10 +1352,10 @@
       }
     },
     "cancel": "Cancel",
-    "notFound": "Mutation not found.",
+    "notFound": "We could not find this application. Check the number.",
     "errors": {
-      "failed": "The action could not be completed. Please try again.",
-      "invalid": "This move is no longer allowed. Reload the page.",
+      "failed": "That did not work. Try again.",
+      "invalid": "This change can no longer be made. Open the page again.",
       "forbidden": "Your office cannot take this decision. Ask the upozila or zila office.",
       "self": "You cannot decide a case you recommended, or a rejection you made yourself."
     },
@@ -1429,10 +1441,10 @@
       "required": "This field is required.",
       "tooLong": "This value is too long.",
       "numeric": "Enter digits only (e.g. 1245).",
-      "notFound": "No records found.",
-      "permission": "You don't have permission to perform this action.",
-      "network": "Cannot reach the server. Please try again.",
-      "generic": "We couldn't process this request. Please try again."
+      "notFound": "No land matches this ID. Check it and search again.",
+      "permission": "Your account is not allowed to do this. Sign in with another account.",
+      "network": "No internet connection. Check your connection and try again.",
+      "generic": "That did not work. Try again in a moment."
     },
     "docLink": "Verify a document copy"
   },
@@ -1520,10 +1532,10 @@
     "privacyNote": "Only the status, dates and office are shown. Names, plot details and documents are not available here.",
     "errors": {
       "format": "Enter the number like MUT-2026-0001.",
-      "notFound": "No application found with this number.",
-      "rateLimited": "Too many requests. Please wait a minute and try again.",
-      "network": "We couldn't reach the server. Check your connection and try again.",
-      "generic": "We couldn't load this status. Please try again."
+      "notFound": "No application has this number. Check the number and enter it again.",
+      "rateLimited": "Too many tries in a short time. Wait a minute, then try again.",
+      "network": "No internet connection. Check your connection and try again.",
+      "generic": "We could not load the status. Try again."
     },
     "example": "MUT-2026-0001",
     "kind": "Type",
@@ -1544,7 +1556,7 @@
     "reset": "Reset",
     "hint": "Enter a word, name or number to search approved documents.",
     "results": "Archive search results",
-    "empty": "No approved document matches this search.",
+    "empty": "No approved document matches this search. Try other words.",
     "cols": {
       "survey": "Survey",
       "land": "Land ID",
@@ -1695,8 +1707,8 @@
     "selectDivision": "Select division",
     "selectDistrict": "Select zila",
     "districtLevel": "District office",
-    "loadingList": "Loading…",
-    "loadError": "Could not load this list. Please try again.",
+    "loadingList": "Loading the list…",
+    "loadError": "We could not load this list. Try again.",
     "upazilaHint": "Pick your upozila for an upozila or union land office; leave empty for a district office.",
     "office": "Land office",
     "selectOffice": "Select your office",
@@ -1734,9 +1746,9 @@
   },
   "errorPages": {
     "notFoundTitle": "Page not found",
-    "notFoundBody": "The page you are looking for does not exist or has moved.",
+    "notFoundBody": "The page you are looking for does not exist or has moved. Start from the home page.",
     "errorTitle": "Something went wrong",
-    "errorBody": "This page could not be loaded. Please try again.",
+    "errorBody": "This page could not load. Try again.",
     "retry": "Try again",
     "goHome": "Go to the home page"
   },
@@ -2172,7 +2184,7 @@
       "email": "Enter a valid email address or leave it empty.",
       "rateLimited": "Too many messages. Please wait a minute and try again.",
       "network": "We couldn't reach the server. Check your connection and try again.",
-      "generic": "We couldn't send your message. Please try again."
+      "generic": "We could not send your message. Try again."
     },
     "receipt": {
       "title": "Message received",
@@ -2194,7 +2206,7 @@
       "no": "No",
       "thanks": "Thank you for your feedback.",
       "more": "Tell us more",
-      "failed": "We couldn't save your answer. Please try again."
+      "failed": "We could not save your answer. Try again."
     },
     "admin": {
       "title": "Feedback and grievances",
@@ -2202,7 +2214,7 @@
       "summary": "{open} open · page ratings: {helpful} helpful, {notHelpful} not helpful",
       "filter": "Status",
       "all": "All",
-      "empty": "No messages yet.",
+      "empty": "No message has come in yet.",
       "handle": "Handle",
       "cancel": "Cancel",
       "save": "Save",
@@ -2297,7 +2309,7 @@
       "latestNotes": "Latest notifications",
       "seeAll": "See all",
       "emptyRecent": "Nothing here yet. Start by verifying a parcel.",
-      "loadError": "We couldn't load your dashboard."
+      "loadError": "We could not load your dashboard. Try again."
     },
     "parcel": {
       "place": "{mouza}, {upazila}, {district}",
@@ -2318,7 +2330,7 @@
       "cleared": "Search history cleared.",
       "empty": "You have not looked up any parcel yet.",
       "emptyAction": "Verify a parcel",
-      "loadError": "We couldn't load your searches."
+      "loadError": "We could not load your searches. Try again."
     },
     "watch": {
       "title": "Watched land",
@@ -2337,17 +2349,17 @@
       "used": "{count} of {limit} used",
       "empty": "You are not watching any land yet.",
       "emptyHint": "Open a parcel and press “Watch this land”. We will tell you when something changes.",
-      "loadError": "We couldn't load your watched land."
+      "loadError": "We could not load your watched land. Try again."
     },
     "reports": {
       "title": "My reports",
       "purpose": "Every report you have made. Open one to print it or show its QR code.",
       "made": "Made on {date}",
       "open": "Open report",
-      "failed": "This report could not be made.",
+      "failed": "This report was not made. Make it again.",
       "empty": "You have not made a report yet.",
       "emptyHint": "Open a parcel and press “Generate verification report”.",
-      "loadError": "We couldn't load your reports."
+      "loadError": "We could not load your reports. Try again."
     },
     "notes": {
       "title": "Notifications",
@@ -2358,7 +2370,7 @@
       "open": "Open",
       "empty": "No notifications yet.",
       "emptyUnread": "You have read everything.",
-      "loadError": "We couldn't load your notifications.",
+      "loadError": "We could not load your notifications. Try again.",
       "kind": {
         "WATCH_TRANSACTION": "New transaction recorded on {land}: {type}.",
         "WATCH_MUTATION": "A mutation application ({no}) was filed on {land}.",

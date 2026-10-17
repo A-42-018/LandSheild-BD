@@ -163,10 +163,10 @@ describe("ResultView", () => {
 
   it("shows the empty state for an unknown land (404) and when land_id is missing", async () => {
     const a = wrap(client(okGet), "LP-99999");
-    expect(await screen.findByText(en.common.empty)).toBeInTheDocument();
+    expect(await screen.findByText(en.result.notFound)).toBeInTheDocument();
     a.unmount();
     wrap(client(okGet), undefined);
-    expect(screen.getByText(en.common.empty)).toBeInTheDocument();
+    expect(screen.getByText(en.result.notFound)).toBeInTheDocument();
   });
 
   it("shows an error state with retry, and a permission message on 403", async () => {

@@ -23,9 +23,9 @@ import type { RiskAssessment } from "@/features/risk/types";
 import type { EncumbranceEntry, LandInfo, MutationEntry, OwnershipEntry, TransactionEntry } from "./types";
 
 /** One tab panel: loading → error with retry → content. */
-function tabPanel(q: Pick<UseQueryResult, "isPending" | "isError" | "refetch">, render: () => React.ReactNode, err: string) {
+function tabPanel(q: Pick<UseQueryResult, "isPending" | "isError" | "error" | "refetch">, render: () => React.ReactNode, err: string) {
   if (q.isPending) return <LoadingState />;
-  if (q.isError) return <ErrorState message={err} onRetry={() => void q.refetch()} />;
+  if (q.isError) return <ErrorState error={q.error} message={err} onRetry={() => void q.refetch()} />;
   return render();
 }
 
@@ -87,19 +87,16 @@ export default function ResultView({ landId }: { landId?: string }) {
 
   let body: React.ReactNode;
   if (!landId) {
-    body = <EmptyState title={t("common.empty")} action={back} />;
+    body = <EmptyState title={t("result.notFound")} description={t("result.notFoundHint")} action={back} />;
   } else if (land.isPending) {
     body = <LoadingState />;
   } else if (land.isError) {
     const e = land.error;
     body =
       e instanceof ApiError && (e.status === 404 || e.code === "LAND_NOT_FOUND") ? (
-        <EmptyState title={t("common.empty")} action={back} />
+        <EmptyState title={t("result.notFound")} description={t("result.notFoundHint")} action={back} />
       ) : (
-        <ErrorState
-          message={e instanceof ApiError && e.status === 403 ? t("errors.permission") : t("result.loadError")}
-          onRetry={() => void land.refetch()}
-        />
+        <ErrorState error={e} message={t("result.loadError")} onRetry={() => void land.refetch()} />
       );
   } else {
     const lerr = t("result.loadError");

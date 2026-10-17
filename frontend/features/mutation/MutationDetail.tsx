@@ -24,7 +24,6 @@ const CHECK_ICON: Record<string, JSX.Element> = {
 
 export default function MutationDetail({ id }: { id: string }) {
   const t = useTranslations("mutation");
-  const te = useTranslations("errors");
   const locale = useLocale();
   const { user } = useAuth();
   const q = useMutationDetail(id);
@@ -37,7 +36,7 @@ export default function MutationDetail({ id }: { id: string }) {
   if (q.isLoading) return <LoadingState />;
   if (q.isError || !q.data) {
     const nf = q.error instanceof ApiError && q.error.status === 404;
-    return <ErrorState message={nf ? t("notFound") : q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined} onRetry={() => q.refetch()} />;
+    return nf ? <ErrorState message={t("notFound")} /> : <ErrorState error={q.error} onRetry={() => q.refetch()} />;
   }
   const m = q.data;
   const canAct = hasRole(user?.role, OFFICER_UP);

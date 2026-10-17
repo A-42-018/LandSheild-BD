@@ -2,7 +2,6 @@
 import { useLocale, useTranslations } from "next-intl";
 import { AlertTriangle, CheckCircle2, Clock, ListChecks } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api";
 import RiskIndicator from "@/components/domain/RiskIndicator";
 import { Badge, Card, EmptyState, ErrorState, LoadingState } from "@/components/ui";
 import { localDigits } from "@/lib/intl-locale";
@@ -56,14 +55,13 @@ function Row({ item, first }: { item: QueueItem; first: boolean }) {
 
 export default function TodayQueue() {
   const t = useTranslations("reviewer.queue");
-  const te = useTranslations("errors");
   const locale = useLocale();
   const q = useTodayQueue();
 
   let body;
   if (q.isLoading) body = <LoadingState />;
   else if (q.isError || !q.data) {
-    body = <ErrorState message={q.error instanceof ApiError && q.error.status === 403 ? te("permission") : undefined} onRetry={() => q.refetch()} />;
+    body = <ErrorState error={q.error} onRetry={() => q.refetch()} />;
   } else if (q.data.items.length === 0) {
     body = <EmptyState title={t("emptyTitle")} description={t("emptyBody")} />;
   } else {

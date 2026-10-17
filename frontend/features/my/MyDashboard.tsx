@@ -75,7 +75,7 @@ export default function MyDashboard() {
       {q.isPending ? (
         <LoadingState />
       ) : q.isError || !s ? (
-        <ErrorState message={t("loadError")} onRetry={() => void q.refetch()} />
+        <ErrorState error={q.error} message={t("loadError")} onRetry={() => void q.refetch()} />
       ) : (
         <>
           <section aria-labelledby="my-stats">

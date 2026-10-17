@@ -118,7 +118,7 @@ describe("ReviewView", () => {
 
   it("shows the generic error for FAILED documents", async () => {
     wrap(client(route(doc({ processing_status: "FAILED" }), extraction())));
-    expect(await screen.findByText(en.errors.generic)).toBeInTheDocument();
+    expect(await screen.findByText(en.errors.documentFailed)).toBeInTheDocument();
     expect(screen.queryByTestId("extraction-panel")).toBeNull();
   });
 
@@ -131,7 +131,7 @@ describe("ReviewView", () => {
   });
 
   it("offers retry when the extraction request fails", async () => {
-    wrap(client(route(doc(), new ApiError(403, "FORBIDDEN", "x"))));
+    wrap(client(route(doc(), new ApiError(409, "CONFLICT", "x"))));
     expect(await screen.findByRole("button", { name: en.common.retry })).toBeInTheDocument();
   });
 

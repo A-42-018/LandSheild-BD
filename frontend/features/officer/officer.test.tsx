@@ -94,7 +94,7 @@ describe("dashboard", () => {
 
   it("empty and error states", async () => {
     wrap(<DashboardView />, api(router(LIST([]))));
-    expect(await screen.findByText("No records found.")).toBeInTheDocument();
+    expect(await screen.findByText(en.officer.queue.empty)).toBeInTheDocument();
   });
 
   it("queue error shows retry; 403 shows permission", async () => {
@@ -196,7 +196,7 @@ describe("dashboard B", () => {
 
   it("empty alerts; activity maps known actions and falls back to raw code", async () => {
     wrap(<DashboardView />, api(router(undefined, LIST([]))));
-    expect(await screen.findByText("No risk alerts.")).toBeInTheDocument();
+    expect(await screen.findByText(en.officer.alerts.empty)).toBeInTheDocument();
     expect(await screen.findByText("Document approved")).toBeInTheDocument();
     expect(screen.getByText(/Olivia \(Officer\)/)).toBeInTheDocument();
     expect(screen.getByText("SOMETHING_NEW")).toBeInTheDocument();
