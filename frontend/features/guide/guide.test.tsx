@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import axe from "axe-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -158,5 +158,34 @@ describe("links into the guide", () => {
     );
     expect(screen.getByTestId("guide-link")).toHaveAttribute("href", "/guide#guide-track");
     expect(screen.getByTestId("guide-link")).toHaveTextContent(en.services.guideLink);
+  });
+});
+
+describe("read aloud (U4.4)", () => {
+  const SPEECH = () => {
+    const synth = { speak: vi.fn(), cancel: vi.fn(), getVoices: () => [{ lang: "en-US" }, { lang: "bn-BD" }], addEventListener: vi.fn(), removeEventListener: vi.fn() };
+    Object.defineProperty(window, "speechSynthesis", { value: synth, configurable: true });
+    vi.stubGlobal("SpeechSynthesisUtterance", class { constructor(public text: string) {} });
+    return synth;
+  };
+
+  afterEach(() => Reflect.deleteProperty(window, "speechSynthesis"));
+
+  it("every guide has its own Listen button; it reads the steps but not the links or the video", async () => {
+    const synth = SPEECH();
+    await page();
+    for (const g of GUIDES) {
+      expect(await screen.findByRole("button", { name: `${en.readAloud.listen}: ${en.guide.items[g.id].title}` })).toBeInTheDocument();
+    }
+    fireEvent.click(screen.getByRole("button", { name: `${en.readAloud.listen}: ${en.guide.items.track.title}` }));
+    const said = synth.speak.mock.calls.map(([u]) => u.text).join(" ");
+    expect(said).toContain(en.guide.items.track.steps.s1.title);
+    expect(said).not.toContain(en.guide.allGuides);
+    expect(said).not.toContain(en.guide.video.unsupported);
+  });
+
+  it("has no Listen button where the browser cannot speak", async () => {
+    await page();
+    expect(screen.queryByTestId("read-aloud")).not.toBeInTheDocument();
   });
 });

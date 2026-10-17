@@ -8,6 +8,7 @@ import PageHeader from "@/components/PageHeader";
 import { PlotSearchArt } from "@/features/landing/Illustrations";
 import RiskIndicator from "@/components/domain/RiskIndicator";
 import { Link } from "@/i18n/navigation";
+import ReadAloud from "@/components/ReadAloud";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
 import LandInfoCard from "./LandInfoCard";
@@ -104,7 +105,8 @@ export default function ResultView({ landId }: { landId?: string }) {
   } else {
     const lerr = t("result.loadError");
     body = (
-      <>
+      <div id="result-readable" className="flex flex-col gap-4">
+        <ReadAloud targetId="result-readable" subject={t("readAloud.subjectResult")} className="self-start" />
         <LandInfoCard land={land.data} chip={risk.data ? <RiskIndicator level={risk.data.risk_level} /> : undefined} />
         <Tabs
           sticky
@@ -130,14 +132,14 @@ export default function ResultView({ landId }: { landId?: string }) {
           ]}
         />
         <p className="text-sm text-ink-muted">{t("risk.disclaimer")}</p>
-        <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:rounded-card sm:border sm:shadow-glass print:hidden">
+        <div data-no-speech className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:rounded-card sm:border sm:shadow-glass print:hidden">
           <div className="flex flex-wrap items-start gap-3">
             <GenerateReportButton landId={land.data.land_id} />
             <WatchButton landId={land.data.land_id} />
           </div>
           {back}
         </div>
-      </>
+      </div>
     );
   }
 
