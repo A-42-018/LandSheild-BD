@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
@@ -42,9 +42,18 @@ function wrap(c: ApiClient, messages: any = en, locale = "en") {
   );
 }
 
-function choose(file: File, m: any = en) {
+/** A deed needs the new owner's NID: fill it whenever the form asks for it. */
+function fillBuyer(m: any = en, nid = "19859990000000077", dob = "1985-05-05") {
+  const box = screen.queryByTestId("party-nid-buyer");
+  if (!box) return;
+  fireEvent.change(within(box).getByLabelText(m.partyNid.nid, { exact: false }), { target: { value: nid } });
+  fireEvent.change(within(box).getByLabelText(m.partyNid.dob, { exact: false }), { target: { value: dob } });
+}
+
+function choose(file: File, m: any = en, owner = true) {
   const input = screen.getByLabelText(m.upload.choose) as HTMLInputElement;
   fireEvent.change(input, { target: { files: [file] } });
+  if (owner) fillBuyer(m);
 }
 
 const pdf = (name = "deed.pdf") => new File(["%PDF-1.4"], name, { type: "application/pdf" });
@@ -118,8 +127,42 @@ describe("UploadForm", () => {
     expect(form.get("file")).toBe(f);
     expect(form.get("document_type")).toBe("KHATIAN");
     expect(form.get("land_id")).toBe("LP-10100");
+    expect(form.get("buyer_nid")).toBeNull(); // a khatian has no buyer: the NID fields are gone
     expect(screen.getByTestId("doc-status").textContent).toBe(en.status.UPLOADED);
     expect(screen.getByText(en.upload.uploaded)).toBeInTheDocument();
+  });
+
+  it("a deed needs the new owner's NID and date of birth; the seller's is optional", async () => {
+    const upload = vi.fn().mockResolvedValue(doc());
+    wrap(client(upload, vi.fn().mockResolvedValue(doc())));
+    choose(pdf(), en, false);
+    fireEvent.click(screen.getByRole("button", { name: en.upload.submit }));
+    const buyer = screen.getByTestId("party-nid-buyer");
+    expect(await within(buyer).findByText(en.partyNid.errors.nidRequired)).toBeInTheDocument();
+    expect(within(buyer).getByText(en.partyNid.errors.dobRequired)).toBeInTheDocument();
+    fillBuyer(en, "12345");
+    fireEvent.click(screen.getByRole("button", { name: en.upload.submit }));
+    expect(await within(buyer).findByText(en.partyNid.errors.format)).toBeInTheDocument();
+    // half a seller pair is refused too
+    const seller = screen.getByTestId("party-nid-seller");
+    fireEvent.change(within(seller).getByLabelText(en.partyNid.nid, { exact: false }), { target: { value: "1975 9990 0000 00001" } });
+    fillBuyer(en);
+    fireEvent.click(screen.getByRole("button", { name: en.upload.submit }));
+    expect(await within(seller).findByText(en.partyNid.errors.dobRequired)).toBeInTheDocument();
+    expect(upload).not.toHaveBeenCalled();
+    fireEvent.change(within(seller).getByLabelText(en.partyNid.dob, { exact: false }), { target: { value: "1975-03-12" } });
+    fireEvent.click(screen.getByRole("button", { name: en.upload.submit }));
+    await waitFor(() => expect(upload).toHaveBeenCalled());
+    const form = upload.mock.calls[0][1] as FormData;
+    expect([form.get("buyer_nid"), form.get("buyer_dob")]).toEqual(["19859990000000077", "1985-05-05"]);
+    expect([form.get("seller_nid"), form.get("seller_dob")]).toEqual(["19759990000000001", "1975-03-12"]);
+  });
+
+  it("shows the server's NID refusal", async () => {
+    wrap(client(vi.fn().mockRejectedValue(new ApiError(422, "SAME_PARTY_NID", "x"))));
+    choose(pdf());
+    fireEvent.click(screen.getByRole("button", { name: en.upload.submit }));
+    expect((await screen.findByTestId("upload-error")).textContent).toBe(en.upload.errors.SAME_PARTY_NID);
   });
 
   it("Start processing calls POST /documents/{id}/process while the document is UPLOADED", async () => {

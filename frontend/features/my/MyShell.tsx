@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Bell, Eye, FileText, History, LayoutDashboard, UserCog, type LucideIcon } from "lucide-react";
+import { Bell, Eye, FileText, History, Landmark, LayoutDashboard, UserCog, type LucideIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
 import { localDigits } from "@/lib/intl-locale";
@@ -9,6 +9,7 @@ import { useSummary } from "./useMy";
 
 export const MY_NAV: { href: string; key: string; Icon: LucideIcon }[] = [
   { href: "/my", key: "dashboard", Icon: LayoutDashboard },
+  { href: "/my/lands", key: "lands", Icon: Landmark },
   { href: "/my/searches", key: "searches", Icon: History },
   { href: "/my/watchlist", key: "watchlist", Icon: Eye },
   { href: "/my/reports", key: "reports", Icon: FileText },
@@ -17,7 +18,7 @@ export const MY_NAV: { href: string; key: string; Icon: LucideIcon }[] = [
 ];
 
 /**
- * "আমার ভূমি সেবা" (U3.2). Phones: the six sections as a row of tabs that scrolls sideways, always in view
+ * "আমার ভূমি সেবা" (U3.2). Phones: the seven sections as a row of tabs that scrolls sideways, always in view
  * (no hidden drawer for first-time users). Desktop: a sticky side menu with the citizen's name on top.
  */
 export default function MyShell({ children }: { children: ReactNode }) {

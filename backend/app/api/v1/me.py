@@ -6,10 +6,14 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.core.rbac import ANY_AUTH, require_roles
+from app.models.enums import Role
 from app.models.user import User
 from app.schemas.auth import UserOut
 from app.schemas.me import (
     MeSummary,
+    MyLands,
+    NidRegister,
+    NidStatus,
     NotificationList,
     NotificationsRead,
     PasswordChange,
@@ -21,6 +25,7 @@ from app.schemas.me import (
     WatchList,
 )
 from app.services import me as svc
+from app.services import my_lands as lands_svc
 
 router = APIRouter(prefix="/me", tags=["me"])
 
@@ -141,3 +146,38 @@ def change_password(
 ) -> Response:
     svc.change_password(db, user, body, _ip(request))
     return Response(status_code=204)
+
+
+# ---- NID-linked land (citizens only: staff accounts have no "my land" here) -----------------
+@router.get("/nid", response_model=NidStatus)
+def get_nid(user: User = Depends(require_roles(Role.CITIZEN))) -> NidStatus:
+    return lands_svc.nid_status(user)
+
+
+@router.post("/nid", response_model=NidStatus)
+def register_nid(
+    body: NidRegister,
+    request: Request,
+    user: User = Depends(require_roles(Role.CITIZEN)),
+    db: Session = Depends(get_db),
+) -> NidStatus:
+    return lands_svc.register_nid(db, user, body, _ip(request))
+
+
+@router.delete("/nid", status_code=204)
+def unregister_nid(
+    request: Request,
+    user: User = Depends(require_roles(Role.CITIZEN)),
+    db: Session = Depends(get_db),
+) -> Response:
+    lands_svc.unregister_nid(db, user, _ip(request))
+    return Response(status_code=204)
+
+
+@router.get("/lands", response_model=MyLands)
+def get_my_lands(
+    request: Request,
+    user: User = Depends(require_roles(Role.CITIZEN)),
+    db: Session = Depends(get_db),
+) -> MyLands:
+    return lands_svc.my_lands(db, user, _ip(request))

@@ -47,6 +47,7 @@ class Settings(BaseSettings):
     document_ai_model: str = ""
     embedding_model: str = ""
     review_conf_threshold: float = Field(default=0.85, ge=0.0, le=1.0)
+    owner_nid_required: bool = True  # a deed is approved only with the buyer's NID + date of birth
     preprocess: str = "on"  # OpenCV clean-up before Tesseract
     ml_scoring: str = "on"  # on | off (P49); missing model/scikit-learn -> skipped with a log
     ml_model_path: str = ""  # empty = models/iforest.joblib at the repo root

@@ -7,6 +7,9 @@ import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { BAND_TONE, bandFor, percent } from "./confidence";
 import EngineBadge from "./EngineBadge";
 import ReviewActions, { REVIEWABLE } from "./ReviewActions";
+import PartyNidPanel from "./PartyNidPanel";
+import { needsPartyNid } from "@/features/upload/PartyNidFields";
+import { useDocumentStatus } from "./useReviewData";
 import { fieldErrorText, toFieldErrors, useReviewActions } from "./useReviewActions";
 import type { ExtractedFieldOut, ExtractionOut, FieldError } from "./types";
 
@@ -142,6 +145,10 @@ export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
   const te = useTranslations("errors");
   const actions = useReviewActions(data.document_id);
   const editable = REVIEWABLE.includes(data.processing_status);
+  const doc = useDocumentStatus(data.document_id).data;
+  const withNid = !!doc && needsPartyNid(doc.document_type);
+  // the backend refuses to approve a deed without the new owner's NID; say so before the click
+  const needsNid = withNid && !doc?.party_nids?.buyer;
   const lowLabels = data.low_confidence_fields.map((f) => (t.has(`fields.${f}`) ? t(`fields.${f}`) : f));
 
   return (
@@ -174,7 +181,8 @@ export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
           ))}
         </dl>
       </Card>
-      <ReviewActions data={data} actions={actions} />
+      {withNid && doc && <PartyNidPanel doc={doc} editable={editable} />}
+      <ReviewActions data={data} actions={actions} needsNid={needsNid} />
       <p className="text-xs text-ink-muted">{t("disclaimer")}</p>
     </div>
   );

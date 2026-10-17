@@ -2,7 +2,7 @@
 import { useId, useRef, useState, type DragEvent } from "react";
 import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Check, CheckCircle2, CircleDashed, FileText, Play, ScanLine, UploadCloud, UserCheck } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, CircleDashed, Contact, FileText, Play, ScanLine, UploadCloud, UserCheck } from "lucide-react";
 import { Button, Card, Input, Select } from "@/components/ui";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { ApiError } from "@/lib/api";
@@ -26,6 +26,16 @@ import OfficeCascade from "@/features/officers/OfficeCascade";
 import { bi, officePath, type Office } from "@/features/officers/types";
 import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { useDocumentStatus } from "./useDocumentStatus";
+import {
+  EMPTY_PARTY,
+  PartyNidFields,
+  checkParty,
+  hasErrors,
+  needsPartyNid,
+  toBody,
+  type PartyNidErrors,
+  type PartyNidValue,
+} from "./PartyNidFields";
 
 function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
   const t = useTranslations("upload");
@@ -127,6 +137,7 @@ function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
 
 export default function UploadForm() {
   const t = useTranslations("upload");
+  const tp = useTranslations("partyNid");
   const { api, user } = useAuth();
   const myOffice = user?.office ?? null; // an office officer files only into their own office
   const needsOffice = !myOffice && user?.role === "ADMIN";
@@ -140,6 +151,10 @@ export default function UploadForm() {
   const [docType, setDocType] = useState<string>("DEED");
   const [landId, setLandId] = useState("");
   const [landIdError, setLandIdError] = useState(false);
+  const [buyer, setBuyer] = useState<PartyNidValue>(EMPTY_PARTY);
+  const [seller, setSeller] = useState<PartyNidValue>(EMPTY_PARTY);
+  const [nidErrors, setNidErrors] = useState<{ buyer: PartyNidErrors; seller: PartyNidErrors }>({ buyer: {}, seller: {} });
+  const withNid = needsPartyNid(docType);
   const [dragging, setDragging] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -150,6 +165,14 @@ export default function UploadForm() {
       form.append("document_type", docType);
       if (landId.trim()) form.append("land_id", normaliseLandId(landId));
       if (!myOffice && office) form.append("office_id", office.id);
+      if (withNid) {
+        for (const [party, v] of [["buyer", buyer], ["seller", seller]] as const) {
+          if (!v.nid.trim()) continue;
+          const b = toBody(v);
+          form.append(`${party}_nid`, b.nid);
+          form.append(`${party}_dob`, b.date_of_birth);
+        }
+      }
       setProgress(0);
       return api.upload<DocumentUploadOut>("/documents/upload", form, { onProgress: setProgress });
     },
@@ -181,6 +204,9 @@ export default function UploadForm() {
     setFileError(null);
     setLandId("");
     setLandIdError(false);
+    setBuyer(EMPTY_PARTY);
+    setSeller(EMPTY_PARTY);
+    setNidErrors({ buyer: {}, seller: {} });
     setProgress(0);
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -198,7 +224,11 @@ export default function UploadForm() {
     setLandIdError(badLand);
     const noOffice = needsOffice && !office;
     setOfficeError(noOffice);
-    if (fe || badLand || noOffice) return focus.request();
+    // the new owner's NID is required for a deed; the seller's only when the office has it
+    const nids = withNid ? { buyer: checkParty(buyer, true), seller: checkParty(seller, false) } : { buyer: {}, seller: {} };
+    setNidErrors(nids);
+    const badNid = hasErrors(nids.buyer) || hasErrors(nids.seller);
+    if (fe || badLand || noOffice || badNid) return focus.request();
     m.mutate(file);
   }
 
@@ -309,6 +339,18 @@ export default function UploadForm() {
           onChange={(e) => setLandId(e.target.value)}
           error={landIdError ? t("errors.LAND_ID") : undefined}
         />
+
+        {withNid && (
+          <fieldset className="flex flex-col gap-4 rounded-lg border border-line p-3" data-testid="party-nids">
+            <legend className="flex items-center gap-1.5 px-1 text-sm font-semibold">
+              <Contact aria-hidden="true" className="h-4 w-4 text-primary" />
+              {tp("legend")}
+            </legend>
+            <p className="text-sm text-ink-muted">{tp("intro")}</p>
+            <PartyNidFields party="buyer" value={buyer} onChange={setBuyer} errors={nidErrors.buyer} required />
+            <PartyNidFields party="seller" value={seller} onChange={setSeller} errors={nidErrors.seller} required={false} />
+          </fieldset>
+        )}
 
         {m.isPending && (
           <div className="flex flex-col gap-1">

@@ -447,7 +447,11 @@
       "LAND_ID": "Enter a land ID like LP-10100.",
       "OFFICE_MISMATCH": "You can only upload records for your own land office, and only onto land held by it.",
       "DOCUMENT_ALREADY_FILED": "This file has already been filed in the system.",
-      "OFFICE_REQUIRED": "Choose the land office this record belongs to."
+      "OFFICE_REQUIRED": "Choose the land office this record belongs to.",
+      "NID_DOB_REQUIRED": "Enter both the NID and the date of birth.",
+      "INVALID_NID": "An NID number has 10, 13 or 17 digits.",
+      "INVALID_DATE_OF_BIRTH": "Check the date of birth.",
+      "SAME_PARTY_NID": "The buyer and the seller cannot have the same NID."
     },
     "filedUnder": "Filed under",
     "officeLegend": "Land office (area) for this record",
@@ -460,6 +464,39 @@
       "uploaded": "Uploaded",
       "ocr": "OCR",
       "review": "Review"
+    }
+  },
+  "partyNid": {
+    "legend": "Landowner's NID",
+    "intro": "Enter the NID of the new owner exactly as on their card. Only the person with this NID can then see this land in their own profile.",
+    "buyer": "New owner (buyer)",
+    "seller": "Previous owner (seller)",
+    "optional": "if you have it",
+    "nid": "NID number",
+    "nidHint": "10, 13 or 17 digits",
+    "dob": "Date of birth",
+    "reviewTitle": "Owner NID",
+    "reviewIntro": "Only the last 4 digits are shown. The new owner's NID is needed to approve a deed.",
+    "entered": "Entered",
+    "missing": "Not entered",
+    "add": "Add NID",
+    "change": "Change",
+    "remove": "Remove",
+    "save": "Save NID",
+    "cancel": "Cancel",
+    "saved": "NID saved.",
+    "errors": {
+      "nidRequired": "Write the NID number.",
+      "format": "An NID number has 10, 13 or 17 digits.",
+      "dobRequired": "Choose the date of birth.",
+      "INVALID_NID": "An NID number has 10, 13 or 17 digits.",
+      "INVALID_DATE_OF_BIRTH": "Check the date of birth.",
+      "SAME_PARTY_NID": "The buyer and the seller cannot have the same NID.",
+      "DOCUMENT_NOT_EDITABLE": "This document is no longer waiting for review.",
+      "OWNER_NID_REQUIRED": "Enter the new owner's NID and date of birth before you approve.",
+      "NID_DOB_CONFLICT": "This NID is already on record with a different date of birth. Check the card and correct the NID or date of birth.",
+      "NID_NAME_MISMATCH": "This NID is on record under a different name. Check that the NID belongs to the person named on the deed.",
+      "generic": "We couldn't save the NID. Try again."
     }
   },
   "review": {
@@ -2328,6 +2365,7 @@
     "nav": {
       "label": "My land services",
       "dashboard": "My dashboard",
+      "lands": "My land",
       "searches": "My searches",
       "watchlist": "Watched land",
       "reports": "My reports",
@@ -2364,6 +2402,30 @@
       "seeAll": "See all",
       "emptyRecent": "Nothing here yet. Start by verifying a parcel.",
       "loadError": "We could not load your dashboard. Try again."
+    },
+    "lands": {
+      "title": "My land",
+      "purpose": "All land recorded under your NID: what you own now and what you owned before.",
+      "statCount": "Plots you own now",
+      "statArea": "Total area",
+      "statNid": "Your NID",
+      "areaDecimal": "{area} decimal",
+      "areaMixed": "See each plot",
+      "privateNote": "Only you can see this page. A plot appears here after a land office records it under your NID.",
+      "tabCurrent": "Own now ({count})",
+      "tabPast": "Owned before ({count})",
+      "area": "Area {area}",
+      "since": "Owner since {date}",
+      "held": "Owned {from} – {to}",
+      "unknownDate": "date not recorded",
+      "open": "Open record",
+      "needNid": "Link your NID to see your land",
+      "needNidHint": "Your land is listed by your NID. Add it once in Profile, with your date of birth.",
+      "linkNid": "Link my NID",
+      "emptyCurrent": "No land is recorded under your NID right now.",
+      "emptyHint": "If you bought land recently, the office may not have recorded it yet.",
+      "emptyPast": "No earlier land is recorded under your NID.",
+      "loadError": "We could not load your land. Try again."
     },
     "parcel": {
       "place": "{mouza}, {upazila}, {district}",
@@ -2464,6 +2526,38 @@
         "PASSWORD_UNCHANGED": "The new password is the same as the current one. Choose a different one.",
         "RATE_LIMITED": "Too many tries. Wait one minute and try again.",
         "generic": "We couldn't save. Check your connection and try again."
+      }
+    },
+    "nid": {
+      "title": "National ID (NID)",
+      "why": "Link your NID to see all the land recorded under it, in one place. We check the number and your date of birth against the land office records.",
+      "number": "NID number",
+      "numberHint": "10, 13 or 17 digits, exactly as on your card.",
+      "dob": "Date of birth",
+      "dobHint": "As written on your NID card.",
+      "privacy": "We keep only a coded copy of your NID and its last 4 digits. Only you can see the land linked to it.",
+      "link": "Link my NID",
+      "linked": "Your NID is linked. Your land is now in “My land”.",
+      "verified": "Matched with land records",
+      "linkedOn": "Linked on {date}",
+      "seeLand": "See my land",
+      "unlink": "Remove NID",
+      "unlinkTitle": "Remove your NID from this account?",
+      "unlinkBody": "“My land” will be empty until you link your NID again. Your land records do not change.",
+      "unlinkConfirm": "Yes, remove",
+      "unlinked": "Your NID is removed from this account.",
+      "cancel": "Cancel",
+      "errors": {
+        "nidRequired": "Write your NID number.",
+        "format": "An NID number has 10, 13 or 17 digits. Check your card.",
+        "dobRequired": "Choose your date of birth.",
+        "NID_NOT_MATCHED": "We could not find land records with this NID and date of birth. Check both. If your land was recorded recently, ask your land office to add your NID.",
+        "NID_IN_USE": "This NID is already linked to another account. If that is not you, contact your land office.",
+        "INVALID_NID": "An NID number has 10, 13 or 17 digits. Check your card.",
+        "INVALID_DATE_OF_BIRTH": "Check the date of birth.",
+        "NID_ALREADY_REGISTERED": "An NID is already linked to this account. Remove it first.",
+        "RATE_LIMITED": "Too many tries. Wait 15 minutes and try again.",
+        "generic": "We couldn't link your NID. Check your connection and try again."
       }
     }
   },

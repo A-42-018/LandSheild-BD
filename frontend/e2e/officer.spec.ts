@@ -1,6 +1,6 @@
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { API, apiToken, openEvidenceTab, signIn } from "./fixtures";
+import { API, apiToken, fillBuyerNid, openEvidenceTab, signIn } from "./fixtures";
 
 // Demo flow (docs/demo-script.md): Doc1 (Rahim → Karim) is recorded, Doc2 (same seller → Hasan)
 // conflicts → transaction FLAGGED, HIGH alert on LP-10234. Both documents map to the seeded parcel LP-10234.
@@ -12,6 +12,7 @@ async function uploadAndProcess(page: Page, file: string): Promise<string> {
   await page.goto("/en/officer/upload");
   await page.locator('input[type="file"]').setInputFiles(SAMPLE(file));
   await expect(page.getByTestId("selected-file")).toBeVisible();
+  await fillBuyerNid(page, file);
 
   const uploaded = page.waitForResponse((r) => r.url().endsWith("/documents/upload") && r.request().method() === "POST");
   await page.getByRole("button", { name: "Upload", exact: true }).click();

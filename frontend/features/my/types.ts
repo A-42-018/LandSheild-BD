@@ -79,3 +79,26 @@ export interface MeSummary {
   recent_reports: ReportItem[];
   latest_notifications: NotificationItem[];
 }
+
+/** The citizen's linked NID: only the last four digits ever come back. */
+export interface NidStatus {
+  registered: boolean;
+  last4: string | null;
+  verified_at: string | null;
+}
+
+export interface MyLand extends ParcelBrief {
+  area: number;
+  area_unit: string;
+  since: string | null;
+  until: string | null;
+}
+
+export interface MyLands {
+  nid: NidStatus;
+  current: MyLand[];
+  past: MyLand[];
+  total_current: number;
+  /** current holdings in decimal (shotangsho); null when a unit could not be converted */
+  total_area_decimal: number | null;
+}
