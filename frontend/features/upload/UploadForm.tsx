@@ -37,7 +37,7 @@ import {
   type PartyNidValue,
 } from "./PartyNidFields";
 import DemoDocPicker from "@/features/demo-docs/DemoDocPicker";
-import { UPLOAD_DEMO_DOCS, type UploadDemoDoc } from "@/features/demo-docs/catalog";
+import { DEMO_OWNERS, UPLOAD_DEMO_DOCS, type UploadDemoDoc } from "@/features/demo-docs/catalog";
 
 function DocumentStatusPanel({ doc }: { doc: DocumentUploadOut }) {
   const t = useTranslations("upload");
@@ -198,6 +198,10 @@ export default function UploadForm() {
     pick(f);
     if (inputRef.current) inputRef.current.value = "";
     setDocType(d.docType);
+    // the parties named on the sample deed; survey records have none
+    setBuyer(d.parties ? { ...DEMO_OWNERS[d.parties.buyer] } : EMPTY_PARTY);
+    setSeller(d.parties ? { ...DEMO_OWNERS[d.parties.seller] } : EMPTY_PARTY);
+    setNidErrors({ buyer: {}, seller: {} });
   }
 
   function onDrop(e: DragEvent) {

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -10,7 +10,7 @@ import type { ApiClient } from "@/lib/api";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import UploadForm from "@/features/upload/UploadForm";
 import VerifyDocumentView from "@/features/verify-document/VerifyDocumentView";
-import { UPLOAD_DEMO_DOCS, VERIFY_DEMO_DOCS } from "./catalog";
+import { DEMO_OWNERS, UPLOAD_DEMO_DOCS, VERIFY_DEMO_DOCS } from "./catalog";
 
 const officer = { id: "1", name: "O", email: "o@x.co", role: "OFFICER", preferred_language: "en" };
 
@@ -72,6 +72,37 @@ describe("demo document picker: upload", () => {
     expect(form.get("land_id")).toBeNull();
   });
 
+  it("fills the NIDs of the parties named on a sample deed, so it submits without typing them", async () => {
+    stubFetch();
+    const upload = vi.fn().mockResolvedValue({
+      id: "d1", land_id: null, document_type: "DEED", processing_status: "UPLOADED",
+      file_hash: "a".repeat(64), file_type: "png", created_at: "2026-10-01T00:00:00Z", duplicate: false,
+    });
+    wrap(<UploadForm />, { upload });
+    await pickSample("doc1"); // seller Rahim Uddin, buyer Karim Mia
+    const buyer = screen.getByTestId("party-nid-buyer");
+    expect(within(buyer).getByLabelText(en.partyNid.nid, { exact: false })).toHaveValue(DEMO_OWNERS.karim.nid);
+    expect(within(buyer).getByLabelText(en.partyNid.dob, { exact: false })).toHaveValue(DEMO_OWNERS.karim.dob);
+
+    fireEvent.click(screen.getByRole("button", { name: en.upload.submit }));
+    await screen.findByTestId("upload-result");
+    const form = upload.mock.calls[0][1] as FormData;
+    expect(form.get("buyer_nid")).toBe(DEMO_OWNERS.karim.nid);
+    expect(form.get("buyer_dob")).toBe(DEMO_OWNERS.karim.dob);
+    expect(form.get("seller_nid")).toBe(DEMO_OWNERS.rahim.nid);
+    expect(form.get("seller_dob")).toBe(DEMO_OWNERS.rahim.dob);
+  });
+
+  it("clears sample NIDs when a survey record is picked after a deed", async () => {
+    stubFetch();
+    wrap(<UploadForm />, { upload: vi.fn() });
+    await pickSample("doc2");
+    await pickSample("porcha");
+    expect(screen.queryByTestId("party-nid-buyer")).toBeNull();
+    fireEvent.change(screen.getByLabelText(en.upload.type), { target: { value: "DEED" } });
+    expect(within(screen.getByTestId("party-nid-buyer")).getByLabelText(en.partyNid.nid, { exact: false })).toHaveValue("");
+  });
+
   it("keeps the dialog open with an error when a sample cannot be fetched", async () => {
     stubFetch(false);
     wrap(<UploadForm />, { upload: vi.fn() }, bn, "bn");
@@ -102,6 +133,22 @@ describe("demo document picker: verify a copy", () => {
 
 describe("demo document files", () => {
   const root = join(__dirname, "../..");
+  it("sample deed parties are the seeded owners named on each deed", () => {
+    const seed = JSON.parse(readFileSync(join(root, "../database/seed/data.json"), "utf8"));
+    const fixtures = JSON.parse(readFileSync(join(root, "../ai/mock_fixtures.json"), "utf8")).by_marker;
+    const owner = (k: keyof typeof DEMO_OWNERS) => seed.owners.find((o: any) => o.key === k);
+    for (const k of Object.keys(DEMO_OWNERS) as (keyof typeof DEMO_OWNERS)[]) {
+      expect(DEMO_OWNERS[k], k).toEqual({ nid: owner(k).nid, dob: owner(k).dob });
+    }
+    for (const d of UPLOAD_DEMO_DOCS) {
+      expect(!!d.parties, d.key).toBe(d.docType === "DEED");
+      if (!d.parties) continue;
+      const text: string = fixtures[d.file.replace(/\.png$/, "")].ocr_text;
+      expect(text, d.key).toContain(`Seller ${owner(d.parties.seller).name}.`);
+      expect(text, d.key).toContain(`Buyer ${owner(d.parties.buyer).name}.`);
+    }
+  });
+
   it("public copies are byte-identical to database/sample_data (backend fixtures match by hash)", () => {
     const files = new Set([...UPLOAD_DEMO_DOCS, ...VERIFY_DEMO_DOCS].map((d) => d.file));
     for (const f of files) {

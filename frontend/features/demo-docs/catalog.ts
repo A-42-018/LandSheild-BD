@@ -9,19 +9,30 @@ export interface DemoDoc {
   name: string;
 }
 
+/** Synthetic owners from database/seed/data.json (NID + date of birth), the parties named on the sample deeds. */
+export const DEMO_OWNERS = {
+  rahim: { nid: "19759990000000001", dob: "1975-03-12" },
+  karim: { nid: "19809990000000002", dob: "1980-07-01" },
+  hasan: { nid: "19689990000000003", dob: "1968-11-23" },
+  jamal: { nid: "19909990000000004", dob: "1990-01-30" },
+} as const;
+export type DemoOwner = keyof typeof DEMO_OWNERS;
+
 export interface UploadDemoDoc extends DemoDoc {
   /** Khatian/porcha go through the survey-record parser, so the form's type follows the file. */
   docType: "DEED" | "KHATIAN" | "PORCHA";
+  /** Deeds: who sells and who buys, so picking the sample also fills the parties' NIDs. */
+  parties?: { seller: DemoOwner; buyer: DemoOwner };
 }
 
 export const DEMO_DOC_DIR = "/demo-docs";
 
 export const UPLOAD_DEMO_DOCS: UploadDemoDoc[] = [
-  { key: "doc1", file: "Doc1.png", name: "Sale_Deed_01.png", docType: "DEED" },
-  { key: "doc2", file: "Doc2.png", name: "Sale_Deed_02.png", docType: "DEED" },
-  { key: "areaMismatch", file: "AreaMismatch.png", name: "Sale_Deed_03.png", docType: "DEED" },
-  { key: "sellerMismatch", file: "SellerMismatch.png", name: "Sale_Deed_04.png", docType: "DEED" },
-  { key: "clean", file: "Clean.png", name: "Sale_Deed_05.png", docType: "DEED" },
+  { key: "doc1", file: "Doc1.png", name: "Sale_Deed_01.png", docType: "DEED", parties: { seller: "rahim", buyer: "karim" } },
+  { key: "doc2", file: "Doc2.png", name: "Sale_Deed_02.png", docType: "DEED", parties: { seller: "rahim", buyer: "hasan" } },
+  { key: "areaMismatch", file: "AreaMismatch.png", name: "Sale_Deed_03.png", docType: "DEED", parties: { seller: "jamal", buyer: "karim" } },
+  { key: "sellerMismatch", file: "SellerMismatch.png", name: "Sale_Deed_04.png", docType: "DEED", parties: { seller: "rahim", buyer: "hasan" } },
+  { key: "clean", file: "Clean.png", name: "Sale_Deed_05.png", docType: "DEED", parties: { seller: "jamal", buyer: "hasan" } },
   { key: "khatian", file: "Khatian_RS.png", name: "Khatian_RS.png", docType: "KHATIAN" },
   { key: "porcha", file: "Porcha_BS.png", name: "Porcha_BS.png", docType: "PORCHA" },
 ];
