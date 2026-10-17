@@ -44,6 +44,8 @@ import { EmptyState, ErrorState, LoadingState, Modal, StateCard } from "@/compon
 import NotFound from "../app/[locale]/not-found";
 import ErrorPage from "../app/[locale]/error";
 import OfficerShell from "@/features/officer/OfficerShell";
+import PageTip, { PAGE_TIPS } from "@/components/PageTip";
+import StatisticsPage from "@/features/statistics/StatisticsPage";
 
 vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
@@ -315,6 +317,18 @@ const CASES: Case[] = [
   { name: "officer-feedback", role: "OFFICER", ui: () => <main><FeedbackAdmin /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.feedback.admin.title) }) },
   { name: "public-verify", role: null, ui: () => <main><PublicVerifyView landId="LP-10240" /></main>, ready: (m) => screen.findAllByText(/LP-10240/) },
   { name: "not-found", role: null, ui: () => <main><NotFound /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.errorPages.notFoundTitle) }) },
+  // U4.2: every page tip, opened so axe also checks the three steps.
+  {
+    name: "page-tips",
+    role: null,
+    ui: () => <main><h1>Page</h1>{PAGE_TIPS.map((p) => <PageTip key={p} page={p} />)}</main>,
+    ready: async (m) => {
+      const tips = await screen.findAllByTestId("page-tip");
+      for (const d of tips) (d as HTMLDetailsElement).open = true;
+      return screen.findAllByText(m.pageTip.title);
+    },
+  },
+  { name: "statistics", role: null, ui: () => <main><StatisticsPage /></main>, ready: (m) => screen.findByRole("heading", { level: 1, name: m.statistics.title }) },
   { name: "error-page", role: null, ui: () => <main><ErrorPage error={new Error("x")} reset={() => {}} /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.errorPages.errorTitle) }) },
 ];
 

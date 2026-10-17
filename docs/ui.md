@@ -615,3 +615,25 @@ Every state says what happened and what to do next, in plain words. No page prom
   - Place names in the dropdowns read "Dhaka (ঢাকা)" in Bangla too (a choice from commit c0dde36). A Bangla voice reads the Latin part first and badly. `<option>` cannot carry its own `lang`, so the fix would be to put the Bangla name first under `bn`; left for a product decision.
   - Brand words in Latin inside Bangla text ("LandShield", "MIT") have no `lang="en"`; minor.
   - The map and the ownership graph are mouse-first; the parcel list and the graph's list view are the keyboard routes (unchanged).
+
+# Page tips and public তথ্যচিত্র (U4.2, U4.3, 2026-10-17)
+
+## U4.2 — "এই পাতায় কী করবেন?" tip
+- `components/PageTip.tsx`: `<PageTip page="…" />`, a native `<details>` that starts closed, placed right under the page header. The summary is the question (48 px tall); the body is three short steps (`pageTip.<page>.s1–s3`). It works without JavaScript and opens with Enter/Space. A closed tip is read aloud by its title only (U4.4 rule), and it is hidden in print.
+- On 9 pages. Citizen: ভূমি যাচাই, কেনার আগে যাচাই, দলিলের কপি যাচাই and নামজারির অবস্থা (through `ServiceLayout`'s new `tip` prop), plus `/my`. Staff: officer dashboard, reviewer home "আজকের কাজ", upload, ই-নামজারি queue (placed after `OfficerPageHeader`).
+- Add a page: add its id to `PAGE_TIPS`, add `pageTip.<id>.{s1,s2,s3}` in both message files, then place the component. The tests fail if a page has more or fewer than three steps, a sentence has 20 words or more, or a Bangla step has a Latin digit.
+- Copy follows the rules above: steps name the real button label in “ ” ("যাচাই করুন", "অবস্থা দেখুন", "কপি যাচাই করুন"), and staff pages keep their loanwords (আপলোড, ফিল্টার).
+
+## U4.3 — Public তথ্যচিত্র at `/statistics`
+- `features/statistics/StatisticsPage.tsx` is a server component, statically generated, with no API call. The figures live in `features/statistics/sample.ts`: one row per division (ভূমি যাচাই, নামজারির আবেদন, নিষ্পত্তি). The four KPI tiles are summed from those rows, so the tiles and the table always agree. Change `SAMPLE_UPDATED` whenever you change the numbers.
+- **Clearly sample data**: a "নমুনা তথ্য" chip beside "সর্বশেষ হালনাগাদ: {date}" in the header. Under the header, a gold `role="note"` band says "এগুলো নমুনা সংখ্যা। … এটি কোনো সরকারি রেকর্ড বা প্রতিবেদন নয়।" and links to `/data-sources`. The table caption also says (নমুনা তথ্য).
+- **Division map**: a schematic 3 × 3 tile map (rough position, north up, not to scale; the caption says so) instead of a boundary map, so the page needs no GIS download. Each tile prints its name and number, so colour is never the only cue. Three bands in one hue (`bg-primary-soft` → `bg-primary/35` → `bg-primary`) with a legend. Text on each band is ≥ 4.5 : 1 in light and dark: ink on the two light bands, `primary-fg` on full primary. The 65 % step was left out because it fails in both themes.
+- **Division table**: the same figures with a total row. It sits in a focusable scroll region, but fits 360 px without scrolling (the settled column uses the short header `col.settled`).
+- Theme tokens only, no hex or `rgb()` in `features/statistics` (tested). Numbers and the date go through `Intl` with `bn-BD`, so Bangla shows Bangla digits (`১৭,৮১০`, `৮২%`).
+- Linked from the footer (পরিকল্পনা ও বাস্তবায়নে column), the sitemap (তথ্য group) and `e2e/a11y.spec.ts`'s public route list.
+- Checked in the browser (BN, 360 px, light and dark): no sideways scroll, and the table fits its card.
+
+## Also
+- `scripts/audit-hardcoded.mjs` now allows `A`, `R`, `N`. These are the `<kbd>` shortcut keys on the review screen from U3.3, and they made `npm run check:i18n` fail on main.
+- Tests: `components/PageTip.test.tsx`, `features/statistics/statistics.test.tsx`; `tests/a11y.test.tsx` has `page-tips` (all nine, opened) and `statistics`, in EN and BN.
+- Not done: the e2e axe run on `/statistics` (added to the list, not run here); a home-page তথ্যচিত্র band (roadmap §4 home order) linking to the page; real figures from the API.

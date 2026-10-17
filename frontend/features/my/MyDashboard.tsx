@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Bell, ClipboardCheck, Eye, FileClock, FileText, History, SearchCheck, type LucideIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import PageHeader from "@/components/PageHeader";
+import PageTip from "@/components/PageTip";
 import RiskIndicator from "@/components/domain/RiskIndicator";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -53,6 +54,7 @@ export default function MyDashboard() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader variant="plain" title={t("greeting", { name: user?.name ?? "" })} purpose={t("intro")} crumbs={[]} />
+      <PageTip page="my" />
 
       <ul aria-label={t("actionsLabel")} className="grid gap-3 sm:grid-cols-3">
         {ACTIONS.map(({ key, href, Icon }) => (

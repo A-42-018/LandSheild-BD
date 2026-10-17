@@ -11,7 +11,7 @@ export default async function CheckPage({ params: { locale } }: { params: { loca
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
   return (
-    <ServiceLayout service="check" title={t("nav.check")} purpose={t("page.checkPurpose")} art={<ChecklistArt />}>
+    <ServiceLayout service="check" title={t("nav.check")} purpose={t("page.checkPurpose")} art={<ChecklistArt />} tip="check">
       <RequireRole>
         <CheckForm />
       </RequireRole>
