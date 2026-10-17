@@ -10,12 +10,14 @@ import uuid
 from datetime import UTC, date, datetime
 from pathlib import Path
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.db import Base
 from app.core.passwords import hash_password
 from app.models import (
+    ContentItem,
     Deed,
     LandEncumbrance,
     LandParcel,
@@ -56,6 +58,31 @@ def _hash(kind: str, raw: str, salt: str) -> str:
 
 def _d(v: str | None) -> date | None:
     return date.fromisoformat(v) if v else None
+
+
+# The notices the home page and the header ticker show (U3.6). Migration 0015 inserts the same
+# four, but `reset` deletes every table, so a deploy that runs `seed.py --reset` after
+# `alembic upgrade head` (Render) would serve an empty list and the ticker would vanish.
+# (date, ticker, title_en, title_bn, body_en, body_bn)
+NOTICES = [
+    ("2026-10-14", True, "Check before you buy lists khas land and acquisition",
+     "কেনার আগে যাচাইয়ে খাস জমি ও অধিগ্রহণ যুক্ত হয়েছে",
+     "Plots on khas land or under acquisition now show as a red flag.",
+     "খাস জমি বা অধিগ্রহণাধীন দাগ এখন সতর্ক সংকেত হিসেবে দেখা যায়।"),
+    ("2026-10-12", True, "Track a mutation without signing in",
+     "সাইন ইন ছাড়াই নামজারির অবস্থা",
+     "Anyone can follow an application by its number.",
+     "আবেদনের নম্বর দিয়ে যে কেউ অবস্থা অনুসরণ করতে পারেন।"),
+    ("2026-10-07", False, "Role-based access reviewed",
+     "ভূমিকাভিত্তিক প্রবেশাধিকার পর্যালোচিত",
+     "Sign-in roles and the four-eyes approval rule were checked on every page.",
+     "প্রতিটি পাতায় কে কী দেখতে পারেন তা পরীক্ষা করা হয়েছে। "
+     "অনুমোদনে দুজন আলাদা মানুষ লাগে।"),
+    ("2026-10-06", True, "Citizen tools added",
+     "নতুন হিসাব-সহায়ক যুক্ত হয়েছে",
+     "Land unit converter, fee calculator and inheritance shares.",
+     "জমির একক বদল, ফি-র হিসাব ও উত্তরাধিকারের অংশ।"),
+]
 
 
 def reset(db: Session) -> None:
@@ -159,6 +186,16 @@ def seed(db: Session, demo_password: str | None = None, do_reset: bool = False) 
             started_at=_d(e.get("started")), resolved_at=_d(e.get("resolved")),
             note=e.get("note"),
         )
+    # Only when there are no notices at all: migration 0015 already inserted them (random ids) on a
+    # database that was not reset, and an admin who edited or removed them must not get them back.
+    if db.scalar(select(ContentItem.id).where(ContentItem.kind == "NOTICE").limit(1)) is None:
+        for d, tk, te, tb, be, bb in NOTICES:
+            db.add(ContentItem(
+                id=sid("notice", d), kind="NOTICE", title_en=te, title_bn=tb,
+                body_en=be, body_bn=bb, published_on=_d(d), ticker=tk, published=True, position=0,
+            ))
+            created += 1
+        db.flush()
     from app.services import signing  # F4a: sign seeded deeds (idempotent)
 
     signing.seal_unsigned(db)
