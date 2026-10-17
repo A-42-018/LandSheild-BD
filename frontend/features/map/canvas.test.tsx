@@ -88,6 +88,42 @@ describe("MapCanvas (real Leaflet)", () => {
     expect(dds).toEqual(["LP-10001", "101", "501", "15 decimal"]);
   });
 
+  const bnHemi = { n: "উত্তর", s: "দক্ষিণ", e: "পূর্ব", w: "পশ্চিম" };
+  const readoutOf = (c: HTMLElement) => c.querySelector('[data-testid="map-readout"]')?.textContent ?? "";
+  it("cursor/zoom readout uses Bangla digits and words under bn", async () => {
+    const { container, unmount } = render(
+      <MapCanvas {...base} labels={{ ...base.labels, digits: (v) => localDigits(v, "bn") }} zoomLabel="জুম" hemispheres={bnHemi} />,
+    );
+    await waitFor(() => expect(readoutOf(container)).not.toBe(""));
+    const text = readoutOf(container);
+    expect(text).toMatch(/^[০-৯]+° [০-৯]{2}′ [০-৯]{2}″ উত্তর [০-৯]+° [০-৯]{2}′ [০-৯]{2}″ পূর্ব, জুম: [০-৯]+\.[০-৯]{2}$/);
+    expect(text).not.toMatch(/[0-9]/);
+    unmount();
+  });
+  it("cursor/zoom readout keeps Latin digits under en", async () => {
+    const { container, unmount } = render(
+      <MapCanvas {...base} labels={{ ...base.labels, digits: (v) => localDigits(v, "en") }} zoomLabel="Zoom" hemispheres={{ n: "N", s: "S", e: "E", w: "W" }} />,
+    );
+    await waitFor(() => expect(readoutOf(container)).not.toBe(""));
+    expect(readoutOf(container)).toMatch(/^\d+° \d{2}′ \d{2}″ N \d+° \d{2}′ \d{2}″ E, Zoom: \d+\.\d{2}$/);
+    unmount();
+  });
+  it("switching locale relabels the readout in place without rebuilding the map", async () => {
+    const { container, rerender, unmount } = render(<MapCanvas {...base} zoomLabel="Zoom" />);
+    await waitFor(() => expect(readoutOf(container)).toContain("Zoom:"));
+    const before = readoutOf(container);
+    const mapEl = container.querySelector(".leaflet-container");
+    rerender(
+      <MapCanvas {...base} labels={{ ...base.labels, digits: (v) => localDigits(v, "bn") }} zoomLabel="জুম" hemispheres={bnHemi} />,
+    );
+    await waitFor(() => expect(readoutOf(container)).toContain("জুম:"));
+    expect(readoutOf(container)).toBe(
+      localDigits(before.replace(" N ", " উত্তর ").replace(" E,", " পূর্ব,").replace("Zoom", "জুম"), "bn"),
+    );
+    expect(container.querySelector(".leaflet-container")).toBe(mapEl); // same map instance
+    unmount();
+  });
+
   it("unmounts cleanly", async () => {
     const { container, unmount } = render(<MapCanvas {...base} />);
     await waitFor(() => expect(container.querySelector(".leaflet-container")).not.toBeNull());

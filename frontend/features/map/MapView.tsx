@@ -260,6 +260,7 @@ export default function MapView() {
             fitKey={fitKey}
             fitParcels={false}
             zoomLabel={t("map.gis.zoom")}
+            hemispheres={{ n: t("map.gis.north"), s: t("map.gis.south"), e: t("map.gis.east"), w: t("map.gis.west") }}
             attribution={ATTRIBUTION}
           />
         </Suspense>
