@@ -6,7 +6,7 @@ import en from "../../messages/en.json";
 import bn from "../../messages/bn.json";
 import { ApiError, type ApiClient, type ApiUser } from "@/lib/api";
 import { AuthProvider } from "./AuthContext";
-import LoginForm, { safeNext } from "./LoginForm";
+import LoginForm, { DEMO_PASSWORD, safeNext } from "./LoginForm";
 import RequireRole from "./RequireRole";
 import { loginPathFor, navItemsFor, redirectFor, type NavItem } from "./roles";
 
@@ -76,13 +76,15 @@ describe("LoginForm", () => {
     expect(screen.getByLabelText(/^Password/)).toHaveFocus();
   });
 
-  it("shows the demo-accounts hint (no password) and fills the e-mail on click", () => {
+  it("shows the demo accounts and password, and fills each on click", () => {
     wrap(<LoginForm audience="staff" />, fakeClient());
     const hint = screen.getByTestId("demo-accounts");
     expect(hint).toHaveTextContent(en.auth.demoTitle);
-    expect(hint).not.toHaveTextContent("LandShield2026");
+    expect(hint).toHaveTextContent(DEMO_PASSWORD);
     fireEvent.click(screen.getByRole("button", { name: /reviewer@demo\.landshield\.test/ }));
     expect(screen.getByLabelText(/Email/)).toHaveValue("reviewer@demo.landshield.test");
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(en.auth.demoPassword) }));
+    expect(screen.getByLabelText(/^Password/)).toHaveValue(DEMO_PASSWORD);
     expect(screen.getByText(en.auth.notice)).toBeInTheDocument();
   });
 

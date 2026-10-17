@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, Info, LogIn } from "lucide-react";
+import { AlertCircle, Info, KeyRound, LogIn } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { Badge, Button, Input } from "@/components/ui";
 import { ApiError } from "@/lib/api";
@@ -15,13 +15,15 @@ import { redirectFor } from "./roles";
 
 export type LoginAudience = "citizen" | "staff";
 
-/** Seeded demo users (README "Demo accounts"); the password is never shown in the UI. */
+/** Seeded demo users (README "Demo accounts"). */
 const demoEmails = (roles: string[]) => roles.map((r) => `${r}@demo.landshield.test`);
 export const DEMO_ACCOUNTS_BY_AUDIENCE: Record<LoginAudience, string[]> = {
   citizen: demoEmails(["citizen"]),
   staff: demoEmails(["reviewer", "officer", "admin"]),
 };
 export const DEMO_ACCOUNTS = [...DEMO_ACCOUNTS_BY_AUDIENCE.citizen, ...DEMO_ACCOUNTS_BY_AUDIENCE.staff];
+/** Shown on the sign-in page so judges can test quickly; must match the backend's DEMO_PASSWORD (start.sh default). */
+export const DEMO_PASSWORD = process.env.NEXT_PUBLIC_DEMO_PASSWORD || "LandShield2026!";
 
 export function safeNext(next: string | null): string {
   return next && next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : "/";
@@ -135,6 +137,15 @@ export default function LoginForm({ audience = "citizen" }: { audience?: LoginAu
             </li>
           ))}
         </ul>
+        <button
+          type="button"
+          onClick={() => setPassword(DEMO_PASSWORD)}
+          className="mt-2 flex min-h-11 w-full items-center gap-2 rounded-xl border border-line/80 bg-surface px-3 py-2.5 text-left shadow-[0_2px_6px_-3px_rgb(var(--shadow)/0.2)] transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+        >
+          <KeyRound aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />
+          <span className="text-ink-muted">{t("demoPassword")}</span>
+          <span className="break-all font-mono text-xs text-link">{DEMO_PASSWORD}</span>
+        </button>
       </aside>
       <p className="text-xs text-ink-muted">{t("notice")}</p>
     </AuthShell>
