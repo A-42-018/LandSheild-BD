@@ -20,11 +20,16 @@ H2 (`layout=True`, needs OpenCV):
 `profile="historical"` renders PDFs in colour and uses the historical-scan clean-up
 (`ai.preprocessing.historical`) instead of the generic one. PDFs stay at 200 dpi: on the H0 PDFs
 300 dpi found fewer gold values with every pipeline (sample deed 33 -> 29 of 37).
+`profile="auto"` (H3) reads with the modern profile, runs the deed classifier
+(`ai.extraction.classify`) on that text and, when it says historical, reads the page again with
+the historical profile and returns that reading (warning HISTORICAL_PROFILE). `OCRResult.profile`
+says which profile produced the text.
 """
 from __future__ import annotations
 
 import io
 import logging
+from dataclasses import replace
 from statistics import fmean
 
 from ai.ocr.base import OCRCell, OCRResult, OCRTable, OCRWord, ProviderError
@@ -40,7 +45,7 @@ RECOVER_MIN_CONF = 0.5
 RECOVER_MAX = 10  # missed-line spots re-read per page
 BANGLA_FIRST_SLACK = 0.03  # `ben`-only cell reading may be this much less confident and still win
 SPLIT_DEPTH = 3  # an unreadable strip is cut in half at most this many times (<= 8 pieces)
-PROFILES = ("modern", "historical")
+PROFILES = ("modern", "historical", "auto")
 
 
 def _import_pytesseract():
@@ -178,12 +183,12 @@ class TesseractOCRProvider:
         self.layout = layout
         self.profile = profile if profile in PROFILES else "modern"
 
-    def _pages(self, data: bytes, file_type: str) -> tuple[list, list[str]]:
+    def _pages(self, data: bytes, file_type: str, profile: str) -> tuple[list, list[str]]:
         """Grayscale page arrays (<= max_pages) and warnings."""
         import numpy as np  # noqa: PLC0415
 
         warnings: list[str] = []
-        historical = self.profile == "historical"
+        historical = profile == "historical"
         if file_type.lower() == "pdf":
             from ai.preprocessing.pdf import pdf_page_count, pdf_to_array  # noqa: PLC0415
 
@@ -429,9 +434,20 @@ class TesseractOCRProvider:
         return [OCRWord(c.text, c.confidence, c.bbox) for c in t.cells if c.text]
 
     def recognize(self, data: bytes, file_type: str) -> OCRResult:
+        if self.profile != "auto":
+            return self._recognize(data, file_type, self.profile)
+        first = self._recognize(data, file_type, "modern")
+        from ai.extraction.classify import classify  # noqa: PLC0415 (ai.extraction imports ai.ocr)
+
+        if not classify(first.text, first.tables).historical:
+            return first
+        second = self._recognize(data, file_type, "historical")
+        return replace(second, warnings=(*second.warnings, "HISTORICAL_PROFILE"))
+
+    def _recognize(self, data: bytes, file_type: str, profile: str) -> OCRResult:
         pt = _import_pytesseract()
         lang = resolve_lang(self.lang, installed_languages())
-        arrays, warnings = self._pages(data, file_type)
+        arrays, warnings = self._pages(data, file_type, profile)
         words: list[OCRWord] = []
         texts: list[str] = []
         tables: list[OCRTable] = []
@@ -450,4 +466,5 @@ class TesseractOCRProvider:
             words=tuple(words),
             warnings=tuple(warnings),
             tables=tuple(tables),
+            profile=profile,
         )

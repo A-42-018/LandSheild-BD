@@ -11,6 +11,9 @@
 4. A failed text layer with no Tesseract is still returned (TEXT_LAYER_SUSPECT, low confidence):
    a reviewer sees every field anyway, and nothing is better than refusing the document.
 5. Otherwise ProviderError("OCR_UNAVAILABLE").
+
+`profile` goes to Tesseract: modern | historical | auto (H3: modern read, then a historical re-read
+when `ai.extraction.classify` says the deed is historical).
 """
 from __future__ import annotations
 

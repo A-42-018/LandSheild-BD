@@ -8,7 +8,8 @@ Setup for OCR: see `ocr-setup.md`.
 | Stage | Code | Switch | Notes |
 |---|---|---|---|
 | Preprocess (optional) | `ai/preprocessing/` | `PREPROCESS=on` | OpenCV grayscale, denoise, CLAHE, deskew, autocrop; PDFs rendered with PyMuPDF (max 20 pages) |
-| OCR | `ai/ocr/` (`auto`, `mock`, `tesseract`) | `OCR_PROVIDER`, `OCR_PROFILE` | `auto` = demo fixture → PDF text layer if it passes the quality gate → Tesseract with ruled-table cells and missed-line recovery (H2, below); `paddle` is a known name but not implemented (the API answers 503 `PROVIDER_NOT_AVAILABLE`); Tesseract languages from `TESSERACT_LANG` (`ben+eng`), missing ones are dropped with a warning |
+| OCR | `ai/ocr/` (`auto`, `mock`, `tesseract`) | `OCR_PROVIDER`, `OCR_PROFILE` | `auto` = demo fixture → PDF text layer if it passes the quality gate → Tesseract with ruled-table cells and missed-line recovery (H2, below); `OCR_PROFILE=auto` (default) re-reads a deed the classifier calls historical with the historical scan profile (H3, below); `paddle` is a known name but not implemented (the API answers 503 `PROVIDER_NOT_AVAILABLE`); Tesseract languages from `TESSERACT_LANG` (`ben+eng`), missing ones are dropped with a warning |
+| Deed profile | `ai/extraction/classify.py` | — | modern \| historical, deed kind, era, score from the OCR text; stored in `extraction_json` (H3, below) |
 | Extraction | `ai/extraction/` (`mock`, `rules`) | `DOCUMENT_AI_PROVIDER` | `rules` = regex/label patterns over OCR text; `vlm`, `remote` are known names but not implemented (503). Each field gets a confidence |
 | Review | `backend/app/services/review.py` | `REVIEW_CONF_THRESHOLD` (0.85) | Fields below the threshold, and not corrected by a human, raise `LOW_EXTRACTION_CONFIDENCE` (INFO, 0 points) |
 | Posting | `backend/app/services/posting.py` | approval | Creates deed, transaction and ownership history from the **human-approved** values |
@@ -362,8 +363,8 @@ extractor.
   confidence stays high. Ink rows with no word are re-read as strips (1.5×, then 0.7×, max 10 per
   page); a strip no scale reads is cut at its middle word gap and the halves are read (one segment,
   `উত্তরে- নিতাই` on hd04, made Tesseract drop the whole line).
-- **Historical profile** (`OCR_PROFILE=historical`, `ai/preprocessing/historical.py`; H3 will choose
-  it per document): colour render, red seals and stamps removed by colour, background flattening
+- **Historical profile** (`OCR_PROFILE=historical`, `ai/preprocessing/historical.py`; with
+  `OCR_PROFILE=auto` H3 chooses it per document): colour render, red seals and stamps removed by colour, background flattening
   (yellowing, blotches, shadow → white), faint watermark faded out (levels, white point 215), deskew;
   phone photos get perspective correction when a page outline is found. Left out after measuring:
   median denoise, upscaling, the red channel as grayscale, and 300 dpi PDF renders (all lowered the
@@ -403,4 +404,63 @@ OCR text, i.e. what any extractor could at best read. Independent of the extract
 Reproduce: `python ai/evaluation/run_eval.py --set historical --input-quality`
 
 <!-- HIST-OCR:END -->
+
+### Deed profile detection (H3)
+
+D1 = "just DEED": the upload form and `document_type` do not change. After OCR, every deed (not a
+khatian / porcha) is classified by `ai/extraction/classify.py`, and the verdict is stored in
+`extraction_json` (no enum migration) and returned by `GET /documents/{id}/extraction`:
+
+```json
+"deed_profile": "historical", "ocr_profile": "historical",
+"deed_class": {"deed_profile": "historical", "deed_kind": "SALE_SAF_KABALA", "era": "BRITISH_INDIA",
+               "score": 0.999, "year": 1931, "signals": [{"code": "PARGANA", "weight": 2.0, "evidence": "পরগণা"}, …]}
+```
+
+**How it decides.** Weighted cues, each counted once; historical at ≥ 4 points
+(`score` = logistic of points − 4, so ≥ 0.5 means historical). Modern deeds use most
+"old-fashioned" words too (the 2001 saf-kabala test text has `শ্রী`, `সাং`, `দাতা/গ্রহীতা`,
+`তফসিল`, `সি.এস` and a Bangla date), so those are weak. The deed year and the truly archaic words decide:
+
+| Signal | Points |
+|---|---|
+| all dated years ≤ 1971 (`PRE_1971_YEAR`) | +4 |
+| `কস্য`, `মিদং` (the old opening formula), `রুপি`, `পাকিস্তান`, `জাতীয়তা … ভারতীয়` / `ব্রিটিশ`, `পরগণা`, number + archaic unit (`কানি`, `গণ্ডা`, `কড়া`, `ক্রান্তি` …; not `ছটাক`, still used with `কাঠা`) | +2 each |
+| `তপশিল` spelling, `বঙ্গাব্দ` / `সন ১৩xx`, number + `আনা`, CS khatian with no RS/BS survey | +1 each |
+| `সাং-`, `জনাব` / `শ্রী` / `শ্রীমতি` (not inside `শ্রীপুর`), `দাতা` / `গ্রহীতা`, `বাঙ্গালী` | +0.5 each |
+| a year ≥ 1972 and none older (`POST_1971_YEAR`) | −6 |
+| `জাতীয় পরিচয়` / NID · `বাংলাদেশ` · both old and new years (`MIXED_YEARS`) · RS/BS survey | −3 · −2 · −2 · −1 |
+
+- **Years:** a bare 4-digit number is not a year (dag, deed and amount numbers). Gregorian years
+  need a date cue (month name, `dd/mm/`, `/` after a deed number, `তারিখ`, `সাল`/`ইং`/`খ্রি`);
+  Bangla years 1100–1450 need `বঙ্গাব্দ`/`সন`/`সাল` or a Bangla month, and convert +593
+  (+594 in মাঘ–চৈত্র). Future years are dropped. `MIXED_YEARS` covers a modern deed reciting an old
+  one (leans modern) and a recent certified copy of an old deed (the vocabulary wins; the year
+  reported is then the old one).
+- **Era:** from the year (1947 itself needs a cue); a `পাকিস্তান` cue beats a pre-1947 year (a
+  misread digit: hd03 PNG reads `১৩৩৯` for `১৩৬৯`); no year → the nationality cue, else `null`.
+  Modern deeds are `BANGLADESH`.
+- **Deed kind:** the earliest title match wins (`রেহেন`, `হেবা`, `দানপত্র`, `বণ্টননামা`, `এওয়াজ`,
+  `ওয়াকফ`, `আমমোক্তারনামা`, `বায়না`, `কবলা`/`বিক্রয়`), so a sale deed's "not mortgaged" clause or a
+  recited gift deed does not change it; nothing found → `OTHER`.
+- **Tables:** cell texts of `OCRResult.tables` are scanned too.
+
+**OCR wiring.** `OCR_PROFILE=auto` (new default; `modern` / `historical` still force one): Tesseract
+reads with the modern profile, the classifier runs on that text, and a historical verdict triggers a
+second read with the historical scan profile, which is returned (warning `HISTORICAL_PROFILE`,
+`OCRResult.profile` / `extraction_json.ocr_profile` = `historical`). Demo fixtures and accepted PDF
+text layers are never re-read. Cost: one extra Tesseract pass for historical deeds only.
+
+**Results (2026-10-18).** All 12 files of the H0 manifest are historical on both the modern and the
+historical reading (24/24), with the manifest's deed kind and, where an era is given, the gold era;
+the 5 readings where no year could be read (the 3 scans on the modern profile, 2 sample-deed
+readings on the historical one) are found by vocabulary alone (score ≥ 0.91). All 11
+modern samples in `database/sample_data` (Tesseract reading and demo-fixture text) and the
+saf-kabala / khatian / porcha test OCR texts are modern (score ≤ 0.07). Because every H0 file is
+detected on its first reading, `auto` gives the historical column above (79.2 % of gold values,
+scans 75.6 %) while modern documents keep the modern reading. Tests: `backend/tests/test_classify.py`
+(the Tesseract-backed done-criteria test is skipped where Tesseract is missing).
+
+Not in H3: the reviewer's "modern ↔ historical" switch on the review screen (re-run with the other
+profile) needs the review UI (H6); H4 will use `deed_profile` to pick the historical parser.
 

@@ -64,6 +64,7 @@ class OCRResult:
     words: tuple[OCRWord, ...] = ()  # empty for providers without word boxes (mock)
     warnings: tuple[str, ...] = ()  # e.g. PAGES_TRUNCATED, TEXT_LAYER_REJECTED
     tables: tuple[OCRTable, ...] = ()  # ruled tables read cell by cell (H2)
+    profile: str | None = None  # Tesseract profile used: modern | historical (H3); None = no OCR
 
 
 class OCRProvider(Protocol):

@@ -33,7 +33,9 @@ class Settings(BaseSettings):
     storage_path: str = "./storage"
     # auto = demo fixture -> checked pdf-text -> tesseract; also tesseract | mock (tests)
     ocr_provider: str = "auto"
-    ocr_profile: str = "modern"  # modern | historical (old-scan clean-up); H3 picks per document
+    # modern | historical (old-scan clean-up) | auto = modern read, then a historical re-read
+    # when the deed classifier (H3) says historical
+    ocr_profile: str = "auto"
     demo_fixtures: str = "on"  # on = saved demo files return their stored result; off = real OCR
     # auto = claude if ANTHROPIC_API_KEY else rules; also rules | claude | mock
     document_ai_provider: str = "auto"

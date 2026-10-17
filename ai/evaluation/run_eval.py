@@ -338,7 +338,7 @@ def main() -> int:
     ap.add_argument("--set", choices=("default", "historical"), default="default",
                     help="historical = H0 deed set (database/sample_data/historical), scored per LHDR section")
     ap.add_argument("--only", help="with --set historical: only files whose name contains this")
-    ap.add_argument("--profile", choices=("modern", "historical"), default="modern",
+    ap.add_argument("--profile", choices=("modern", "historical", "auto"), default="modern",
                     help="with --set historical: OCR profile (H2)")
     ap.add_argument("--input-quality", action="store_true",
                     help="with --set historical: gold values found in the OCR text, before H2 vs H2 profiles")
