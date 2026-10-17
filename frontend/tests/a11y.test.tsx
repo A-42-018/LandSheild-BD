@@ -3,7 +3,7 @@
 // checked by the computed table in docs/ui.md). `region` / `landmark-one-main` /
 // `page-has-heading-one` are page-level rules that cannot hold for a rendered
 // fragment (the real <main>/<header> live in app/[locale]/layout.tsx).
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import axe from "axe-core";
@@ -211,7 +211,12 @@ const CASES: Case[] = [
     name: "result",
     role: "CITIZEN",
     ui: () => <main><ResultView landId="LP-10240" /></main>,
-    ready: (m) => screen.findByText(m.result.ownership),
+    // U2.4: record detail sits in collapsible sections; open them all so axe audits the content too.
+    ready: async (m) => {
+      await screen.findByTestId("verdict");
+      for (const toggle of screen.getAllByTestId("section-toggle")) if (!toggle.closest("details")?.hasAttribute("open")) fireEvent.click(toggle);
+      return screen.findByText(m.result.ownership);
+    },
   },
   {
     name: "report",
