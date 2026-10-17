@@ -9,6 +9,8 @@ const nextConfig = {
   poweredByHeader: false,
   async headers() {
     return [
+      // the worker file itself is never served from a cache, so a new version is picked up on the next visit
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, max-age=0" }, { key: "Service-Worker-Allowed", value: "/" }] },
       {
         source: "/:path*",
         headers: securityHeaders({

@@ -545,3 +545,14 @@ Every state says what happened and what to do next, in plain words. No page prom
 - **Security header**: `Permissions-Policy` was `camera=()`, which blocks the camera everywhere. It is now `camera=(self)`; microphone, geolocation and payment stay off.
 - Tests: `features/qr/scanner.test.tsx` (hidden when unsupported, reads once and releases the camera, blocked camera, close stops the stream); `tests/security-headers.test.ts` expects `camera=(self)`.
 - Not checked: a real camera scan on a phone. The scanner was tested in jsdom with a fake `BarcodeDetector`; in the browser pane only the button, layout and 360 px width were checked.
+
+## U5.2 — PWA basics, offline guides (2026-10-17)
+- **Installable**: `app/manifest.ts` (name, standalone, start page `/bn`, theme `BRAND_COLOR` from `lib/theme.ts`, shortcuts to Verify and Guide); icons in `public/icons/` (192, 512, and a maskable 512 with the shield on brand green) and `app/apple-icon.png` (180), all rendered from `public/brand/logo-mark.svg`. `viewport.themeColor` colours the phone toolbar.
+- **Offline**: `public/sw.js`, registered by `features/pwa/ServiceWorker.tsx` after page load, production only (a worker under `next dev` would serve stale pages).
+  - It stores **only** `/bn/guide` and `/en/guide` plus what they need: scripts, styles, fonts, step pictures and video poster frames (about 5.8 MB for both languages, measured). Videos are not stored (3 MB each, and they only load on play); they need the network.
+  - Guide page: network first, and the stored copy answers when the network fails or takes over 4 s (low-bandwidth phones). Every successful visit refreshes the stored copy and its assets, so the two never drift apart after a deploy.
+  - Any other page with no network shows `public/offline.html` (Bangla, English line, retry button, link to the guide). Nothing from `/api/`, the signed-in areas, the map or results is ever cached, so a land record never sits in a browser cache.
+  - Bump `VERSION` in `sw.js` to drop everything an older worker stored. `next.config.mjs` serves `/sw.js` with `no-cache` so a new version is picked up on the next visit.
+- Tests: `tests/pwa.test.ts` (manifest, icons exist, what counts as a guide page, which URLs are collected, fonts from CSS).
+- Checked in the browser (production build, `next start`): worker active, 79 entries stored (both guide pages, 36 pictures, 6 posters, 17 scripts, 2 stylesheets, 14 fonts, `offline.html`, no video). With the server stopped, `/bn/guide` still opened fully styled with its pictures, and `/bn/verify` showed the offline page.
+- Not done: an "Install app" button (browsers show their own install prompt once the manifest and worker are valid); no real-phone install test; the first visit is never offline (the worker installs after it).

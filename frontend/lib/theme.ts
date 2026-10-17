@@ -1,4 +1,6 @@
 export type ThemeMode = "light" | "dark" | "system";
+/** Brand green (--primary in globals.css): browser toolbar colour and the installed app's theme. */
+export const BRAND_COLOR = "#006a4e";
 export const THEME_KEY = "ls-theme";
 export const THEME_MODES: ThemeMode[] = ["light", "dark", "system"];
 
