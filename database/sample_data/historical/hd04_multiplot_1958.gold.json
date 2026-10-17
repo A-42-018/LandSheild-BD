@@ -1,0 +1,192 @@
+{
+  "schema": "lhdr/1",
+  "document": {
+    "kind": "SALE_SAF_KABALA",
+    "era": "EAST_BENGAL_PAKISTAN",
+    "languages": [
+      "bn"
+    ],
+    "pages": 1
+  },
+  "registration": {
+    "deed_no": "907/ক",
+    "deed_no_verbatim": "৯০৭/ক",
+    "office": "কালীগঞ্জ সাব-রেজিস্ট্রি অফিস"
+  },
+  "dates": {
+    "execution": {
+      "verbatim": "২০শে মাঘ, ১৩৬৪ বঙ্গাব্দ",
+      "calendar": "bangla",
+      "day": 20,
+      "month": "মাঘ",
+      "year": 1364,
+      "gregorian_from": "1958-02-01",
+      "gregorian_to": "1958-02-03",
+      "precision": "day±1"
+    }
+  },
+  "parties": [
+    {
+      "role": "SELLER",
+      "honorific": "জনাব",
+      "name": "আব্দুল কুদ্দুস",
+      "mother": "ছকিনা খাতুন",
+      "address": {
+        "village": "গোপালপুর",
+        "thana": "কালীগঞ্জ",
+        "district": "ঢাকা"
+      },
+      "profession": "কৃষি",
+      "religion": "ইসলাম",
+      "nationality": "জন্মসূত্রে পাকিস্তানী",
+      "father": {
+        "name": "মোহাম্মদ আলী",
+        "deceased": true
+      }
+    },
+    {
+      "role": "BUYER",
+      "honorific": "শ্রী",
+      "name": "নিতাই চন্দ্র সাহা",
+      "address": {
+        "village": "গোপালপুর",
+        "thana": "কালীগঞ্জ",
+        "district": "ঢাকা"
+      },
+      "profession": "ব্যবসা",
+      "religion": "হিন্দু",
+      "nationality": "জন্মসূত্রে পাকিস্তানী",
+      "father": {
+        "name": "গোপাল চন্দ্র সাহা",
+        "deceased": true
+      }
+    }
+  ],
+  "consideration": {
+    "amount": 8000,
+    "in_words": "আট হাজার",
+    "currency_written": "টাকা",
+    "era_currency": "PKR",
+    "mode": "এককালীন নগদ"
+  },
+  "schedule": [
+    {
+      "district": "ঢাকা",
+      "thana": "কালীগঞ্জ",
+      "mouza": "গোপালপুর",
+      "survey": "CS",
+      "khatian_no": "210",
+      "dag_no": [
+        "44",
+        "45"
+      ],
+      "area": {
+        "value": 0.4,
+        "unit": "acre",
+        "in_words": "চল্লিশ শতক",
+        "decimal_equiv": 40
+      },
+      "land_class": "শালী",
+      "boundaries": {
+        "north": "নিতাই চন্দ্র সাহার জমি",
+        "south": "আইল",
+        "east": "ফজলু মিয়ার জমি",
+        "west": "সরকারি খাল"
+      }
+    },
+    {
+      "district": "ঢাকা",
+      "thana": "কালীগঞ্জ",
+      "mouza": "গোপালপুর",
+      "survey": "CS",
+      "khatian_no": "210",
+      "dag_no": [
+        "52"
+      ],
+      "area": {
+        "value": 0.12,
+        "unit": "acre",
+        "in_words": "বারো শতক",
+        "decimal_equiv": 12
+      },
+      "land_class": "পুকুর",
+      "boundaries": {
+        "north": "দাতার বসতবাড়ি",
+        "south": "মনু মিয়ার জমি",
+        "east": "ইউনিয়ন বোর্ডের রাস্তা",
+        "west": "রাজ্জাক মোল্লার জমি"
+      }
+    },
+    {
+      "district": "ঢাকা",
+      "thana": "কালীগঞ্জ",
+      "mouza": "গোপালপুর",
+      "survey": "CS",
+      "khatian_no": "233",
+      "dag_no": [
+        "90"
+      ],
+      "area": {
+        "value": 0.25,
+        "unit": "acre",
+        "in_words": "পঁচিশ শতক",
+        "decimal_equiv": 25
+      },
+      "land_class": "ডাঙ্গা",
+      "boundaries": {
+        "north": "পতিত জমি",
+        "south": "হাতেম আলীর জমি",
+        "east": "গোপালপুর হাটের রাস্তা",
+        "west": "ক্রেতার নিজ জমি"
+      }
+    }
+  ],
+  "title_recital": {
+    "basis": "স্বত্ব দখলীয়",
+    "nature": "চিরস্থায়ী",
+    "encumbrance_free": true
+  },
+  "execution": {
+    "seller_mark": "টিপসই / স্বাক্ষর",
+    "witnesses": [
+      {
+        "role": "WITNESS",
+        "name": "আজিজুর রহমান"
+      },
+      {
+        "role": "WITNESS",
+        "honorific": "শ্রী",
+        "name": "হরিপদ সরকার"
+      }
+    ],
+    "deed_writer": {
+      "name": "আবুল বাশার",
+      "licence_no": "৭/গ"
+    },
+    "stamps": [
+      {
+        "type": "NON_JUDICIAL",
+        "value": "১০/- টাকা"
+      }
+    ]
+  },
+  "modern_mapping": {
+    "district": "Gazipur",
+    "upazila": "Kaliganj"
+  },
+  "core": {
+    "seller": "আব্দুল কুদ্দুস",
+    "buyer": "নিতাই চন্দ্র সাহা",
+    "owner_name": "আব্দুল কুদ্দুস",
+    "father_name": "মোহাম্মদ আলী",
+    "khatian_no": "210",
+    "dag_no": "44",
+    "mouza": "গোপালপুর",
+    "district": "ঢাকা",
+    "upazila": "কালীগঞ্জ",
+    "land_area": "0.40",
+    "area_unit": "acre",
+    "deed_no": "907/ক",
+    "deed_date": "1958-02-02"
+  }
+}

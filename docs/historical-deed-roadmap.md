@@ -1,6 +1,6 @@
 # Historical Land Deed Digitisation — Roadmap (H0–H10)
 
-Status: **plan only, nothing implemented yet** (updated 2026-10-18; all decisions D1–D6 made, see §5).
+Status: **H0 done (2026-10-18), H1–H10 not started** (updated 2026-10-18; all decisions D1–D6 made, see §5).
 Trigger: mentor feedback:
 1. LandShield cannot digitise a historical (pre-1971 / pre-1947) land deed. There is no digital
    format for one, and the extractor read only 1 of 13 fields from the sample
@@ -128,6 +128,7 @@ Each phase can be merged on its own. Branch per phase: `h<N>-<slug>`, worktree `
 - Add gold LHDR JSON per file (like §2.2).
 - Extend `ai/evaluation/run_eval.py` to score field accuracy per section and per document. Record the **baseline** (sample deed today: 1/13 core fields).
 - **Done when:** `run_eval --set historical` prints a baseline table.
+- **Done (2026-10-18).** `ai/evaluation/make_historical.py` (specs → page + gold), `ai/evaluation/historical.py` (scorer), `run_eval.py --set historical`, files and gold in `database/sample_data/historical/` (manifest lists 12 files: the 2 real PDFs, a PNG render and 3 scans, 5 synthetic deeds). Baseline: sample deed **1/13** core fields, set overall 7.1 % core (0 % scanned), 2.1 % of all gold values; table in `docs/ai-pipeline.md`. The second real PDF (`Historical_Land_Deed_Sample.pdf`, 2 pages) is in the set too. Gold keeps plain values, not `Field` objects (H1 defines those); a `core` block holds the expected 13 for H1's `derive.py`.
 
 ### H1 — The LHDR format (schema + validation)
 - `ai/extraction/lhdr.py`: dataclasses / Pydantic models for §2, plus a JSON Schema export (`docs/lhdr-v1.schema.json`).
