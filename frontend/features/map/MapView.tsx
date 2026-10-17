@@ -1,12 +1,13 @@
 "use client";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { EyeOff, Layers, ListTree, Maximize2, Minimize2, Search } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button, EmptyState, ErrorState, LoadingState, Select } from "@/components/ui";
 import RiskIndicator from "@/components/domain/RiskIndicator";
 import { useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/features/auth/AuthContext";
 import { ApiError } from "@/lib/api";
+import { localDigits } from "@/lib/intl-locale";
 import ParcelList from "./ParcelList";
 import SearchMenu from "./gis/SearchMenu";
 import {
@@ -43,6 +44,7 @@ const ATTRIBUTION =
 
 export default function MapView() {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const { status } = useAuth();
   const publicView = status !== "authenticated"; // U2.3: visitors see outlines and numbers, no risk colours
@@ -124,6 +126,7 @@ export default function MapView() {
     statusText: (c) => code("status", c),
     riskText: (c) => code("risk.level", c),
     unitText: (c) => code("result.units", c),
+    digits: (v) => localDigits(v, locale),
   };
   // Signed in: the full result. Visitor: the public search, pre-filled from the parcel's place and numbers.
   const detailsOf = (p: MapFeatureDto["properties"]) =>
