@@ -433,6 +433,7 @@ Changing a palette value that breaks one of these fails the suite, so the table 
 - Dates: `lib/bn-date.ts` follows the Bangladesh revised calendar (new year 14 April; anchors tested: 8 Falgun = 21 Feb, 12 Choitro = 26 Mar, 2 Poush = 16 Dec) and uses Dhaka time. Rendered after mount, because pages are statically generated and must not bake in a date. Bangla digits come from `localDigits`.
 - Text size: `ls-text-size` 100 / 112.5 / 125 on `<html>`; **default is 100 and only an explicit choice changes it** (the 2026-10-15 removal was caused by a stale saved 125 %). `theme-init.js` applies it before paint and `Providers` re-applies it after a language switch.
 - High contrast: `ls-contrast = high` adds `contrast` to `<html>`; `:root.contrast` and `:root.dark.contrast` in `globals.css` darken ink, muted text, borders and links, and thicken the focus ring. Off by default.
+- Narrow screens at A+ (fix, 2026-10-17): the 3rem touch targets grow to 60 px at 125 % (54 px at 112.5 %), so on a 360 px phone the controls row (`data-testid="strip-controls"`) is `flex-wrap` and the বাং | EN pill drops to a second line instead of pushing the page sideways. Gaps and targets are unchanged, so 100 % and wider screens look the same. Guarded by `e2e/mobile.spec.ts` ("text size A+ on a 360 px phone", 125 and 112.5, bn and en).
 - Not done here: the demo notice (`strip.notice`) is not shown in the strip (the footer and result pages still carry the demo label).
 
 ## U1.2 — Header nav, Bangla brand, sign-in choice (roadmap §6, Phase 1)
