@@ -1210,6 +1210,10 @@
       "layerParcels": "Land parcels (risk colours)",
       "shownNow": "shown now",
       "zoom": "Zoom",
+      "north": "N",
+      "south": "S",
+      "east": "E",
+      "west": "W",
       "loadError": "We could not load the boundary data. Try again.",
       "boundaryNote": "Boundaries are third-party open data (geoBoundaries, via ifahimreza/bangladesh-geojson), simplified for this prototype. They are not official survey or cadastral boundaries.",
       "fullscreen": "Fullscreen",
@@ -2489,5 +2493,13 @@
         "failed": "Could not save the date. Try again."
       }
     }
+  },
+  "readAloud": {
+    "listen": "Listen",
+    "stop": "Stop",
+    "listenNamed": "Listen: {subject}",
+    "stopNamed": "Stop listening: {subject}",
+    "noVoice": "This device has no Bangla voice, so it cannot read this page aloud. A phone usually has one.",
+    "subjectResult": "Land result"
   }
 }

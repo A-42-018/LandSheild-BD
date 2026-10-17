@@ -66,6 +66,9 @@ describe("gis helpers", () => {
     expect(formatCoords(-1.5, -2.25)).toBe("1° 30′ 00″ S 2° 15′ 00″ W");
     expect(formatCoords(23.99999, 90)).toMatch(/^24° 00′ 00″ N/);
     expect(formatZoom(6.9444)).toBe("6.94");
+    const bn = { n: "উত্তর", s: "দক্ষিণ", e: "পূর্ব", w: "পশ্চিম" };
+    expect(formatCoords(24.128, 91.334, bn)).toBe("24° 07′ 41″ উত্তর 91° 20′ 02″ পূর্ব");
+    expect(formatCoords(-1.5, -2.25, bn)).toBe("1° 30′ 00″ দক্ষিণ 2° 15′ 00″ পশ্চিম");
   });
   it("labels, bounds and level logic", () => {
     expect(gisLabel({ name: "Khulna", bn_name: "খুলনা" })).toBe("Khulna (খুলনা)");
