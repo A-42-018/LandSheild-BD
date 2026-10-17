@@ -153,6 +153,11 @@
       "qrLabel": "QR code link or land ID",
       "qrHint": "Scanning the QR code with a phone camera opens the check page by itself. On a computer, paste the link printed on the report here.",
       "qrInvalid": "That link or ID is not valid. Copy the whole link printed on the report and paste it here.",
+      "qrScan": "Scan QR code with camera",
+      "qrScanning": "Point the camera at the QR code on the report.",
+      "qrScanStop": "Close camera",
+      "qrScanDenied": "The camera is blocked. Allow camera access in the browser, or paste the link below.",
+      "qrScanFailed": "The camera could not be opened. Check it is free, or paste the link below.",
       "qrSubmit": "Check QR code"
     }
   },

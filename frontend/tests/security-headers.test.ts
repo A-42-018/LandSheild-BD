@@ -52,7 +52,7 @@ describe("securityHeaders", () => {
     expect(get(h, "X-Content-Type-Options")).toBe("nosniff");
     expect(get(h, "Referrer-Policy")).toBe("strict-origin-when-cross-origin");
     expect(get(h, "Content-Security-Policy")).toContain("frame-ancestors 'none'");
-    expect(get(h, "Permissions-Policy")).toContain("camera=()");
+    expect(get(h, "Permissions-Policy")).toContain("camera=(self)");
   });
 
   it("sends HSTS only for an https production site", () => {
