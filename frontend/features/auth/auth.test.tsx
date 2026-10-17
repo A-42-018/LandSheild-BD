@@ -8,7 +8,7 @@ import { ApiError, type ApiClient, type ApiUser } from "@/lib/api";
 import { AuthProvider } from "./AuthContext";
 import LoginForm, { DEMO_PASSWORD, safeNext } from "./LoginForm";
 import RequireRole from "./RequireRole";
-import { loginPathFor, navItemsFor, redirectFor, type NavItem } from "./roles";
+import { canOpenPath, loginPathFor, navItemsFor, redirectFor, type NavItem } from "./roles";
 
 const replace = vi.fn();
 let search = "";
@@ -97,6 +97,36 @@ describe("LoginForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
     expect(c.login).toHaveBeenCalledWith("officer@demo.landshield.test", "pw");
+  });
+
+  it("ignores a next= the signed-in role cannot open (reviewer vs officer-only audit logs)", async () => {
+    search = "next=/officer/audit-logs";
+    const reviewer: ApiUser = { ...officer, role: "REVIEWER" };
+    const c = fakeClient({ login: vi.fn().mockResolvedValue({ user: reviewer }) as any });
+    wrap(<LoginForm />, c);
+    fireEvent.change(screen.getByLabelText(/Email/), { target: { value: "reviewer@demo.landshield.test" } });
+    fireEvent.change(screen.getByLabelText(/Password/), { target: { value: "pw" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/officer/review")); // the reviewer's home
+  });
+
+  it("follows a next= the role may open, and sends a citizen with a staff next= to their own home", async () => {
+    expect(canOpenPath("OFFICER", "/officer/upload?x=1")).toBe(true);
+    expect(canOpenPath("REVIEWER", "/officer/review/abc")).toBe(true);
+    expect(canOpenPath("REVIEWER", "/officer/hearings/")).toBe(false);
+    expect(canOpenPath("OFFICER", "/admin/users")).toBe(false);
+    expect(canOpenPath("ADMIN", "/my")).toBe(false);
+    expect(canOpenPath("CITIZEN", "/verify")).toBe(true);
+    expect(canOpenPath("CITIZEN", "/officers")).toBe(true); // prefix match is per path segment
+
+    search = "next=/admin";
+    const citizen: ApiUser = { ...officer, role: "CITIZEN" };
+    const c = fakeClient({ login: vi.fn().mockResolvedValue({ user: citizen }) as any });
+    wrap(<LoginForm />, c);
+    fireEvent.change(screen.getByLabelText(/Email/), { target: { value: "citizen@demo.landshield.test" } });
+    fireEvent.change(screen.getByLabelText(/Password/), { target: { value: "pw" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/my"));
   });
 
   it("shows invalid-credentials and rate-limit errors (BN keys exist)", async () => {
