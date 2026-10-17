@@ -5,11 +5,12 @@ from app.core.db import get_db, get_sessionmaker
 from app.core.ratelimit import check_rate
 from app.core.rbac import OFFICER_UP, REVIEW_UP, require_roles
 from app.models.user import User
-from app.schemas.document import DocumentOut, DocumentUploadOut, RejectBody
+from app.schemas.document import DocumentOut, DocumentUploadOut, PartyNidsPatch, RejectBody
 from app.schemas.extraction import ExtractionOut, ExtractionPatch
 from app.services import documents as svc
 from app.services import extraction as extraction_svc
 from app.services import offices as office_svc
+from app.services import party_nid as nid_svc
 from app.services import processing
 from app.services import review as review_svc
 from app.services.providers import Providers, get_providers
@@ -41,6 +42,11 @@ async def upload_document(
     document_type: str = Form("DEED"),
     land_id: str | None = Form(None),
     office_id: str | None = Form(None),
+    # the landowner's NID + date of birth (YYYY-MM-DD); stored only as keyed hashes
+    buyer_nid: str | None = Form(None, max_length=40),
+    buyer_dob: str | None = Form(None, max_length=10),
+    seller_nid: str | None = Form(None, max_length=40),
+    seller_dob: str | None = Form(None, max_length=10),
     user: User = Depends(require_roles(*OFFICER_UP)),
     db: Session = Depends(get_db),
     storage: StorageService = Depends(get_storage),
@@ -48,10 +54,11 @@ async def upload_document(
     # R4: 20 uploads/hour/user. Counted before the body is read, so rejected files count too.
     limit = request.app.state.settings.upload_rate_limit_per_hour
     check_rate("upload", user.id, limit, window=3600.0)
+    nids = nid_svc.from_upload(buyer_nid, buyer_dob, seller_nid, seller_dob)
     data = await file.read(MAX_UPLOAD_BYTES + 1)  # +1 so oversize is detectable, never buffered
     ip = request.client.host if request.client else None
     out = svc.upload_document(
-        db, storage, user, file.filename, data, document_type, land_id, ip, office_id
+        db, storage, user, file.filename, data, document_type, land_id, ip, office_id, nids
     )
     if out.duplicate:
         response.status_code = 200
@@ -139,7 +146,21 @@ def approve_document(
 ) -> DocumentOut:
     office_svc.ensure_doc_access(db, user, document_id)
     ip = request.client.host if request.client else None
-    return review_svc.approve_document(db, user, document_id, ip)
+    require_nid = request.app.state.settings.owner_nid_required
+    return review_svc.approve_document(db, user, document_id, ip, require_nid)
+
+
+@router.patch("/documents/{document_id}/party-nids", response_model=DocumentOut)
+def set_party_nids(
+    document_id: str,
+    body: PartyNidsPatch,
+    request: Request,
+    user: User = Depends(require_roles(*REVIEW_UP)),
+    db: Session = Depends(get_db),
+) -> DocumentOut:
+    office_svc.ensure_doc_access(db, user, document_id)
+    ip = request.client.host if request.client else None
+    return nid_svc.set_party_nids(db, user, document_id, body, ip)
 
 
 @router.post("/documents/{document_id}/reject", response_model=DocumentOut)

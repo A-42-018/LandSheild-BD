@@ -13,6 +13,8 @@ import MyShell from "./MyShell";
 import MyProfile from "./MyProfile";
 import WatchButton from "./WatchButton";
 import { MyNotifications, MyReports, MySearches, MyWatchlist } from "./MyLists";
+import MyLands from "./MyLands";
+import NidCard from "./NidCard";
 
 const replace = vi.fn();
 let path = "/my";
@@ -29,6 +31,17 @@ const REPORT = { id: "v1", land_id: "LP-10100", mouza: "Ashulia", dag_no: "210",
 const NOTE = (over: any = {}) => ({ id: "n1", kind: "WATCH_TRANSACTION", land_id: "LP-10100", ref_id: "t1", data: { type: "SALE", status: "RECORDED" }, read_at: null, created_at: "2026-10-16T10:00:00Z", ...over });
 const SUMMARY = { searches: 12, watching: 1, reports: 1, unread: 2, recent_searches: [SEARCH], recent_reports: [REPORT], latest_notifications: [NOTE()] };
 
+const NO_NID = { registered: false, last4: null, verified_at: null };
+const NID = { registered: true, last4: "0001", verified_at: "2026-10-17T09:00:00Z" };
+const land = (id: string, area: number, since: string, until: string | null = null) => ({ ...parcel(id), area, area_unit: "decimal", since, until });
+const LANDS = {
+  nid: NID,
+  current: [land("LP-10234", 10, "2012-03-15"), land("LP-10500", 8, "2020-09-03")],
+  past: [land("LP-10100", 20, "2005-01-01", "2012-03-15")],
+  total_current: 2,
+  total_area_decimal: 18,
+};
+
 interface Routes { [prefix: string]: unknown }
 function client(routes: Routes = {}, u: any = user(), extra: Partial<Record<"post" | "patch" | "del", any>> = {}) {
   const all: Routes = {
@@ -36,6 +49,8 @@ function client(routes: Routes = {}, u: any = user(), extra: Partial<Record<"pos
     "/me/searches": { items: [SEARCH], total: 1 },
     "/me/watchlist": { items: [], limit: 20 },
     "/me/reports": { items: [REPORT], total: 1 },
+    "/me/nid": NO_NID,
+    "/me/lands": { nid: NO_NID, current: [], past: [], total_current: 0, total_area_decimal: 0 },
     "/me/notifications": { items: [NOTE(), NOTE({ id: "n2", kind: "REPORT_READY", ref_id: "v1", data: { risk_level: "HIGH" }, read_at: "2026-10-16T11:00:00Z" })], total: 2, unread: 1 },
     ...routes,
   };
@@ -82,11 +97,11 @@ describe("citizen nav", () => {
 });
 
 describe("MyShell", () => {
-  it("lists the six sections, marks the current one and shows the unread count", async () => {
+  it("lists the seven sections, marks the current one and shows the unread count", async () => {
     path = "/my/notifications";
     wrap(<MyShell><p>body</p></MyShell>, client());
     const nav = screen.getByRole("navigation", { name: en.my.nav.label });
-    expect(within(nav).getAllByRole("link")).toHaveLength(6);
+    expect(within(nav).getAllByRole("link")).toHaveLength(7);
     expect(within(nav).getByRole("link", { name: /Notifications/ })).toHaveAttribute("aria-current", "page");
     expect(await screen.findByTestId("unread-badge")).toHaveTextContent("2");
   });
@@ -257,5 +272,69 @@ describe("MyProfile", () => {
     expect(await screen.findByText(en.my.profile.errors.WRONG_PASSWORD)).toBeInTheDocument();
     expect(post).toHaveBeenCalledWith("/me/password", { current_password: "old-pass", new_password: "brand-new-pass" });
     await noAxeViolations(container);
+  });
+});
+
+describe("My land (NID)", () => {
+  it("asks for the NID first and never lists land without it", async () => {
+    const c = client();
+    wrap(<MyLands />, c);
+    expect(await screen.findByText(en.my.lands.needNid)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: en.my.lands.linkNid })).toHaveAttribute("href", "/my/profile#nid");
+    expect(screen.queryByTestId("my-land-current")).toBeNull();
+  });
+
+  it("shows the count, total area, masked NID, and current / past land", async () => {
+    wrap(<MyLands />, client({ "/me/lands": LANDS }));
+    expect(await screen.findByTestId("my-land-count")).toHaveTextContent("2");
+    expect(screen.getByTestId("my-land-area")).toHaveTextContent("18 decimal");
+    expect(screen.getByTestId("my-land-nid")).toHaveTextContent("•••• 0001");
+    const current = screen.getByTestId("my-land-current");
+    expect(within(current).getAllByRole("listitem")).toHaveLength(2);
+    expect(within(current).getByText("LP-10234")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "Owned before (1)" }));
+    expect(within(await screen.findByTestId("my-land-past")).getByText("LP-10100")).toBeInTheDocument();
+  });
+
+  it("shows Bangla digits in Bangla", async () => {
+    wrap(<MyLands />, client({ "/me/lands": LANDS }), bn, "bn");
+    expect(await screen.findByTestId("my-land-area")).toHaveTextContent("১৮ শতাংশ");
+    expect(screen.getByTestId("my-land-nid")).toHaveTextContent("•••• ০০০১");
+  });
+
+  it("links an NID: checks the format first, then posts the cleaned number with the birth date", async () => {
+    const post = vi.fn().mockResolvedValue(NID);
+    wrap(<NidCard />, client({}, user(), { post }));
+    const link = await screen.findByRole("button", { name: en.my.nid.link });
+    fireEvent.change(screen.getByLabelText(en.my.nid.number, { exact: false }), { target: { value: "12345" } });
+    fireEvent.click(link);
+    expect(await screen.findByText(en.my.nid.errors.format)).toBeInTheDocument();
+    expect(screen.getByText(en.my.nid.errors.dobRequired)).toBeInTheDocument();
+    expect(post).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText(en.my.nid.number, { exact: false }), { target: { value: "১৯৭৫-৯৯৯০-০০০০-০০০০১" } });
+    fireEvent.change(screen.getByLabelText(en.my.nid.dob, { exact: false }), { target: { value: "1975-03-12" } });
+    fireEvent.click(link);
+    await waitFor(() => expect(post).toHaveBeenCalledWith("/me/nid", { nid: "19759990000000001", date_of_birth: "1975-03-12" }));
+  });
+
+  it("says plainly when the NID and birth date match no record", async () => {
+    const { ApiError } = await import("@/lib/api");
+    const post = vi.fn().mockRejectedValue(new ApiError(422, "NID_NOT_MATCHED", "x"));
+    wrap(<NidCard />, client({}, user(), { post }));
+    fireEvent.change(await screen.findByLabelText(en.my.nid.number, { exact: false }), { target: { value: "19759990000000001" } });
+    fireEvent.change(screen.getByLabelText(en.my.nid.dob, { exact: false }), { target: { value: "1975-03-13" } });
+    fireEvent.click(screen.getByRole("button", { name: en.my.nid.link }));
+    expect(await screen.findByTestId("nid-error")).toHaveTextContent(en.my.nid.errors.NID_NOT_MATCHED);
+  });
+
+  it("a linked NID shows only its last four digits and can be removed", async () => {
+    const del = vi.fn().mockResolvedValue(undefined);
+    const { container } = wrap(<NidCard />, client({ "/me/nid": NID }, user(), { del }));
+    expect(await screen.findByTestId("nid-masked")).toHaveTextContent("•••• 0001");
+    expect(container.textContent).not.toContain("19759990000000001");
+    await noAxeViolations(container);
+    fireEvent.click(screen.getByRole("button", { name: en.my.nid.unlink }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: en.my.nid.unlinkConfirm }));
+    await waitFor(() => expect(del).toHaveBeenCalledWith("/me/nid"));
   });
 });

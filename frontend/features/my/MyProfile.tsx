@@ -11,6 +11,7 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { ApiError, type ApiUser } from "@/lib/api";
 import { localDigits, normalizeDigits } from "@/lib/intl-locale";
 import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
+import NidCard from "./NidCard";
 
 // Same rule as the backend (schemas/me.py): 01XXXXXXXXX, optionally +880 / 880 in front.
 const BD_MOBILE = /^(?:\+?880|0)1[3-9]\d{8}$/;
@@ -140,7 +141,7 @@ function PasswordForm() {
   );
 }
 
-/** প্রোফাইল ও নিরাপত্তা: name, mobile, language, password. */
+/** প্রোফাইল ও নিরাপত্তা: name, mobile, language, password, and the citizen's own NID. */
 export default function MyProfile() {
   const t = useTranslations("my.profile");
   const tn = useTranslations("my.nav");
@@ -152,6 +153,7 @@ export default function MyProfile() {
         {/* the form starts from the signed-in user's values, so it waits for the session */}
         {user ? <DetailsForm key={user.id} /> : <LoadingState />}
         <PasswordForm />
+        <NidCard />
       </div>
     </div>
   );

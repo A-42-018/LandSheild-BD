@@ -1,7 +1,7 @@
 """Citizen area `/me/*` (U3.2). Codes only; the frontend writes every sentence."""
 
 import re
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -142,3 +142,32 @@ class PasswordChange(BaseModel):
 
     current_password: str = Field(min_length=1, max_length=128)
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class NidRegister(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    nid: str = Field(min_length=1, max_length=40)
+    date_of_birth: date
+
+
+class NidStatus(BaseModel):
+    registered: bool
+    last4: str | None = None  # shown as "•••• 4821"; the full number is never stored
+    verified_at: datetime | None = None
+
+
+class MyLand(ParcelBrief):
+    area: float
+    area_unit: str
+    since: date | None = None  # start of this ownership period
+    until: date | None = None  # end of it (past holdings only)
+
+
+class MyLands(BaseModel):
+    nid: NidStatus
+    current: list[MyLand]
+    past: list[MyLand]
+    total_current: int
+    # current holdings summed in decimal (shotangsho); None when a unit could not be converted
+    total_area_decimal: float | None = None

@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth/AuthContext";
-import type { MeSummary, NotificationList, ReportList, SearchList, WatchItem, WatchList } from "./types";
+import type { MeSummary, MyLands, NidStatus, NotificationList, ReportList, SearchList, WatchItem, WatchList } from "./types";
 
 /** Every `/me` query lives under this key, so one invalidation refreshes the whole citizen area. */
 export const ME = ["me"] as const;
@@ -28,6 +28,8 @@ export function useUnreadCount() {
     refetchOnWindowFocus: true,
   });
 }
+export const useNid = () => useMe<NidStatus>(["nid"], "/me/nid");
+export const useMyLands = () => useMe<MyLands>(["lands"], "/me/lands");
 /** `enabled=false` for staff: the watch button only exists for citizens. */
 export const useWatchlist = (enabled = true) => useMe<WatchList>(["watchlist"], "/me/watchlist", enabled);
 
@@ -53,4 +55,15 @@ export function useClearSearches() {
 export function useMarkRead() {
   const { api } = useAuth();
   return useMeMutation((ids?: string[]) => api.post<{ unread: number }>("/me/notifications/read", ids ? { ids } : {}));
+}
+
+/** Link the citizen's own NID; the backend checks it with the date of birth against land records. */
+export function useLinkNid() {
+  const { api } = useAuth();
+  return useMeMutation((body: { nid: string; date_of_birth: string }) => api.post<NidStatus>("/me/nid", body));
+}
+
+export function useUnlinkNid() {
+  const { api } = useAuth();
+  return useMeMutation(() => api.del("/me/nid"));
 }

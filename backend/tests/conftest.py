@@ -4,6 +4,8 @@ import os
 os.environ["OCR_PROVIDER"] = "mock"
 os.environ["DOCUMENT_AI_PROVIDER"] = "mock"
 os.environ["ANTHROPIC_API_KEY"] = ""
+# Deeds approved by the older suites carry no owner NID; tests/test_owner_nid.py turns it on.
+os.environ["OWNER_NID_REQUIRED"] = "false"
 
 import pytest
 from fastapi import FastAPI

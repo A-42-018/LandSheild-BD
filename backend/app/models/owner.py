@@ -10,5 +10,7 @@ class Owner(IdMixin, TimestampMixin, Base):
     name: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
     father_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
     # Salted hashes only, never raw values (R2).
-    nid_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    nid_hash: Mapped[str | None] = mapped_column(String(128), unique=True, nullable=True)
+    # keyed hash of NID + date of birth: a citizen proves the NID is theirs by matching it
+    dob_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
     contact_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)

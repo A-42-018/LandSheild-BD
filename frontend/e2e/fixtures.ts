@@ -55,3 +55,18 @@ export async function expectNoHorizontalScroll(page: Page): Promise<void> {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 }
+
+/** Synthetic owner NIDs from database/seed/data.json: the buyer named on each sample deed. */
+export const BUYER_NID: Record<string, { nid: string; dob: string }> = {
+  "Doc1.png": { nid: "19809990000000002", dob: "1980-07-01" }, // Karim Mia
+  "Doc2.png": { nid: "19689990000000003", dob: "1968-11-23" }, // Hasan Ali
+};
+
+/** A deed is approved only with the new owner's NID, so the upload form asks for it. */
+export async function fillBuyerNid(page: Page, file: string): Promise<void> {
+  const owner = BUYER_NID[file];
+  if (!owner) return;
+  const box = page.getByTestId("party-nid-buyer");
+  await box.getByLabel("NID number").fill(owner.nid);
+  await box.getByLabel("Date of birth").fill(owner.dob);
+}

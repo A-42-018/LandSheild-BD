@@ -11,13 +11,20 @@ import type { ExtractionOut } from "./types";
 
 export const REVIEWABLE = ["REVIEW_REQUIRED", "EXTRACTED"];
 
+// approval refusals about the deed parties' NIDs, each with its own sentence (partyNid.errors.*)
+const NID_CODES = ["OWNER_NID_REQUIRED", "NID_DOB_CONFLICT", "NID_NAME_MISMATCH", "SAME_PARTY_NID"];
+
 export default function ReviewActions({
   data,
   actions,
+  needsNid = false,
 }: {
   data: ExtractionOut;
   actions: ReturnType<typeof useReviewActions>;
+  /** deed without the new owner's NID yet: approving is refused until it is entered */
+  needsNid?: boolean;
 }) {
+  const tn = useTranslations("partyNid");
   const t = useTranslations("review");
   const barRef = useStickyBar();
   const [rejecting, setRejecting] = useState(false);
@@ -31,7 +38,7 @@ export default function ReviewActions({
   }, [rj.isSuccess]);
   const status = data.processing_status;
   const reviewable = REVIEWABLE.includes(status);
-  const blocked = !data.validation.valid || !!data.self_approval_blocked || ap.isPending || rj.isPending || actions.reprocess.isPending;
+  const blocked = !data.validation.valid || !!data.self_approval_blocked || needsNid || ap.isPending || rj.isPending || actions.reprocess.isPending;
   useReviewShortcuts({
     A: reviewable && !blocked ? () => ap.mutate() : undefined,
     R: reviewable && !rj.isPending ? () => setRejecting(true) : undefined,
@@ -51,7 +58,9 @@ export default function ReviewActions({
   const ownUpload = !!data.self_approval_blocked;
   const busy = approve.isPending || reject.isPending || reprocess.isPending;
   const failure = (e: ApiError | null, fallback: string) =>
-    e && e.code === "SELF_APPROVAL_FORBIDDEN"
+    e && NID_CODES.includes(e.code)
+      ? tn(`errors.${e.code}`)
+      : e && e.code === "SELF_APPROVAL_FORBIDDEN"
       ? t("actions.selfApproval")
       : e && e.status === 409
         ? t("actions.notReviewable")
@@ -70,9 +79,9 @@ export default function ReviewActions({
           size="lg"
           aria-keyshortcuts="A"
           onClick={() => approve.mutate()}
-          disabled={invalid || ownUpload || busy}
+          disabled={invalid || ownUpload || needsNid || busy}
           loading={approve.isPending}
-          aria-describedby={ownUpload ? "approve-own-upload" : invalid ? "approve-blocked" : undefined}
+          aria-describedby={ownUpload ? "approve-own-upload" : invalid ? "approve-blocked" : needsNid ? "approve-needs-nid" : undefined}
           data-testid="approve-btn"
         >
           {t("actions.approve")} <kbd aria-hidden="true" className="ml-1 hidden rounded border border-current px-1 text-xs md:inline">A</kbd>
@@ -92,6 +101,11 @@ export default function ReviewActions({
       {invalid && (
         <p id="approve-blocked" data-testid="approve-blocked" className="text-xs text-ink-muted">
           {t("actions.approveBlocked")}
+        </p>
+      )}
+      {needsNid && !invalid && (
+        <p id="approve-needs-nid" data-testid="approve-needs-nid" className="text-xs text-ink-muted">
+          {tn("errors.OWNER_NID_REQUIRED")}
         </p>
       )}
       <p className="text-xs text-ink-muted">{t("actions.reprocessHint")}</p>

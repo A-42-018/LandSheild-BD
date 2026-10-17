@@ -7,7 +7,7 @@ from app.models.enums import DocumentStatus
 from app.models.user import User
 from app.schemas.document import DocumentOut
 from app.schemas.extraction import Extraction
-from app.services import audit, offices, posting
+from app.services import audit, offices, party_nid, posting
 from app.services.documents import _to_out
 from app.services.extraction import (
     EDITABLE_STATUSES,
@@ -31,7 +31,9 @@ def _require_status(doc: Document, allowed: tuple[str, ...], code: str, msg: str
         raise AppError(code, msg, 409, {"status": doc.processing_status})
 
 
-def approve_document(db: Session, user: User, document_id: str, ip: str | None) -> DocumentOut:
+def approve_document(
+    db: Session, user: User, document_id: str, ip: str | None, require_nid: bool = True
+) -> DocumentOut:
     doc = _get(db, document_id)
     _require_status(
         doc, EDITABLE_STATUSES, "DOCUMENT_NOT_REVIEWABLE", "Document is not awaiting review"
@@ -67,6 +69,10 @@ def approve_document(db: Session, user: User, document_id: str, ip: str | None) 
         )  # fmt: skip
         db.commit()
         return _to_out(db, doc)
+    if require_nid and not party_nid.has_buyer_nid(doc):
+        raise AppError(
+            "OWNER_NID_REQUIRED", "Enter the new owner's NID and date of birth first", 422
+        )
     try:  # one transaction: posting + status + audit commit together or not at all
         result = posting.post_document(db, user, doc, extraction, ip)
         doc.processing_status = DocumentStatus.APPROVED.value

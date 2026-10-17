@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 DOCUMENT_TYPES = ("DEED", "KHATIAN", "PORCHA", "MUTATION", "OTHER")
 
@@ -33,6 +33,8 @@ class DocumentOut(BaseModel):
     created_at: datetime
     failure_code: str | None = None  # status FAILED: OCR_UNAVAILABLE, OCR_TIMEOUT, ...
     office: OfficeBrief | None = None  # the land office whose database holds this document
+    # last four digits of the NID entered for each deed party, e.g. {"buyer": "4821"}
+    party_nids: dict[str, str] = Field(default_factory=dict)
 
 
 class DocumentUploadOut(DocumentOut):
@@ -51,3 +53,19 @@ class RejectBody(BaseModel):
         if len(v) > 500:
             raise ValueError("reason too long")
         return v
+
+
+class PartyNidIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    nid: str = Field(min_length=1, max_length=40)
+    date_of_birth: date
+
+
+class PartyNidsPatch(BaseModel):
+    """Omitted party = unchanged; null = clear it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    buyer: PartyNidIn | None = None
+    seller: PartyNidIn | None = None

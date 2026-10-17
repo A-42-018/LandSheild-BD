@@ -27,4 +27,6 @@ class Document(IdMixin, CreatedMixin, Base):
     office_id: Mapped[str | None] = mapped_column(
         String(UUID_LEN), ForeignKey("land_offices.id"), index=True, nullable=True
     )
+    # NIDs the officer entered for the deed parties: {"buyer"|"seller": {nid_hash, dob_hash, last4}}
+    party_nids: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
     office = relationship("LandOffice", lazy="joined", foreign_keys=[office_id])

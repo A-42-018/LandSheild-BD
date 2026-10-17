@@ -8,9 +8,10 @@ import re
 
 from tests.test_lands import ROLES, _h
 
-PUBLIC, ANY, REVIEW, OFFICER, ADMIN = "PUBLIC", "ANY", "REVIEW", "OFFICER", "ADMIN"
+PUBLIC, ANY, CITIZEN, REVIEW, OFFICER, ADMIN = "PUBLIC", "ANY", "CITIZEN", "REVIEW", "OFFICER", "ADMIN"
 TIER_ROLES = {
     ANY: {"CITIZEN", "REVIEWER", "OFFICER", "ADMIN"},
+    CITIZEN: {"CITIZEN"},  # own NID and the land recorded under it
     REVIEW: {"REVIEWER", "OFFICER", "ADMIN"},
     OFFICER: {"OFFICER", "ADMIN"},
     ADMIN: {"ADMIN"},
@@ -71,10 +72,15 @@ EXPECTED = {
     ("POST", f"{P}/me/notifications/read"): ANY,
     ("PATCH", f"{P}/me/profile"): ANY,
     ("POST", f"{P}/me/password"): ANY,
+    ("GET", f"{P}/me/nid"): CITIZEN,
+    ("POST", f"{P}/me/nid"): CITIZEN,
+    ("DELETE", f"{P}/me/nid"): CITIZEN,
+    ("GET", f"{P}/me/lands"): CITIZEN,
     ("GET", f"{P}/documents/{{document_id}}"): REVIEW,
     ("GET", f"{P}/documents/{{document_id}}/file"): REVIEW,
     ("GET", f"{P}/documents/{{document_id}}/extraction"): REVIEW,
     ("PATCH", f"{P}/documents/{{document_id}}/extraction"): REVIEW,
+    ("PATCH", f"{P}/documents/{{document_id}}/party-nids"): REVIEW,
     ("POST", f"{P}/documents/{{document_id}}/approve"): REVIEW,
     ("POST", f"{P}/documents/{{document_id}}/reject"): REVIEW,
     ("POST", f"{P}/documents/{{document_id}}/reprocess"): REVIEW,

@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.db import Base
+from app.core.nid import nid_key
 from app.core.passwords import hash_password
 from app.models import (
     ContentItem,
@@ -121,12 +122,19 @@ def seed(db: Session, demo_password: str | None = None, do_reset: bool = False) 
             password_hash=hash_password(password, pw_salt),
         )
     for o in data["owners"]:
+        # synthetic 17-digit NIDs ("999000000" in the middle); citizens link them in "My Lands"
+        nid = nid_key(o["nid"], date.fromisoformat(o["dob"]))
         created += _ensure(
             db, Owner, "owner", o["key"],
             name=o["name"], father_name=o["father_name"],
-            nid_hash=_hash("nid", o["nid"], salt),
+            nid_hash=nid.nid_hash, dob_hash=nid.dob_hash,
             contact_hash=_hash("contact", o["contact"], salt),
         )
+        # databases seeded before owner NIDs had a placeholder hash and no date of birth
+        row = db.get(Owner, sid("owner", o["key"]))
+        if row is not None and row.dob_hash is None:
+            row.nid_hash, row.dob_hash = nid.nid_hash, nid.dob_hash
+            db.flush()
     for ln in data["lands"]:
         created += _ensure(
             db, LandParcel, "land", ln["key"],

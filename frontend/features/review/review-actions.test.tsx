@@ -18,9 +18,9 @@ vi.mock("@/i18n/navigation", () => ({
 const reviewer = { id: "1", name: "R", email: "r@x.co", role: "REVIEWER", preferred_language: "en" };
 const FIELDS = ["owner_name", "father_name", "khatian_no", "dag_no", "mouza", "district", "upazila", "land_area", "area_unit", "deed_no", "deed_date", "seller", "buyer"];
 
-const doc = (status = "REVIEW_REQUIRED") => ({
+const doc = (status = "REVIEW_REQUIRED", partyNids: Record<string, string> = { buyer: "0077" }) => ({
   id: "d1", land_id: "LP-10001", document_type: "DEED", processing_status: status,
-  file_hash: "a".repeat(64), file_type: "png", created_at: "2026-10-01T00:00:00Z",
+  file_hash: "a".repeat(64), file_type: "png", created_at: "2026-10-01T00:00:00Z", party_nids: partyNids,
 });
 
 function extraction(over: Record<string, any> = {}, top: Partial<ExtractionOut> = {}): ExtractionOut {
@@ -35,9 +35,9 @@ function extraction(over: Record<string, any> = {}, top: Partial<ExtractionOut> 
   };
 }
 
-function setup(opts: { status?: string; ext?: ExtractionOut; patch?: any; post?: any; messages?: any; locale?: string } = {}) {
+function setup(opts: { status?: string; ext?: ExtractionOut; patch?: any; post?: any; messages?: any; locale?: string; partyNids?: Record<string, string> } = {}) {
   const ext = opts.ext ?? extraction();
-  const get = vi.fn((path: string) => Promise.resolve(path.endsWith("/extraction") ? ext : doc(opts.status)));
+  const get = vi.fn((path: string) => Promise.resolve(path.endsWith("/extraction") ? ext : doc(opts.status, opts.partyNids)));
   const patch = opts.patch ?? vi.fn().mockResolvedValue(ext);
   const post = opts.post ?? vi.fn().mockResolvedValue(doc());
   const blob = vi.fn().mockResolvedValue(new Blob(["x"], { type: "image/png" }));
@@ -138,6 +138,33 @@ describe("approve / reject / reprocess", () => {
     setup({ post: vi.fn().mockRejectedValue(new ApiError(422, "EXTRACTION_INVALID", "x", [{ field: "seller", code: "REQUIRED" }])) });
     fireEvent.click(await screen.findByTestId("approve-btn"));
     expect(await screen.findByText(en.review.actions.approveFailed)).toBeInTheDocument();
+  });
+
+  it("keeps approve disabled until the new owner's NID is entered, then saves it with PATCH", async () => {
+    const saved = { ...doc(), party_nids: { buyer: "0077" } };
+    const patch = vi.fn((path: string) => Promise.resolve(path.endsWith("/party-nids") ? saved : extraction()));
+    setup({ partyNids: {}, patch });
+    const approve = await screen.findByTestId("approve-btn");
+    expect(approve).toBeDisabled();
+    expect(screen.getByTestId("approve-needs-nid")).toHaveTextContent(en.partyNid.errors.OWNER_NID_REQUIRED);
+    const buyer = screen.getByTestId("review-nid-buyer");
+    fireEvent.click(within(buyer).getByRole("button", { name: en.partyNid.save }));
+    expect(await within(buyer).findByText(en.partyNid.errors.nidRequired)).toBeInTheDocument();
+    expect(patch).not.toHaveBeenCalled();
+    fireEvent.change(within(buyer).getByLabelText(en.partyNid.nid, { exact: false }), { target: { value: "১৯৮৫ ৯৯৯০ ০০০০ ০০০৭৭" } });
+    fireEvent.change(within(buyer).getByLabelText(en.partyNid.dob, { exact: false }), { target: { value: "1985-05-05" } });
+    fireEvent.click(within(buyer).getByRole("button", { name: en.partyNid.save }));
+    await waitFor(() =>
+      expect(patch).toHaveBeenCalledWith("/documents/d1/party-nids", { buyer: { nid: "19859990000000077", date_of_birth: "1985-05-05" } }),
+    );
+    expect(await screen.findByTestId("review-nid-buyer-masked")).toHaveTextContent("•••• 0077");
+    await waitFor(() => expect(screen.getByTestId("approve-btn")).toBeEnabled());
+  });
+
+  it("explains an NID refusal from the server in its own words", async () => {
+    setup({ post: vi.fn().mockRejectedValue(new ApiError(409, "NID_NAME_MISMATCH", "x", { party: "buyer" })) });
+    fireEvent.click(await screen.findByTestId("approve-btn"));
+    expect(await screen.findByText(en.partyNid.errors.NID_NAME_MISMATCH)).toBeInTheDocument();
   });
 
   it("reject needs a reason, then posts it", async () => {

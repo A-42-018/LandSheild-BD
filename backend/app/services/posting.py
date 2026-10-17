@@ -21,9 +21,9 @@ from app.models.ownership import OwnershipHistory
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.schemas.extraction import Extraction
-from app.services import audit, ledger, mutation, signing
+from app.services import audit, ledger, mutation, party_nid, signing
 from app.services.extraction import _BN_DIGITS, _parse_area, _parse_date
-from app.services.names import can_auto_merge
+from app.services.names import VARIANT_MIN, can_auto_merge, owner_similarity
 from app.services.risk import analyze_land
 
 FIRST_LAND_NUMBER = 10001
@@ -153,6 +153,24 @@ def _resolve_owner(db: Session, name: str, father: str | None) -> Owner:
     return owner
 
 
+def _resolve_party(
+    db: Session, party: str, name: str, father: str | None, key: dict[str, str] | None
+) -> Owner:
+    """NID first (when the office entered one), then the name match, which then gets the NID.
+    An NID match survives spelling variants of the name, not a different name altogether."""
+    if key:
+        found = party_nid.find_owner(db, key)
+        if found is not None:
+            if owner_similarity(found.name, name) < VARIANT_MIN:
+                raise AppError(
+                    "NID_NAME_MISMATCH", "This NID is on record under a different name", 409,
+                    {"party": party},
+                )  # fmt: skip
+            return found
+    owner = _resolve_owner(db, name, father)
+    return party_nid.attach(db, owner, key, _norm(name), _norm(father)) if key else owner
+
+
 def _father_for(party: str, v: dict[str, str | None]) -> str | None:
     """father_name on the deed belongs to owner_name; only attach it to that same person."""
     owner = v.get("owner_name")
@@ -170,8 +188,13 @@ def post_document(
     tx_date: date | None = _parse_date(v["deed_date"]) if v.get("deed_date") else None
 
     land, created = _resolve_land(db, doc, v, area, unit)
-    seller = _resolve_owner(db, v["seller"], _father_for(v["seller"], v))
-    buyer = _resolve_owner(db, v["buyer"], _father_for(v["buyer"], v))
+    nids = doc.party_nids or {}
+    seller = _resolve_party(
+        db, "seller", v["seller"], _father_for(v["seller"], v), nids.get("seller")
+    )
+    buyer = _resolve_party(db, "buyer", v["buyer"], _father_for(v["buyer"], v), nids.get("buyer"))
+    if seller.id == buyer.id and nids:
+        raise AppError("SAME_PARTY_NID", "Buyer and seller resolve to the same NID holder", 422)
 
     deed = Deed(
         land_id=land.id, deed_no=v["deed_no"], seller_id=seller.id, buyer_id=buyer.id,

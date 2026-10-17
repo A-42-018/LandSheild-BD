@@ -47,6 +47,9 @@ AUDIT = {
     ("DELETE", f"{P}/me/watchlist/{{land_id}}"): "WATCHLIST_REMOVE",
     ("POST", f"{P}/me/notifications/read"): None,  # U3.2: own inbox read state, nothing anyone else sees; would drown the log
     ("PATCH", f"{P}/me/profile"): "PROFILE_UPDATE",
+    ("POST", f"{P}/me/nid"): "NID_LINK",
+    ("DELETE", f"{P}/me/nid"): "NID_UNLINK",
+    ("PATCH", f"{P}/documents/{{document_id}}/party-nids"): "DOCUMENT_PARTY_NID_SET",
     ("POST", f"{P}/me/password"): "PASSWORD_CHANGE",
 }
 
@@ -118,6 +121,9 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     mark("PATCH", f"{P}/documents/{{document_id}}/extraction")
     _audited(env, "DOCUMENT_REPROCESS_REQUEST", lambda: env.post(f"{P}/documents/{doc}/reprocess", headers=rev))
     mark("POST", f"{P}/documents/{{document_id}}/reprocess")
+    _audited(env, "DOCUMENT_PARTY_NID_SET", lambda: env.patch(f"{P}/documents/{doc}/party-nids", json={
+        "buyer": {"nid": "19859990000000077", "date_of_birth": "1985-05-05"}}, headers=rev))  # fmt: skip
+    mark("PATCH", f"{P}/documents/{{document_id}}/party-nids")
     _fill(env, doc)
     _audited(env, "DOCUMENT_APPROVE", lambda: env.post(f"{P}/documents/{doc}/approve", headers=rev))
     mark("POST", f"{P}/documents/{{document_id}}/approve")
@@ -223,6 +229,11 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     _audited(env, "PASSWORD_CHANGE", lambda: env.post(f"{P}/me/password", json={
         "current_password": "correct-horse-1", "new_password": "correct-horse-2"}, headers=cit))  # fmt: skip
     mark("POST", f"{P}/me/password")
+    _audited(env, "NID_LINK", lambda: env.post(f"{P}/me/nid", json={
+        "nid": "19759990000000001", "date_of_birth": "1975-03-12"}, headers=cit))  # fmt: skip
+    mark("POST", f"{P}/me/nid")
+    _audited(env, "NID_UNLINK", lambda: env.delete(f"{P}/me/nid", headers=cit))
+    mark("DELETE", f"{P}/me/nid")
 
     assert ran == set(AUDIT), f"write routes with no scenario: {set(AUDIT) - ran}"
 

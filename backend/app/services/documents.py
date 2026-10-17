@@ -38,6 +38,7 @@ def _to_out(db: Session, doc: Document) -> DocumentOut:
         created_at=doc.created_at,
         failure_code=_failure_code(db, doc),
         office=OfficeBrief.model_validate(doc.office) if doc.office else None,
+        party_nids={k: v["last4"] for k, v in (doc.party_nids or {}).items()},
     )
 
 
@@ -51,6 +52,7 @@ def upload_document(
     land_id: str | None,
     ip: str | None,
     office_id: str | None = None,
+    party_nids: dict | None = None,
 ) -> DocumentUploadOut:
     document_type = document_type.strip().upper()
     if document_type not in DOCUMENT_TYPES:
@@ -91,6 +93,7 @@ def upload_document(
             processing_status=DocumentStatus.UPLOADED.value,
             uploaded_by=user.id,
             office_id=office.id if office else None,
+            party_nids=party_nids,
         )
         db.add(doc)
         db.flush()
@@ -103,6 +106,7 @@ def upload_document(
                 "size": stored.size,
                 "land_id": land.land_id if land else None,
                 "office": office.code if office else None,
+                "party_nids": sorted(party_nids or {}),
             },
             ip=ip,
         )  # fmt: skip

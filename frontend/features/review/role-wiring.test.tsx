@@ -17,7 +17,7 @@ const FIELDS = ["owner_name", "father_name", "khatian_no", "dag_no", "mouza", "d
 const user = (role: string) => ({ id: "u", name: "U", email: "u@x.co", role, preferred_language: "en" });
 const doc = (over: any = {}) => ({
   id: "d1", land_id: "LP-10001", document_type: "DEED", processing_status: "REVIEW_REQUIRED",
-  file_hash: "a".repeat(64), file_type: "png", created_at: "2026-10-01T00:00:00Z", ...over,
+  file_hash: "a".repeat(64), file_type: "png", created_at: "2026-10-01T00:00:00Z", party_nids: { buyer: "0077" }, ...over,
 });
 const extraction = (over: any = {}) => ({
   document_id: "d1", processing_status: "REVIEW_REQUIRED", provider: "rules", threshold: 0.85,

@@ -7,10 +7,10 @@
     {"key": "admin", "name": "Demo Admin", "email": "admin@demo.landshield.test", "role": "ADMIN", "preferred_language": "en"}
   ],
   "owners": [
-    {"key": "rahim", "name": "Rahim Uddin", "father_name": "Abdul Jabbar", "nid": "SYN-NID-0001", "contact": "SYN-TEL-0001"},
-    {"key": "karim", "name": "Karim Mia", "father_name": "Nur Mohammad", "nid": "SYN-NID-0002", "contact": "SYN-TEL-0002"},
-    {"key": "hasan", "name": "Hasan Ali", "father_name": "Md. Idris", "nid": "SYN-NID-0003", "contact": "SYN-TEL-0003"},
-    {"key": "jamal", "name": "Jamal Hossain", "father_name": "Sirajul Islam", "nid": "SYN-NID-0004", "contact": "SYN-TEL-0004"}
+    {"key": "rahim", "name": "Rahim Uddin", "father_name": "Abdul Jabbar", "nid": "19759990000000001", "dob": "1975-03-12", "contact": "SYN-TEL-0001"},
+    {"key": "karim", "name": "Karim Mia", "father_name": "Nur Mohammad", "nid": "19809990000000002", "dob": "1980-07-01", "contact": "SYN-TEL-0002"},
+    {"key": "hasan", "name": "Hasan Ali", "father_name": "Md. Idris", "nid": "19689990000000003", "dob": "1968-11-23", "contact": "SYN-TEL-0003"},
+    {"key": "jamal", "name": "Jamal Hossain", "father_name": "Sirajul Islam", "nid": "19909990000000004", "dob": "1990-01-30", "contact": "SYN-TEL-0004"}
   ],
   "lands": [
     {"key": "LP-10001", "scenario": "CLEAN", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "101", "khatian_no": "501", "area": 15, "area_unit": "decimal"},

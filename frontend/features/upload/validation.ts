@@ -19,6 +19,10 @@ export type UploadErrorCode =
   | "OFFICE_MISMATCH"
   | "DOCUMENT_ALREADY_FILED"
   | "OFFICE_REQUIRED"
+  | "NID_DOB_REQUIRED"
+  | "INVALID_NID"
+  | "INVALID_DATE_OF_BIRTH"
+  | "SAME_PARTY_NID"
   | "PERMISSION"
   | "NETWORK"
   | "GENERIC";
@@ -46,6 +50,10 @@ const SERVER_CODES: UploadErrorCode[] = [
   "LAND_NOT_FOUND",
   "OFFICE_MISMATCH",
   "DOCUMENT_ALREADY_FILED",
+  "NID_DOB_REQUIRED",
+  "INVALID_NID",
+  "INVALID_DATE_OF_BIRTH",
+  "SAME_PARTY_NID",
 ];
 
 export function errorCodeFromApi(e: { status: number; code: string }): UploadErrorCode {
