@@ -38,7 +38,7 @@ describe("HelpButton (U1.6)", () => {
     expect(screen.getByRole("button", { name: en.help.button })).toHaveAttribute("aria-expanded", "true");
     const panel = screen.getByRole("region", { name: en.help.panelLabel });
     expect(within(panel).getByRole("link", { name: en.help.links.faq })).toHaveAttribute("href", "/faq");
-    expect(within(panel).getByRole("link", { name: en.help.links.guide })).toHaveAttribute("href", "/faq");
+    expect(within(panel).getByRole("link", { name: en.help.links.guide })).toHaveAttribute("href", "/guide");
     expect(within(panel).getByRole("link", { name: en.help.links.feedback })).toHaveAttribute("href", "/feedback");
     expect(within(panel).getByRole("link", { name: /16122/ })).toHaveAttribute("href", "tel:16122");
   });
