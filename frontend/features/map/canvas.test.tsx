@@ -1,5 +1,6 @@
 import { render, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { localDigits } from "@/lib/intl-locale";
 import MapCanvas from "./MapCanvas";
 import { gf } from "./test-utils";
 
@@ -13,6 +14,7 @@ const base = {
   labels: {
     landId: "Land ID", dag: "Dag", khatian: "Khatian", area: "Area", status: "Status", risk: "Risk", view: "View",
     statusText: (c: string) => c, riskText: (c: string) => c, unitText: (c: string) => c,
+    digits: (v: string | number) => String(v),
   },
   ariaLabel: "Map",
   fitParcels: false,
@@ -59,6 +61,31 @@ describe("MapCanvas (real Leaflet)", () => {
     );
     await waitFor(() => expect(container.querySelectorAll("path.leaflet-interactive").length).toBe(1));
     expect(container.querySelector(".leaflet-container")).not.toBeNull(); // same map instance, not rebuilt
+  });
+
+  const parcel = {
+    type: "Feature",
+    geometry: { type: "Polygon", coordinates: [[[90.3, 23.8], [90.301, 23.8], [90.301, 23.801], [90.3, 23.8]]] },
+    properties: { land_id: "LP-10001", dag_no: "101", khatian_no: "501", area: 15, area_unit: "decimal" },
+  } as any;
+  const popupDds = async (digits: (v: string | number) => string) => {
+    const { container, unmount } = render(
+      <MapCanvas {...base} labels={{ ...base.labels, digits }} features={[parcel]} selectedId="LP-10001" />,
+    );
+    await waitFor(() => expect(container.querySelector(".leaflet-popup-content dl")).not.toBeNull());
+    const dds = [...container.querySelectorAll(".leaflet-popup-content dd")].map((d) => d.textContent);
+    const title = container.querySelector(".leaflet-popup-content strong")?.textContent;
+    unmount();
+    return { title, dds };
+  };
+  it("selected parcel popup shows Bangla digits under bn, land ID unchanged", async () => {
+    const { title, dds } = await popupDds((v) => localDigits(v, "bn"));
+    expect(title).toBe("LP-10001");
+    expect(dds).toEqual(["LP-10001", "১০১", "৫০১", "১৫ decimal"]);
+  });
+  it("selected parcel popup keeps Latin digits under en", async () => {
+    const { dds } = await popupDds((v) => localDigits(v, "en"));
+    expect(dds).toEqual(["LP-10001", "101", "501", "15 decimal"]);
   });
 
   it("unmounts cleanly", async () => {
