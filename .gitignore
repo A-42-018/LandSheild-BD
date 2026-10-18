@@ -27,3 +27,7 @@ docs/video/*.mp4
 docs/video/*.webm
 ai/tessdata/
 *.egg-info/
+
+# local-only planning notes
+/plan.md
+/roadmap.md
