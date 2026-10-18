@@ -1,8 +1,9 @@
 "use client";
-import { useId, useRef, useState, type DragEvent } from "react";
-import { useTranslations } from "next-intl";
+import { useId, useRef, useState, type DragEvent, type ReactNode } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, Check, CheckCircle2, CircleDashed, Contact, FileText, Play, ScanLine, UploadCloud, UserCheck } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, CircleDashed, ClipboardCheck, FileText, Landmark, Play, ScanLine, UploadCloud, UserCheck, X } from "lucide-react";
+import { localDigits } from "@/lib/intl-locale";
 import { Button, Card, Input, Select } from "@/components/ui";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { ApiError } from "@/lib/api";
@@ -246,7 +247,7 @@ export default function UploadForm() {
 
   if (m.isSuccess) {
     return (
-      <Card title={t("title")} icon={<FileText />} accent="verified">
+      <Card title={t("title")} icon={<FileText />} accent="verified" className="max-w-2xl">
         <DocumentStatusPanel doc={m.data} />
         <div className="mt-4">
           <Button variant="secondary" onClick={reset}>
@@ -257,113 +258,184 @@ export default function UploadForm() {
     );
   }
 
+  const typeLabel = t(`types.${docType}`);
+  const officeName = myOffice ? bi(myOffice.name_en, myOffice.name_bn) : office ? bi(office.name_en, office.name_bn) : null;
+  const buyerDone = !hasErrors(checkParty(buyer, true));
+  const fileOk = !!file && !fileError;
+  const checklist: { key: string; label: string; value: string | null; done: boolean; optional?: boolean }[] = [
+    { key: "file", label: t("summary.file"), value: file ? file.name : null, done: fileOk },
+    { key: "office", label: t("summary.office"), value: officeName, done: !!officeName, optional: !needsOffice && !myOffice },
+    { key: "type", label: t("type"), value: typeLabel, done: true },
+    ...(withNid ? [{ key: "owner", label: t("summary.owner"), value: buyerDone ? tp("entered") : null, done: buyerDone }] : []),
+  ];
+  const requiredLeft = checklist.filter((c) => !c.done && !c.optional).length;
+  let step = 0;
+
   return (
-    <Card title={t("title")} icon={<UploadCloud />}>
-      <form ref={focus.ref} onSubmit={submit} noValidate className="flex flex-col gap-4">
-        <p className="text-ink-muted">{t("intro")}</p>
-
-        <div
-          data-testid="dropzone"
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={onDrop}
-          className={cn(
-            "glass-card flex flex-col items-center gap-2 border-2 border-dashed p-8 text-center transition-colors",
-            "focus-within:ring-2 focus-within:ring-primary",
-            dragging ? "border-primary bg-primary-soft" : "border-primary/40 hover:border-primary",
-            shownError && "border-critical",
-          )}
-        >
-          <span aria-hidden="true" className="icon-tile !h-12 !w-12 !rounded-xl">
-            <UploadCloud className="h-6 w-6" />
-          </span>
-          <label htmlFor={fileId} className="cursor-pointer font-medium text-primary underline">
-            {t("choose")}
-          </label>
-          <input
-            ref={inputRef}
-            id={fileId}
-            type="file"
-            accept={ACCEPT}
-            className="sr-only"
-            aria-invalid={fileError ? true : undefined}
-            aria-describedby={`${fileId}-hint`}
-            onChange={(e) => pick(e.target.files?.[0])}
-          />
-          <p id={`${fileId}-hint`} className="text-sm text-ink-muted">
-            {t("dropHint")}
-          </p>
-          <DemoDocPicker docs={UPLOAD_DEMO_DOCS} disabled={m.isPending} onPick={pickDemo} />
-          {file && (
-            <p
-              data-testid="selected-file"
-              className="inline-flex max-w-full items-center gap-2 break-all rounded-md border border-line bg-surface px-3 py-1 text-sm text-ink"
-            >
-              <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />
-              <span>
-                {file.name} · {formatBytes(file.size)}
-              </span>
-            </p>
-          )}
-        </div>
-
-        {shownError && (
-          <p
-            role="alert"
-            data-testid="upload-error"
-            className="flex items-start gap-2 rounded-md border border-critical/40 bg-critical/10 px-3 py-2 text-sm text-critical"
+    <form ref={focus.ref} onSubmit={submit} noValidate className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+      <div className="flex min-w-0 flex-col gap-5">
+        <UploadStep n={++step} title={t("sections.file")} hint={t("intro")} done={fileOk}>
+          <div
+            data-testid="dropzone"
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+            // the whole box opens the file dialog, not only the "Choose a file" link
+            onClick={(e) => {
+              if (!(e.target as Element).closest("label,button,input,a")) inputRef.current?.click();
+            }}
+            className={cn(
+              "flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-6 py-8 text-center transition-colors",
+              "focus-within:ring-2 focus-within:ring-primary",
+              dragging ? "border-primary bg-primary-soft" : "border-primary/35 bg-surface/50 hover:border-primary hover:bg-primary-soft/40",
+              shownError && "border-critical",
+            )}
           >
-            <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{t(`errors.${shownError}`)}</span>
-          </p>
-        )}
-
-        <fieldset className="flex flex-col gap-3 rounded-lg border border-line p-3" data-testid="office-sortlist">
-          <legend className="px-1 text-sm font-semibold">{t("officeLegend")}</legend>
-          {myOffice ? (
-            <p className="text-sm" data-testid="my-office">
-              <span className="font-medium">{bi(myOffice.name_en, myOffice.name_bn)}</span>
-              <br />
-              <span className="text-ink-muted">{officePath(myOffice as Office)}</span>
-              <br />
-              <span className="text-xs text-ink-muted">{t("ownOfficeOnly")}</span>
+            <span aria-hidden="true" className="icon-tile !h-14 !w-14 !rounded-2xl">
+              <UploadCloud className="h-7 w-7" />
+            </span>
+            <label htmlFor={fileId} className="cursor-pointer text-base font-semibold text-primary underline-offset-4 hover:underline">
+              {t("choose")}
+            </label>
+            <input
+              ref={inputRef}
+              id={fileId}
+              type="file"
+              accept={ACCEPT}
+              className="sr-only"
+              aria-invalid={fileError ? true : undefined}
+              aria-describedby={`${fileId}-hint`}
+              onChange={(e) => pick(e.target.files?.[0])}
+            />
+            <p id={`${fileId}-hint`} className="text-sm text-ink-muted">
+              {t("dropHint")}
             </p>
-          ) : (
-            <>
-              <p className="text-xs text-ink-muted">{t(needsOffice ? "pickOffice" : "pickOfficeOptional")}</p>
-              <OfficeCascade officeId={office?.id ?? ""} onChange={setOffice} error={officeError ? t("errors.OFFICE_REQUIRED") : undefined} />
-            </>
+            <div className="mt-1 flex items-center gap-3 text-xs text-ink-muted" aria-hidden="true">
+              <span className="h-px w-10 bg-line" />
+              {t("or")}
+              <span className="h-px w-10 bg-line" />
+            </div>
+            <DemoDocPicker docs={UPLOAD_DEMO_DOCS} disabled={m.isPending} onPick={pickDemo} />
+          </div>
+
+          {file && (
+            <div
+              data-testid="selected-file"
+              className={cn(
+                "mt-3 flex items-center gap-3 rounded-xl border bg-surface px-3 py-2.5",
+                fileError ? "border-critical/50" : "border-verified/40",
+              )}
+            >
+              <span aria-hidden="true" className="icon-tile !h-10 !w-10 !rounded-lg">
+                <FileText className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium text-ink" title={file.name}>{file.name}</span>
+                <span className="block text-xs text-ink-muted">{formatBytes(file.size)}</span>
+              </span>
+              {!m.isPending && (
+                <Button variant="ghost" size="sm" icon={<X />} onClick={reset} data-testid="clear-file">
+                  {t("clear")}
+                </Button>
+              )}
+            </div>
           )}
-        </fieldset>
-        <Select
-          label={t("type")}
-          value={docType}
-          onChange={(e) => setDocType(e.target.value)}
-          options={DOCUMENT_TYPES.map((d) => ({ value: d, label: t(`types.${d}`) }))}
-        />
-        <Input
-          label={t("landId")}
-          hint={t("landIdHint")}
-          placeholder="LP-10100"
-          value={landId}
-          onChange={(e) => setLandId(e.target.value)}
-          error={landIdError ? t("errors.LAND_ID") : undefined}
-        />
+
+          {shownError && (
+            <p
+              role="alert"
+              data-testid="upload-error"
+              className="mt-3 flex items-start gap-2 rounded-xl border border-critical/40 bg-critical/10 px-3 py-2 text-sm text-critical"
+            >
+              <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{t(`errors.${shownError}`)}</span>
+            </p>
+          )}
+        </UploadStep>
+
+        <UploadStep n={++step} title={t("officeLegend")} done={!!officeName} fieldset data-testid="office-sortlist">
+          {myOffice ? (
+            <div className="flex items-start gap-3 rounded-xl border border-line/80 bg-surface px-3 py-3 text-sm" data-testid="my-office">
+              <span aria-hidden="true" className="icon-tile !h-9 !w-9 !rounded-lg">
+                <Landmark className="h-4 w-4" />
+              </span>
+              <p>
+                <span className="font-medium">{bi(myOffice.name_en, myOffice.name_bn)}</span>
+                <br />
+                <span className="text-ink-muted">{officePath(myOffice as Office)}</span>
+                <br />
+                <span className="text-xs text-ink-muted">{t("ownOfficeOnly")}</span>
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-ink-muted">{t(needsOffice ? "pickOffice" : "pickOfficeOptional")}</p>
+              <OfficeCascade officeId={office?.id ?? ""} onChange={setOffice} error={officeError ? t("errors.OFFICE_REQUIRED") : undefined} />
+            </div>
+          )}
+        </UploadStep>
+
+        <UploadStep n={++step} title={t("sections.details")} done={!!landId.trim() && !landIdError}>
+          <div className="grid items-start gap-4 sm:grid-cols-2">
+            <Select
+              label={t("type")}
+              value={docType}
+              onChange={(e) => setDocType(e.target.value)}
+              options={DOCUMENT_TYPES.map((d) => ({ value: d, label: t(`types.${d}`) }))}
+            />
+            <Input
+              label={t("landId")}
+              hint={t("landIdHint")}
+              placeholder="LP-10100"
+              value={landId}
+              onChange={(e) => setLandId(e.target.value)}
+              error={landIdError ? t("errors.LAND_ID") : undefined}
+            />
+          </div>
+        </UploadStep>
 
         {withNid && (
-          <fieldset className="flex flex-col gap-4 rounded-lg border border-line p-3" data-testid="party-nids">
-            <legend className="flex items-center gap-1.5 px-1 text-sm font-semibold">
-              <Contact aria-hidden="true" className="h-4 w-4 text-primary" />
-              {tp("legend")}
-            </legend>
-            <p className="text-sm text-ink-muted">{tp("intro")}</p>
-            <PartyNidFields party="buyer" value={buyer} onChange={setBuyer} errors={nidErrors.buyer} required />
-            <PartyNidFields party="seller" value={seller} onChange={setSeller} errors={nidErrors.seller} required={false} />
-          </fieldset>
+          <UploadStep n={++step} title={tp("legend")} hint={tp("intro")} done={buyerDone} fieldset data-testid="party-nids">
+            <div className="grid gap-4">
+              <div className="rounded-xl border border-line/80 bg-surface/70 p-3">
+                <PartyNidFields party="buyer" value={buyer} onChange={setBuyer} errors={nidErrors.buyer} required />
+              </div>
+              <div className="rounded-xl border border-dashed border-line bg-surface/40 p-3">
+                <PartyNidFields party="seller" value={seller} onChange={setSeller} errors={nidErrors.seller} required={false} />
+              </div>
+            </div>
+          </UploadStep>
         )}
+      </div>
+
+      <aside aria-labelledby={`${fileId}-summary`} className="glass-card flex flex-col gap-4 p-4 lg:sticky lg:top-24" data-testid="upload-summary">
+        <div>
+          <h2 id={`${fileId}-summary`} className="flex items-center gap-2 text-base font-semibold text-ink">
+            <ClipboardCheck aria-hidden="true" className="h-5 w-5 text-primary" />
+            {t("summary.title")}
+          </h2>
+          <p className="mt-1 text-xs text-ink-muted">{requiredLeft ? t("summary.left", { count: requiredLeft }) : t("summary.ready")}</p>
+        </div>
+        <ul className="flex flex-col gap-2.5">
+          {checklist.map((c) => (
+            <li key={c.key} className="flex items-start gap-2.5 text-sm" data-done={c.done}>
+              {c.done ? (
+                <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-verified" />
+              ) : (
+                <CircleDashed aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" />
+              )}
+              <span className="min-w-0">
+                <span className="block font-medium text-ink">{c.label}</span>
+                <span className="block truncate text-xs text-ink-muted">
+                  {c.value ?? (c.optional ? t("summary.optional") : t("summary.missing"))}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
 
         {m.isPending && (
           <div className="flex flex-col gap-1">
@@ -383,17 +455,54 @@ export default function UploadForm() {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
-          <Button type="submit" loading={m.isPending} disabled={!file || !!fileError} icon={<UploadCloud />}>
-            {t("submit")}
-          </Button>
-          {file && !m.isPending && (
-            <Button variant="ghost" onClick={reset}>
-              {t("clear")}
-            </Button>
+        <Button type="submit" size="lg" className="w-full" loading={m.isPending} disabled={!fileOk} icon={<UploadCloud />}>
+          {t("submit")}
+        </Button>
+        {!file && <p className="-mt-2 text-center text-xs text-ink-muted">{t("summary.needFile")}</p>}
+      </aside>
+    </form>
+  );
+}
+
+/** One numbered section of the upload form; `fieldset` groups its controls for screen readers (legend = title). */
+function UploadStep({
+  n,
+  title,
+  hint,
+  done,
+  fieldset,
+  children,
+  ...rest
+}: {
+  n: number;
+  title: string;
+  hint?: string;
+  done: boolean;
+  fieldset?: boolean;
+  children: ReactNode;
+  "data-testid"?: string;
+}) {
+  const locale = useLocale();
+  const Tag = fieldset ? "fieldset" : "section";
+  const Head = fieldset ? "legend" : "h2";
+  return (
+    <Tag className="glass-card min-w-0 p-0" {...rest}>
+      <Head className="float-left flex w-full items-center gap-3 border-b border-line/70 px-4 py-3">
+        <span
+          aria-hidden="true"
+          className={cn(
+            "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold",
+            done ? "bg-verified text-surface" : "bg-primary-soft text-primary ring-1 ring-primary/25",
           )}
-        </div>
-      </form>
-    </Card>
+        >
+          {done ? <Check className="h-4 w-4" /> : localDigits(n, locale)}
+        </span>
+        <span className="text-base font-semibold text-ink">{title}</span>
+      </Head>
+      <div className="clear-both p-4">
+        {hint && <p className="mb-3 text-sm text-ink-muted">{hint}</p>}
+        {children}
+      </div>
+    </Tag>
   );
 }

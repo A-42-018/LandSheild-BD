@@ -217,7 +217,7 @@
     "checkingSession": "Checking your session…",
     "loginRequired": "Please sign in to continue.",
     "demoTitle": "Demo accounts",
-    "demoHint": "For this demo only. Tap an e-mail and the demo password below to fill the form.",
+    "demoHint": "For this demo only. Tap an account to fill in its e-mail and the demo password.",
     "demoPassword": "Demo password",
     "notice": "Demo e-governance prototype. Not a government website.",
     "accountPending": "Your officer account is awaiting admin approval. You can sign in once it is approved.",
@@ -234,7 +234,8 @@
       "expired": "You were signed out because you were away for a while. Sign in again."
     },
     "citizenPrompt": "Don't have an account?",
-    "citizenLink": "Create a citizen account"
+    "citizenLink": "Create a citizen account",
+    "demoUse": "Use"
   },
   "verify": {
     "title": "Verify Land",
@@ -473,6 +474,22 @@
       "uploaded": "Uploaded",
       "ocr": "OCR",
       "review": "Review"
+    },
+    "or": "or",
+    "sections": {
+      "file": "Choose the scanned file",
+      "details": "Record details"
+    },
+    "summary": {
+      "title": "Before you upload",
+      "file": "File",
+      "office": "Land office",
+      "owner": "New owner's NID",
+      "missing": "Not added yet",
+      "optional": "Optional",
+      "ready": "Everything required is filled in.",
+      "left": "{count, plural, one {# required item left} other {# required items left}}",
+      "needFile": "Choose a file to turn on Upload."
     }
   },
   "partyNid": {
@@ -1796,7 +1813,20 @@
       "network": "No internet connection. Check your connection and try again.",
       "generic": "That did not work. Try again in a moment."
     },
-    "docLink": "Verify a document copy"
+    "docLink": "Verify a document copy",
+    "groups": {
+      "where": "Where the land is",
+      "plot": "Plot numbers",
+      "seller": "Seller"
+    },
+    "summary": "Checklist summary",
+    "print": "Print checklist",
+    "tiles": {
+      "PASS": "checks clear",
+      "WARN": "to review",
+      "FAIL": "indicators",
+      "UNKNOWN": "still to check"
+    }
   },
   "verifyDoc": {
     "title": "Verify a document copy",
@@ -2655,7 +2685,13 @@
     "p1": "Look up recorded owners, mutations and cases for any plot.",
     "p2": "Every result links to the evidence behind it.",
     "p3": "Officer and reviewer access is role-based and audited.",
-    "notice": "Demo e-governance prototype. Not a government website."
+    "notice": "Demo e-governance prototype. Not a government website.",
+    "groupCitizen": "Citizen",
+    "groupStaff": "Land office staff",
+    "tabLoginShort": "Sign in",
+    "tabSignupShort": "Sign up",
+    "tabStaffShort": "Sign in",
+    "tabOfficerShort": "Request"
   },
   "my": {
     "nav": {
@@ -3179,7 +3215,9 @@
         "notAllowed": "You cannot download this document.",
         "failed": "The download did not work. Please try again."
       }
-    }
+    },
+    "moreFilters": "More filters: upload date and area",
+    "activeCount": "{count} on"
   },
   "publicRecord": {
     "title": "Digital deed check",

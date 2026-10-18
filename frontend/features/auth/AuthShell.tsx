@@ -1,18 +1,32 @@
 "use client";
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { BadgeCheck, FileSearch, Lock } from "lucide-react";
+import { BadgeCheck, FileSearch, Landmark, Lock, UserRound, type LucideIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { contours } from "@/features/landing/Backdrop";
 import { ShieldArt } from "@/features/landing/Illustrations";
 
 export type AuthMode = "login" | "signup" | "staff" | "officer";
 
-const TABS: { mode: AuthMode; href: string; key: string }[] = [
-  { mode: "login", href: "/login", key: "tabLogin" },
-  { mode: "signup", href: "/signup", key: "tabSignup" },
-  { mode: "staff", href: "/officer-login", key: "tabStaff" },
-  { mode: "officer", href: "/officer-signup", key: "tabOfficer" },
+type Tab = { mode: AuthMode; href: string; key: string };
+/** Citizen pages and staff pages as two labelled pairs, so each tab can say just "Sign in" / "Sign up" without wrapping. */
+const GROUPS: { key: string; icon: LucideIcon; tabs: Tab[] }[] = [
+  {
+    key: "groupCitizen",
+    icon: UserRound,
+    tabs: [
+      { mode: "login", href: "/login", key: "tabLogin" },
+      { mode: "signup", href: "/signup", key: "tabSignup" },
+    ],
+  },
+  {
+    key: "groupStaff",
+    icon: Landmark,
+    tabs: [
+      { mode: "staff", href: "/officer-login", key: "tabStaff" },
+      { mode: "officer", href: "/officer-signup", key: "tabOfficer" },
+    ],
+  },
 ];
 
 const POINTS = [
@@ -59,20 +73,32 @@ export default function AuthShell({ mode, children }: { mode: AuthMode; children
         </div>
       </aside>
       <div className="flex flex-col gap-5 bg-surface/60 p-5 sm:p-8">
-        <nav aria-label={t("switcher")} className="grid grid-cols-2 gap-1 sm:grid-cols-4 rounded-xl border border-line/80 bg-surface-muted/80 p-1">
-          {TABS.map((tab) => (
-            <Link
-              key={tab.mode}
-              href={tab.href}
-              aria-current={tab.mode === mode ? "page" : undefined}
-              className={`flex min-h-11 items-center justify-center rounded-lg px-2 py-1.5 text-center text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
-                tab.mode === mode
-                  ? "bg-surface font-semibold text-primary shadow-[0_4px_12px_-4px_rgb(var(--shadow)/0.25)] ring-1 ring-primary/15"
-                  : "text-ink-muted hover:bg-surface/60 hover:text-ink"
-              }`}
-            >
-              {t(tab.key)}
-            </Link>
+        <nav aria-label={t("switcher")} className="grid gap-2 sm:grid-cols-2">
+          {GROUPS.map(({ key, icon: Icon, tabs }) => (
+            <div key={key} className="rounded-xl border border-line/80 bg-surface-muted/80 p-1">
+              <p className="flex items-center gap-1.5 px-2 pb-1 pt-0.5 text-xs font-semibold text-ink-muted">
+                <Icon aria-hidden="true" className="h-3.5 w-3.5 text-primary" />
+                {t(key)}
+              </p>
+              <div className="grid grid-cols-2 gap-1">
+                {tabs.map((tab) => (
+                  <Link
+                    key={tab.mode}
+                    href={tab.href}
+                    aria-current={tab.mode === mode ? "page" : undefined}
+                    // visible text is the short form; the name keeps the audience ("Citizen sign in")
+                    aria-label={t(tab.key)}
+                    className={`flex min-h-11 items-center justify-center whitespace-nowrap rounded-lg px-2 py-1.5 text-center text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                      tab.mode === mode
+                        ? "bg-surface font-semibold text-primary shadow-[0_4px_12px_-4px_rgb(var(--shadow)/0.25)] ring-1 ring-primary/15"
+                        : "text-ink-muted hover:bg-surface/60 hover:text-ink"
+                    }`}
+                  >
+                    {t(`${tab.key}Short`)}
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
         {children}

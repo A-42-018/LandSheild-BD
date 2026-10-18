@@ -12,7 +12,7 @@ export default async function UploadPage({ params: { locale } }: { params: { loc
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
   return (
-    <div className="mx-auto flex max-w-xl flex-col gap-4">
+    <div className="flex max-w-5xl flex-col gap-4">
       <RequireRole roles={OFFICER_UP}>
         <OfficerPageHeader title={t("upload.title")} purpose={t("upload.purpose")} />
         <PageTip page="upload" />

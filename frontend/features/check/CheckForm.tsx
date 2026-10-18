@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { ListChecks, Search } from "lucide-react";
+import { Hash, ListChecks, MapPin, Search, UserRound, type LucideIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,6 +49,12 @@ export default function CheckForm() {
     },
   });
 
+  // bring a new checklist into view; on phones it lands far below the button
+  const resultRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (m.data) resultRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }, [m.data]);
+
   const apiErr = (() => {
     const e = m.error;
     if (!e) return null;
@@ -63,6 +69,7 @@ export default function CheckForm() {
       <Card title={t("title")} icon={<ListChecks />}>
         <form ref={focus.ref} onSubmit={handleSubmit((v) => m.mutate(v), focus.request)} noValidate className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
           <p className="text-ink-muted md:col-span-2">{t("intro")}</p>
+          <FormGroupTitle icon={MapPin} first>{t("groups.where")}</FormGroupTitle>
           <Select
             label={tv("division")}
             placeholder={tv("selectDivision")}
@@ -97,10 +104,12 @@ export default function CheckForm() {
             {...register("upazila")}
           />
           <Input label={tv("mouza")} required autoComplete="off" error={err(errors.mouza)} {...register("mouza")} />
+          <FormGroupTitle icon={Hash}>{t("groups.plot")}</FormGroupTitle>
           <div className="contents">
             <Input label={tv("khatian")} required inputMode="numeric" autoComplete="off" hint={tv("numericHint")} error={err(errors.khatian)} {...register("khatian")} />
             <Input label={tv("dag")} required inputMode="numeric" autoComplete="off" hint={tv("numericHint")} error={err(errors.dag)} {...register("dag")} />
           </div>
+          <FormGroupTitle icon={UserRound}>{t("groups.seller")}</FormGroupTitle>
           <div className="md:col-span-2"><Input label={t("seller")} autoComplete="off" hint={t("sellerHint")} error={err(errors.seller)} {...register("seller")} /></div>
           {apiErr && (
             <p role="alert" className="text-sm text-critical md:col-span-2">
@@ -113,7 +122,16 @@ export default function CheckForm() {
           <p className="text-xs text-ink-muted md:col-span-2">{tv("demoNote")}</p>
         </form>
       </Card>
-      <div aria-live="polite">{m.data && <CheckResult data={m.data} />}</div>
+      <div ref={resultRef} aria-live="polite" className="scroll-mt-24">{m.data && <CheckResult data={m.data} />}</div>
     </div>
+  );
+}
+
+function FormGroupTitle({ icon: Icon, first, children }: { icon: LucideIcon; first?: boolean; children: string }) {
+  return (
+    <p className={`flex items-center gap-2 text-sm font-semibold text-ink md:col-span-2 ${first ? "" : "border-t border-line/70 pt-3"}`}>
+      <Icon aria-hidden="true" className="h-4 w-4 text-primary" />
+      {children}
+    </p>
   );
 }

@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { FileImage, FileText, FolderOpen, RotateCcw, Search } from "lucide-react";
+import { ChevronDown, FileImage, FileText, FolderOpen, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { Badge, Button, Card, ErrorState, Input, LoadingState, Select, Table, Tabs, type Column } from "@/components/ui";
@@ -46,15 +46,23 @@ export default function LibraryView() {
     go({ ...DEFAULT_PARAMS, tab: params.tab });
   };
 
+  const moreActive = [params.date_from, params.date_to, params.division].filter(Boolean).length;
+  // open on load when a link already sets one of these; afterwards it stays as the user left it
+  const [moreOpen, setMoreOpen] = useState(moreActive > 0);
+  const activeFilters = moreActive + [params.q, params.status, params.type, params.profile].filter(Boolean).length;
+
   const columns: Column<LibraryItem>[] = [
-    { key: "file", header: t("cols.file"), render: (r) => <span title={r.file_type.toUpperCase()}><FileIcon type={r.file_type} /><span className="sr-only">{r.file_type.toUpperCase()}</span></span> },
     {
       key: "deed_no",
       header: t("cols.deedNo"),
+      // the file kind sits beside the number instead of in a column of its own (keeps the table narrower)
       render: (r) => (
-        <Link href={documentHref(r)} className="font-medium text-primary underline" aria-label={t("openRow", { name: r.deed_no ?? r.land_id ?? t("noNumber") })}>
-          {r.deed_no ?? r.land_id ?? t("noNumber")}
-        </Link>
+        <span className="inline-flex items-center gap-2">
+          <span title={r.file_type.toUpperCase()}><FileIcon type={r.file_type} /><span className="sr-only">{r.file_type.toUpperCase()}</span></span>
+          <Link href={documentHref(r)} className="whitespace-nowrap font-medium text-primary underline" aria-label={t("openRow", { name: r.deed_no ?? r.land_id ?? t("noNumber") })}>
+            {r.deed_no ?? r.land_id ?? t("noNumber")}
+          </Link>
+        </span>
       ),
     },
     { key: "mouza", header: t("cols.mouza"), render: (r) => r.mouza ?? "—" },
@@ -62,25 +70,25 @@ export default function LibraryView() {
       key: "type",
       header: t("cols.type"),
       render: (r) => (
-        <span className="inline-flex flex-wrap items-center gap-2">
+        <span className="inline-flex flex-col items-start gap-1.5 [&>*]:whitespace-nowrap">
           {(LIBRARY_TYPES as readonly string[]).includes(r.document_type) ? tt(r.document_type) : r.document_type}
           {r.historical && <Badge tone="review">{t("historical")}</Badge>}
         </span>
       ),
     },
-    { key: "deed_date", header: t("cols.deedDate"), sortable: true, render: (r) => (r.deed_date ? formatDate(r.deed_date, locale, "—") : "—") },
+    { key: "deed_date", header: t("cols.deedDate"), sortable: true, render: (r) => <span className="whitespace-nowrap">{r.deed_date ? formatDate(r.deed_date, locale, "—") : "—"}</span> },
     {
       key: "status",
       header: t("cols.status"),
       sortable: true,
       render: (r) => (
-        <span className="inline-flex flex-wrap items-center gap-2">
+        <span className="inline-flex flex-col items-start gap-1.5 [&>*]:whitespace-nowrap">
           <StatusBadge code={r.processing_status} />
           {r.needs_my_action && <Badge tone="pending">{t("needsAction")}</Badge>}
         </span>
       ),
     },
-    { key: "created_at", header: t("cols.uploaded"), sortable: true, render: (r) => formatDateTime(r.created_at, locale, "—") },
+    { key: "created_at", header: t("cols.uploaded"), sortable: true, render: (r) => <span className="block min-w-[6.5rem] text-xs leading-relaxed">{formatDateTime(r.created_at, locale, "—")}</span> },
     {
       key: "digitised",
       header: t("cols.digitised"),
@@ -109,13 +117,17 @@ export default function LibraryView() {
 
   const table = (
     <div className="flex flex-col gap-4">
-      <form onSubmit={onSearch} role="search" aria-label={t("filters")} className="flex flex-col gap-3">
-        <div className="flex items-end gap-2">
+      <form onSubmit={onSearch} role="search" aria-label={t("filters")} className="flex flex-col gap-3 rounded-2xl border border-line/70 bg-surface/60 p-3 sm:p-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <div className="min-w-0 flex-1">
             <Input label={t("search.label")} value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search.placeholder")} />
           </div>
-          <Button type="submit" icon={<Search />}>{t("search.submit")}</Button>
-          <Button type="button" variant="secondary" icon={<RotateCcw />} onClick={reset}>{t("reset")}</Button>
+          <div className="flex gap-2">
+            <Button type="submit" icon={<Search />} className="flex-1 sm:flex-none">{t("search.submit")}</Button>
+            {activeFilters > 0 && (
+              <Button type="button" variant="ghost" icon={<RotateCcw />} onClick={reset}>{t("reset")}</Button>
+            )}
+          </div>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Select label={t("filter.status")} value={params.status} placeholder={t("filter.all")} onChange={(e) => patch({ status: e.target.value })}
@@ -127,13 +139,26 @@ export default function LibraryView() {
             options={[{ value: "modern", label: t("profiles.modern") }, { value: "historical", label: t("profiles.historical") }]} />
           <Select label={t("filter.sort")} value={params.sort} onChange={(e) => patch({ sort: e.target.value as LibrarySortKey })}
             options={LIBRARY_SORTS.map((s) => ({ value: s, label: t(`sorts.${s}`) }))} />
-          <Input type="date" label={t("filter.from")} value={params.date_from} max={params.date_to || undefined} onChange={(e) => patch({ date_from: e.target.value })} />
-          <Input type="date" label={t("filter.to")} value={params.date_to} min={params.date_from || undefined} onChange={(e) => patch({ date_to: e.target.value })} />
         </div>
-        <AreaFilter
-          value={{ division: params.division, district: params.district, upazila: params.upazila }}
-          onChange={(a) => patch({ division: a.division, district: a.district, upazila: a.upazila })}
-        />
+        {/* dates and area are used less often: folded away unless one of them is set */}
+        <details open={moreOpen} onToggle={(e) => setMoreOpen(e.currentTarget.open)} className="group rounded-xl border border-line/70 bg-surface/70" data-testid="more-filters">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
+            <SlidersHorizontal aria-hidden="true" className="h-4 w-4 text-primary" />
+            {t("moreFilters")}
+            {moreActive > 0 && <Badge tone="verified">{t("activeCount", { count: moreActive })}</Badge>}
+            <ChevronDown aria-hidden="true" className="ml-auto h-4 w-4 text-ink-muted transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="flex flex-col gap-3 border-t border-line/70 p-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <Input type="date" label={t("filter.from")} value={params.date_from} max={params.date_to || undefined} onChange={(e) => patch({ date_from: e.target.value })} />
+              <Input type="date" label={t("filter.to")} value={params.date_to} min={params.date_from || undefined} onChange={(e) => patch({ date_to: e.target.value })} />
+            </div>
+            <AreaFilter
+              value={{ division: params.division, district: params.district, upazila: params.upazila }}
+              onChange={(a) => patch({ division: a.division, district: a.district, upazila: a.upazila })}
+            />
+          </div>
+        </details>
       </form>
       {q.isLoading ? (
         <LoadingState />
