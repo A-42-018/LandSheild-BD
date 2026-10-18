@@ -40,7 +40,7 @@ export default function DocumentPreview({
     <section
       aria-label={t("preview.title")}
       data-testid="doc-preview"
-      className="flex min-w-0 flex-col gap-2"
+      className="flex min-w-0 flex-col gap-2 xl:h-[calc(100vh-6rem)]"
     >
       <div
         className="flex flex-wrap items-center gap-2"
@@ -109,8 +109,9 @@ export default function DocumentPreview({
           </Button>
         </p>
       )}
-      {/* ≥ 1280 px the pane is sticky beside the fields: fill the screen, so the deed stays in view */}
-      <div className="max-h-[70vh] min-h-[16rem] overflow-auto glass-card !rounded-card xl:h-[calc(100vh-12rem)] xl:max-h-none">
+      {/* ≥ 1280 px the pane is sticky beside the fields and exactly one screen tall: the scan box
+          takes the height the zoom row and the highlight line leave, so nothing is cut off below */}
+      <div className="max-h-[70vh] min-h-[16rem] overflow-auto glass-card !rounded-card xl:min-h-0 xl:max-h-none xl:flex-1">
         {file.loading && <LoadingState />}
         {file.error && (
           <ErrorState message={t("preview.error")} onRetry={file.retry} />

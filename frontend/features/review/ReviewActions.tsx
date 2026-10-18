@@ -110,7 +110,7 @@ export default function ReviewActions({
     <>
       <section
         aria-label={t("actions.title")}
-        className="glass-card sticky bottom-0 z-10 flex flex-col gap-2 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lift"
+        className="glass-card sticky bottom-0 z-10 !bg-surface flex flex-col gap-2 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lift"
         data-testid="review-actions"
         data-sticky-bar
         ref={barRef}

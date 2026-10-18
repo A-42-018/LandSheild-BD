@@ -25,7 +25,7 @@ export default function ReviewFocusBar({ errors, sections }: { errors: number; s
       <section
         aria-label={t("title")}
         data-testid="review-focus"
-        className="glass-card z-20 flex flex-col gap-2 px-3 py-2 shadow-raised md:sticky md:top-[4.5rem]"
+        className="glass-card z-20 flex flex-col gap-2 px-3 py-2 shadow-raised md:sticky md:top-16 md:!bg-surface"
       >
         <h2 className="sr-only">{t("title")}</h2>
         <div className="flex flex-wrap items-center justify-between gap-2">
