@@ -131,7 +131,8 @@ export default function ReviewView({ id }: { id: string }) {
   } else body = <LoadingState />;
 
   return (
-    <div className="flex flex-col gap-4">
+    // a side-by-side workspace: on wide screens <main> drops its 75rem reading width for this page
+    <div className="flex flex-col gap-4" data-wide-page>
       <OfficerPageHeader
         title={t("title")}
         purpose={t("purpose")}

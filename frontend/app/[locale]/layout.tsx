@@ -77,7 +77,7 @@ export default async function LocaleLayout({
             <NoticeTicker />
           </div>
           <PublicBackdrop />
-          <main id="main" className="mx-auto max-w-[75rem] px-4 py-8 print:max-w-none print:p-0">
+          <main id="main" className="mx-auto max-w-[75rem] px-4 py-8 has-[[data-wide-page]]:max-w-[100rem] print:max-w-none print:p-0">
             {children}
             <PageHelpful />
           </main>
