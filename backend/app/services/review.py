@@ -1,4 +1,9 @@
-"""Review decisions (P29): approve / reject / reprocess. Approve also posts (P30), atomically."""
+"""Review decisions (P29): approve / reject / reprocess. Approve also posts (P30), atomically.
+
+H5: approval also freezes the working copy as the APPROVED, signed record version and links the
+posted deed to it (deeds.record_id, deeds.is_historical); a historical deed's LHDR record must be
+free of content errors. Reprocessing discards the open record versions (SUPERSEDED, kept).
+"""
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
@@ -7,12 +12,14 @@ from app.models.enums import DocumentStatus
 from app.models.user import User
 from app.schemas.document import DocumentOut
 from app.schemas.extraction import Extraction
-from app.services import audit, offices, party_nid, posting
+from app.services import audit, party_nid, posting, records
 from app.services.documents import _to_out
 from app.services.extraction import (
     EDITABLE_STATUSES,
     _validate_doc,
+    check_area,
     is_survey_doc,
+    record_validation,
     self_approval_blocked,
 )
 
@@ -53,18 +60,25 @@ def approve_document(
             "EXTRACTION_INVALID", "Extraction has validation errors", 422,
             [e.model_dump(exclude_none=True) for e in errors],
         )  # fmt: skip
-    by = {f.field: f.value for f in extraction.fields}
-    offices.check_record_area(doc.office, by.get("district"), by.get("upazila"))
+    rv = record_validation(extraction.record)
+    if rv is not None and not rv.valid:  # a historical deed's LHDR content rules (H1)
+        raise AppError(
+            "RECORD_INVALID", "The record has validation errors", 422,
+            [i.model_dump() for i in rv.errors],
+        )  # fmt: skip
+    check_area(doc, extraction)
     old = doc.processing_status
     if is_survey_doc(doc):
         # A survey record (khatian / porcha) is archived, not posted: no seller, buyer or deed, so
         # ownership, ledger and mutations stay untouched. It becomes searchable in the archive.
         doc.processing_status = DocumentStatus.APPROVED.value
+        row = records.freeze(db, doc, user, extraction)
         audit.log(
             db, user, "DOCUMENT_APPROVE", "document", doc.id,
             old={"status": old},
             new={"status": DocumentStatus.APPROVED.value, "posted": False,
-                 "survey_type": extraction.survey_type},
+                 "survey_type": extraction.survey_type,
+                 "record_version": row.version, "record_hash": row.record_hash},
             ip=ip,
         )  # fmt: skip
         db.commit()
@@ -76,6 +90,8 @@ def approve_document(
     try:  # one transaction: posting + status + audit commit together or not at all
         result = posting.post_document(db, user, doc, extraction, ip)
         doc.processing_status = DocumentStatus.APPROVED.value
+        row = records.freeze(db, doc, user, extraction)
+        records.link_deeds(db, doc, row, extraction)  # the deed posting just created
         audit.log(
             db, user, "DOCUMENT_APPROVE", "document", doc.id,
             old={"status": old},
@@ -83,6 +99,8 @@ def approve_document(
                 "status": DocumentStatus.APPROVED.value,
                 "transaction_id": result.transaction_id,
                 "transaction_status": result.transaction_status,
+                "record_version": row.version,
+                "record_hash": row.record_hash,
             },
             ip=ip,
         )  # fmt: skip
@@ -138,6 +156,7 @@ def request_reprocess(
         new["profile"] = profile
     doc.processing_status = DocumentStatus.PROCESSING.value
     doc.extraction_json = None  # machine output is regenerated; human edits are discarded
+    new["superseded_versions"] = records.supersede_open(db, doc.id)  # kept, readable
     audit.log(db, user, "DOCUMENT_REPROCESS_REQUEST", "document", doc.id, old=old, new=new, ip=ip)
     db.commit()
     return _to_out(db, doc)

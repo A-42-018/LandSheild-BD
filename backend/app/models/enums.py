@@ -24,6 +24,13 @@ class DocumentStatus(StrEnum):
     FAILED = "FAILED"
 
 
+class RecordStatus(StrEnum):  # H5 document_records.status
+    MACHINE = "MACHINE"
+    DRAFT = "DRAFT"
+    APPROVED = "APPROVED"
+    SUPERSEDED = "SUPERSEDED"
+
+
 class TransactionStatus(StrEnum):
     RECORDED = "RECORDED"
     FLAGGED = "FLAGGED"

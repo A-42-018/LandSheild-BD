@@ -1,8 +1,11 @@
 """Archive search (F5c): full-text search over the OCR text + fields of APPROVED documents.
 
 SQLite uses an FTS5 virtual table (`archive_fts`) that is rebuilt lazily when the set of approved
-documents changes (a signature row detects that). Other databases fall back to a LIKE scan, so
-the route works the same everywhere. Search text never leaves the officer API (REVIEWER+).
+documents changes (a signature row detects that). Postgres (H5 / D6) does the same with a table
+`archive_index` holding a `tsvector` under a GIN index ('simple' configuration: no stemming, which
+Bangla has none of; Bangla digits are indexed as ASCII digits, which the parser otherwise drops).
+Other databases fall back to a scan in Python, so the route works the same everywhere. Search text
+never leaves the officer API (REVIEWER+).
 """
 
 import hashlib
@@ -32,10 +35,6 @@ _COLUMNS = (
     "body",
 )
 _UNINDEXED = _COLUMNS[:3] + ("survey",)
-
-
-def _is_sqlite(db: Session) -> bool:
-    return db.get_bind().dialect.name == "sqlite"
 
 
 def _field(doc: Document, name: str) -> str | None:
@@ -155,6 +154,78 @@ def _search_sqlite(db, q, survey, district, limit, offset) -> ArchiveSearchOut:
     )  # fmt: skip
 
 
+_BN_DIGITS = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
+_PG_LOCK = 0x4C534152  # pg_advisory_xact_lock key: one index rebuild at a time
+_PG_COLS = ("doc_id", "doc_type", "land_id", "survey", "district", "upazila", "mouza", "khatian")
+
+
+def _ensure_pg_index(db: Session) -> None:
+    db.execute(text(
+        "CREATE TABLE IF NOT EXISTS archive_index (doc_id varchar(64) PRIMARY KEY, doc_type text, "
+        "land_id text, survey text, district text, upazila text, mouza text, khatian text, "
+        "body text, tsv tsvector)"
+    ))  # fmt: skip
+    db.execute(text("CREATE INDEX IF NOT EXISTS ix_archive_tsv ON archive_index USING GIN (tsv)"))
+    db.execute(text("SELECT pg_advisory_xact_lock(:k)"), {"k": _PG_LOCK})
+    rows = _approved(db)
+    sig = _signature(rows)
+    have = db.execute(text("SELECT body FROM archive_index WHERE doc_id = :s"), {"s": SIG}).scalar()
+    if have == sig:
+        db.commit()
+        return
+    db.execute(text("DELETE FROM archive_index"))
+    ins = text(
+        "INSERT INTO archive_index (" + ", ".join(_PG_COLS) + ", body, tsv) VALUES ("
+        + ", ".join(":" + c for c in _PG_COLS) + ", :body, to_tsvector('simple', :words))"
+    )  # fmt: skip
+    for d, land in rows:
+        r = _row(d, land)
+        words = " ".join(str(r[c] or "") for c in _COLUMNS[4:]).translate(_BN_DIGITS)
+        db.execute(ins, {**r, "words": words})
+    blank = {c: None for c in _PG_COLS}
+    db.execute(ins, {**blank, "doc_id": SIG, "body": sig, "words": ""})
+    db.commit()
+
+
+def _search_postgres(db, q, survey, district, limit, offset) -> ArchiveSearchOut:
+    _ensure_pg_index(db)
+    words = _match_expr(q).replace('"', "").translate(_BN_DIGITS)
+    cond = ["tsv @@ plainto_tsquery('simple', :q)", "doc_id != :sig"]
+    params: dict = {"q": words, "sig": SIG}
+    if survey:
+        cond.append("survey = :survey")
+        params["survey"] = survey
+    if district:
+        cond.append("lower(district) = lower(:district)")
+        params["district"] = district.strip()
+    where = " AND ".join(cond)
+    total = (
+        db.execute(text(f"SELECT count(*) FROM archive_index WHERE {where}"), params).scalar() or 0
+    )
+    rows = db.execute(
+        text(
+            "SELECT doc_id, doc_type, land_id, survey, district, upazila, mouza, khatian, "
+            "ts_headline('simple', body, plainto_tsquery('simple', :q), "
+            "'StartSel=[, StopSel=], MaxWords=24, MinWords=8, MaxFragments=1') AS snip "
+            f"FROM archive_index WHERE {where} "
+            "ORDER BY ts_rank(tsv, plainto_tsquery('simple', :q)) DESC, doc_id "
+            "LIMIT :limit OFFSET :offset"
+        ),
+        {**params, "limit": limit, "offset": offset},
+    ).all()
+    return ArchiveSearchOut(
+        items=[
+            ArchiveHit(
+                document_id=r[0], document_type=r[1], land_id=r[2], survey_type=r[3],
+                district=r[4], upazila=r[5], mouza=r[6], khatian_no=r[7],
+                snippet=(r[8] or "").replace("\n", " "),
+            )
+            for r in rows
+        ],
+        total=total, limit=limit, offset=offset,
+    )  # fmt: skip
+
+
 def _like(value: str) -> str:
     esc = value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     return f"%{esc.lower()}%"
@@ -194,5 +265,6 @@ def search(
         raise AppError("INVALID_SURVEY", "survey must be CS, SA, RS or BS", 422)
     if office_cond is not None:  # office-scoped or area-sorted: filter the approved documents
         return _search_generic(db, q.strip(), survey, district, limit, offset, office_cond)
-    fn = _search_sqlite if _is_sqlite(db) else _search_generic
+    dialect = db.get_bind().dialect.name
+    fn = {"sqlite": _search_sqlite, "postgresql": _search_postgres}.get(dialect, _search_generic)
     return fn(db, q.strip(), survey, district, limit, offset)

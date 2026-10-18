@@ -21,7 +21,7 @@ COPY scripts ./scripts
 COPY models ./models
 
 # scikit-learn is left out on purpose (heavy for a free instance): run with ML_SCORING=off
-RUN pip install --no-cache-dir -e "./backend[llm]" \
+RUN pip install --no-cache-dir -e "./backend[llm,s3,postgres]" \
  && pip install --no-cache-dir opencv-python-headless numpy pymupdf pytesseract pillow
 
 ENV PYTHONPATH=/app:/app/backend OCR_PROVIDER=auto DOCUMENT_AI_PROVIDER=auto DEMO_FIXTURES=on \
@@ -32,4 +32,6 @@ ENV PYTHONPATH=/app:/app/backend OCR_PROVIDER=auto DOCUMENT_AI_PROVIDER=auto DEM
 
 WORKDIR /app/backend
 EXPOSE 10000
-CMD ["sh", "-c", "alembic upgrade head && python ../scripts/seed.py --reset && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
+# SEED_MODE=auto: reset the demo on SQLite (the free disk is wiped anyway); on a persistent Postgres
+# seed only an empty database, so real uploads and digital records survive restarts (H5, D6).
+CMD ["sh", "-c", "alembic upgrade head && python ../scripts/seed.py --mode ${SEED_MODE:-auto} && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]

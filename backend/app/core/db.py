@@ -42,8 +42,22 @@ class TimestampMixin(CreatedMixin):
     )
 
 
+def normalize_url(url: str) -> str:
+    """Hosted Postgres (Neon, Supabase, Render) hands out postgres:// or postgresql:// URLs; use
+    the psycopg 3 driver for them (pip install -e ".[postgres]")."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix) :]
+    return url
+
+
 def make_engine(url: str) -> Engine:
+    url = normalize_url(url)
     kwargs: dict = {}
+    if url.startswith("postgresql"):
+        kwargs["pool_pre_ping"] = True  # free tiers drop idle connections (Neon compute sleeps)
+        # timestamps come back in UTC, as with SQLite, whatever the server's own time zone is
+        kwargs["connect_args"] = {"options": "-c timezone=UTC"}
     if url.startswith("sqlite"):
         kwargs["connect_args"] = {"check_same_thread": False}
     engine = create_engine(url, **kwargs)

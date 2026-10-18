@@ -3,11 +3,13 @@ from sqlalchemy import engine_from_config, pool
 
 import app.models  # noqa: F401  (register models)
 from app.core.config import get_settings
-from app.core.db import Base
+from app.core.db import Base, normalize_url
 
 config = context.config
 if not config.get_main_option("sqlalchemy.url"):
-    config.set_main_option("sqlalchemy.url", get_settings().database_url)
+    # "%" would be read as ini interpolation (URL-encoded passwords)
+    url = normalize_url(get_settings().database_url).replace("%", "%%")
+    config.set_main_option("sqlalchemy.url", url)
 target_metadata = Base.metadata
 
 

@@ -482,8 +482,7 @@ to the generic extractor: the job calls `HistoricalDeedProvider` (`ai/extraction
 which returns an LHDR v1 record plus the 13 core fields derived from it (`derive.py`), so review,
 approval, posting, risk and search keep working unchanged. Modern deeds, khatian / porcha and demo
 fixtures take the old path. The record is stored in `extraction_json.record` (`record_schema:
-"lhdr/1"`) and returned by `GET /documents/{id}/extraction`; versions and LHDR edits are H5 (a
-PATCH still changes the 13 fields only).
+"lhdr/1"`) and returned by `GET /documents/{id}/extraction`; versions and LHDR edits are H5 (below).
 
 **Rule parser (no API key needed).** The OCR text and the H2 cell grid are cut into header,
 ১ম / ২য় পক্ষ, body, তপশিল and signature row; each part has its own parser:
@@ -582,3 +581,87 @@ Targets (roadmap H4, with the LLM on): >= 90 % on typed samples, >= 75 % on scan
 Reproduce: `python ai/evaluation/run_eval.py --set historical --lhdr --profile auto`
 
 <!-- HIST-LHDR:END -->
+
+### Digital record: edits, versions, keeping (H5)
+
+**The record is the source of truth.** For a document with an LHDR record the 13 fields are always
+derived from it (`derive.py`); `derive.core_paths()` tells which record value each one comes from.
+`PATCH /documents/{id}/extraction` takes `record` ops and/or the flat `fields`:
+
+```jsonc
+{"record": [
+   {"op": "replace", "path": "/schedule/0/boundaries/north", "value": "খাল"},
+   {"op": "replace", "path": "/registration/deed_no/verbatim", "value": "৪৭৮২/খ"},
+   {"op": "add",     "path": "/execution/witnesses/-", "value": {"role": "WITNESS", "name": "আব্দুল হক"}},
+   {"op": "remove",  "path": "/parties/2"}],
+ "fields": [{"field": "khatian_no", "value": "121"}]}
+```
+
+`ai/extraction/lhdr_patch.py` applies them: JSON pointers (RFC 6901) checked against the LHDR models,
+missing objects created on the way, `-` appends; a path at a `Field` (or `/value`) edits the value,
+`/verbatim` and `/legibility` those; machine metadata (confidence, source, method, candidates) and
+`/schema`, `/core` are refused (`PATH_NOT_EDITABLE`). Every touched value gets `method: human,
+edited_by_human: true`; a value edit clears the H4 review flags. Flat field edits become record ops
+(`core_ops`): `khatian_no` → `/schedule/0/khatian_no`, `seller` → the first seller's name (a party is
+added when there is none), `deed_date` → the execution date's Gregorian range and precision `day`
+(the verbatim Bangla date stays). Record ops run first, then the flat fields; the request is all or
+nothing. Errors: 422 `RECORD_PATCH_FAILED` (`details[0]`: `index`, `path`, `code`: `INVALID_PATH`,
+`PATH_NOT_EDITABLE`, `NOT_FOUND`, `NOT_A_LIST`, `RECORD_INVALID`, `VALUE_TOO_LARGE`, `LIST_TOO_LONG`,
+`NO_RECORD_TARGET`), 422 `RECORD_VALIDATION_FAILED` when an edit adds a format error (`NOT_NUMERIC`,
+`AREA_NOT_POSITIVE`, …) at a path it touched, 422 `RECORD_NOT_AVAILABLE` for record ops on a document
+without a record. `GET /extraction` adds `record_validation` (H1 `check()`: errors block approval,
+warnings inform), `file_hash`, `version` and `version_status`. `core` (section J) is derived again on
+every save. Values the land records corrected in the job (record_assist) are written into the record
+too, flagged `MATCHED_TO_RECORDS`.
+
+**Versions (`document_records`, migration 0017).** Rows are never deleted.
+
+| Status | Made by | Changes? |
+|---|---|---|
+| MACHINE | the extraction job (every run) | never |
+| DRAFT | the first reviewer edit; later edits update it | until approved |
+| APPROVED | approval (the DRAFT itself, or a new version after an unedited MACHINE one) | never (frozen) |
+| SUPERSEDED | an APPROVED version replaced by an approved correction; MACHINE / DRAFT discarded by reprocess | never |
+
+`record_json` is the LHDR record (`lhdr/1`) or, for modern deeds and khatian / porcha, `core/1` (the 13
+fields with confidence + bbox, survey type, khatian extras). Freezing sets `approved_by`, `approved_at`
+(whole seconds), `record_hash` = SHA-256 over canonical JSON of `{v, document_id, file_hash, version,
+schema, approved_by, approved_at, record}` and `signature` = Ed25519 over the hash with the deed key
+(`signing.py`, `SIGNING_KEY`). `signature_status` is checked on every read: VALID only when the stored
+record still hashes to `record_hash` and the signature verifies, so changing one byte gives INVALID.
+Approval needs a record without errors (422 `RECORD_INVALID`) and links the posted deed:
+`deeds.record_id` (approved version) and `deeds.is_historical`. A historical deed's written places
+(থানা রূপগঞ্জ, জেলা ঢাকা) may lie in another office's district today; the office check also accepts
+the record's computed modern mapping (Narayanganj / Rupganj).
+
+**Corrections after approval** never overwrite: `POST /documents/{id}/records` opens DRAFT v(n+1) as a
+copy of the approved version (the open one if it exists: 200), `PATCH /documents/{id}/records/{n}`
+takes the same body as the extraction PATCH, `POST /documents/{id}/records/{n}/approve` freezes it
+(four-eyes: not by whoever opened the correction, ADMIN exempt; 409 `RECORD_UNCHANGED` without a
+change), marks the old APPROVED version SUPERSEDED (still readable and verifiable), points the deed at
+the new version and copies the corrected record into the working copy (GET extraction, archive
+search). Ownership, deeds and the ledger stay as posted (D2). A document approved before H5 gets its
+working copy saved as a signed baseline v1 (no approver) when the first correction opens.
+`GET /documents/{id}/records` lists the versions (no record body), `GET …/records/{n}` returns one
+with its record.
+
+**The original file is kept.** Uploads are never overwritten or deleted after the upload transaction
+(a failed upload removes its file only when no document points to it). Every `GET /documents/{id}/file`
+re-hashes the bytes against `documents.file_hash` (500 `DOCUMENT_FILE_CORRUPT` instead of serving a
+changed file) and sends the hash as `X-File-SHA256`; the extraction and every version show it too.
+
+**Production storage (D6).** `STORAGE_BACKEND=s3` keeps files in a private S3-compatible bucket
+(`S3Storage`, boto3, `pip install -e ".[s3]"`; keys `documents/<sha256>.<ext>`, an existing key is
+never written again); `DATABASE_URL=postgres(ql)://…` uses psycopg 3 (`.[postgres]`, `pool_pre_ping`).
+Archive search gets a Postgres path (`archive_index`, `tsvector` + GIN, rebuilt like the FTS5 table;
+Bangla digits indexed as ASCII). Postgres connections use UTC (`-c timezone=UTC`), and a value Postgres
+cannot store (a NUL character in text) is a 422 `INVALID_INPUT`, not a 500. The Docker start seeds with `SEED_MODE=auto`: reset on SQLite, only an
+empty database on Postgres. Setup: `docs/deploy-render.md`.
+
+Tests: `backend/tests/test_records.py` (API: profile + record + versions, nested PATCH, add / remove,
+flat write-through, refused ops, approval freeze + signature, one changed byte → INVALID, record errors
+block approval, reprocess, corrections + four-eyes + ownership untouched, legacy baseline, original
+file after approval and correction, changed original refused), `test_lhdr_patch.py` (the engine),
+`test_storage_backends.py` (S3 with a fake client, settings, URLs, seed modes, migration 0017 up / down /
+up on SQLite and on Postgres when `TEST_DATABASE_URL` is set). With `TEST_DATABASE_URL=postgresql://…`
+every test using the shared `env` fixture runs on Postgres (CI job `.github/workflows/backend.yml`).

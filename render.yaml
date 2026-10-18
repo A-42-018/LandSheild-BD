@@ -18,9 +18,11 @@ services:
       - key: COOKIE_SAMESITE
         value: none
       - key: DATABASE_URL
-        value: sqlite:///./landshield.db
+        value: sqlite:///./landshield.db   # D6 (docs/deploy-render.md): replace with the managed Postgres URL in the dashboard
       - key: STORAGE_PATH
         value: ./storage
+      # D6 persistent files: set STORAGE_BACKEND=s3 + the S3_* values in the dashboard (docs/deploy-render.md).
+      # SEED_MODE defaults to auto: SQLite is re-seeded on every boot, a Postgres database only when empty.
       - key: JWT_SECRET
         generateValue: true
       - key: HASH_SALT
@@ -31,4 +33,4 @@ services:
         sync: false          # https://<your-site>.netlify.app (no trailing slash)
       - key: SIGNING_KEY
         sync: false          # Ed25519 seed (base64url, 32 bytes); without it the disk-less instance signs with a new key on every restart
-# Start command (Dockerfile CMD): alembic upgrade head (migrations 0001-0011) + seed --reset (signatures + ledger backfill) on every boot.
+# Start command (Dockerfile CMD): alembic upgrade head + seed --mode $SEED_MODE (auto: reset on SQLite, only-if-empty on Postgres) on every boot.

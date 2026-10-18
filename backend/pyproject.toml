@@ -37,6 +37,14 @@ llm = [
   "anthropic>=0.40",  # O3 optional Claude extractor (lazy import; the app boots without it)
 ]
 
+s3 = [
+  "boto3>=1.34",  # H5 / D6 STORAGE_BACKEND=s3 (Cloudflare R2, Supabase Storage...); lazy import
+]
+
+postgres = [
+  "psycopg[binary]>=3.1",  # H5 / D6 DATABASE_URL=postgresql+psycopg://... (Neon, Supabase)
+]
+
 [tool.pytest.ini_options]
 pythonpath = [".", ".."]  # ".." exposes the repo-root `ai` package
 testpaths = ["tests"]
