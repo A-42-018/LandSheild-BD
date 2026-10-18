@@ -4,11 +4,10 @@ import PageHeader from "@/components/PageHeader";
 import { Link } from "@/i18n/navigation";
 import { SERVICE_ART } from "@/features/landing/Illustrations";
 import { guideAnchor } from "@/features/guide/guides";
-import { SERVICE_HREF, SERVICE_IDS } from "./services";
+import { SERVICE_HREF, SERVICE_IDS, guideOf } from "./services";
 
 const ROWS = ["need", "fee", "time", "office", "apply"] as const;
 const ROW_ICON: Record<(typeof ROWS)[number], LucideIcon> = { need: ListChecks, fee: Banknote, time: Clock, office: Building2, apply: ListOrdered };
-const ART_OF = { verify: SERVICE_ART.verify, check: SERVICE_ART.check, track: SERVICE_ART.track, verifyDoc: SERVICE_ART.verifyDoc } as const;
 
 /** Citizen charter: per service, what is needed, the fee, the time limit, the responsible office and how to apply. */
 export default function ServicesPage() {
@@ -19,7 +18,8 @@ export default function ServicesPage() {
       <PageHeader title={t("title")} purpose={t("purpose")} meta={[t("updated")]} />
       <p className="glass-card border-l-[3px] border-l-review p-3 text-sm text-ink">{t("notice")}</p>
       {SERVICE_IDS.map((id) => {
-        const Art = ART_OF[id as keyof typeof ART_OF];
+        const Art = SERVICE_ART[id];
+        const guide = guideOf(id);
         return (
           <section key={id} aria-labelledby={`svc-${id}`} className="glass-card p-5 sm:p-6">
             <div className="flex items-start justify-between gap-4">
@@ -60,10 +60,12 @@ export default function ServicesPage() {
               <Link href={SERVICE_HREF[id]} className="inline-flex min-h-12 items-center rounded-xl bg-primary px-5 py-2 font-medium text-primary-fg shadow-[0_6px_16px_-6px_rgb(var(--primary)/0.55)] hover:bg-primary-hover">
                 {t("open")}
               </Link>
-              <Link href={`/guide#${guideAnchor(id)}`} className="inline-flex min-h-12 items-center gap-2 text-link underline underline-offset-2">
-                <CirclePlay aria-hidden="true" className="h-4 w-4 shrink-0" />
-                {t("guideLink")}
-              </Link>
+              {guide && (
+                <Link href={`/guide#${guideAnchor(guide)}`} className="inline-flex min-h-12 items-center gap-2 text-link underline underline-offset-2">
+                  <CirclePlay aria-hidden="true" className="h-4 w-4 shrink-0" />
+                  {t("guideLink")}
+                </Link>
+              )}
             </p>
           </section>
         );

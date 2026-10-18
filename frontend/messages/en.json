@@ -30,6 +30,7 @@
     "account": "Account menu",
     "check": "Check before you buy",
     "verifyDoc": "Verify a document copy",
+    "myLands": "Your land by NID",
     "track": "Track mutation",
     "profile": "Account",
     "signup": "Sign up",
@@ -961,6 +962,10 @@
       "verifyDoc": {
         "title": "Verify a document copy",
         "desc": "Check that a deed copy or QR code matches the signed record."
+      },
+      "myLands": {
+        "title": "Find your land by NID",
+        "desc": "Sign in, link your NID with your date of birth, and see every plot recorded in your name."
       }
     },
     "checks": {
@@ -2523,6 +2528,22 @@
           "n1": "Open Verify a document copy.",
           "n2": "Upload the file.",
           "n3": "Read whether it matches the signed record."
+        }
+      },
+      "myLands": {
+        "title": "Find your land by NID",
+        "who": "Signed-in citizens. Only you can see your own list.",
+        "need": {
+          "n1": "A citizen account on LandShield",
+          "n2": "Your NID number and date of birth, linked once in Profile"
+        },
+        "fee": "Free.",
+        "time": "The list appears as soon as your NID is linked. A new plot shows up after a land office records it under your NID.",
+        "office": "LandShield demo review team. The land office named in each record is shown when you open it.",
+        "apply": {
+          "n1": "Sign in as a citizen.",
+          "n2": "Open Find your land by NID and link your NID with your date of birth.",
+          "n3": "See the land you own now and owned before, and open any record."
         }
       }
     }

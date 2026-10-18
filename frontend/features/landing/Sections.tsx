@@ -4,6 +4,7 @@ import {
   Calculator,
   ClipboardCheck,
   ClipboardList,
+  Contact,
   Copy,
   FileCheck2,
   FileClock,
@@ -46,6 +47,7 @@ const SERVICES = [
   { key: "check", href: "/check", icon: ListChecks },
   { key: "track", href: "/track", icon: Route },
   { key: "verifyDoc", href: "/verify-document", icon: FileCheck2 },
+  { key: "myLands", href: "/my/lands", icon: Contact },
 ] as const;
 const TOOL_TILES = [
   { key: "units", href: "/tools/units", icon: Ruler },
@@ -103,6 +105,7 @@ function MoreLink({ href, children }: { href: string; children: ReactNode }) {
 }
 
 
+/** An odd last tile is centred under the two columns, as in CitizenTools. */
 export function ServiceTiles() {
   const t = useTranslations("landing.services");
   return (
@@ -110,7 +113,7 @@ export function ServiceTiles() {
       <h2 id="services-title" className={h2}>{t("title")}</h2>
       <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
         {SERVICES.filter((s) => s.key !== "track" || FLAGS.track).map(({ key, href, icon }) => (
-          <li key={key}>
+          <li key={key} className="sm:odd:last:col-span-2 sm:odd:last:mx-auto sm:odd:last:w-[calc(50%-0.625rem)]">
             <ArtCard href={href} testId="service-tile" icon={icon} art={SERVICE_ART[key]} title={t(`${key}.title`)} desc={t(`${key}.desc`)} />
           </li>
         ))}
