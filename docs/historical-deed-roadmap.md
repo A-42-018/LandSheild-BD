@@ -1,6 +1,6 @@
 # Historical Land Deed Digitisation — Roadmap (H0–H10)
 
-Status: **H0–H3 done, H4 done on the rules side, H5 done in code (2026-10-18; D6 accounts are H10), H6–H10 not started** (updated 2026-10-18; all decisions D1–D6 made, see §5).
+Status: **H0–H5 done (2026-10-18; H4's LLM-on eval and the D6 accounts are left for H10). H6–H9 not started; they are split into 19 one-session sub-phases (H6a … H9e), see §3b. H10 not started** (updated 2026-10-18; all decisions D1–D6 made, see §5).
 Trigger: mentor feedback:
 1. LandShield cannot digitise a historical (pre-1971 / pre-1947) land deed. There is no digital
    format for one, and the extractor read only 1 of 13 fields from the sample
@@ -122,6 +122,7 @@ Target for this one deed: **≥ 30 values read correctly**, up from 1 today.
 ## 3. Phases
 
 Each phase can be merged on its own. Branch per phase: `h<N>-<slug>`, worktree `LandSheild-BD-h<N>`, following the existing U-branch convention.
+H6–H9 below say **what** each phase delivers. **How** they are built is in §3b: one sub-phase per Claude session, each ending with a project zip.
 
 ### H0 — Ground truth & measurement (do first)
 - Add `database/sample_data/historical/`: the sample PDF, a PNG render, a "scanned" variant (noise, skew, yellow paper, faded ink, red stamp), and **4–6 more synthetic historical deeds** (a gift deed, an East-Pakistan-era deed with `রুপি`, a multi-plot schedule, a deed with archaic units `কানি/গণ্ডা/কড়া`, a 2-page deed). Use `ai/evaluation/make_synthetic.py` as the base. Generate **new files only** and never regenerate the committed samples, because their hashes are fixture keys.
@@ -187,6 +188,7 @@ Each phase can be merged on its own. Branch per phase: `h<N>-<slug>`, worktree `
 - A "modern ↔ historical" switch (D1: the reviewer, not the uploader, corrects a wrong detection).
 - Bangla/English labels in `messages/*.json`; keyboard shortcuts (A/R/N) and a11y kept.
 - **Done when:** a reviewer can fully correct and approve the sample deed without touching flat fields, and vitest + one Playwright e2e cover it.
+- **Not started.** Sub-phases H6a–H6e (§3b.5). The modern ↔ historical switch already exists (H3b, `DeedProfileSwitch.tsx`); H6d only places it in the new layout.
 
 ### H7 — Document library: see uploaded deeds and their digital versions (new)
 **Backend**
@@ -211,6 +213,7 @@ Each phase can be merged on its own. Branch per phase: `h<N>-<slug>`, worktree `
 **Access rules:** uploaders always see their own uploads. Office officers see their office scope, as the queue does today. Admins see all. Reviewers see what they can review. Citizens get nothing new here (citizen access to their own deed is the optional extension in H8).
 
 - **Done when:** an officer uploads the sample deed and finds it under My uploads with status and digitised tag. After approval they open the document page and see the original and digital version side by side, with version history. API tests cover the scoping and vitest + e2e cover the flow.
+- **Not started.** Sub-phases H7a–H7d (§3b.5). Already done in H5: `GET /documents/{id}/records` and `GET /documents/{id}/records/{version}` (with `signature_status`).
 
 ### H8 — Download the digital deed (new)
 - One **Download** menu on the document page and on each library row:
@@ -226,12 +229,14 @@ Each phase can be merged on its own. Branch per phase: `h<N>-<slug>`, worktree `
 - Endpoints: `GET /documents/{id}/download?what=pdf|json|original|bundle&version=n`. Each download is written to the audit log (who, what, when). Rate-limited like uploads.
 - **Optional extension (not v1):** a citizen whose NID is linked to the land (`My Lands`) can download the approved digital deed PDF of their own land.
 - **Done when:** all four downloads work for the approved sample deed, the PDF opens with correct Bangla, the QR verify page confirms the signature, and editing one byte of the JSON makes verification fail (test).
+- **Not started.** Sub-phases H8a–H8e (§3b.5). The PDF engine is decided in H8a before any PDF code is written. Note: the public verify route today is per land (`/v/[landId]`); a digital record needs its own verify page (H8d).
 
 ### H9 — Approval, chain of title, risk, search
 - **D2:** approving a historical deed records a **past link in the chain of title** (ownership history with date ranges). It does **not** replace the current owner, which still changes only through mutation/khatian.
 - Risk rules: chain gap between a historical deed and the CS/SA khatian owner; seller name ≠ khatian owner (fuzzy, via `names.py`); dag/khatian conflicts with later deeds; consideration sanity per era.
 - Archive search (`features/archive`) indexes LHDR fields (party names, mouza, CS khatian, dag, year range), and each hit opens the H7 document page.
 - **Done when:** approving the sample creates a 1944 chain-of-title entry visible on the land's history page and its Documents tab.
+- **Not started.** Sub-phases H9a–H9e (§3b.5).
 
 ### H10 — Hardening, production & docs
 - Run the eval on all historical samples and record before/after in `docs/ocr-accuracy.md`.
@@ -241,6 +246,406 @@ Each phase can be merged on its own. Branch per phase: `h<N>-<slug>`, worktree `
   - set `ANTHROPIC_API_KEY` and the daily cap on Render
   - check the text-layer gate there
 - Demo script update: upload the historical deed → digital deed → approve → find it in My documents → download PDF → scan QR.
+
+---
+
+## 3b. H6–H9 as one-session sub-phases (Sonnet 5.5)
+
+H0–H5 are done. H6–H9 are split into **19 sub-phases**. Each one is sized to finish in **one Claude session
+on Sonnet 5.5 within one 5-hour usage window**. Every session ends with a zip of the whole project, and
+the next session starts from that zip. The phase descriptions in §3 stay the reference for *what* is
+built; the cards below say *how much per session*.
+
+### 3b.1 Session rules (every sub-phase)
+
+1. **One sub-phase per session.** Start a new chat, give it the newest project zip (or the project
+   folder), and paste the starter prompt (§3b.3) with the sub-phase id. Do not start the next card in
+   the same session, even if time is left. Use the time left for the full test run and the hand-off.
+2. **Read narrowly.** Read only §3b.1–3b.3, the one card, and the files under its *Touch* line. Read §2
+   (LHDR shape) only when the card says so. Do not scan the whole repo. Open another file only when a
+   listed one points to it.
+3. **Test narrowly.** While working, run only the tests named in the card. The full backend and frontend
+   suites run once at the end, and only if time is left. Otherwise list them as "not run" in the
+   progress log.
+4. **Zip early, zip often.** After every numbered task in the card, make the checkpoint zip (§3b.2). If
+   the usage-limit warning appears, or the user writes **"zip now"**, stop the current task at once. Zip
+   and fill in the progress log first; finishing the code can wait.
+5. **Hand-off.** Before the final zip, update the card's row in the progress log (§3b.6): state (done /
+   partial), the last finished task, what is left, which tests ran and which did not. When a phase's last
+   card is done, also change that phase's "Not started" line in §3 to "Done" with a short summary, as
+   H0–H5 have. A partial card continues in the next session under the same id ("Continue H6b from task
+   3").
+6. **No scope creep.** Anything found outside the card goes into the progress log's notes, not into
+   code. If a card turns out too big, finish the tasks that fit and split the rest into a new card
+   (`H6c2`) in the log.
+7. **Never regenerate committed samples or fixtures** (§6, fixture hashes). Use test data that already
+   exists or create new files.
+8. **Git, when the session has the repo with `.git`:** one branch per card (`h6a-deed-view`,
+   `h6b-edit-values`, …), each stacked on the previous card's branch, as H0–H5 were. Commit at the end of
+   the card. Without `.git`, the zip is the hand-off.
+
+### 3b.2 Checkpoint zip
+
+Run this from the folder that contains the project folder. If the project folder is not called
+`LandSheild-BD`, use its name in both places:
+
+```bash
+zip -qr -X "LandShield-BD-<id>-$(date +%Y%m%d-%H%M).zip" LandSheild-BD -x '*/node_modules/*' '*/.next/*' '*/__pycache__/*' '*/.pytest_cache/*' '*/.ruff_cache/*' '*/.mypy_cache/*' '*/coverage/*' '*/.DS_Store' '*/.venv/*' '*/venv/*' '*/test-results/*' '*/playwright-report/*' 'LandSheild-BD/backend/storage/*' '*.db' '*/.env' '*/.env.local' '*/.git/*'
+```
+
+- `<id>` is the card, e.g. `h6a`. The timestamp keeps every checkpoint, so a broken last step never
+  overwrites a good zip.
+- The exclusions drop installed packages, build output, caches, local uploads, local databases and
+  secrets. `.env.example` stays in.
+- In a chat sandbox (claude.ai), save the zip to the outputs folder and give the download link.
+- Start the next session from the **newest** zip. Older zips can be deleted once the new one opens.
+
+### 3b.3 Starter prompt
+
+```text
+Project: LandShield BD (zip attached / this folder).
+Read docs/historical-deed-roadmap.md §3b.1–3b.3 (session rules) and only the card for <ID> in §3b.5.
+Implement <ID> and nothing else. Read only the files the card lists, run only its tests,
+make the checkpoint zip (§3b.2) after every task, and if I write "zip now" or the usage warning
+appears, stop and zip at once. At the end, fill the progress log row (§3b.6) and give me the final zip.
+```
+
+For a partial card: `Continue <ID> from task <n>. The progress log says what is left.`
+
+### 3b.4 Order
+
+| # | Card | Needs | # | Card | Needs |
+|---|---|---|---|---|---|
+| 1 | H6a read-only digital deed view | H5 | 11 | H8b download API: JSON + original + record verify | H7a |
+| 2 | H6b edit single values | H6a | 12 | H8c digital deed PDF | H8a, H8b |
+| 3 | H6c lists: parties, plots, boundaries | H6b | 13 | H8d QR verify page + bundle ZIP | H8c |
+| 4 | H6d both readings, flags, source highlight | H6c | 14 | H8e download menu in the UI | H7d, H8d |
+| 5 | H6e approve the sample deed end to end | H6d | 15 | H9a chain-of-title link on approval | H5 |
+| 6 | H7a `GET /documents` list API | H5 | 16 | H9b chain on the land page | H9a, H7d |
+| 7 | H7b land documents, version history | H7a | 17 | H9c risk: chain gap, seller ≠ khatian owner | H9a |
+| 8 | H7c "My documents" page | H7a | 18 | H9d risk: dag/khatian conflicts, consideration | H9c |
+| 9 | H7d document page + land Documents tab | H6a, H7b, H7c | 19 | H9e archive search over LHDR fields | H5 |
+| 10 | H8a PDF engine spike | — | | | |
+
+H7a and H7b do not need H6 and may be done first, since the library is useful for every document. H8a
+does not need anything and may be done whenever a session is free. Otherwise, follow the numbers.
+
+### 3b.5 Cards
+
+Paths are from the project root. Frontend commands run in `frontend/`, backend commands in `backend/`.
+
+#### H6 — Reviewer UI: the digital deed form (5 sessions)
+
+**H6a — Read-only digital deed view**
+- **Goal:** when `deed_profile = historical`, the review screen shows the LHDR record in sections shaped
+  like the paper deed: Registration · Dates · Parties · Consideration · Schedule · Boundaries · Title
+  recital · Execution. Read-only. Modern deeds keep the 13 flat rows.
+- **Touch:** `frontend/features/review/ExtractionPanel.tsx`, `types.ts`, `confidence.ts`,
+  `frontend/messages/en.json` + `bn.json`; new `frontend/features/review/deed/` (`DeedView.tsx`,
+  `FieldValue.tsx`, one file per section). Read `backend/app/schemas/extraction.py` (API shape) and
+  `ai/extraction/lhdr.py` (record shape); §2 of this file.
+- **Tasks:**
+  1. TS types for the LHDR record and `Field` (value, verbatim, confidence, source, method, legibility, candidates, flags).
+  2. `FieldValue`: normalised value, the verbatim text under it when different, a confidence badge (reuse `confidence.ts`).
+  3. Section components and `DeedView`, switched on in `ExtractionPanel` by `deed_profile`.
+  4. Bangla and English labels.
+  5. vitest `deed-view.test.tsx` with a fixture built from `database/sample_data/historical/Historical_Land_Deed.gold.json` (values wrapped as `Field`).
+- **Tests:** `npx vitest run features/review`
+- **Done when:** the sample deed's record renders every section in both languages; modern deeds look unchanged.
+
+**H6b — Edit single values**
+- **Goal:** edit any single value in Registration, Dates, Consideration, Title recital and Execution. A
+  save sends `replace` record ops (JSON pointer) through `PATCH /documents/{id}/extraction`. Edited
+  values show "edited", and H1 content issues from the API appear next to their field.
+- **Touch:** `frontend/features/review/deed/*`, new `frontend/features/review/useRecordEdit.ts`,
+  `useReviewActions.ts`; read only: `backend/app/schemas/extraction.py`, `ai/extraction/lhdr_patch.py`.
+- **Tasks:**
+  1. `useRecordEdit`: queue ops, save, show errors, refresh the derived 13.
+  2. Inline edit control in `FieldValue` (text, number, verbatim date).
+  3. Wire the five sections.
+  4. Show API issues by path.
+  5. vitest for the ops sent.
+- **Tests:** `npx vitest run features/review`. Backend `python -m pytest -q tests/test_lhdr_patch.py tests/test_records.py` only if a backend change was needed.
+- **Done when:** a reviewer edits the deed no, the verbatim date and the consideration, reloads, and sees them saved and marked edited.
+
+**H6c — Lists: parties, plots, boundaries, witnesses, stamps**
+- **Goal:** party cards with add/remove (role, honorific, name, father + deceased flag, mother,
+  address, profession, religion); a schedule table with add/remove plots (mouza, survey, khatian, dag
+  list, area value/unit/in words, land class); boundaries as an N/S/E/W compass; witnesses and stamps
+  lists. Uses `add` / `remove` ops.
+- **Touch:** `frontend/features/review/deed/` (new `PartyCard.tsx`, `ScheduleTable.tsx`,
+  `BoundaryCompass.tsx`, `ExecutionList.tsx`), `useRecordEdit.ts`, messages.
+- **Tasks:**
+  1. Party cards.
+  2. Schedule table.
+  3. Boundary compass.
+  4. Witnesses and stamps.
+  5. vitest: each add/remove sends the pointer op `lhdr_patch.py` expects.
+- **Tests:** `npx vitest run features/review`
+- **Done when:** a plot and a witness can be added and removed, and the saved record matches.
+
+**H6d — Both readings, flags and source highlight**
+- **Goal:** where `Field.candidates` exist (rules and LLM disagree, H4 fusion), a picker shows both
+  readings and saves the choice as a `replace`. `Field.flags` (`DISAGREE`, `NOT_IN_TEXT`, …) show as
+  warnings. Clicking a value with `source.bbox` highlights that box in `DocumentPreview`, switching page
+  when needed. The existing `DeedProfileSwitch` gets its place in the new layout.
+- **Touch:** `frontend/features/review/DocumentPreview.tsx`, `ReviewView.tsx`, `DeedProfileSwitch.tsx`,
+  `useReviewShortcuts.ts`, `deed/*`; read only: `ai/extraction/fuse.py` (flag names).
+- **Tasks:**
+  1. Candidate picker.
+  2. Flag badges.
+  3. Bbox overlay and page switch (a value without a bbox simply has no highlight).
+  4. Keyboard and a11y: A/R/N still work, the picker and compass can be reached by keyboard, and screen-reader labels are set.
+  5. vitest.
+- **Tests:** `npx vitest run features/review`
+- **Done when:** a disagreeing value is resolved by picking a reading, and a click highlights its box.
+
+**H6e — Approve the sample deed end to end**
+- **Goal:** H6's done criterion. A reviewer corrects and approves the sample deed in the digital deed
+  form without the flat fields.
+- **Touch:** new `frontend/e2e/historical.spec.ts`, `frontend/e2e/fixtures.ts`, and small UI fixes that
+  block approval.
+- **Tasks:**
+  1. Walk the flow against a local backend (upload sample → historical form → fix → approve) and fix blockers.
+  2. Write the Playwright e2e.
+  3. Run full vitest and `tsc`.
+  4. Mark H6 done in §3 and in the log.
+- **Tests:** `npx playwright test e2e/historical.spec.ts`, `npx vitest run`, `npx tsc --noEmit`. If the session cannot run a backend and a browser, write the e2e anyway and log it as "not run".
+- **Done when:** the e2e passes (or is written and logged as not run), and vitest and tsc are clean.
+
+#### H7 — Document library (4 sessions)
+
+**H7a — `GET /documents` list API**
+- **Goal:** a paginated, scoped list. Scoping uses `doc_scope`, like the queue: the user's own office and the
+  offices below it. Uploaders always see their own uploads, admins see everything, reviewers see what they
+  can review, and citizens get 403. Filters: `mine`, `status`, `type`, `profile`, office/upazila/district,
+  date range. Search: deed no, mouza, party name, land id. Sort: newest, status, deed date. Tab presets:
+  `tab=mine|office|action`.
+- **Touch:** `backend/app/api/v1/documents.py`, new `backend/app/services/library.py`,
+  `backend/app/schemas/document.py`; read the queue's scoping in `services/officer.py` /
+  `services/review.py`; tests: new `backend/tests/test_library.py`,
+  `tests/security/test_authz_matrix.py`, `tests/security/test_audit_coverage.py`.
+- **Tasks:**
+  1. Schema and scoped service.
+  2. Filters, search, sort and pagination.
+  3. Route, plus entries in the authz and audit matrices.
+  4. Tests: scoping per role, each filter, search, pagination.
+- **Tests:** `python -m pytest -q tests/test_library.py tests/security`
+- **Done when:** the scoping tests pass for all four roles.
+
+**H7b — Land documents and version history**
+- **Goal:** `GET /lands/{land_id}/documents` lists every document of a land in deed-date order, each with its
+  latest approved record version and a historical tag. `GET /documents/{id}/records/history` shows who
+  changed what and when per version, read from the audit log. The officer-home card uses
+  `GET /documents?tab=mine&limit=5` (H7a), so it needs no new route.
+- **Touch:** `backend/app/api/v1/lands.py`, `documents.py`, `services/library.py`, `services/records.py`;
+  read only: `services/audit_logs.py`; tests in `test_library.py`.
+- **Tasks:**
+  1. Land documents endpoint with scoping.
+  2. Version history from the audit log.
+  3. Tests.
+- **Tests:** `python -m pytest -q tests/test_library.py tests/test_records.py`
+- **Done when:** the sample land lists its documents in date order, and a corrected record shows its edits per version.
+
+**H7c — "My documents" page**
+- **Goal:** `/officer/documents` under `OfficerShell`, with a menu item "আমার নথি / My documents". It shows a table (file-type
+  icon, deed no, mouza, type, historical tag, status, uploaded on, digitised yes/no) and the tabs My uploads ·
+  My office · Needs my action, with filters, search and pagination kept in the URL. The officer home gets a
+  "Recently uploaded by me" card (last 5).
+- **Touch:** new `frontend/app/[locale]/officer/documents/page.tsx`, new `frontend/features/library/`
+  (`LibraryView.tsx`, `useLibrary.ts`, `types.ts`), `frontend/features/officer/OfficerShell.tsx`,
+  `DashboardView.tsx`, messages; read `features/officer/QueueTable.tsx` for the table pattern.
+- **Tasks:**
+  1. Types and hook.
+  2. Table and tabs.
+  3. Filters, search and pagination.
+  4. Menu item and home card.
+  5. vitest `library.test.tsx` (tabs, filters, empty and error states).
+- **Tests:** `npx vitest run features/library features/officer`
+- **Done when:** the page lists the user's uploads with every filter working in vitest.
+
+**H7d — Document page and the land's Documents tab**
+- **Goal:** `/officer/documents/[id]` shows the original file on the left (`DocumentPreview`) and the
+  digital deed on the right (H6a `DeedView` read-only, or the 13 flat fields for a modern deed). It has a
+  version picker, the version history (H7b), the file SHA-256 and "signature valid ✓". While a document is
+  under review, the page links to `/officer/review/[id]`. The land result page (`ResultView`, staff only)
+  gets a **Documents** tab listing every deed of the land, each one opening the document page.
+- **Touch:** new `frontend/app/[locale]/officer/documents/[id]/page.tsx`,
+  `frontend/features/library/DocumentPage.tsx`, `features/review/deed/DeedView.tsx` (add a read-only
+  prop), `features/result/ResultView.tsx`, messages; e2e.
+- **Tasks:**
+  1. Page layout and data.
+  2. Version picker, history, hash and signature.
+  3. Land Documents tab.
+  4. vitest.
+  5. e2e (upload sample → My uploads → approve → document page with original, digital deed and versions), then mark H7 done in §3 and in the log.
+- **Tests:** `npx vitest run features/library features/result`, then `npx playwright test e2e/library.spec.ts` (or log it as "not run")
+- **Done when:** H7's done criterion in §3 holds.
+
+#### H8 — Download the digital deed (5 sessions)
+
+**H8a — PDF engine spike (decide before building)**
+- **Goal:** choose a server-side PDF engine that shapes Bangla correctly **and** keeps a correct text
+  layer. The sample deed broke because its Chrome-printed text layer lost the conjuncts (§1 row 1), so
+  Chrome/Playwright printing is out. Candidates:
+  - WeasyPrint (Pango + HarfBuzz) with Noto Sans Bengali
+  - fpdf2 with `uharfbuzz` text shaping
+- **Touch:** new `scripts/pdf_spike.py`, `backend/pyproject.toml` (optional extra `pdf`), `Dockerfile`
+  (system libraries, if needed), `ai/fonts/` (font + licence). On macOS WeasyPrint needs `brew install
+  pango`.
+- **Tasks:**
+  1. Render one test page with the sample deed's Bangla (names, `তপশিল`, `বিক্রেতা`, `পশ্চিমে`, `সম্পত্তির`) in each candidate.
+  2. Extract the text with PyMuPDF, score it with `ai/ocr/quality.py`, and compare it with the source string exactly.
+  3. Check the Docker install size and time.
+  4. Record the decision with its numbers under H8 in §3 and as D7 in §5.
+- **Tests:** `python scripts/pdf_spike.py`
+- **Done when:** one candidate gives an exact text round-trip and passes the quality gate, and the
+  decision is recorded. If neither does, record a fallback (for example, an invisible exact text layer or
+  the JSON attached inside the PDF) and the reason.
+
+**H8b — Download API: JSON, original and record verify**
+- **Goal:** `GET /documents/{id}/download?what=json|original&version=n`.
+  - Scoped like viewing (H7a), audit-logged (`DOCUMENT_DOWNLOAD` with what and version), and rate-limited like uploads.
+  - JSON: the LHDR record (or `core/1`) plus `record_hash`, `signature` and the key id.
+  - Original: the exact bytes with `X-File-SHA256` and a `Content-Disposition` filename.
+  - A public record check (`POST /public/records/verify`): send the JSON, get back VALID or INVALID.
+- **Touch:** `backend/app/api/v1/documents.py`, `api/v1/public.py`, `services/records.py`, `core/config.py`;
+  read only: `services/signing.py`; tests: new `backend/tests/test_downloads.py`, the security matrices.
+- **Tasks:**
+  1. JSON and original downloads.
+  2. Audit and rate limit.
+  3. Public record verify.
+  4. Tests, including "change one byte of the JSON → INVALID".
+- **Tests:** `python -m pytest -q tests/test_downloads.py tests/security`
+- **Done when:** the tests pass, including the one-byte tamper test.
+
+**H8c — Digital deed PDF**
+- **Goal:** `what=pdf` lays out the deed section by section in Bangla (English labels optional).
+  - Footer: deed no, version, approval date, approving officer, SHA-256 of the record and of the original, and the signature.
+  - "DRAFT – NOT APPROVED" on anything not yet approved.
+  - NIDs printed as the last 4 digits only.
+- **Touch:** new `backend/app/services/deed_pdf.py` (+ its template), the H8a engine,
+  `api/v1/documents.py`; tests: new `backend/tests/test_deed_pdf.py`.
+- **Tasks:**
+  1. Layout for sections A–I.
+  2. Footer and draft mark.
+  3. Endpoint.
+  4. Round-trip test: our PDF → the H2 pipeline → ≥ 99 % of the fields unchanged.
+- **Tests:** `python -m pytest -q tests/test_deed_pdf.py tests/test_downloads.py`
+- **Done when:** the sample deed's PDF passes the round-trip test.
+
+**H8d — QR verify page and bundle ZIP**
+- **Goal:** the PDF footer carries a QR code to a public record verify page (`/v/r/[recordId]`, next to
+  today's `/v/[landId]`). The page shows valid or invalid, deed no, version and approval date, and no
+  personal data. `what=bundle` returns a ZIP with the original, the PDF, the JSON and a `manifest.json`
+  (hashes, signature, version history).
+- **Touch:** `backend/app/services/deed_pdf.py` (QR, e.g. with `segno`), new
+  `backend/app/services/bundle.py`, `api/v1/public.py`; new `frontend/app/[locale]/v/r/[recordId]/page.tsx`,
+  reusing `frontend/features/qr/PublicVerifyView.tsx` where possible; messages; tests.
+- **Tasks:**
+  1. Public verify page.
+  2. QR in the PDF.
+  3. Bundle and manifest.
+  4. Backend tests and vitest.
+- **Tests:** `python -m pytest -q tests/test_downloads.py tests/test_deed_pdf.py`, `npx vitest run features/qr`
+- **Done when:** the PDF's QR opens the page showing "valid", and the manifest's hashes match the files in the bundle.
+
+**H8e — Download menu in the UI**
+- **Goal:** a Download menu (PDF · JSON · Original · Bundle, for the version shown) on the document page and
+  on each library row, with disabled states, a rate-limit error message and proper filenames.
+- **Touch:** new `frontend/features/library/DownloadMenu.tsx`, `DocumentPage.tsx`, `LibraryView.tsx`, messages; e2e.
+- **Tasks:**
+  1. Menu and blob download.
+  2. Wire it into the page and the rows.
+  3. vitest.
+  4. e2e (approved sample → each download → the PDF opens), then mark H8 done in §3 and in the log.
+- **Tests:** `npx vitest run features/library`, `npx playwright test e2e/library.spec.ts` (or log it as "not run")
+- **Done when:** H8's done criterion in §3 holds.
+
+#### H9 — Approval, chain of title, risk, search (5 sessions)
+
+**H9a — Chain-of-title link on approval**
+- **Goal (D2):** approving a historical deed adds a *past* link (seller → buyer, with the date range from
+  the Bangla-calendar date) to the land's ownership history. It does not change the current owner.
+  Approving a corrected version updates that link instead of adding a second one.
+- **Touch:** `backend/app/models/ownership.py` (`OwnershipHistory` already has `start_date` /
+  `end_date`, with null meaning the current owner; add a `kind` / `record_id` column with migration 0018
+  only if it is needed), `services/posting.py`, `services/review.py`, `services/records.py`; tests: new
+  `backend/tests/test_chain_of_title.py`.
+- **Tasks:**
+  1. Read the approval and posting path, choose the data shape, and note it under H9 in §3.
+  2. Create or update the link on approval and on correction.
+  3. Make sure current-owner queries ignore historical links.
+  4. Tests.
+- **Tests:** `python -m pytest -q tests/test_chain_of_title.py tests/test_records.py tests/test_lands.py`
+- **Done when:** approving the sample creates exactly one 1944 link and the current owner is unchanged.
+
+**H9b — Show the chain on the land page**
+- **Goal:** the 1944 link appears in `OwnershipTimeline`, marked historical, with its date range and a
+  link to the document page. It is also marked in the land's Documents tab.
+- **Touch:** `backend/app/services/ownership.py` + its schema, `frontend/features/result/OwnershipTimeline.tsx`,
+  `types.ts`, messages; tests.
+- **Tests:** `python -m pytest -q tests/test_chain_of_title.py tests/test_lands.py`, `npx vitest run features/result`
+- **Done when:** H9's done criterion in §3 holds.
+
+**H9c — Risk rules 1: chain gap, seller ≠ khatian owner**
+- **Goal:** two new rules in `backend/app/risk/rules/`:
+  1. A gap between the historical deed's buyer and the CS/SA khatian owner.
+  2. A seller name that differs from the khatian owner (fuzzy match via `services/names.py`, allowing for Bangla spelling variants).
+
+  Each rule gives evidence items for the risk UI.
+- **Touch:** `backend/app/risk/rules/*`, `risk/context.py` (load the historical links), `risk/config.py`
+  (points); tests next to the existing risk tests.
+- **Tests:** the risk test files (`python -m pytest -q -k risk`)
+- **Done when:** tests with matching and mismatching names and with gaps pass, and the existing risk tests are unchanged.
+
+**H9d — Risk rules 2: dag/khatian conflicts, consideration sanity**
+- **Goal:**
+  3. The same dag/khatian claimed by a later deed through a different seller chain.
+  4. A consideration sanity check per era: INR / PKR / BDT ranges per area unit. This only flags, never blocks.
+- **Touch:** as H9c.
+- **Tests:** `python -m pytest -q -k risk`, then the full backend suite once at the end
+- **Done when:** the rule tests pass and the full backend suite passes on SQLite.
+
+**H9e — Archive search over LHDR fields**
+- **Goal:** archive search indexes the LHDR party names, mouza, CS khatian, dag and year range, on both
+  SQLite FTS5 and Postgres `tsvector`. It gets a year-range filter, and each hit opens the H7 document
+  page.
+- **Touch:** `backend/app/services/archive.py`, the archive schema, `frontend/features/archive/*`, messages;
+  archive tests and `features/archive/archive.test.tsx`.
+- **Tasks:**
+  1. Index the LHDR fields.
+  2. Add the year filter.
+  3. Point hits to the document page.
+  4. Tests, then mark H9 done in §3 and in the log.
+- **Tests:** `python -m pytest -q -k archive`, `npx vitest run features/archive`. Postgres too, when `TEST_DATABASE_URL` is available.
+- **Done when:** searching `রামকান্ত` or `ভবানীপুর` with years 1940–1950 finds the sample deed.
+
+### 3b.6 Progress log
+
+Each session updates only its own row.
+
+| Card | State | Last task done | Zip | Tests run / not run | Notes |
+|---|---|---|---|---|---|
+| H6a | not started | | | | |
+| H6b | not started | | | | |
+| H6c | not started | | | | |
+| H6d | not started | | | | |
+| H6e | not started | | | | |
+| H7a | not started | | | | |
+| H7b | not started | | | | |
+| H7c | not started | | | | |
+| H7d | not started | | | | |
+| H8a | not started | | | | |
+| H8b | not started | | | | |
+| H8c | not started | | | | |
+| H8d | not started | | | | |
+| H8e | not started | | | | |
+| H9a | not started | | | | |
+| H9b | not started | | | | |
+| H9c | not started | | | | |
+| H9d | not started | | | | |
+| H9e | not started | | | | |
 
 ---
 
@@ -259,6 +664,8 @@ Each phase can be merged on its own. Branch per phase: `h<N>-<slug>`, worktree `
 | **H8 downloads (PDF / JSON / original / bundle, QR verify)** | H5, H6 | M |
 | H9 approval / chain of title / risk / search | H5, H6 | M |
 | H10 eval report, production, docs | all | S–M |
+
+The sizes above are for whole phases. H6–H9 are built as 19 one-session cards in the order of §3b.4.
 
 H1 and H2 can run in parallel. H5 can start as soon as H1 lands. The **H7 list + original-file
 download** can ship early, before the historical work, because it is useful for every document.
@@ -318,7 +725,9 @@ download** can ship early, before the historical work, because it is useful for 
 
 ## 7. Which Claude model for what
 
-**Building each phase (Claude Code sessions).** Opus 5.5 is the default; Sonnet 5.5 is enough where the work follows existing patterns.
+**Building each phase (Claude sessions).** H0–H5 were built with Opus 5.5 as the default. From H6 on,
+every card runs on Sonnet 5.5, one card per session within one 5-hour usage window (§3b). If a card does
+not fit, split it in the progress log; do not make the session bigger.
 
 | Phase | Model | Why |
 |---|---|---|
@@ -328,10 +737,10 @@ download** can ship early, before the historical work, because it is useful for 
 | H3 classifier | Sonnet 5.5 | Small keyword scorer |
 | H4 rule parser, LLM, fusion, calendar | **Opus 5.5** (high effort) | Hardest part: Bangla regex, calendar conversion, grounding |
 | H5 storage, versions, S3/Postgres, signing | **Opus 5.5** | Data integrity and migrations |
-| H6 reviewer form UI | Sonnet 5.5 | Standard React forms on existing components |
-| H7 document library | Sonnet 5.5 | List/detail pages like the existing queue |
-| H8 downloads | Opus 5.5 for the PDF engine spike and Bangla round-trip; Sonnet 5.5 for the rest | |
-| H9 chain of title, risk | **Opus 5.5** | Ownership/business rules |
+| H6 reviewer form UI (H6a–H6e) | Sonnet 5.5, one card per session (§3b) | Standard React forms on existing components |
+| H7 document library (H7a–H7d) | Sonnet 5.5, one card per session | List/detail pages like the existing queue |
+| H8 downloads (H8a–H8e) | Sonnet 5.5, one card per session | The PDF engine spike (H8a) and the Bangla round-trip (H8c) were Opus work; they are now separate small cards so Sonnet 5.5 can finish each one |
+| H9 chain of title, risk (H9a–H9e) | Sonnet 5.5, one card per session | The ownership rules were Opus work; the chain-of-title design (H9a) now has its own card, and each risk card adds only two rules |
 | H10 docs, deploy, demo script | Sonnet 5.5 | |
 
 **Inside the app at runtime (the H4 extractor).**
