@@ -1,0 +1,174 @@
+{
+  "schema": "lhdr/1",
+  "document": {
+    "kind": "MORTGAGE_REHEN",
+    "era": "EAST_BENGAL_PAKISTAN",
+    "languages": [
+      "bn"
+    ],
+    "pages": 2
+  },
+  "registration": {
+    "deed_no": "1453/গ",
+    "deed_no_verbatim": "১৪৫৩/গ",
+    "office": "মানিকগঞ্জ সাব-রেজিস্ট্রি অফিস",
+    "volume": "বহি নং ১, জিল্দ ৪৭"
+  },
+  "dates": {
+    "execution": {
+      "verbatim": "৩রা জ্যৈষ্ঠ, ১৩৭২ বঙ্গাব্দ",
+      "calendar": "bangla",
+      "day": 3,
+      "month": "জ্যৈষ্ঠ",
+      "year": 1372,
+      "gregorian_from": "1965-05-16",
+      "gregorian_to": "1965-05-18",
+      "precision": "day±1"
+    }
+  },
+  "parties": [
+    {
+      "role": "MORTGAGOR",
+      "honorific": "জনাব",
+      "name": "আবু তাহের খান",
+      "mother": "সখিনা বেগম",
+      "address": {
+        "village": "বেউথা",
+        "thana": "মানিকগঞ্জ",
+        "district": "ঢাকা"
+      },
+      "profession": "কৃষি",
+      "religion": "ইসলাম",
+      "nationality": "জন্মসূত্রে পাকিস্তানী",
+      "father": {
+        "name": "আব্দুল মান্নান খান",
+        "deceased": true
+      }
+    },
+    {
+      "role": "MORTGAGEE",
+      "honorific": "শ্রী",
+      "name": "বিনয় ভূষণ পাল",
+      "mother": "শ্রীমতি কমলা পাল",
+      "address": {
+        "village": "মানিকগঞ্জ",
+        "thana": "মানিকগঞ্জ",
+        "district": "ঢাকা"
+      },
+      "profession": "মহাজনী",
+      "religion": "হিন্দু",
+      "nationality": "জন্মসূত্রে পাকিস্তানী",
+      "father": {
+        "name": "রমণী মোহন পাল",
+        "deceased": true
+      }
+    }
+  ],
+  "consideration": {
+    "amount": 5000,
+    "in_words": "পাঁচ হাজার",
+    "currency_written": "টাকা",
+    "era_currency": "PKR",
+    "mode": "নগদ"
+  },
+  "schedule": [
+    {
+      "district": "ঢাকা",
+      "thana": "মানিকগঞ্জ",
+      "pargana": "ভাওয়াল",
+      "mouza": "বেউথা",
+      "jl_no": "23",
+      "survey": "SA",
+      "khatian_no": "402",
+      "dag_no": [
+        "118"
+      ],
+      "area": {
+        "value": 0.3,
+        "unit": "acre",
+        "in_words": "ত্রিশ শতক",
+        "decimal_equiv": 30
+      },
+      "land_class": "শালী",
+      "boundaries": {
+        "north": "কছিম উদ্দিনের জমি",
+        "south": "আব্দুল জব্বারের জমি",
+        "east": "ছোট খাল",
+        "west": "সরকারি রাস্তা"
+      }
+    },
+    {
+      "district": "ঢাকা",
+      "thana": "মানিকগঞ্জ",
+      "pargana": "ভাওয়াল",
+      "mouza": "বেউথা",
+      "jl_no": "23",
+      "survey": "SA",
+      "khatian_no": "402",
+      "dag_no": [
+        "121"
+      ],
+      "area": {
+        "value": 0.18,
+        "unit": "acre",
+        "in_words": "আঠার শতক",
+        "decimal_equiv": 18
+      },
+      "land_class": "বাড়ি",
+      "boundaries": {
+        "north": "রহমত আলীর বাড়ি",
+        "south": "খোলা মাঠ",
+        "east": "দাতার জমি",
+        "west": "মসজিদের জমি"
+      }
+    }
+  ],
+  "title_recital": {
+    "basis": "পৈতৃক ওয়ারিশসূত্রে প্রাপ্ত",
+    "nature": "রেহেন",
+    "encumbrance_free": true
+  },
+  "execution": {
+    "seller_mark": "টিপসই / স্বাক্ষর",
+    "witnesses": [
+      {
+        "role": "WITNESS",
+        "name": "মোঃ আফছার উদ্দিন"
+      },
+      {
+        "role": "WITNESS",
+        "honorific": "শ্রী",
+        "name": "নারায়ণ চন্দ্র শীল"
+      }
+    ],
+    "deed_writer": {
+      "name": "মোঃ নূরুল হক",
+      "licence_no": "৩৩/ক"
+    },
+    "stamps": [
+      {
+        "type": "NON_JUDICIAL",
+        "value": "১০/- রুপি"
+      }
+    ]
+  },
+  "modern_mapping": {
+    "district": "Manikganj",
+    "upazila": "Manikganj Sadar"
+  },
+  "core": {
+    "seller": "আবু তাহের খান",
+    "buyer": "বিনয় ভূষণ পাল",
+    "owner_name": "আবু তাহের খান",
+    "father_name": "আব্দুল মান্নান খান",
+    "khatian_no": "402",
+    "dag_no": "118",
+    "mouza": "বেউথা",
+    "district": "ঢাকা",
+    "upazila": "মানিকগঞ্জ",
+    "land_area": "0.30",
+    "area_unit": "acre",
+    "deed_no": "1453/গ",
+    "deed_date": "1965-05-17"
+  }
+}

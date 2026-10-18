@@ -1,0 +1,3082 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lhdr/1",
+  "$defs": {
+    "Address": {
+      "additionalProperties": false,
+      "properties": {
+        "village": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "post": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "union": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "thana": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "pargana": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "district": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Address",
+      "type": "object"
+    },
+    "Area": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/$defs/Field_Union_int__float__"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "parts": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "$ref": "#/$defs/Field_Union_int__float__"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parts"
+        },
+        "in_words": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "decimal_equiv": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/$defs/Field_Union_int__float__"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Area",
+      "type": "object"
+    },
+    "Boundaries": {
+      "additionalProperties": false,
+      "properties": {
+        "north": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "south": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "east": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "west": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Boundaries",
+      "type": "object"
+    },
+    "Calendar": {
+      "enum": [
+        "bangla",
+        "gregorian",
+        "hijri"
+      ],
+      "title": "Calendar",
+      "type": "string"
+    },
+    "Consideration": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/$defs/Field_Union_int__float__"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "in_words": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "currency_written": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "era_currency": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Currency"
+            },
+            {
+              "$ref": "#/$defs/Field_Currency_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Consideration",
+      "type": "object"
+    },
+    "Core": {
+      "additionalProperties": false,
+      "properties": {
+        "owner_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Owner Name"
+        },
+        "father_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Father Name"
+        },
+        "khatian_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Khatian No"
+        },
+        "dag_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dag No"
+        },
+        "mouza": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mouza"
+        },
+        "district": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "District"
+        },
+        "upazila": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upazila"
+        },
+        "land_area": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Land Area"
+        },
+        "area_unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Area Unit"
+        },
+        "deed_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deed No"
+        },
+        "deed_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Deed Date"
+        },
+        "seller": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seller"
+        },
+        "buyer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Buyer"
+        }
+      },
+      "title": "Core",
+      "type": "object"
+    },
+    "Currency": {
+      "enum": [
+        "INR",
+        "PKR",
+        "BDT"
+      ],
+      "title": "Currency",
+      "type": "string"
+    },
+    "Dates": {
+      "additionalProperties": false,
+      "properties": {
+        "execution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeedDate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "registration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeedDate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Dates",
+      "type": "object"
+    },
+    "DeedDate": {
+      "additionalProperties": false,
+      "properties": {
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "calendar": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Calendar"
+            },
+            {
+              "$ref": "#/$defs/Field_Calendar_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "day": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "$ref": "#/$defs/Field_int_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "month": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_Union_int__str__"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "year": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "$ref": "#/$defs/Field_int_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "gregorian_from": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_date_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "gregorian_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_date_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "precision": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precision"
+            },
+            {
+              "$ref": "#/$defs/Field_Precision_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "DeedDate",
+      "type": "object"
+    },
+    "DeedKind": {
+      "enum": [
+        "SALE_SAF_KABALA",
+        "GIFT_HEBA",
+        "GIFT_DANPATRA",
+        "PARTITION_BANTONNAMA",
+        "EXCHANGE_EWAZ",
+        "MORTGAGE_REHEN",
+        "WAQF",
+        "POWER_OF_ATTORNEY",
+        "AGREEMENT_BAINANAMA",
+        "OTHER"
+      ],
+      "title": "DeedKind",
+      "type": "string"
+    },
+    "DeedWriter": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "licence_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "address": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Address"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "DeedWriter",
+      "type": "object"
+    },
+    "Document": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeedKind"
+            },
+            {
+              "$ref": "#/$defs/Field_DeedKind_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "era": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Era"
+            },
+            {
+              "$ref": "#/$defs/Field_Era_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "languages": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/Field_str_"
+              }
+            ]
+          },
+          "title": "Languages",
+          "type": "array"
+        },
+        "script": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "pages": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "$ref": "#/$defs/Field_int_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "condition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Document",
+      "type": "object"
+    },
+    "Era": {
+      "enum": [
+        "BRITISH_INDIA",
+        "EAST_BENGAL_PAKISTAN",
+        "BANGLADESH"
+      ],
+      "title": "Era",
+      "type": "string"
+    },
+    "Execution": {
+      "additionalProperties": false,
+      "properties": {
+        "seller_mark": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "witnesses": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Party"
+          },
+          "title": "Witnesses",
+          "type": "array"
+        },
+        "deed_writer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeedWriter"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "stamps": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Stamp"
+          },
+          "title": "Stamps",
+          "type": "array"
+        },
+        "seals": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/Field_str_"
+              }
+            ]
+          },
+          "title": "Seals",
+          "type": "array"
+        }
+      },
+      "title": "Execution",
+      "type": "object"
+    },
+    "Field_Calendar_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Calendar"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldCalendar",
+      "type": "object"
+    },
+    "Field_Currency_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Currency"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldCurrency",
+      "type": "object"
+    },
+    "Field_DeedKind_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeedKind"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldDeedKind",
+      "type": "object"
+    },
+    "Field_Era_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Era"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldEra",
+      "type": "object"
+    },
+    "Field_Precision_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Precision"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldPrecision",
+      "type": "object"
+    },
+    "Field_Role_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Role"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldRole",
+      "type": "object"
+    },
+    "Field_StampType_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StampType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldStampType",
+      "type": "object"
+    },
+    "Field_Survey_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Survey"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldSurvey",
+      "type": "object"
+    },
+    "Field_Union_int__float__": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldNumber",
+      "type": "object"
+    },
+    "Field_Union_int__str__": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldIntOrText",
+      "type": "object"
+    },
+    "Field_bool_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldBool",
+      "type": "object"
+    },
+    "Field_date_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldDate",
+      "type": "object"
+    },
+    "Field_int_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldInt",
+      "type": "object"
+    },
+    "Field_str_": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Verbatim"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "legibility": {
+          "anyOf": [
+            {
+              "enum": [
+                "clear",
+                "faded",
+                "damaged",
+                "illegible"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legibility"
+        },
+        "edited_by_human": {
+          "default": false,
+          "title": "Edited By Human",
+          "type": "boolean"
+        }
+      },
+      "title": "FieldText",
+      "type": "object"
+    },
+    "ModernMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "division": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "district": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "upazila": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "ModernMapping",
+      "type": "object"
+    },
+    "Party": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Role"
+            },
+            {
+              "$ref": "#/$defs/Field_Role_"
+            }
+          ]
+        },
+        "honorific": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "father": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Relative"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "husband": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Relative"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mother": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "address": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Address"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "profession": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "religion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "nationality": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "share": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "role"
+      ],
+      "title": "Party",
+      "type": "object"
+    },
+    "Plot": {
+      "additionalProperties": false,
+      "properties": {
+        "district": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "thana": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "pargana": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mouza": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "jl_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "survey": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Survey"
+            },
+            {
+              "$ref": "#/$defs/Field_Survey_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "khatian_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dag_no": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/Field_str_"
+              }
+            ]
+          },
+          "title": "Dag No",
+          "type": "array"
+        },
+        "area": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Area"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "land_class": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "boundaries": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Boundaries"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Plot",
+      "type": "object"
+    },
+    "Precision": {
+      "enum": [
+        "day",
+        "day±1",
+        "month",
+        "year"
+      ],
+      "title": "Precision",
+      "type": "string"
+    },
+    "Registration": {
+      "additionalProperties": false,
+      "properties": {
+        "deed_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "deed_no_verbatim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "volume": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "pages": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "office": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "year": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "$ref": "#/$defs/Field_int_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "endorsement": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Registration",
+      "type": "object"
+    },
+    "Relative": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "deceased": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/Field_bool_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Relative",
+      "type": "object"
+    },
+    "Role": {
+      "enum": [
+        "SELLER",
+        "BUYER",
+        "DONOR",
+        "DONEE",
+        "MORTGAGOR",
+        "MORTGAGEE",
+        "PRINCIPAL",
+        "ATTORNEY",
+        "WAQIF",
+        "MUTAWALLI",
+        "SHARER",
+        "EXCHANGER",
+        "WITNESS",
+        "IDENTIFIER",
+        "OTHER"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 4,
+              "minItems": 4,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        }
+      },
+      "required": [
+        "page"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Stamp": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StampType"
+            },
+            {
+              "$ref": "#/$defs/Field_StampType_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Stamp",
+      "type": "object"
+    },
+    "StampType": {
+      "enum": [
+        "REVENUE",
+        "NON_JUDICIAL",
+        "COURT_FEE",
+        "OTHER"
+      ],
+      "title": "StampType",
+      "type": "string"
+    },
+    "Survey": {
+      "enum": [
+        "CS",
+        "SA",
+        "RS",
+        "BS",
+        "DIARA",
+        "OTHER"
+      ],
+      "title": "Survey",
+      "type": "string"
+    },
+    "TitleRecital": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "prior_deed": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "nature": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Field_str_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "encumbrance_free": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/Field_bool_"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "TitleRecital",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "LandShield Historical Deed Record v1",
+  "properties": {
+    "schema": {
+      "const": "lhdr/1",
+      "default": "lhdr/1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "document": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Document"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "registration": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Registration"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "dates": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Dates"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "parties": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Party"
+      },
+      "title": "Parties",
+      "type": "array"
+    },
+    "consideration": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Consideration"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schedule": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Plot"
+      },
+      "title": "Schedule",
+      "type": "array"
+    },
+    "title_recital": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TitleRecital"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "execution": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Execution"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "modern_mapping": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModernMapping"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "core": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Core"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "_notes": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    }
+  },
+  "title": "LHDR",
+  "type": "object"
+}

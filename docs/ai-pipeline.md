@@ -253,3 +253,79 @@ Seed demo parcels (levels are identical with ML on and off; scores measured in t
 
 Synthetic-model caveat from P48 applies: these scores compare a parcel against the synthetic
 training distribution only.
+
+<!-- HIST-EVAL:BEGIN -->
+
+### Historical deeds (H0 baseline)
+
+- Pipeline today: OCR `--ocr tesseract` (PDF text layer, else Tesseract; demo fixtures off) + the generic rule extractor
+- Set: `database/sample_data/historical/` — 12 files, gold LHDR per file (`*.gold.json`)
+- A value counts only on exact match after normalising Bangla digits, spaces and units
+- Core 13 = the fields LandShield uses today; a field with no value on the deed (e.g. area in kani) is not counted
+- **Synthetic deeds except the two real samples (`Historical_Land_Deed*.pdf`).**
+
+| File | Variant | Pages | OCR | Core 13 correct | Missed core fields |
+|---|---|---|---|---|---|
+| Historical_Land_Deed.pdf | typed | 1 | tesseract | 1/13 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, land_area, area_unit, deed_date, seller, buyer |
+| Historical_Land_Deed.png | render | 1 | tesseract | 1/13 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, land_area, area_unit, deed_date, seller, buyer |
+| Historical_Land_Deed_scan.jpg | scanned | 1 | tesseract | 0/13 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, land_area, area_unit, deed_no, deed_date, seller, buyer |
+| Historical_Land_Deed_Sample.pdf | typed | 2 | tesseract | 3/13 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, deed_date, seller, buyer |
+| hd02_gift_1938.png | typed | 1 | tesseract | 1/13 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, land_area, area_unit, deed_date, seller, buyer |
+| hd03_sale_rupee_1962.pdf | typed | 1 | tesseract | 1/13 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, land_area, area_unit, deed_date, seller, buyer |
+| hd03_sale_rupee_1962.png | render | 1 | tesseract | 1/13 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, land_area, area_unit, deed_date, seller, buyer |
+| hd03_sale_rupee_1962_scan.jpg | scanned | 1 | tesseract | 0/13 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, land_area, area_unit, deed_no, deed_date, seller, buyer |
+| hd04_multiplot_1958.png | typed | 1 | tesseract | 1/13 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, land_area, area_unit, deed_date, seller, buyer |
+| hd05_archaic_units_1931.png | typed | 1 | tesseract | 1/12 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, area_unit, deed_date, seller, buyer |
+| hd05_archaic_units_1931_scan.jpg | scanned | 1 | tesseract | 0/12 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, area_unit, deed_no, deed_date, seller, buyer |
+| hd06_mortgage_2page_1965.pdf | typed | 2 | tesseract | 1/13 | owner_name, father_name, khatian_no, dag_no, mouza, district, upazila, land_area, area_unit, deed_date, seller, buyer |
+
+**Core 13 overall: 7.1% (11/154)**
+
+- typed + render: 9.5% (11/116)
+- scanned: 0.0% (0/38)
+
+Accuracy per LHDR section (all gold values; only core fields are extracted today):
+
+| Section | Correct |
+|---|---|
+| A. Document | 0.0% (0/52) |
+| B. Registration | 24.3% (9/37) |
+| C. Dates | 0.0% (0/96) |
+| D. Parties | 0.0% (0/279) |
+| E. Consideration | 0.0% (0/55) |
+| F. Schedule | 0.8% (2/236) |
+| G. Title recital | 0.0% (0/35) |
+| H. Execution | 0.0% (0/96) |
+| I. Modern mapping | 0.0% (0/24) |
+| J. Core 13 | 7.1% (11/154) |
+| **All values** | **2.1% (22/1064)** |
+
+Reproduce: `python ai/evaluation/run_eval.py --set historical`
+
+<!-- HIST-EVAL:END -->
+
+### Historical deed format (LHDR v1, H1)
+
+The digital format of a historical deed is `ai/extraction/lhdr.py` (Pydantic models for roadmap §2,
+sections A–J); its JSON Schema is `docs/lhdr-v1.schema.json`.
+
+- **Field:** every leaf is `{value, verbatim, confidence, source {page, bbox}, method, legibility,
+  edited_by_human}`. A bare value is shorthand for `{"value": …}`; the gold files use it, and
+  `lhdr.plain(record)` turns a record back into it.
+- **Shape vs content:** the models reject unknown keys, wrong types and unknown enum values.
+  `lhdr.check(record)` returns content `Issue`s `(path, code, severity, message)`, so a half-read
+  machine record still loads:
+  - errors (required): `MISSING_DEED_REF` (deed no or volume), `MISSING_EXECUTION_DATE`,
+    `NO_SELLER` / `NO_BUYER` (a partition / exchange needs 2 co-sharers instead), `NO_COMPLETE_PLOT`
+    (mouza + khatian or dag + area)
+  - errors (format): `AREA_NOT_POSITIVE`, `UNKNOWN_UNIT` (modern or archaic: kani, ganda, kora…),
+    `DATE_IN_FUTURE`, `DATE_RANGE_REVERSED`, `BAD_DAY`, `NOT_NUMERIC` (khatian, dag, JL, deed no),
+    `AMOUNT_NOT_POSITIVE`
+  - warnings: `ERA_MISMATCH` (era vs execution date), `CORE_MISMATCH` (stored `core` ≠ derived)
+- **Core 13:** `ai/extraction/derive.py` fills the 13 fields from the record (first transferring
+  party, first plot, first dag; deed_date = middle of the Gregorian range, only when known to the day).
+  `derive_fields()` returns `ExtractedField`s with the source Field's confidence and bbox; a machine
+  value without a stated confidence gets 0.
+- **Check:** `python -m ai.extraction.lhdr check database/sample_data/historical/*.gold.json` (all 7
+  gold files: no issues, derived core = gold `core`). After changing a model, regenerate the schema
+  with `python -m ai.extraction.lhdr schema`; `backend/tests/test_lhdr.py` fails if it is stale.

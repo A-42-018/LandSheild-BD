@@ -1,5 +1,6 @@
 """P41/O4 evaluation. One command:  python ai/evaluation/run_eval.py [--write-docs]
         [--ocr {tesseract,auto}] [--extractor {rules,claude}] [--out FILE]
+        [--set historical [--only NAME]]    (H0: historical-deed set, baseline per LHDR section)
 
 The OCR is always run on the real image (demo fixtures are never used here). `--extractor claude`
 needs ANTHROPIC_API_KEY (+ `pip install anthropic`); without it the run stops, nothing is faked.
@@ -286,6 +287,36 @@ def render(
     return "\n".join(out)
 
 
+HIST_BEGIN, HIST_END = "<!-- HIST-EVAL:BEGIN -->", "<!-- HIST-EVAL:END -->"
+
+
+def run_historical(a) -> int:
+    """H0: score today's pipeline on the historical-deed set (needs Tesseract for scans)."""
+    from ai.evaluation import historical
+    from ai.ocr.tesseract import installed_languages, resolve_lang
+
+    if a.extractor != "rules":
+        print("--set historical scores the rule extractor only until H4 adds the LHDR extractor.")
+        return 2
+    try:
+        lang = resolve_lang(a.lang, installed_languages())
+    except Exception as exc:  # Tesseract unavailable
+        print(f"Tesseract not runnable ({exc}). Install it and re-run.")
+        return 2
+    text = "\n".join([HIST_BEGIN, "", historical.render(historical.run(a.ocr, lang, a.only), a.ocr), "", HIST_END])
+    print(text)
+    if a.out:
+        Path(a.out).write_text(text + "\n", encoding="utf-8")
+    if a.write_docs:
+        old = DOC.read_text(encoding="utf-8") if DOC.exists() else "# AI pipeline\n"
+        if HIST_BEGIN in old and HIST_END in old:
+            new = re.sub(re.escape(HIST_BEGIN) + r".*?" + re.escape(HIST_END), lambda _: text, old, flags=re.S)
+        else:
+            new = old.rstrip() + "\n\n" + text + "\n"
+        DOC.write_text(new, encoding="utf-8")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--write-docs", action="store_true", help="update docs/ai-pipeline.md")
@@ -293,7 +324,12 @@ def main() -> int:
     ap.add_argument("--lang", default="ben+eng")
     ap.add_argument("--ocr", choices=("tesseract", "auto"), default="tesseract")
     ap.add_argument("--extractor", choices=("rules", "claude"), default="rules")
+    ap.add_argument("--set", choices=("default", "historical"), default="default",
+                    help="historical = H0 deed set (database/sample_data/historical), scored per LHDR section")
+    ap.add_argument("--only", help="with --set historical: only files whose name contains this")
     a = ap.parse_args()
+    if a.set == "historical":
+        return run_historical(a)
 
     from ai.ocr.tesseract import installed_languages, resolve_lang
 

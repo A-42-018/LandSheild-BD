@@ -1,0 +1,89 @@
+{
+  "schema": "lhdr/1",
+  "files": [
+    {
+      "file": "Historical_Land_Deed.pdf",
+      "gold": "Historical_Land_Deed.gold.json",
+      "pages": 1,
+      "variant": "typed",
+      "kind": "SALE_SAF_KABALA"
+    },
+    {
+      "file": "Historical_Land_Deed.png",
+      "gold": "Historical_Land_Deed.gold.json",
+      "pages": 1,
+      "variant": "render",
+      "kind": "SALE_SAF_KABALA"
+    },
+    {
+      "file": "Historical_Land_Deed_scan.jpg",
+      "gold": "Historical_Land_Deed.gold.json",
+      "pages": 1,
+      "variant": "scanned",
+      "kind": "SALE_SAF_KABALA"
+    },
+    {
+      "file": "Historical_Land_Deed_Sample.pdf",
+      "gold": "Historical_Land_Deed_Sample.gold.json",
+      "pages": 2,
+      "variant": "typed",
+      "kind": "SALE_SAF_KABALA"
+    },
+    {
+      "file": "hd02_gift_1938.png",
+      "gold": "hd02_gift_1938.gold.json",
+      "pages": 1,
+      "variant": "typed",
+      "kind": "GIFT_DANPATRA"
+    },
+    {
+      "file": "hd03_sale_rupee_1962.pdf",
+      "gold": "hd03_sale_rupee_1962.gold.json",
+      "pages": 1,
+      "variant": "typed",
+      "kind": "SALE_SAF_KABALA"
+    },
+    {
+      "file": "hd03_sale_rupee_1962.png",
+      "gold": "hd03_sale_rupee_1962.gold.json",
+      "pages": 1,
+      "variant": "render",
+      "kind": "SALE_SAF_KABALA"
+    },
+    {
+      "file": "hd03_sale_rupee_1962_scan.jpg",
+      "gold": "hd03_sale_rupee_1962.gold.json",
+      "pages": 1,
+      "variant": "scanned",
+      "kind": "SALE_SAF_KABALA"
+    },
+    {
+      "file": "hd04_multiplot_1958.png",
+      "gold": "hd04_multiplot_1958.gold.json",
+      "pages": 1,
+      "variant": "typed",
+      "kind": "SALE_SAF_KABALA"
+    },
+    {
+      "file": "hd05_archaic_units_1931.png",
+      "gold": "hd05_archaic_units_1931.gold.json",
+      "pages": 1,
+      "variant": "typed",
+      "kind": "SALE_SAF_KABALA"
+    },
+    {
+      "file": "hd05_archaic_units_1931_scan.jpg",
+      "gold": "hd05_archaic_units_1931.gold.json",
+      "pages": 1,
+      "variant": "scanned",
+      "kind": "SALE_SAF_KABALA"
+    },
+    {
+      "file": "hd06_mortgage_2page_1965.pdf",
+      "gold": "hd06_mortgage_2page_1965.gold.json",
+      "pages": 2,
+      "variant": "typed",
+      "kind": "MORTGAGE_REHEN"
+    }
+  ]
+}

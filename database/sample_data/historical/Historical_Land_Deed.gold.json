@@ -1,0 +1,131 @@
+{
+  "schema": "lhdr/1",
+  "document": {
+    "kind": "SALE_SAF_KABALA",
+    "era": "BRITISH_INDIA",
+    "languages": [
+      "bn",
+      "en"
+    ],
+    "pages": 1
+  },
+  "registration": {
+    "deed_no": "4782/খ",
+    "deed_no_verbatim": "৪৭৮২/খ"
+  },
+  "dates": {
+    "execution": {
+      "verbatim": "১৫ই ফাল্গুন, ১৩৫০ বঙ্গাব্দ",
+      "calendar": "bangla",
+      "day": 15,
+      "month": "ফাল্গুন",
+      "year": 1350,
+      "gregorian_from": "1944-02-26",
+      "gregorian_to": "1944-02-28",
+      "precision": "day±1"
+    }
+  },
+  "parties": [
+    {
+      "role": "SELLER",
+      "honorific": "জনাব",
+      "name": "কফিল উদ্দিন",
+      "mother": "জমিলা খাতুন",
+      "address": {
+        "village": "ভবানীপুর",
+        "thana": "রূপগঞ্জ",
+        "district": "ঢাকা"
+      },
+      "profession": "কৃষি",
+      "religion": "ইসলাম",
+      "nationality": "জন্মসূত্রে বাঙ্গালী",
+      "father": {
+        "name": "সমসের আলী",
+        "deceased": true
+      }
+    },
+    {
+      "role": "BUYER",
+      "honorific": "শ্রী",
+      "name": "রামকান্ত দাশ",
+      "mother": "শ্রীমতি সুবালা দাশ",
+      "address": {
+        "village": "ভবানীপুর",
+        "thana": "রূপগঞ্জ",
+        "district": "ঢাকা"
+      },
+      "profession": "ব্যবসা",
+      "religion": "হিন্দু",
+      "nationality": "জন্মসূত্রে বাঙ্গালী",
+      "father": {
+        "name": "হরিকান্ত দাশ",
+        "deceased": true
+      }
+    }
+  ],
+  "consideration": {
+    "amount": 1500,
+    "in_words": "এক হাজার পাঁচশত",
+    "currency_written": "টাকা",
+    "era_currency": "INR",
+    "mode": "এককালীন নগদ"
+  },
+  "schedule": [
+    {
+      "district": "ঢাকা",
+      "thana": "রূপগঞ্জ",
+      "mouza": "ভবানীপুর",
+      "survey": "CS",
+      "khatian_no": "120",
+      "dag_no": [
+        "455"
+      ],
+      "area": {
+        "value": 0.5,
+        "unit": "acre",
+        "in_words": "অর্ধ একর",
+        "decimal_equiv": 50
+      },
+      "land_class": "শালী",
+      "boundaries": {
+        "north": "আব্দুল করিমের জমি",
+        "south": "সরকারি রাস্তা",
+        "east": "খাল",
+        "west": "রহিম সেখের জমি"
+      }
+    }
+  ],
+  "title_recital": {
+    "basis": "স্বত্ব দখলীয়",
+    "nature": "চিরস্থায়ী",
+    "encumbrance_free": true
+  },
+  "execution": {
+    "seller_mark": "টিপসই / স্বাক্ষর",
+    "stamps": [
+      {
+        "type": "REVENUE",
+        "value": "১ টাকা"
+      }
+    ]
+  },
+  "modern_mapping": {
+    "district": "Narayanganj",
+    "upazila": "Rupganj"
+  },
+  "core": {
+    "seller": "কফিল উদ্দিন",
+    "buyer": "রামকান্ত দাশ",
+    "owner_name": "কফিল উদ্দিন",
+    "father_name": "সমসের আলী",
+    "khatian_no": "120",
+    "dag_no": "455",
+    "mouza": "ভবানীপুর",
+    "district": "ঢাকা",
+    "upazila": "রূপগঞ্জ",
+    "land_area": "0.50",
+    "area_unit": "acre",
+    "deed_no": "4782/খ",
+    "deed_date": "1944-02-27"
+  }
+}

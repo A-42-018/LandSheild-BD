@@ -1,0 +1,151 @@
+{
+  "schema": "lhdr/1",
+  "document": {
+    "kind": "SALE_SAF_KABALA",
+    "era": "BRITISH_INDIA",
+    "languages": [
+      "bn"
+    ],
+    "pages": 1
+  },
+  "registration": {
+    "deed_no": "2741",
+    "deed_no_verbatim": "২৭৪১",
+    "office": "নবীনগর সাব-রেজিস্ট্রি অফিস"
+  },
+  "dates": {
+    "execution": {
+      "verbatim": "১০ই পৌষ, ১৩৩৮ বঙ্গাব্দ",
+      "calendar": "bangla",
+      "day": 10,
+      "month": "পৌষ",
+      "year": 1338,
+      "gregorian_from": "1931-12-24",
+      "gregorian_to": "1931-12-26",
+      "precision": "day±1"
+    }
+  },
+  "parties": [
+    {
+      "role": "SELLER",
+      "honorific": "জনাব",
+      "name": "মনিরউদ্দিন আহম্মদ",
+      "mother": "আমেনা খাতুন",
+      "address": {
+        "village": "বিটঘর",
+        "thana": "নবীনগর",
+        "district": "ত্রিপুরা"
+      },
+      "profession": "কৃষি",
+      "religion": "ইসলাম",
+      "nationality": "জন্মসূত্রে ভারতীয়",
+      "father": {
+        "name": "ছমিরউদ্দিন আহম্মদ",
+        "deceased": true
+      }
+    },
+    {
+      "role": "BUYER",
+      "honorific": "শ্রী",
+      "name": "রাধামাধব দত্ত",
+      "mother": "শ্রীমতি বিনোদিনী দত্ত",
+      "address": {
+        "village": "বিটঘর",
+        "thana": "নবীনগর",
+        "district": "ত্রিপুরা"
+      },
+      "profession": "মহাজনী",
+      "religion": "হিন্দু",
+      "nationality": "জন্মসূত্রে ভারতীয়",
+      "father": {
+        "name": "কৃষ্ণমোহন দত্ত",
+        "deceased": true
+      }
+    }
+  ],
+  "consideration": {
+    "amount": 350,
+    "in_words": "তিনশত পঞ্চাশ",
+    "currency_written": "টাকা",
+    "era_currency": "INR",
+    "mode": "নগদ"
+  },
+  "schedule": [
+    {
+      "district": "ত্রিপুরা",
+      "thana": "নবীনগর",
+      "pargana": "সরাইল",
+      "mouza": "বিটঘর",
+      "survey": "CS",
+      "khatian_no": "617",
+      "dag_no": [
+        "1203"
+      ],
+      "area": {
+        "unit": "kani",
+        "parts": {
+          "kani": 2,
+          "ganda": 5,
+          "kora": 3
+        },
+        "in_words": "দুই কানি পাঁচ গণ্ডা তিন কড়া"
+      },
+      "land_class": "নাল",
+      "boundaries": {
+        "north": "ফকির চাঁদ মিয়ার জমি",
+        "south": "আমিনের খাল",
+        "east": "রাধামাধব দত্তের জমি",
+        "west": "ডহর"
+      }
+    }
+  ],
+  "title_recital": {
+    "basis": "স্বত্ব দখলীয়",
+    "nature": "চিরস্থায়ী",
+    "encumbrance_free": true
+  },
+  "execution": {
+    "seller_mark": "টিপসই",
+    "witnesses": [
+      {
+        "role": "WITNESS",
+        "name": "তাজুদ্দিন সরকার"
+      },
+      {
+        "role": "WITNESS",
+        "honorific": "শ্রী",
+        "name": "রামকৃষ্ণ ভৌমিক"
+      }
+    ],
+    "deed_writer": {
+      "name": "মোঃ আবদুল বারী"
+    },
+    "stamps": [
+      {
+        "type": "NON_JUDICIAL",
+        "value": "৩ টাকা"
+      }
+    ]
+  },
+  "modern_mapping": {
+    "district": "Brahmanbaria",
+    "upazila": "Nabinagar"
+  },
+  "core": {
+    "seller": "মনিরউদ্দিন আহম্মদ",
+    "buyer": "রাধামাধব দত্ত",
+    "owner_name": "মনিরউদ্দিন আহম্মদ",
+    "father_name": "ছমিরউদ্দিন আহম্মদ",
+    "khatian_no": "617",
+    "dag_no": "1203",
+    "mouza": "বিটঘর",
+    "district": "ত্রিপুরা",
+    "upazila": "নবীনগর",
+    "area_unit": "kani",
+    "deed_no": "2741",
+    "deed_date": "1931-12-25"
+  },
+  "_notes": [
+    "archaic area units (kani/ganda/kora): no decimal conversion is claimed; core land_area is null until H4 fixes the table"
+  ]
+}

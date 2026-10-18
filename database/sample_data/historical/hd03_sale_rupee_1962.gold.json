@@ -1,0 +1,145 @@
+{
+  "schema": "lhdr/1",
+  "document": {
+    "kind": "SALE_SAF_KABALA",
+    "era": "EAST_BENGAL_PAKISTAN",
+    "languages": [
+      "bn"
+    ],
+    "pages": 1
+  },
+  "registration": {
+    "deed_no": "3125/খ",
+    "deed_no_verbatim": "৩১২৫/খ",
+    "office": "সাভার সাব-রেজিস্ট্রি অফিস",
+    "volume": "বহি নং ১, জিল্দ ২৩"
+  },
+  "dates": {
+    "execution": {
+      "verbatim": "৭ই কার্তিক, ১৩৬৯ বঙ্গাব্দ",
+      "calendar": "bangla",
+      "day": 7,
+      "month": "কার্তিক",
+      "year": 1369,
+      "gregorian_from": "1962-10-22",
+      "gregorian_to": "1962-10-24",
+      "precision": "day±1"
+    }
+  },
+  "parties": [
+    {
+      "role": "SELLER",
+      "honorific": "জনাব",
+      "name": "মোঃ ইদ্রিস মিয়া",
+      "mother": "রহিমা বেগম",
+      "address": {
+        "village": "নরসিংপুর",
+        "thana": "সাভার",
+        "district": "ঢাকা"
+      },
+      "profession": "কৃষি",
+      "religion": "ইসলাম",
+      "nationality": "জন্মসূত্রে পাকিস্তানী",
+      "father": {
+        "name": "আব্দুল গফুর",
+        "deceased": true
+      }
+    },
+    {
+      "role": "BUYER",
+      "honorific": "জনাব",
+      "name": "আবুল হাসেম",
+      "address": {
+        "village": "আশুলিয়া",
+        "thana": "সাভার",
+        "district": "ঢাকা"
+      },
+      "profession": "ব্যবসা",
+      "religion": "ইসলাম",
+      "nationality": "জন্মসূত্রে পাকিস্তানী",
+      "father": {
+        "name": "মোঃ ছমির উদ্দিন",
+        "deceased": true
+      }
+    }
+  ],
+  "consideration": {
+    "amount": 2500,
+    "in_words": "দুই হাজার পাঁচশত",
+    "currency_written": "রুপি",
+    "era_currency": "PKR",
+    "mode": "এককালীন নগদ"
+  },
+  "schedule": [
+    {
+      "district": "ঢাকা",
+      "thana": "সাভার",
+      "mouza": "আশুলিয়া",
+      "survey": "SA",
+      "khatian_no": "345",
+      "dag_no": [
+        "678"
+      ],
+      "area": {
+        "value": 0.15,
+        "unit": "acre",
+        "in_words": "পনের শতক",
+        "decimal_equiv": 15
+      },
+      "land_class": "ডাঙ্গা",
+      "boundaries": {
+        "north": "মোঃ ছমির উদ্দিনের জমি",
+        "south": "জেলা বোর্ডের রাস্তা",
+        "east": "আবুল কাশেমের বাড়ি",
+        "west": "খাস পুকুর"
+      }
+    }
+  ],
+  "title_recital": {
+    "basis": "স্বত্ব দখলীয়",
+    "nature": "চিরস্থায়ী",
+    "encumbrance_free": true
+  },
+  "execution": {
+    "seller_mark": "টিপসই",
+    "witnesses": [
+      {
+        "role": "WITNESS",
+        "name": "মোঃ হাবিবুর রহমান"
+      },
+      {
+        "role": "WITNESS",
+        "name": "আব্দুল খালেক"
+      }
+    ],
+    "deed_writer": {
+      "name": "সিরাজুল ইসলাম",
+      "licence_no": "১১/খ"
+    },
+    "stamps": [
+      {
+        "type": "NON_JUDICIAL",
+        "value": "৫/- রুপি"
+      }
+    ]
+  },
+  "modern_mapping": {
+    "district": "Dhaka",
+    "upazila": "Savar"
+  },
+  "core": {
+    "seller": "মোঃ ইদ্রিস মিয়া",
+    "buyer": "আবুল হাসেম",
+    "owner_name": "মোঃ ইদ্রিস মিয়া",
+    "father_name": "আব্দুল গফুর",
+    "khatian_no": "345",
+    "dag_no": "678",
+    "mouza": "আশুলিয়া",
+    "district": "ঢাকা",
+    "upazila": "সাভার",
+    "land_area": "0.15",
+    "area_unit": "acre",
+    "deed_no": "3125/খ",
+    "deed_date": "1962-10-23"
+  }
+}

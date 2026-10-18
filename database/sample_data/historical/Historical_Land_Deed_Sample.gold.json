@@ -1,0 +1,148 @@
+{
+  "schema": "lhdr/1",
+  "document": {
+    "kind": "SALE_SAF_KABALA",
+    "era": "EAST_BENGAL_PAKISTAN",
+    "languages": [
+      "bn",
+      "en"
+    ],
+    "pages": 2
+  },
+  "registration": {
+    "deed_no": "4782/খ",
+    "deed_no_verbatim": "৪৭৮২/খ",
+    "office": "ঢাকা সদর সাব-রেজিস্ট্রার অফিস"
+  },
+  "dates": {
+    "execution": {
+      "verbatim": "১৫ই বৈশাখ, ১৩৬২ বঙ্গাব্দ (ইংরেজি: ২৮শে এপ্রিল, ১৯৫৫ খ্রিঃ)",
+      "calendar": "bangla",
+      "day": 15,
+      "month": "বৈশাখ",
+      "year": 1362,
+      "gregorian_from": "1955-04-27",
+      "gregorian_to": "1955-04-29",
+      "precision": "day±1"
+    }
+  },
+  "parties": [
+    {
+      "role": "SELLER",
+      "honorific": "শ্রী",
+      "name": "ভবতোষ রায়",
+      "address": {
+        "village": "কৃষ্ণপুর",
+        "thana": "কোতোয়ালী",
+        "district": "ঢাকা"
+      },
+      "profession": "কৃষি",
+      "religion": "হিন্দু",
+      "father": {
+        "name": "হরিশ চন্দ্র রায়",
+        "deceased": true
+      }
+    },
+    {
+      "role": "BUYER",
+      "honorific": "জনাব",
+      "name": "আব্দুল মজিদ ব্যাপারী",
+      "address": {
+        "village": "রঘুনাথপুর",
+        "thana": "কোতোয়ালী",
+        "district": "ঢাকা"
+      },
+      "profession": "ব্যবসা",
+      "religion": "ইসলাম",
+      "father": {
+        "name": "কলিমুদ্দিন ব্যাপারী",
+        "deceased": true
+      }
+    }
+  ],
+  "consideration": {
+    "amount": 1500,
+    "in_words": "এক হাজার পাঁচশত",
+    "currency_written": "টাকা",
+    "era_currency": "PKR",
+    "mode": "নগদ"
+  },
+  "schedule": [
+    {
+      "district": "ঢাকা",
+      "thana": "কোতোয়ালী",
+      "pargana": "নওয়াবাদ",
+      "mouza": "কৃষ্ণপুর",
+      "jl_no": "45",
+      "survey": "CS",
+      "khatian_no": "172",
+      "dag_no": [
+        "456"
+      ],
+      "area": {
+        "value": 0.2,
+        "unit": "acre",
+        "in_words": "বিশ শতক",
+        "decimal_equiv": 20
+      },
+      "land_class": "নাল",
+      "boundaries": {
+        "north": "রহিম খন্দকারের জমি",
+        "south": "সরকারী হালট (রাস্তা)",
+        "east": "গয়ানাথ সাহার বসতভিটা",
+        "west": "প্রথম পক্ষের নিজস্ব জমি"
+      }
+    }
+  ],
+  "title_recital": {
+    "basis": "পৈতৃক সূত্রে প্রাপ্ত",
+    "nature": "চিরস্থায়ী"
+  },
+  "execution": {
+    "seller_mark": "স্বাক্ষর (বা টিপসহি)",
+    "witnesses": [
+      {
+        "role": "WITNESS",
+        "name": "করিম বখশ"
+      },
+      {
+        "role": "WITNESS",
+        "honorific": "মুন্সী",
+        "name": "ফজলুর রহমান"
+      },
+      {
+        "role": "WITNESS",
+        "name": "নিবারণ চন্দ্র দাস"
+      }
+    ],
+    "deed_writer": {
+      "name": "রজব আলী",
+      "licence_no": "২৮/ক"
+    },
+    "stamps": [
+      {
+        "type": "NON_JUDICIAL",
+        "value": "৫/- টাকা"
+      }
+    ]
+  },
+  "modern_mapping": {
+    "district": "Dhaka",
+    "upazila": "Kotwali"
+  },
+  "core": {
+    "seller": "ভবতোষ রায়",
+    "buyer": "আব্দুল মজিদ ব্যাপারী",
+    "owner_name": "ভবতোষ রায়",
+    "father_name": "হরিশ চন্দ্র রায়",
+    "khatian_no": "172",
+    "dag_no": "456",
+    "mouza": "কৃষ্ণপুর",
+    "district": "ঢাকা",
+    "upazila": "কোতোয়ালী",
+    "land_area": "0.20",
+    "area_unit": "acre",
+    "deed_no": "4782/খ",
+    "deed_date": "1955-04-28"
+  }
+}

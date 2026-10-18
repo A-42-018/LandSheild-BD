@@ -1,0 +1,138 @@
+{
+  "schema": "lhdr/1",
+  "document": {
+    "kind": "GIFT_DANPATRA",
+    "era": "BRITISH_INDIA",
+    "languages": [
+      "bn"
+    ],
+    "pages": 1
+  },
+  "registration": {
+    "deed_no": "1836/গ",
+    "deed_no_verbatim": "১৮৩৬/গ",
+    "office": "নবাবগঞ্জ সাব-রেজিস্ট্রি অফিস"
+  },
+  "dates": {
+    "execution": {
+      "verbatim": "১২ই আষাঢ়, ১৩৪৫ বঙ্গাব্দ",
+      "calendar": "bangla",
+      "day": 12,
+      "month": "আষাঢ়",
+      "year": 1345,
+      "gregorian_from": "1938-06-25",
+      "gregorian_to": "1938-06-27",
+      "precision": "day±1"
+    }
+  },
+  "parties": [
+    {
+      "role": "DONOR",
+      "honorific": "শ্রীমতি",
+      "name": "হেমলতা দেবী",
+      "address": {
+        "village": "কলাকোপা",
+        "thana": "নবাবগঞ্জ",
+        "district": "ঢাকা"
+      },
+      "profession": "গৃহকর্ম",
+      "religion": "হিন্দু",
+      "nationality": "জন্মসূত্রে বাঙ্গালী",
+      "husband": {
+        "name": "নগেন্দ্রনাথ ঘোষ",
+        "deceased": true
+      }
+    },
+    {
+      "role": "DONEE",
+      "honorific": "শ্রী",
+      "name": "সুরেশ চন্দ্র ঘোষ",
+      "mother": "শ্রীমতি হেমলতা দেবী",
+      "address": {
+        "village": "কলাকোপা",
+        "thana": "নবাবগঞ্জ",
+        "district": "ঢাকা"
+      },
+      "profession": "শিক্ষকতা",
+      "religion": "হিন্দু",
+      "nationality": "জন্মসূত্রে বাঙ্গালী",
+      "father": {
+        "name": "নগেন্দ্রনাথ ঘোষ",
+        "deceased": true
+      }
+    }
+  ],
+  "schedule": [
+    {
+      "district": "ঢাকা",
+      "thana": "নবাবগঞ্জ",
+      "mouza": "কলাকোপা",
+      "survey": "CS",
+      "khatian_no": "89",
+      "dag_no": [
+        "212"
+      ],
+      "area": {
+        "value": 0.33,
+        "unit": "acre",
+        "in_words": "তেত্রিশ শতক",
+        "decimal_equiv": 33
+      },
+      "land_class": "ভিটা",
+      "boundaries": {
+        "north": "সুরেশ চন্দ্র ঘোষের বাগান",
+        "south": "গ্রামের কাঁচা সড়ক",
+        "east": "মধুসূদন পালের ভিটা",
+        "west": "দাতার নিজ পুকুর"
+      }
+    }
+  ],
+  "title_recital": {
+    "basis": "স্বত্ব দখলীয়",
+    "nature": "চিরস্থায়ী",
+    "encumbrance_free": true
+  },
+  "execution": {
+    "seller_mark": "স্বাক্ষর",
+    "witnesses": [
+      {
+        "role": "WITNESS",
+        "honorific": "শ্রী",
+        "name": "যতীন্দ্রনাথ বসাক"
+      },
+      {
+        "role": "WITNESS",
+        "honorific": "শ্রী",
+        "name": "উপেন্দ্র কুমার দে"
+      }
+    ],
+    "deed_writer": {
+      "name": "কালীপদ সেন"
+    },
+    "stamps": [
+      {
+        "type": "NON_JUDICIAL",
+        "value": "৮ আনা"
+      }
+    ]
+  },
+  "modern_mapping": {
+    "district": "Dhaka",
+    "upazila": "Nawabganj"
+  },
+  "core": {
+    "seller": "হেমলতা দেবী",
+    "buyer": "সুরেশ চন্দ্র ঘোষ",
+    "owner_name": "হেমলতা দেবী",
+    "father_name": "নগেন্দ্রনাথ ঘোষ",
+    "khatian_no": "89",
+    "dag_no": "212",
+    "mouza": "কলাকোপা",
+    "district": "ঢাকা",
+    "upazila": "নবাবগঞ্জ",
+    "land_area": "0.33",
+    "area_unit": "acre",
+    "deed_no": "1836/গ",
+    "deed_date": "1938-06-26"
+  }
+}
