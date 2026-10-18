@@ -14,7 +14,7 @@ test.describe("citizen verifies a clean parcel", () => {
     await openEvidenceTab(page);
     const risk = page.getByTestId("risk-section");
     await expect(risk).toBeVisible();
-    await expect(page.getByTestId("risk-score")).toHaveText(/^0\b/);
+    await expect(page.getByTestId("risk-score")).toHaveText("Risk score 0 of 100");
     await expect(risk.getByText("Low", { exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: "Generate verification report" }).click();
@@ -27,6 +27,6 @@ test.describe("citizen verifies a clean parcel", () => {
     await signIn(page, "citizen");
     await page.goto("/en/verify");
     await fillVerifyForm(page, { ...CLEAN_LAND, khatian: "999999", dag: "888888" });
-    await expect(page.getByRole("alert").filter({ hasText: /\S/ })).toContainText("No records found.");
+    await expect(page.getByRole("alert").filter({ hasText: /\S/ })).toContainText("No land matches this ID. Check it and search again.");
   });
 });
