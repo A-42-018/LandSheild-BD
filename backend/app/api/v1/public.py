@@ -1,4 +1,8 @@
+import json
+
 from fastapi import APIRouter, Depends, File, Query, Request, Response, UploadFile
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.api.v1.auth import get_settings_dep
@@ -219,21 +223,47 @@ def feedback_status(
 MAX_RECORD_VERIFY_BYTES = 1024 * 1024
 
 
-def _record_size_guard(request: Request) -> None:
+async def _record_body(request: Request) -> RecordVerifyBody:
+    """The posted record file, read with a hard 1 MB cap: the declared Content-Length is checked
+    first, then the bytes actually received (a chunked body has no length), before any JSON
+    parsing. Bad JSON or a wrong shape is the usual 422 VALIDATION_ERROR."""
+    too_large = AppError("RECORD_TOO_LARGE", "The record file is too large", 413)
     declared = request.headers.get("content-length", "")
     if declared.isdigit() and int(declared) > MAX_RECORD_VERIFY_BYTES:
-        raise AppError("RECORD_TOO_LARGE", "The record file is too large", 413)
+        raise too_large
+    buf = bytearray()
+    async for chunk in request.stream():
+        buf += chunk
+        if len(buf) > MAX_RECORD_VERIFY_BYTES:
+            raise too_large
+    try:
+        raw = json.loads(bytes(buf))
+    except (ValueError, UnicodeDecodeError):
+        raise RequestValidationError(
+            [{"type": "json_invalid", "loc": ("body",), "msg": "JSON decode error", "input": None}]
+        ) from None
+    try:
+        return RecordVerifyBody.model_validate(raw)
+    except ValidationError as e:
+        raise RequestValidationError(
+            [{**err, "loc": ("body", *err["loc"])} for err in e.errors(include_url=False)]
+        ) from None
 
 
 @router.post(
     "/records/verify",
     response_model=RecordVerifyOut,
-    dependencies=[Depends(_record_size_guard)],
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {"application/json": {"schema": RecordVerifyBody.model_json_schema()}},
+        }
+    },
 )
 def public_record_verify(
-    body: RecordVerifyBody,
     request: Request,
     response: Response,
+    body: RecordVerifyBody = Depends(_record_body),
     db: Session = Depends(get_db),
     settings: Settings = Depends(get_settings_dep),
 ) -> RecordVerifyOut:

@@ -72,6 +72,12 @@ def test_uploaders_always_see_their_own_uploads(env, store):
     assert _ids(env, b) == [doc]  # and the holding office's
     assert _ids(env, a, tab="office") == []  # not part of "my office" any more
     assert _ids(env, a, tab="mine") == [doc]
+    # the row opens: plain reads are the uploader's too (H9f); reviewing it stays with the holding office
+    for path in ("", "/file", "/records", "/records/history", "/extraction"):
+        assert env.get(f"{URL}/{doc}{path}", headers=a).status_code != 404, path
+    assert env.post(f"{URL}/{doc}/reject", headers=a, json={"reason": "not mine to decide"}).status_code == 404
+    c, _ = _approved_officer(env, "c@office.test", **SAVAR)  # same office as the uploader, not the uploader
+    assert env.get(f"{URL}/{doc}", headers=c).status_code == 404
 
 
 def test_tabs_mine_office_action(env, store):

@@ -76,6 +76,7 @@ describe("archive search", () => {
 
   it("year helpers", () => {
     expect(parseYear(" 1944 ")).toBe(1944);
+    expect(parseYear("১৯৪৪")).toBe(1944); // typed on a Bangla keyboard
     expect(parseYear("944")).toBeNull();
     expect(parseYear("2300")).toBeNull();
     expect(yearsReversed("1950", "1940")).toBe(true);

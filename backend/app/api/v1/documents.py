@@ -135,7 +135,7 @@ def get_document(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> DocumentOut:
-    office_svc.ensure_doc_access(db, user, document_id)
+    office_svc.ensure_doc_access(db, user, document_id, read=True)
     return svc.get_document(db, document_id)
 
 
@@ -146,7 +146,7 @@ def get_document_file(
     db: Session = Depends(get_db),
     storage: StorageService = Depends(get_storage),
 ) -> Response:
-    office_svc.ensure_doc_access(db, user, document_id)
+    office_svc.ensure_doc_access(db, user, document_id, read=True)
     data, media, digest = svc.read_document_file(db, storage, document_id)
     return Response(
         content=data,
@@ -187,7 +187,7 @@ def download_document(
     """H8b/H8c/H8d: the digital record as JSON, the digital deed PDF (QR to the public page), the
     original upload byte for byte, or a ZIP of all three + manifest.json. One version (default =
     newest approved, else newest). Scoped like viewing, rate-limited per user, audited."""
-    office_svc.ensure_doc_access(db, user, document_id)
+    office_svc.ensure_doc_access(db, user, document_id, read=True)
     settings = request.app.state.settings
     check_rate("download", user.id, settings.download_rate_limit_per_hour, window=3600.0)
     headers = {
@@ -268,7 +268,7 @@ def get_extraction(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> ExtractionOut:
-    office_svc.ensure_doc_access(db, user, document_id)
+    office_svc.ensure_doc_access(db, user, document_id, read=True)
     threshold = request.app.state.settings.review_conf_threshold
     return extraction_svc.get_extraction(db, document_id, threshold, user)
 
@@ -358,7 +358,7 @@ def list_record_versions(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> RecordVersionList:
-    office_svc.ensure_doc_access(db, user, document_id)
+    office_svc.ensure_doc_access(db, user, document_id, read=True)
     return records_svc.list_versions(db, document_id)
 
 
@@ -369,7 +369,7 @@ def get_record_history(
     db: Session = Depends(get_db),
 ) -> RecordHistory:
     """Who changed what and when, per record version (from the audit log). H7b."""
-    office_svc.ensure_doc_access(db, user, document_id)
+    office_svc.ensure_doc_access(db, user, document_id, read=True)
     return records_svc.history(db, document_id)
 
 
@@ -380,7 +380,7 @@ def get_record_version(
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
 ) -> RecordVersionOut:
-    office_svc.ensure_doc_access(db, user, document_id)
+    office_svc.ensure_doc_access(db, user, document_id, read=True)
     return records_svc.get_version(db, document_id, version)
 
 

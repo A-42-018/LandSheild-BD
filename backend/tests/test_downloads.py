@@ -268,6 +268,13 @@ def test_public_check_refuses_malformed_and_oversized_bodies(env, jobs):
     big = {**junk, "record": {"pad": "a" * (1024 * 1024 + 10)}}
     r = env.post(VERIFY, json=big)
     assert r.status_code == 413 and r.json()["code"] == "RECORD_TOO_LARGE"
+    payload = json.dumps(big).encode()  # chunked: no Content-Length to trust, the bytes are counted
+    chunks = (payload[i : i + 65536] for i in range(0, len(payload), 65536))
+    r = env.post(VERIFY, content=chunks, headers={"content-type": "application/json"})
+    assert r.status_code == 413 and r.json()["code"] == "RECORD_TOO_LARGE"
+    small = json.dumps(junk).encode()
+    r = env.post(VERIFY, content=iter([small[:10], small[10:]]), headers={"content-type": "application/json"})
+    assert r.status_code == 200 and r.json() == {"state": "INVALID"}
 
 
 def test_public_check_writes_no_audit_row(env, jobs):

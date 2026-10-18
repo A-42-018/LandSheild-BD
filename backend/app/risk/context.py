@@ -45,6 +45,9 @@ class TxRecord:
     from_document: bool = (
         False  # posted from an uploaded document (F2a will auto-create its mutation)
     )
+    # H9a: the sale of an approved historical deed (a past chain-of-title link). The modern rules
+    # (dates, areas, sellers, duplicates, ML) skip it; only the chain walks (`_reachable`) use it.
+    historical: bool = False
 
 
 @dataclass(frozen=True)
@@ -168,8 +171,14 @@ class Evidence:
         return {"code": self.code, "severity": self.severity, "params": dict(self.params)}
 
 
-def active_transactions(ctx: LandContext) -> list[TxRecord]:
-    return [t for t in ctx.transactions if t.status != TransactionStatus.REJECTED.value]
+def active_transactions(ctx: LandContext, include_historical: bool = False) -> list[TxRecord]:
+    """Not-rejected sales. Historical-deed sales are left out unless asked for: a 1944 deed is a
+    past link of the chain of title, not a transfer the modern rules can judge."""
+    return [
+        t
+        for t in ctx.transactions
+        if t.status != TransactionStatus.REJECTED.value and (include_historical or not t.historical)
+    ]
 
 
 _PENDING = (DocumentStatus.REVIEW_REQUIRED.value, DocumentStatus.EXTRACTED.value)
@@ -391,6 +400,15 @@ def load_land_context(
     ).all()
     muts = _mutations(db, land)
     links = _historical_links(db, land)
+    historical_tx = set(
+        db.scalars(
+            select(OwnershipHistory.source_transaction_id).where(
+                OwnershipHistory.land_id == land.id,
+                OwnershipHistory.kind == OwnershipKind.HISTORICAL.value,
+                OwnershipHistory.source_transaction_id.is_not(None),
+            )
+        )
+    )
     owner_ids = (
         {p.owner_id for p in periods}
         | {x for h in links for x in (h.seller_id, h.buyer_id)}
@@ -417,6 +435,7 @@ def load_land_context(
                 status=t.status,
                 deed_no=t.deed.deed_no if t.deed is not None else None,
                 from_document=t.source_document_id is not None,
+                historical=t.id in historical_tx,
             )
             for t in txs
         ),

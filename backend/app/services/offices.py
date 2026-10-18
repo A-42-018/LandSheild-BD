@@ -192,16 +192,26 @@ def area_filter(col, division: str | None, district: str | None, upazila: str | 
     return col.in_(select(LandOffice.id).where(*cond)) if cond else None
 
 
-def ensure_doc_access(db: Session, user: User, document_id: str, write: bool = False) -> None:
+def ensure_doc_access(
+    db: Session, user: User, document_id: str, write: bool = False, read: bool = False
+) -> None:
     """404 for a document in an office the user can't reach (looks the same as 'not found').
     Supervisors (zila / upozila officers) may read and review (edit, approve, reject, reprocess)
-    documents beneath them; starting OCR (write=True) stays with the owning office."""
+    documents beneath them; starting OCR (write=True) stays with the owning office. Plain reads
+    (read=True: view, file, versions, history, download) are also open to the uploader of the
+    document, which the library lists for them even after an office transfer (H7a); reviewing it
+    there stays with the offices that hold it."""
     own = user_office(user)
     if own is None:
         return
-    owner = db.scalar(select(Document.office_id).where(Document.id == document_id))
+    row = db.execute(
+        select(Document.office_id, Document.uploaded_by).where(Document.id == document_id)
+    ).first()
+    owner, uploader = (row[0], row[1]) if row else (None, None)
     if write:
         ok = owner == own.id
+    elif read and uploader is not None and uploader == user.id:
+        ok = True
     else:
         ok = owner is not None and bool(
             db.scalar(select(LandOffice.id).where(LandOffice.id == owner, LandOffice.id.in_(

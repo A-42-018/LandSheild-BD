@@ -165,3 +165,95 @@ def test_land_documents_without_a_link_have_no_chain_link(env, jobs):
         return  # an unapproved document is not attached to a land yet: nothing to list
     out = env.get(f"/api/v1/lands/{land.land_id}/documents", headers=_h(env, "REVIEWER")).json()
     assert all(i["chain_link"] is None for i in out["items"] if i["id"] == doc_id)
+
+
+# ---- review fixes (H9f): a historical deed is no modern sale -------------------------------------
+
+MODERN_ONLY = {"IMPOSSIBLE_DATE", "SELLER_MISMATCH", "RAPID_RESALE", "POSSIBLE_NAME_VARIANT", "AREA_EXCEEDED"}
+
+
+def _tx(env, doc_id) -> Transaction:
+    with _db(env) as s:
+        tx = s.scalar(select(Transaction).where(Transaction.source_document_id == doc_id))
+        s.expunge(tx)
+    return tx
+
+
+def test_approving_a_historical_deed_opens_no_mutation_case(env, jobs):
+    from app.models.mutation import MutationRecord
+
+    doc_id = _historical(env, jobs)
+    _date_fix(env, doc_id)
+    _approve_historical(env, doc_id)
+    tx = _tx(env, doc_id)
+    with _db(env) as s:
+        assert s.scalars(select(MutationRecord).where(MutationRecord.transaction_id == tx.id)).all() == []
+
+
+def test_the_approval_time_risk_run_already_sees_the_link(env, jobs, monkeypatch):
+    from app.services import posting
+
+    seen = []
+    real = posting.analyze_land
+
+    def spy(db, land_id, *a, **k):
+        land = db.scalar(select(LandParcel).where(LandParcel.land_id == land_id))
+        seen.append(len(db.scalars(select(OwnershipHistory).where(
+            OwnershipHistory.land_id == land.id, OwnershipHistory.kind == OwnershipKind.HISTORICAL.value,
+        )).all()))  # fmt: skip
+        return real(db, land_id, *a, **k)
+
+    monkeypatch.setattr(posting, "analyze_land", spy)
+    doc_id = _historical(env, jobs)
+    _date_fix(env, doc_id)
+    _approve_historical(env, doc_id)
+    assert seen == [1]  # H9c/H9d rules run on the deed being approved
+
+
+def test_modern_rules_skip_a_historical_deed_on_a_parcel_with_a_present_owner(env, jobs):
+    from app.risk.context import active_transactions, load_land_context
+    from app.services.risk import analyze_land
+
+    doc_id = _historical(env, jobs)
+    _date_fix(env, doc_id)
+    _approve_historical(env, doc_id)
+    tx = _tx(env, doc_id)
+    assert tx.status == "RECORDED"
+    with _db(env) as s:
+        land = s.get(LandParcel, tx.land_id)
+        cur = Owner(name="Present Holder")
+        s.add(cur)
+        s.flush()  # recorded ownership starts in 2010: a 1944 sale is "before the record origin"
+        s.add(OwnershipHistory(land_id=land.id, owner_id=cur.id, start_date=date(2010, 1, 1)))
+        s.commit()
+        ctx = load_land_context(s, land)
+        assert [t.historical for t in ctx.transactions if t.id == tx.id] == [True]
+        assert tx.id not in {t.id for t in active_transactions(ctx)}
+        assert tx.id in {t.id for t in active_transactions(ctx, include_historical=True)}
+        evidence = analyze_land(s, land.land_id).evidence_json or []
+    hits = [e["code"] for e in evidence if (e.get("params") or {}).get("transaction_id") == tx.id]
+    assert not (set(hits) & MODERN_ONLY), hits
+
+
+def test_a_modern_sale_never_closes_an_undated_historical_link(env, jobs):
+    from types import SimpleNamespace
+
+    from app.services import posting
+
+    doc_id = _historical(env, jobs)
+    _approve_historical(env, doc_id)
+    (link, _), = _links(env, doc_id)
+    with _db(env) as s:
+        row = s.get(OwnershipHistory, link.id)
+        row.start_date = row.end_date = None  # a deed whose date could not be read
+        s.flush()
+        land = s.get(LandParcel, link.land_id)
+        seller = s.get(Owner, link.owner_id)  # the 1944 buyer sells today
+        buyer = Owner(name="New Buyer")
+        s.add(buyer)
+        s.flush()
+        sale = SimpleNamespace(id=link.source_transaction_id)
+        posting._update_ownership(s, land, seller, buyer, sale, date(2024, 6, 1), SimpleNamespace(fields=[]))
+        s.commit()
+    (after,) = [r for r, _ in _links(env, doc_id) if r.kind == OwnershipKind.HISTORICAL.value]
+    assert after.end_date is None  # still a past link with no known end, not "until 2024"

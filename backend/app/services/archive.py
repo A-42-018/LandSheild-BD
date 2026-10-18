@@ -24,6 +24,7 @@ from app.models.document_record import DocumentRecord
 from app.models.enums import DocumentStatus, RecordStatus
 from app.models.land_parcel import LandParcel
 from app.schemas.archive import ArchiveHit, ArchiveSearchOut
+from app.services.extraction import _parse_date
 
 SURVEYS = ("CS", "SA", "RS", "BS")
 SIG = "__sig__"
@@ -59,10 +60,10 @@ def _field(doc: Document, name: str) -> str | None:
 # ---------------------------------------------------------------- LHDR fields (H9e)
 
 
-def _records(db: Session) -> dict[str, tuple[int, dict]]:
-    """document id -> (version, plain record) of the newest APPROVED lhdr/1 record."""
-    rows = db.scalars(
-        select(DocumentRecord)
+def _record_q(*cols):
+    """Newest last: APPROVED lhdr/1 records of APPROVED documents."""
+    return (
+        select(*cols)
         .join(Document, Document.id == DocumentRecord.document_id)
         .where(
             Document.processing_status == DocumentStatus.APPROVED.value,
@@ -70,13 +71,26 @@ def _records(db: Session) -> dict[str, tuple[int, dict]]:
             DocumentRecord.record_schema == lhdr.SCHEMA,
         )
         .order_by(DocumentRecord.version)
-    ).all()
-    out: dict[str, tuple[int, dict]] = {}
-    for r in rows:
+    )
+
+
+def _record_versions(db: Session) -> dict[str, int]:
+    """document id -> version of its newest APPROVED lhdr/1 record (ids only: cheap per search)."""
+    q = _record_q(DocumentRecord.document_id, DocumentRecord.version)
+    return {doc_id: v for doc_id, v in db.execute(q)}
+
+
+def _records(db: Session, doc_ids: set[str]) -> dict[str, dict]:
+    """document id -> plain record of its newest APPROVED lhdr/1 record. Parsed only when an index
+    is (re)built or the office-scoped scan runs, never just to check the signature."""
+    out: dict[str, dict] = {}
+    if not doc_ids:
+        return out
+    for r in db.scalars(_record_q(DocumentRecord).where(DocumentRecord.document_id.in_(doc_ids))):
         try:
-            out[r.document_id] = (r.version, lhdr.plain(lhdr.parse(r.record_json)))
+            out[r.document_id] = lhdr.plain(lhdr.parse(r.record_json))
         except Exception:  # a record that does not parse is simply not indexed
-            continue
+            out.pop(r.document_id, None)
     return out
 
 
@@ -86,6 +100,15 @@ def _year(value) -> int | None:
     except (TypeError, ValueError):
         return None
     return y if 1000 <= y <= 2200 else None
+
+
+def _deed_year(doc: Document) -> int | None:
+    """Year of the flat `deed_date` field (any format the extractor reads, either digit script)."""
+    raw = _field(doc, "deed_date")
+    if not raw:
+        return None
+    d = _parse_date(raw.translate(_BN_DIGITS).strip())
+    return _year(d.year) if d else _year(raw.translate(_BN_DIGITS))
 
 
 def _lhdr_facts(rec: dict, doc: Document) -> dict:
@@ -108,7 +131,7 @@ def _lhdr_facts(rec: dict, doc: Document) -> dict:
         if isinstance(d, dict):
             years += [y for y in (_year(d.get("gregorian_from")), _year(d.get("gregorian_to"))) if y]
     if not years:  # the reviewer fixed the flat deed date but the record has no Gregorian range
-        years = [y for y in (_year(_field(doc, "deed_date")),) if y]
+        years = [y for y in (_deed_year(doc),) if y]
     joined = " ".join(str(w) for w in words if w)
     return {
         "words": joined,
@@ -124,6 +147,9 @@ def _lhdr_facts(rec: dict, doc: Document) -> dict:
 def _row(doc: Document, land: LandParcel | None, rec: dict | None = None) -> dict:
     ex = doc.extraction_json or {}
     facts = _lhdr_facts(rec, doc) if rec else {}
+    if not rec:  # a modern deed: its deed date is the year range (one year), so year filters see it
+        y = _deed_year(doc)
+        facts = {"year_from": y, "year_to": y}
     body = doc.ocr_text or ""
     if facts.get("words"):  # digits in both scripts: as written and as typed in the search box
         w = facts["words"]
@@ -145,7 +171,8 @@ def _row(doc: Document, land: LandParcel | None, rec: dict | None = None) -> dic
     }  # fmt: skip
 
 
-def _approved(db: Session, office_cond=None) -> tuple[list, dict]:
+def _approved(db: Session, office_cond=None) -> tuple[list, dict[str, int]]:
+    """(document, land) rows of the APPROVED documents + the version of each one's LHDR record."""
     q = (
         select(Document, LandParcel)
         .outerjoin(LandParcel, LandParcel.id == Document.land_id)
@@ -154,19 +181,23 @@ def _approved(db: Session, office_cond=None) -> tuple[list, dict]:
     )
     if office_cond is not None:
         q = q.where(office_cond)
-    recs = _records(db)
-    rows = [(d, land, (recs.get(d.id) or (0, None))[1]) for d, land in db.execute(q).all()]
-    return rows, recs
+    return [(d, land) for d, land in db.execute(q).all()], _record_versions(db)
 
 
-def _signature(rows, recs) -> str:
+def _with_records(db: Session, rows, versions: dict[str, int]) -> list:
+    """(document, land, plain LHDR record or None) for building index rows."""
+    recs = _records(db, {d.id for d, _ in rows if d.id in versions})
+    return [(d, land, recs.get(d.id)) for d, land in rows]
+
+
+def _signature(rows, versions: dict[str, int]) -> str:
     h = hashlib.sha256()
-    for d, land, _rec in rows:
+    for d, land in rows:
         h.update(
             f"{d.id}:{d.file_hash}:{len(d.ocr_text or '')}:{land.id if land else ''};".encode()
         )
         h.update(repr(d.extraction_json.get("survey_type") if d.extraction_json else None).encode())
-        h.update(f"rec{(recs.get(d.id) or (0,))[0]}".encode())  # an approved correction re-indexes
+        h.update(f"rec{versions.get(d.id, 0)}".encode())  # an approved correction re-indexes
         h.update(repr(d.extraction_json.get("fields") if d.extraction_json else None).encode())
     return h.hexdigest()
 
@@ -216,8 +247,8 @@ def _ensure_index(db: Session) -> None:
     if have_cols and "year_from" not in have_cols:  # an index built before H9e: rebuild it
         db.execute(text("DROP TABLE archive_fts"))
     db.execute(text(f"CREATE VIRTUAL TABLE IF NOT EXISTS archive_fts USING fts5({cols})"))
-    rows, recs = _approved(db)
-    sig = _signature(rows, recs)
+    rows, versions = _approved(db)
+    sig = _signature(rows, versions)
     have = db.execute(text("SELECT body FROM archive_fts WHERE doc_id = :s"), {"s": SIG}).scalar()
     if have == sig:
         return
@@ -229,7 +260,7 @@ def _ensure_index(db: Session) -> None:
         + ", ".join(":" + c for c in _COLUMNS)
         + ")"
     )
-    for d, land, rec in rows:
+    for d, land, rec in _with_records(db, rows, versions):
         db.execute(ins, _row(d, land, rec))
     db.execute(ins, {c: (SIG if c == "doc_id" else sig if c == "body" else None) for c in _COLUMNS})
     db.commit()
@@ -289,12 +320,17 @@ def _ensure_pg_index(db: Session) -> None:
         "land_id text, survey text, district text, upazila text, mouza text, khatian text, "
         "body text, tsv tsvector)"
     ))  # fmt: skip
-    for col in ("year_from integer", "year_to integer", "historical integer"):  # H9e
-        db.execute(text(f"ALTER TABLE archive_index ADD COLUMN IF NOT EXISTS {col}"))
+    have_cols = set(db.scalars(text(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_schema = current_schema() AND table_name = 'archive_index'"
+    )))  # fmt: skip
+    for col in ("year_from", "year_to", "historical"):  # H9e; ALTER only when missing (it locks)
+        if col not in have_cols:
+            db.execute(text(f"ALTER TABLE archive_index ADD COLUMN IF NOT EXISTS {col} integer"))
     db.execute(text("CREATE INDEX IF NOT EXISTS ix_archive_tsv ON archive_index USING GIN (tsv)"))
     db.execute(text("SELECT pg_advisory_xact_lock(:k)"), {"k": _PG_LOCK})
-    rows, recs = _approved(db)
-    sig = _signature(rows, recs)
+    rows, versions = _approved(db)
+    sig = _signature(rows, versions)
     have = db.execute(text("SELECT body FROM archive_index WHERE doc_id = :s"), {"s": SIG}).scalar()
     if have == sig:
         db.commit()
@@ -304,7 +340,7 @@ def _ensure_pg_index(db: Session) -> None:
         "INSERT INTO archive_index (" + ", ".join(_PG_COLS) + ", body, tsv) VALUES ("
         + ", ".join(":" + c for c in _PG_COLS) + ", :body, to_tsvector('simple', :words))"
     )  # fmt: skip
-    for d, land, rec in rows:
+    for d, land, rec in _with_records(db, rows, versions):
         r = _row(d, land, rec)
         words = " ".join(str(r[c] or "") for c in _TEXT_COLS).translate(_BN_DIGITS)
         db.execute(ins, {**{c: r[c] for c in _PG_COLS}, "body": r["body"], "words": words})
@@ -354,8 +390,8 @@ def _search_generic(
 ) -> ArchiveSearchOut:
     words = _match_expr(q).replace('"', "").split()
     hits = []
-    rows, _recs = _approved(db, office_cond)
-    for d, land, rec in rows:
+    rows, versions = _approved(db, office_cond)
+    for d, land, rec in _with_records(db, rows, versions):
         r = _row(d, land, rec)
         if survey and r["survey"] != survey:
             continue

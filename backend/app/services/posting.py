@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import AppError
 from app.models.deed import Deed
 from app.models.document import Document
-from app.models.enums import LandStatus, TransactionStatus, TransactionType
+from app.models.enums import LandStatus, OwnershipKind, TransactionStatus, TransactionType
 from app.models.land_office import LandOffice
 from app.models.land_parcel import LandParcel
 from app.models.owner import Owner
@@ -212,7 +212,13 @@ def post_document(
     db.add(tx)
     db.flush()
 
-    mut_rec = mutation.create_from_posting(db, user, land, deed, tx, ip)
+    historical = chain.is_historical(extraction)
+    if historical:
+        # D2: a historical deed is a past link of the chain of title, the current owner stays.
+        # Linked before the analysis so the H9c/H9d rules see it and the modern rules skip it;
+        # no mutation (namjari) case: nothing changes hands today.
+        chain.record(db, land, buyer, tx, tx_date, extraction)
+    mut_rec = None if historical else mutation.create_from_posting(db, user, land, deed, tx, ip)
     assessment = analyze_land(db, land.land_id, commit=False)  # sees the new tx, makes alerts
     tx.risk_score = assessment.overall_score
     evidence = assessment.evidence_json or []
@@ -224,14 +230,12 @@ def post_document(
     updated = False
     if high:
         tx.status = deed.status = TransactionStatus.FLAGGED.value  # ownership untouched
-    elif not chain.is_historical(extraction):
+    elif not historical:
         _update_ownership(db, land, seller, buyer, tx, tx_date, extraction)
         updated = True
-    if chain.is_historical(extraction):
-        # D2: a historical deed is a past link of the chain of title, the current owner stays
-        chain.record(db, land, buyer, tx, tx_date, extraction)
 
-    mutation.route_after_prechecks(db, mut_rec, user, ip)
+    if mut_rec is not None:
+        mutation.route_after_prechecks(db, mut_rec, user, ip)
     ledger.append(db, "deed", deed.id)  # F4c: tamper-evident record of the approved sale
     ledger.append(db, "transaction", tx.id)
     result = PostingResult(
@@ -262,6 +266,7 @@ def _update_ownership(
             OwnershipHistory.land_id == land.id,
             OwnershipHistory.owner_id == seller.id,
             OwnershipHistory.end_date.is_(None),
+            OwnershipHistory.kind == OwnershipKind.CURRENT.value,  # never a past chain link (H9a)
         )
     ):
         period.end_date = effective

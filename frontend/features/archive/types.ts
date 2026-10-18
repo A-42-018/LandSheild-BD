@@ -1,3 +1,5 @@
+import { normalizeDigits } from "@/lib/intl-locale";
+
 export const SURVEYS = ["CS", "SA", "RS", "BS"] as const;
 export const ARCHIVE_PAGE_SIZE = 10;
 
@@ -26,9 +28,9 @@ export type ArchiveParams = {
   page: number;
 };
 
-/** A typed year, or null when empty or not a four-digit year (1000-2200). */
+/** A typed year (ASCII or Bangla digits), or null when empty or not a four-digit year (1000-2200). */
 export function parseYear(v: string): number | null {
-  const t = v.trim();
+  const t = normalizeDigits(v.trim());
   if (!/^\d{4}$/.test(t)) return null;
   const n = Number(t);
   return n >= 1000 && n <= 2200 ? n : null;
