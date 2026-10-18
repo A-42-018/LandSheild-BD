@@ -1,7 +1,7 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth/AuthContext";
-import type { PublicSealDto, PublicSignatureDto, PublicVerifyDto } from "./types";
+import type { PublicRecordDto, PublicSealDto, PublicSignatureDto, PublicVerifyDto } from "./types";
 
 /** No login: request is sent anonymously (no bearer, no silent refresh). */
 export function usePublicVerify(landId: string) {
@@ -34,5 +34,15 @@ export function usePublicSignature(deedId: string | null, hash12: string | null)
         `/public/signature?d=${encodeURIComponent(deedId ?? "")}&h=${encodeURIComponent(hash12 ?? "")}`,
         { anonymous: true },
       ),
+  });
+}
+
+export function usePublicRecord(recordId: string) {
+  const { api } = useAuth();
+  return useQuery({
+    queryKey: ["public", "record", recordId],
+    retry: false,
+    queryFn: () =>
+      api.request<PublicRecordDto>(`/public/records/${encodeURIComponent(recordId)}`, { anonymous: true }),
   });
 }

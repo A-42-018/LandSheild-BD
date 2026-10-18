@@ -143,6 +143,7 @@ function get(path: string): Promise<any> {
   if (path.startsWith("/public/seal/")) return Promise.reject(new Error("none"));
   if (path.startsWith("/officer/stats")) return Promise.resolve({ total_records: 7, pending_review: 3, high_risk: 1, verified: 7 });
   if (path.startsWith("/officer/queue")) return Promise.resolve(QUEUE);
+  if (path.startsWith("/documents?")) return Promise.resolve({ items: [], total: 0, limit: 5, offset: 0 });
   if (path.startsWith("/officer/activity")) return Promise.resolve(ACTIVITY);
   if (path.startsWith("/risk-alerts")) return Promise.resolve({ items: [ALERT], total: 1, limit: 8, offset: 0 });
   if (path.startsWith("/verification/")) return Promise.resolve(REPORT);

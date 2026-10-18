@@ -29,7 +29,10 @@ class Settings(BaseSettings):
     verify_doc_rate_limit_per_min: int = 10
     feedback_rate_limit_per_min: int = 5
     upload_rate_limit_per_hour: int = 20  # per user (R4)
+    download_rate_limit_per_hour: int = 30  # per user, JSON + original downloads (H8b)
     cors_origins: str = "http://localhost:3000"
+    # H8d: origin of the web app; the PDF's QR code points to {PUBLIC_SITE_URL}/bn/v/r/{record id}
+    public_site_url: str = "http://localhost:3000"
     storage_path: str = "./storage"
     # H5 / D6: local = files under STORAGE_PATH (dev, tests; Render's free disk is wiped on
     # redeploy) | s3 = a private S3-compatible bucket (Cloudflare R2, Supabase Storage, ...)

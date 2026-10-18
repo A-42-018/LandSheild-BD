@@ -41,6 +41,13 @@ s3 = [
   "boto3>=1.34",  # H5 / D6 STORAGE_BACKEND=s3 (Cloudflare R2, Supabase Storage...); lazy import
 ]
 
+pdf = [
+  "weasyprint>=62",  # H8a spike candidate A (Pango + HarfBuzz; needs libpango in the image)
+  "fpdf2>=2.8",  # H8a spike candidate B
+  "uharfbuzz>=0.39",  # H8a fpdf2 text shaping
+  "segno>=1.6",  # H8d QR code in the PDF footer (pure Python)
+]
+
 postgres = [
   "psycopg[binary]>=3.1",  # H5 / D6 DATABASE_URL=postgresql+psycopg://... (Neon, Supabase)
 ]

@@ -27,13 +27,22 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
+from app.models.audit import AuditLog
 from app.models.deed import Deed
 from app.models.document import Document
 from app.models.document_record import DocumentRecord
 from app.models.enums import DocumentStatus, RecordStatus, Role
 from app.models.user import User
 from app.schemas.extraction import ExtractedField, Extraction, ExtractionPatch
-from app.schemas.record import RecordVersionList, RecordVersionOut
+from app.schemas.officer import ActivityActor
+from app.schemas.record import (
+    RecordChange,
+    RecordHistory,
+    RecordHistoryEvent,
+    RecordHistoryVersion,
+    RecordVersionList,
+    RecordVersionOut,
+)
 from app.services import audit, signing
 from app.services import extraction as extraction_svc
 
@@ -90,18 +99,29 @@ def _iso(dt: datetime | None) -> str:
     return dt.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def canonical_payload(doc: Document, row: DocumentRecord) -> bytes:
+def payload_bytes(
+    document_id: str, file_hash: str, version: int, schema: str,
+    approved_by: str, approved_at: str, record: dict,
+) -> bytes:  # fmt: skip
+    """The signed bytes. Rebuilt from a downloaded JSON file by `verify_export` (H8b)."""
     body = {
         "v": PAYLOAD_VERSION,
-        "document_id": doc.id,
-        "file_hash": doc.file_hash,
-        "version": row.version,
-        "schema": row.record_schema,
-        "approved_by": row.approved_by or "",
-        "approved_at": _iso(row.approved_at),
-        "record": row.record_json,
+        "document_id": document_id,
+        "file_hash": file_hash,
+        "version": version,
+        "schema": schema,
+        "approved_by": approved_by,
+        "approved_at": approved_at,
+        "record": record,
     }
     return json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+
+
+def canonical_payload(doc: Document, row: DocumentRecord) -> bytes:
+    return payload_bytes(
+        doc.id, doc.file_hash, row.version, row.record_schema,
+        row.approved_by or "", _iso(row.approved_at), row.record_json,
+    )  # fmt: skip
 
 
 def compute_hash(doc: Document, row: DocumentRecord) -> str:
@@ -395,6 +415,10 @@ def approve_correction(
     superseded = _supersede_approved(db, doc.id, keep=row.id)
     _freeze(doc, row, user)
     link_deeds(db, doc, row, ex)
+    if ex.deed_profile == "historical":
+        from app.services import posting  # local: posting -> extraction -> records is a cycle
+
+        posting.refresh_chain_link(db, doc, ex)  # H9a: update the chain-of-title link in place
     doc.extraction_json = ex.dump()  # the working copy (archive search, GET extraction) follows
     audit.log(
         db, user, "DOCUMENT_RECORD_APPROVE", "document", doc.id,
@@ -404,3 +428,231 @@ def approve_correction(
     )  # fmt: skip
     db.commit()
     return to_out(doc, row, with_record=True)
+
+
+# ---- history: who changed what, per version (H7b) -------------------------------------------------
+
+SHOWN = 200  # characters of an old / new value shown in the history
+# audit action -> (event kind, where the version number is: a key of `new_value`, or None = by time)
+HISTORY_ACTIONS = {
+    "DOCUMENT_EXTRACTION_EDIT": ("EDIT", None),
+    "DOCUMENT_RECORD_EDIT": ("EDIT", "version"),
+    "DOCUMENT_RECORD_CORRECTION_START": ("CORRECTION_START", "version"),
+    "DOCUMENT_RECORD_BASELINE": ("BASELINE", "version"),
+    "DOCUMENT_RECORD_APPROVE": ("APPROVE", "version"),
+    "DOCUMENT_APPROVE": ("APPROVE", "record_version"),
+}
+
+
+def _short(value) -> str | None:
+    if value is None:
+        return None
+    text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
+    return text if len(text) <= SHOWN else text[: SHOWN - 1] + "\u2026"
+
+
+def _changes(old, new) -> list[RecordChange]:
+    """The edits of one audit row: record ops when the document has an LHDR record, else the flat
+    fields (with a record the flat fields are only its derived copy, so they are not repeated)."""
+    old, new = old if isinstance(old, dict) else {}, new if isinstance(new, dict) else {}
+    ops, olds = new.get("record"), {c.get("path"): c for c in old.get("record") or []}
+    if isinstance(ops, list):
+        out = []
+        for c in ops:
+            before = olds.get(c.get("path"), {}).get("old")
+            out.append(
+                RecordChange(
+                    path=str(c.get("path")), op=c.get("op"),
+                    old=_short(before), new=_short(c.get("new")),
+                )  # fmt: skip
+            )
+        return out
+    fields, before = new.get("fields"), old.get("fields") or {}
+    if isinstance(fields, dict):
+        return [
+            RecordChange(path=n, old=_short(before.get(n)), new=_short(v))
+            for n, v in fields.items()
+        ]
+    return []
+
+
+def _utc(dt: datetime) -> datetime:
+    return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
+
+
+def history(db: Session, document_id: str) -> RecordHistory:
+    """Per version: when it was created and by whom, then every edit, correction start and approval
+    from the audit log, oldest first. An edit made before the first approval carries no version
+    number in the audit log; it belongs to the newest version that existed when it was saved."""
+    doc = _doc(db, document_id)
+    versions = rows(db, doc.id)
+    by_no = {r.version: r for r in versions}
+    events: dict[int, list[RecordHistoryEvent]] = {r.version: [] for r in versions}
+    for r in versions:
+        events[r.version].append(
+            RecordHistoryEvent(
+                kind="CREATED", at=r.created_at,
+                actor=ActivityActor(name=r.creator.name, role=r.creator.role) if r.creator else None,
+            )  # fmt: skip
+        )
+    logs = db.execute(
+        select(AuditLog, User.name, func.coalesce(AuditLog.actor_role, User.role))
+        .outerjoin(User, User.id == AuditLog.actor_id)
+        .where(
+            AuditLog.entity_type == "document",
+            AuditLog.entity_id == doc.id,
+            AuditLog.action.in_(HISTORY_ACTIONS),
+        )
+        .order_by(AuditLog.created_at, AuditLog.id)
+    ).all()
+    for log, name, role in logs:
+        kind, key = HISTORY_ACTIONS[log.action]
+        new = log.new_value if isinstance(log.new_value, dict) else {}
+        number = new.get(key) if key else None
+        if number not in by_no:
+            earlier = [r.version for r in versions if _utc(r.created_at) <= _utc(log.created_at)]
+            number = max(earlier) if earlier else (versions[0].version if versions else None)
+        if number not in by_no:
+            continue
+        events[number].append(
+            RecordHistoryEvent(
+                kind=kind, at=log.created_at,
+                actor=ActivityActor(name=name, role=role) if name is not None and role else None,
+                changes=_changes(log.old_value, log.new_value) if kind == "EDIT" else [],
+            )  # fmt: skip
+        )
+    return RecordHistory(
+        document_id=doc.id,
+        versions=[
+            RecordHistoryVersion(
+                version=r.version, status=r.status, record_schema=r.record_schema,
+                events=sorted(events[r.version], key=lambda e: _utc(e.at)),
+            )  # fmt: skip
+            for r in versions
+        ],
+    )
+
+
+# ---- H8b: download the digital record (JSON) and check a downloaded copy ------------------------
+
+EXPORT_FORMAT = "landshield-record/1"
+
+
+def pick_version(db: Session, doc: Document, version: int | None) -> DocumentRecord:
+    """The asked version, else the newest APPROVED one, else the newest of any status."""
+    if version is not None:
+        return _version(db, doc, version)
+    row = db.scalar(
+        select(DocumentRecord)
+        .where(
+            DocumentRecord.document_id == doc.id,
+            DocumentRecord.status == RecordStatus.APPROVED.value,
+        )
+        .order_by(DocumentRecord.version.desc())
+        .limit(1)
+    ) or latest(db, doc.id)
+    if row is None:
+        raise AppError("RECORD_NOT_FOUND", "This document has no digital record yet", 404)
+    return row
+
+
+def export_json(db: Session, document_id: str, version: int | None) -> tuple[DocumentRecord, dict]:
+    """The self-contained JSON file of one version. `integrity` carries everything
+    `verify_export` needs to rebuild the signed payload; a record that is not approved has
+    no hash or signature and is marked `draft`."""
+    doc = _doc(db, document_id)
+    row = pick_version(db, doc, version)
+    approved = row.status in (RecordStatus.APPROVED.value, RecordStatus.SUPERSEDED.value)
+    key = signing.key_info()
+    return row, {
+        "format": EXPORT_FORMAT,
+        "document": {
+            "id": doc.id,
+            "document_type": doc.document_type,
+            "file_hash": doc.file_hash,
+        },
+        "version": row.version,
+        "status": row.status,
+        "draft": not approved,
+        "record_schema": row.record_schema,
+        "created_at": _iso(row.created_at),
+        "integrity": {
+            "payload_version": PAYLOAD_VERSION,
+            "approved_by": row.approved_by or "",
+            "approved_at": _iso(row.approved_at),
+            "record_hash": row.record_hash,
+            "signature": row.signature,
+            "algorithm": key["algorithm"],
+            "key_id": key["key_id"],
+            "public_key": key["public_key"],
+        },
+        "record": row.record_json,
+    }
+
+
+def verify_export(db: Session, body: dict) -> str:
+    """VALID only when a downloaded JSON file is exactly what this server signed: the hash of
+    the rebuilt payload equals `record_hash`, the Ed25519 signature checks out, and the same
+    hash is stored for that document version. Anything else, including a draft, is INVALID."""
+    try:
+        document, integrity = body["document"], body["integrity"]
+        doc_id, file_hash = document["id"], document["file_hash"]
+        version, schema, record = body["version"], body["record_schema"], body["record"]
+        record_hash, signature = integrity["record_hash"], integrity["signature"]
+        approved_by, approved_at = integrity["approved_by"], integrity["approved_at"]
+    except (KeyError, TypeError):
+        return INVALID
+    texts = (doc_id, file_hash, schema, record_hash, signature, approved_by, approved_at)
+    if not all(isinstance(t, str) for t in texts) or not record_hash or not signature:
+        return INVALID
+    if not isinstance(version, int) or isinstance(version, bool) or not isinstance(record, dict):
+        return INVALID
+    rebuilt = payload_bytes(doc_id, file_hash, version, schema, approved_by, approved_at, record)
+    if hashlib.sha256(rebuilt).hexdigest() != record_hash:
+        return INVALID
+    if not signing.verify_hash(record_hash, signature, signing.load_private_key().public_key()):
+        return INVALID
+    row = db.scalar(
+        select(DocumentRecord).where(
+            DocumentRecord.document_id == doc_id, DocumentRecord.version == version
+        )
+    )
+    if row is None or row.record_hash != record_hash:
+        return INVALID
+    return VALID
+
+
+# ---- H8d: public record page --------------------------------------------------------------------
+
+
+def deed_number(schema: str, record: dict) -> str | None:
+    """The deed number of a record (LHDR `registration.deed_no`, or the core/1 `deed_no` field)."""
+
+    def val(v):
+        v = v.get("value") if isinstance(v, dict) else v
+        return str(v) if v not in (None, "") else None
+
+    if schema == LHDR_SCHEMA:
+        return val((record.get("registration") or {}).get("deed_no"))
+    for f in record.get("fields") or []:
+        if isinstance(f, dict) and f.get("field") == "deed_no":
+            return val(f.get("value"))
+    return None
+
+
+def public_record(db: Session, record_id: str) -> dict:
+    """What the QR page shows for `document_records.id`. Only an APPROVED or SUPERSEDED row is
+    public; anything else (draft, machine, unknown id) is the same 404, so ids reveal nothing.
+    The stored hash and signature are re-checked on every read."""
+    row = db.get(DocumentRecord, record_id)
+    if row is None or row.status not in (RecordStatus.APPROVED.value, RecordStatus.SUPERSEDED.value):
+        raise AppError("RECORD_NOT_FOUND", "No approved digital record matches this code", 404)
+    doc = db.get(Document, row.document_id)
+    state = check_signature(doc, row) if doc is not None else INVALID
+    return {
+        "state": VALID if state == VALID else INVALID,
+        "deed_no": deed_number(row.record_schema, row.record_json),
+        "version": row.version,
+        "approved_at": row.approved_at,
+        "superseded": row.status == RecordStatus.SUPERSEDED.value,
+    }

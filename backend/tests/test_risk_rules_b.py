@@ -228,6 +228,10 @@ def test_config_covers_all_rule_codes():
         "IMPOSSIBLE_DATE",
         "RAPID_RESALE",
         "SURVEY_CHAIN_GAP",  # F5c
+        "HISTORICAL_CHAIN_GAP",  # H9c
+        "HISTORICAL_SELLER_NOT_OWNER",
+        "HISTORICAL_DAG_CONFLICT",  # H9d
+        "HISTORICAL_CONSIDERATION_IMPLAUSIBLE",
     }
     assert codes == set(RULE_POINTS) == set(RULE_SEVERITY)
     assert RULE_POINTS["UNIT_MISMATCH"] == 0 and RULE_SEVERITY["UNIT_MISMATCH"] == "INFO"

@@ -1,10 +1,16 @@
 "use client";
-import { useState, type KeyboardEvent, type PointerEvent } from "react";
+import {
+  useEffect,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
 import { useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { ErrorState, LoadingState } from "@/components/ui";
+import { HighlightProvider, useHighlight } from "./highlight";
 import DocumentPreview from "./DocumentPreview";
 import ExtractionPanel from "./ExtractionPanel";
 import ReviewToolbar from "./ReviewToolbar";
@@ -13,7 +19,15 @@ import { EXTRACTION_READY, IN_PROGRESS } from "./types";
 import { useDocumentStatus, useExtraction } from "./useReviewData";
 
 /** Draggable divider (≥ 1280 px): pointer drag or arrow keys change the document pane width (35–70 %). */
-function Splitter({ value, onChange, label }: { value: number; onChange: (v: number) => void; label: string }) {
+function Splitter({
+  value,
+  onChange,
+  label,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  label: string;
+}) {
   const clamp = (v: number) => Math.min(70, Math.max(35, v));
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     const grid = e.currentTarget.parentElement;
@@ -54,6 +68,20 @@ function Splitter({ value, onChange, label }: { value: number; onChange: (v: num
   );
 }
 
+/** On a phone the document is a separate tab: showing a value on the page opens it. */
+function ShowDocumentOnHighlight({ setPane }: { setPane: (p: "doc") => void }) {
+  const active = useHighlight()?.active;
+  useEffect(() => {
+    if (
+      active &&
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(max-width: 767px)").matches
+    )
+      setPane("doc");
+  }, [active, setPane]);
+  return null;
+}
+
 export default function ReviewView({ id }: { id: string }) {
   const t = useTranslations("review");
   const doc = useDocumentStatus(id);
@@ -65,25 +93,40 @@ export default function ReviewView({ id }: { id: string }) {
   if (doc.isLoading) return <LoadingState />;
   if (doc.isError || !doc.data) {
     const e = doc.error;
-    if (e instanceof ApiError && e.status === 404) return <ErrorState message={t("notFound")} />;
+    if (e instanceof ApiError && e.status === 404)
+      return <ErrorState message={t("notFound")} />;
     return <ErrorState error={e} onRetry={() => doc.refetch()} />;
   }
 
   const d = doc.data;
   let body;
   if (status === "UPLOADED" || status === "FAILED") {
-    body = <StalledActions id={id} status={status} failureCode={d?.failure_code} />;
+    body = (
+      <StalledActions id={id} status={status} failureCode={d?.failure_code} />
+    );
   } else if (status && IN_PROGRESS.includes(status)) {
     body = (
-      <div role="status" data-testid="processing-state" className="glass-card p-6 text-center text-ink-muted">
+      <div
+        role="status"
+        data-testid="processing-state"
+        className="glass-card p-6 text-center text-ink-muted"
+      >
         {t("processing")}
       </div>
     );
   } else if (status && EXTRACTION_READY.includes(status)) {
     if (ext.isLoading) body = <LoadingState />;
     else if (ext.isError || !ext.data) {
-      const notReady = ext.error instanceof ApiError && ext.error.code === "EXTRACTION_NOT_READY";
-      body = <ErrorState error={notReady ? undefined : ext.error} message={notReady ? t("processing") : undefined} onRetry={() => ext.refetch()} />;
+      const notReady =
+        ext.error instanceof ApiError &&
+        ext.error.code === "EXTRACTION_NOT_READY";
+      body = (
+        <ErrorState
+          error={notReady ? undefined : ext.error}
+          message={notReady ? t("processing") : undefined}
+          onRetry={() => ext.refetch()}
+        />
+      );
     } else body = <ExtractionPanel data={ext.data} />;
   } else body = <LoadingState />;
 
@@ -100,7 +143,11 @@ export default function ReviewView({ id }: { id: string }) {
         ]}
       />
       <ReviewToolbar id={id} />
-      <div role="tablist" aria-label={t("panes.label")} className="grid grid-cols-2 gap-1 rounded-xl bg-primary-soft p-1 md:hidden">
+      <div
+        role="tablist"
+        aria-label={t("panes.label")}
+        className="grid grid-cols-2 gap-1 rounded-xl bg-primary-soft p-1 md:hidden"
+      >
         {(["fields", "doc"] as const).map((k) => (
           <button
             key={k}
@@ -114,17 +161,31 @@ export default function ReviewView({ id }: { id: string }) {
           </button>
         ))}
       </div>
-      <div
-        className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,var(--split))_auto_minmax(0,var(--rest))] xl:gap-0"
-        style={{ "--split": `${split}fr`, "--rest": `${100 - split}fr` } as React.CSSProperties}
-        data-testid="review-columns"
-      >
-        <div className={`min-w-0 xl:pr-4 ${pane === "doc" ? "" : "max-md:hidden"}`}>
-          <DocumentPreview id={id} fileType={d.file_type} />
+      <HighlightProvider>
+        <ShowDocumentOnHighlight setPane={setPane} />
+        <div
+          className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,var(--split))_auto_minmax(0,var(--rest))] xl:gap-0"
+          style={
+            {
+              "--split": `${split}fr`,
+              "--rest": `${100 - split}fr`,
+            } as React.CSSProperties
+          }
+          data-testid="review-columns"
+        >
+          <div
+            className={`min-w-0 xl:pr-4 ${pane === "doc" ? "" : "max-md:hidden"}`}
+          >
+            <DocumentPreview id={id} fileType={d.file_type} />
+          </div>
+          <Splitter value={split} onChange={setSplit} label={t("splitter")} />
+          <div
+            className={`min-w-0 xl:pl-4 ${pane === "fields" ? "" : "max-md:hidden"}`}
+          >
+            {body}
+          </div>
         </div>
-        <Splitter value={split} onChange={setSplit} label={t("splitter")} />
-        <div className={`min-w-0 xl:pl-4 ${pane === "fields" ? "" : "max-md:hidden"}`}>{body}</div>
-      </div>
+      </HighlightProvider>
     </div>
   );
 }

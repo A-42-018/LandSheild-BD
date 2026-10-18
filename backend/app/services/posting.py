@@ -21,7 +21,7 @@ from app.models.ownership import OwnershipHistory
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.schemas.extraction import Extraction
-from app.services import audit, ledger, mutation, party_nid, signing
+from app.services import audit, chain, ledger, mutation, party_nid, signing
 from app.services.extraction import _BN_DIGITS, _parse_area, _parse_date
 from app.services.names import VARIANT_MIN, can_auto_merge, owner_similarity
 from app.services.risk import analyze_land
@@ -224,9 +224,12 @@ def post_document(
     updated = False
     if high:
         tx.status = deed.status = TransactionStatus.FLAGGED.value  # ownership untouched
-    else:
+    elif not chain.is_historical(extraction):
         _update_ownership(db, land, seller, buyer, tx, tx_date, extraction)
         updated = True
+    if chain.is_historical(extraction):
+        # D2: a historical deed is a past link of the chain of title, the current owner stays
+        chain.record(db, land, buyer, tx, tx_date, extraction)
 
     mutation.route_after_prechecks(db, mut_rec, user, ip)
     ledger.append(db, "deed", deed.id)  # F4c: tamper-evident record of the approved sale
@@ -272,3 +275,15 @@ def _update_ownership(
         )  # fmt: skip
     )
     db.flush()
+
+
+def refresh_chain_link(db: Session, doc: Document, extraction: Extraction) -> None:
+    """A correction of a historical deed was approved (H9a): update its chain-of-title link in
+    place (buyer, start date), without posting anything new. Flush only; caller commits."""
+    by = {f.field: f for f in extraction.fields}
+    v = {k: _norm(f.value) for k, f in by.items()}
+    if not v.get("buyer"):
+        return
+    tx_date = _parse_date(v["deed_date"]) if v.get("deed_date") else None
+    buyer = _resolve_owner(db, v["buyer"], _father_for(v["buyer"], v))
+    chain.refresh(db, doc, buyer, tx_date, extraction)

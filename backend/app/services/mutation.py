@@ -14,7 +14,7 @@ from app.core.rbac import REVIEW_UP
 from app.models.alert import FraudAlert
 from app.models.deed import Deed
 from app.models.encumbrance import LandEncumbrance
-from app.models.enums import AlertStatus, MutationSource, MutationStatus, Role
+from app.models.enums import AlertStatus, MutationSource, MutationStatus, OwnershipKind, Role
 from app.models.land_office import LandOffice
 from app.models.land_parcel import LandParcel
 from app.models.mutation import MutationRecord
@@ -113,6 +113,7 @@ def run_prechecks(db: Session, m: MutationRecord, actor: User) -> dict[str, str]
             select(OwnershipHistory).where(
                 OwnershipHistory.land_id == m.land_id,
                 OwnershipHistory.owner_id == tx.seller_id,
+                OwnershipHistory.kind == OwnershipKind.CURRENT.value,
             )
         ).all()
         if tx

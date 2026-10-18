@@ -55,7 +55,7 @@ def _sweep(env, store, jobs):
         assert r.status_code == 201, r.text
         verifications[role] = r.json()["id"]
     urls = [f"{P}/auth/me", f"{P}/lands/map", f"{P}/officer/stats", f"{P}/officer/queue",
-            f"{P}/officer/activity", f"{P}/risk-alerts", f"{P}/admin/audit-logs",
+            f"{P}/officer/activity", f"{P}/documents", f"{P}/risk-alerts", f"{P}/admin/audit-logs",
             f"{P}/admin/users", f"{P}/admin/land-records", f"{P}/admin/documents",
             f"{P}/lands/search?district=Dhaka&upazila=Savar&mouza=Ashulia&khatian=610&dag=210",
             f"{P}/documents/{doc_id}", f"{P}/documents/{doc_id}/extraction"]  # fmt: skip

@@ -18,3 +18,8 @@ export function publicUrl(locale: string, landId: string, origin?: string, seal?
   const q = seal ? `?d=${encodeURIComponent(seal.deedId)}&h=${encodeURIComponent(seal.hash12)}` : "";
   return `${base}${publicPath(locale, landId)}${q}`;
 }
+
+/** H8d: the public page of one digital-record version; the same address is printed as a QR in the PDF. */
+export function recordPath(locale: string, recordId: string): string {
+  return `/${locale}/v/r/${encodeURIComponent(recordId)}`;
+}

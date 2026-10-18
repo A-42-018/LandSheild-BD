@@ -32,6 +32,10 @@ describe("evidenceValues", () => {
       { code: "AREA_MISMATCH", severity: "MEDIUM", params: { document_area: 12.5, previous_area: "10", area_unit: "katha" } },
       { code: "MUTATION_AREA_EXCEEDS_DEED", severity: "HIGH", params: { mutation_area: 33, mutation_unit: "decimal", deed_area: 0.25, deed_unit: "acre" } },
       { code: "SURVEY_CHAIN_GAP", severity: "MEDIUM", params: { from_survey: "CS", to_survey: "RS", unlinked_owners: 2, owners_in_later_survey: 5 } },
+      { code: "HISTORICAL_CHAIN_GAP", severity: "MEDIUM", params: { transaction_date: "1944-03-01", from_survey: "CS", to_survey: "SA", document_id: "d1" } },
+      { code: "HISTORICAL_SELLER_NOT_OWNER", severity: "MEDIUM", params: { transaction_date: "1944-03-01", surveys: ["CS"], document_id: "d1" } },
+      { code: "HISTORICAL_DAG_CONFLICT", severity: "MEDIUM", params: { transaction_date: "1950-05-01", earlier_date: "1944-03-01", basis: "DAG", dags: ["123", "124"] } },
+      { code: "HISTORICAL_CONSIDERATION_IMPLAUSIBLE", severity: "MEDIUM", params: { transaction_date: "1944-03-01", reason: "ABOVE_RANGE", currency: "INR", per_decimal: 9000, range_low: 0.5, range_high: 600 } },
     ];
     for (const e of cases) expect(sentence(e, "bn"), e.code).not.toMatch(/[0-9]/);
     expect(sentence(cases[3], "bn")).toContain("১২.৫ কাঠা");

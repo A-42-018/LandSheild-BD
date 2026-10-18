@@ -2,11 +2,13 @@
 import { useLocale, useTranslations } from "next-intl";
 import { Check, Circle, History } from "lucide-react";
 import { Badge, Card, EmptyState } from "@/components/ui";
+import { Link } from "@/i18n/navigation";
 import { formatDate } from "./format";
 import type { OwnershipEntry } from "./types";
 import { intlLocale } from "@/lib/intl-locale";
 
-export default function OwnershipTimeline({ entries }: { entries: OwnershipEntry[] }) {
+/** `staff` = the viewer may open the document page (REVIEW_UP); citizens see the link as plain text. */
+export default function OwnershipTimeline({ entries, staff = false }: { entries: OwnershipEntry[]; staff?: boolean }) {
   const t = useTranslations("result");
   const locale = useLocale();
   const unknown = t("unknownDate");
@@ -32,6 +34,11 @@ export default function OwnershipTimeline({ entries }: { entries: OwnershipEntry
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold text-ink">{e.owner.name}</span>
                 {e.is_current && <Badge tone="verified">{t("current")}</Badge>}
+                {e.historical && (
+                  <Badge tone="review" data-testid="historical-link">
+                    {t("historicalLink")}
+                  </Badge>
+                )}
               </div>
               {e.owner.father_name && (
                 <p className="text-sm text-ink-muted">
@@ -39,7 +46,9 @@ export default function OwnershipTimeline({ entries }: { entries: OwnershipEntry
                 </p>
               )}
               <p className="text-sm text-ink-muted">
-                {formatDate(e.start_date, locale, unknown)} – {e.end_date ? formatDate(e.end_date, locale, unknown) : t("present")}
+                {e.historical && e.start_date && e.end_date === e.start_date
+                  ? t("historicalFrom", { date: formatDate(e.start_date, locale, unknown) })
+                  : `${formatDate(e.start_date, locale, unknown)} – ${e.end_date ? formatDate(e.end_date, locale, unknown) : t("present")}`}
               </p>
               {(e.confidence != null || e.document) && (
                 <p className="text-xs text-ink-muted">
@@ -51,7 +60,18 @@ export default function OwnershipTimeline({ entries }: { entries: OwnershipEntry
                   {e.confidence != null && e.document && " · "}
                   {e.document && (
                     <span>
-                      {t("sourceDocument")}: {e.document.type}
+                      {t("sourceDocument")}:{" "}
+                      {staff ? (
+                        <Link
+                          href={`/officer/documents/${e.document.id}`}
+                          className="font-medium text-primary underline"
+                          aria-label={t("openSourceDocument", { type: e.document.type })}
+                        >
+                          {e.document.type}
+                        </Link>
+                      ) : (
+                        e.document.type
+                      )}
                     </span>
                   )}
                 </p>

@@ -2,7 +2,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
-import { ARCHIVE_PAGE_SIZE, type ArchiveParams, type ArchiveSearch } from "./types";
+import { ARCHIVE_PAGE_SIZE, parseYear, type ArchiveParams, type ArchiveSearch } from "./types";
 
 export function archiveQuery(p: ArchiveParams): string {
   const s = new URLSearchParams();
@@ -10,6 +10,10 @@ export function archiveQuery(p: ArchiveParams): string {
   if (p.survey) s.set("survey", p.survey);
   const district = p.district.trim();
   if (district) s.set("district", district);
+  const yf = parseYear(p.yearFrom);
+  const yt = parseYear(p.yearTo);
+  if (yf !== null) s.set("year_from", String(yf));
+  if (yt !== null) s.set("year_to", String(yt));
   s.set("limit", String(ARCHIVE_PAGE_SIZE));
   s.set("offset", String((p.page - 1) * ARCHIVE_PAGE_SIZE));
   return s.toString();

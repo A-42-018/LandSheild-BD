@@ -4,10 +4,11 @@ import { useTranslations } from "next-intl";
 import { Archive, RotateCcw, Search } from "lucide-react";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import { Button, Card, ErrorState, Input, LoadingState, Select, Table, type Column } from "@/components/ui";
-import { ARCHIVE_PAGE_SIZE, SURVEYS, type ArchiveHit, type ArchiveParams } from "./types";
+import { Link } from "@/i18n/navigation";
+import { ARCHIVE_PAGE_SIZE, SURVEYS, archiveHitHref, parseYear, yearLabel, yearsReversed, type ArchiveHit, type ArchiveParams } from "./types";
 import { useArchive } from "./useArchive";
 
-const INITIAL: ArchiveParams = { q: "", survey: "", district: "", page: 1 };
+const INITIAL: ArchiveParams = { q: "", survey: "", district: "", yearFrom: "", yearTo: "", page: 1 };
 
 /** The backend wraps matched words in [ ]; render them as <mark> without any raw HTML. */
 export function Snippet({ text }: { text: string }) {
@@ -27,9 +28,11 @@ export default function ArchiveSearch() {
   const [draft, setDraft] = useState<ArchiveParams>(INITIAL);
   const q = useArchive(params);
 
+  const badYear = (v: string) => v.trim() !== "" && parseYear(v) === null;
+  const yearError = badYear(draft.yearFrom) || badYear(draft.yearTo) ? t("yearInvalid") : yearsReversed(draft.yearFrom, draft.yearTo) ? t("yearsReversed") : undefined;
   const apply = (e: FormEvent) => {
     e.preventDefault();
-    if (draft.q.trim()) setParams({ ...draft, page: 1 });
+    if (draft.q.trim() && !yearError) setParams({ ...draft, page: 1 });
   };
   const reset = () => {
     setDraft(INITIAL);
@@ -45,7 +48,26 @@ export default function ArchiveSearch() {
       render: (r) => [r.district, r.upazila, r.mouza].filter(Boolean).join(" · ") || "—",
     },
     { key: "khatian", header: t("cols.khatian"), render: (r) => r.khatian_no ?? "—" },
+    {
+      key: "years",
+      header: t("cols.years"),
+      render: (r) => (
+        <span>
+          {yearLabel(r) ?? "—"}
+          {r.historical ? <span className="ml-1 rounded border border-line px-1 text-xs text-ink-muted">{t("historical")}</span> : null}
+        </span>
+      ),
+    },
     { key: "snippet", header: t("cols.excerpt"), render: (r) => <Snippet text={r.snippet} /> },
+    {
+      key: "open",
+      header: t("cols.open"),
+      render: (r) => (
+        <Link href={archiveHitHref(r)} className="font-medium text-primary underline" aria-label={t("openRow", { place: r.mouza ?? r.land_id ?? r.document_id })}>
+          {t("open")}
+        </Link>
+      ),
+    },
   ];
 
   return (
@@ -68,8 +90,26 @@ export default function ArchiveSearch() {
               options={SURVEYS.map((s) => ({ value: s, label: t(`surveys.${s}`) }))}
             />
             <Input label={t("district")} value={draft.district} onChange={(e) => setDraft({ ...draft, district: e.target.value })} />
+            <Input
+              label={t("yearFrom")}
+              value={draft.yearFrom}
+              inputMode="numeric"
+              maxLength={4}
+              placeholder="1940"
+              onChange={(e) => setDraft({ ...draft, yearFrom: e.target.value })}
+              error={badYear(draft.yearFrom) ? t("yearInvalid") : undefined}
+            />
+            <Input
+              label={t("yearTo")}
+              value={draft.yearTo}
+              inputMode="numeric"
+              maxLength={4}
+              placeholder="1950"
+              onChange={(e) => setDraft({ ...draft, yearTo: e.target.value })}
+              error={badYear(draft.yearTo) ? t("yearInvalid") : yearsReversed(draft.yearFrom, draft.yearTo) ? t("yearsReversed") : undefined}
+            />
             <div className="flex items-end gap-2">
-              <Button type="submit" icon={<Search />} disabled={!draft.q.trim()}>{t("search")}</Button>
+              <Button type="submit" icon={<Search />} disabled={!draft.q.trim() || !!yearError}>{t("search")}</Button>
               <Button type="button" variant="secondary" icon={<RotateCcw />} onClick={reset}>{t("reset")}</Button>
             </div>
           </form>

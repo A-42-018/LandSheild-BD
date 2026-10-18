@@ -4,6 +4,7 @@ from sqlalchemy import Date, Float, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import UUID_LEN, Base, CreatedMixin, IdMixin
+from app.models.enums import OwnershipKind
 
 
 class OwnershipHistory(IdMixin, CreatedMixin, Base):
@@ -25,6 +26,10 @@ class OwnershipHistory(IdMixin, CreatedMixin, Base):
         String(UUID_LEN), ForeignKey("transactions.id"), nullable=True
     )
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # H9a: HISTORICAL = a past chain-of-title link (never the current owner, whatever end_date is)
+    kind: Mapped[str] = mapped_column(
+        String(12), default=OwnershipKind.CURRENT.value, server_default="CURRENT", nullable=False
+    )
 
     land = relationship("LandParcel")
     owner = relationship("Owner")

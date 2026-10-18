@@ -16,6 +16,10 @@ RULE_POINTS: dict[str, int] = {
     "UNDER_ACQUISITION": 60,
     "ACTIVE_MORTGAGE": 0,  # informational disclosure only
     "SURVEY_CHAIN_GAP": 15,  # F5c
+    "HISTORICAL_CHAIN_GAP": 15,  # H9c: the deed's buyer does not lead to the later CS/SA khatian
+    "HISTORICAL_SELLER_NOT_OWNER": 20,  # H9c: the deed's seller is not a CS/SA khatian owner
+    "HISTORICAL_DAG_CONFLICT": 25,  # H9d: a later deed claims the same dag through another chain
+    "HISTORICAL_CONSIDERATION_IMPLAUSIBLE": 10,  # H9d: price outside the era's range (flag only)
     "DEED_NO_FORMAT_INVALID": 15,  # F6
     "IMPOSSIBLE_DATE": 30,  # F6
     "RAPID_RESALE": 15,  # F6
@@ -42,6 +46,10 @@ RULE_SEVERITY: dict[str, str] = {
     "UNDER_ACQUISITION": "HIGH",
     "ACTIVE_MORTGAGE": "INFO",
     "SURVEY_CHAIN_GAP": "MEDIUM",
+    "HISTORICAL_CHAIN_GAP": "MEDIUM",
+    "HISTORICAL_SELLER_NOT_OWNER": "MEDIUM",
+    "HISTORICAL_DAG_CONFLICT": "MEDIUM",
+    "HISTORICAL_CONSIDERATION_IMPLAUSIBLE": "MEDIUM",
     "DEED_NO_FORMAT_INVALID": "MEDIUM",
     "IMPOSSIBLE_DATE": "HIGH",
     "RAPID_RESALE": "MEDIUM",
@@ -50,6 +58,20 @@ RULE_SEVERITY: dict[str, str] = {
     "POSSIBLE_NAME_VARIANT": "INFO",
     "LOW_EXTRACTION_CONFIDENCE": "INFO",
     "ML_ANOMALY": "INFO",
+}
+
+# HISTORICAL_CONSIDERATION_IMPLAUSIBLE (H9d): sale price per decimal (shatak) by era. ILLUSTRATIVE
+# demo ranges, deliberately wide: they catch a missing or extra zero, not a hard bargain. The rule
+# only flags; it never blocks an approval. Currencies expected in each era are listed with it.
+CONSIDERATION_PER_DECIMAL: dict[str, tuple[float, float]] = {
+    "BRITISH_INDIA": (0.5, 600.0),
+    "EAST_BENGAL_PAKISTAN": (1.0, 3_000.0),
+    "BANGLADESH": (10.0, 10_000_000.0),
+}
+ERA_CURRENCIES: dict[str, tuple[str, ...]] = {
+    "BRITISH_INDIA": ("INR",),
+    "EAST_BENGAL_PAKISTAN": ("INR", "PKR"),
+    "BANGLADESH": ("BDT",),
 }
 
 # Float tolerance when comparing areas.

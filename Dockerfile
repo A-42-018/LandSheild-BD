@@ -5,7 +5,7 @@ FROM python:3.12-slim
 # Standard tessdata (LSTM, integer) replaces the distro ben/eng data. tessdata_best was ~2x slower and,
 # on the free 0.1-CPU instance, pushed one page past OCR_TIMEOUT_S. With ANTHROPIC_API_KEY set, Claude reads the page image itself.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends tesseract-ocr curl ca-certificates libglib2.0-0 \
+ && apt-get install -y --no-install-recommends tesseract-ocr curl ca-certificates libglib2.0-0 libpango-1.0-0 libpangoft2-1.0-0 \
  && TD="$(ls -d /usr/share/tesseract-ocr/*/tessdata | head -1)" \
  && for l in ben eng; do \
       curl -fsSL -o "$TD/$l.traineddata" "https://github.com/tesseract-ocr/tessdata/raw/main/$l.traineddata"; \
@@ -21,7 +21,7 @@ COPY scripts ./scripts
 COPY models ./models
 
 # scikit-learn is left out on purpose (heavy for a free instance): run with ML_SCORING=off
-RUN pip install --no-cache-dir -e "./backend[llm,s3,postgres]" \
+RUN pip install --no-cache-dir -e "./backend[llm,s3,postgres,pdf]" \
  && pip install --no-cache-dir opencv-python-headless numpy pymupdf pytesseract pillow
 
 ENV PYTHONPATH=/app:/app/backend OCR_PROVIDER=auto DOCUMENT_AI_PROVIDER=auto DEMO_FIXTURES=on \

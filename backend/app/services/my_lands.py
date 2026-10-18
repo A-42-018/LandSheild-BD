@@ -17,6 +17,7 @@ from app.core.nid import NidError, nid_key
 from app.core.ratelimit import check_rate
 from app.models.land_parcel import LandParcel
 from app.models.owner import Owner
+from app.models.enums import OwnershipKind
 from app.models.ownership import OwnershipHistory
 from app.models.user import User
 from app.risk.config import AREA_TO_SQM
@@ -94,7 +95,10 @@ def my_lands(db: Session, user: User, ip: str | None) -> MyLands:
         select(OwnershipHistory, LandParcel)
         .join(LandParcel, LandParcel.id == OwnershipHistory.land_id)
         .join(Owner, Owner.id == OwnershipHistory.owner_id)
-        .where(Owner.nid_hash == user.nid_hash)
+        .where(
+            Owner.nid_hash == user.nid_hash,
+            OwnershipHistory.kind == OwnershipKind.CURRENT.value,
+        )
         .order_by(OwnershipHistory.start_date.desc(), LandParcel.land_id)
     ).all()
     current: dict[str, MyLand] = {}

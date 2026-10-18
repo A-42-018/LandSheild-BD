@@ -11,6 +11,8 @@
     "check:budget": "node scripts/check-budget.mjs",
     "check:i18n": "node scripts/check-i18n.mjs && node scripts/audit-hardcoded.mjs",
     "e2e": "playwright test",
+    "e2e:historical": "E2E_REAL_OCR=1 playwright test e2e/historical.spec.ts",
+    "e2e:library": "E2E_REAL_OCR=1 playwright test e2e/library.spec.ts",
     "e2e:install": "playwright install chromium"
   },
   "dependencies": {

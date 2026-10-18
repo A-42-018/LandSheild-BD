@@ -19,14 +19,18 @@ from app.schemas.public import (
     PublicKey,
     PublicLandSummary,
     PublicMutationStatus,
+    PublicRecord,
     PublicSeal,
     PublicSignature,
     PublicVerify,
+    RecordVerifyBody,
+    RecordVerifyOut,
 )
 from app.services import audit, doc_verify, signing
 from app.services import feedback as feedback_svc
 from app.services import map as map_svc
 from app.services import public as svc
+from app.services import records as records_svc
 from app.services.upload_validation import MAX_UPLOAD_BYTES
 
 router = APIRouter(prefix="/public", tags=["public"])
@@ -210,3 +214,44 @@ def feedback_status(
 ) -> PublicFeedbackStatus:
     _guard(request, response, settings)
     return feedback_svc.public_status(db, reference_no)
+
+
+MAX_RECORD_VERIFY_BYTES = 1024 * 1024
+
+
+def _record_size_guard(request: Request) -> None:
+    declared = request.headers.get("content-length", "")
+    if declared.isdigit() and int(declared) > MAX_RECORD_VERIFY_BYTES:
+        raise AppError("RECORD_TOO_LARGE", "The record file is too large", 413)
+
+
+@router.post(
+    "/records/verify",
+    response_model=RecordVerifyOut,
+    dependencies=[Depends(_record_size_guard)],
+)
+def public_record_verify(
+    body: RecordVerifyBody,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> RecordVerifyOut:
+    """H8b: send a downloaded digital-record JSON, get VALID or INVALID (one changed byte is
+    INVALID). Read-only; the answer carries no data from the record."""
+    _guard(request, response, settings)
+    return RecordVerifyOut(state=records_svc.verify_export(db, body.model_dump()))
+
+
+@router.get("/records/{record_id}", response_model=PublicRecord)
+def public_record(
+    record_id: str,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> PublicRecord:
+    """H8d: target of the PDF's QR code. VALID / INVALID + deed no, version and approval date;
+    unknown, draft and machine ids are all 404 RECORD_NOT_FOUND. No personal data."""
+    _guard(request, response, settings)
+    return PublicRecord(**records_svc.public_record(db, record_id))

@@ -7,6 +7,7 @@ from app.risk.rules import (
     duplicate_tx,
     encumbrance,
     extraction,
+    historical_deed,
     integrity,
     mutation,
     ownership,
@@ -31,6 +32,7 @@ RULES: tuple[RuleFn, ...] = (
     encumbrance.evaluate,
     plausibility.evaluate,
     survey_chain.evaluate,
+    historical_deed.evaluate,
     integrity.evaluate,
     extraction.evaluate,
 )

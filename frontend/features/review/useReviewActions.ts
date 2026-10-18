@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/features/auth/AuthContext";
-import type { DeedProfile, ExtractionOut, FieldError } from "./types";
+import type { DeedProfile, ExtractionOut, FieldError, RecordApiError, RecordOp } from "./types";
 
 /** Field-level errors from a 422 (EXTRACTION_VALIDATION_FAILED / EXTRACTION_INVALID); [] otherwise. */
 export function toFieldErrors(e: unknown): FieldError[] {
@@ -10,6 +10,15 @@ export function toFieldErrors(e: unknown): FieldError[] {
   return (e.details as unknown[]).filter(
     (d): d is FieldError =>
       !!d && typeof (d as FieldError).field === "string" && typeof (d as FieldError).code === "string",
+  );
+}
+
+/** Path-level errors from a refused record edit (422 with details [{path, code}]); [] otherwise. */
+export function toRecordErrors(e: unknown): RecordApiError[] {
+  if (!(e instanceof ApiError) || e.status !== 422 || !Array.isArray(e.details)) return [];
+  return (e.details as unknown[]).filter(
+    (d): d is RecordApiError =>
+      !!d && typeof (d as RecordApiError).path === "string" && typeof (d as RecordApiError).code === "string",
   );
 }
 
@@ -21,6 +30,11 @@ export function useReviewActions(id: string) {
 
   const save = useMutation<ExtractionOut, ApiError, { field: string; value: string | null }>({
     mutationFn: (v) => api.patch<ExtractionOut>(`/documents/${id}/extraction`, { fields: [v] }),
+    onSuccess: (data) => qc.setQueryData(["document", id, "extraction"], data),
+  });
+  // H6b: LHDR record ops by JSON pointer; the answer carries the record and the derived 13 fields again
+  const saveRecord = useMutation<ExtractionOut, ApiError, RecordOp[]>({
+    mutationFn: (record) => api.patch<ExtractionOut>(`/documents/${id}/extraction`, { record }),
     onSuccess: (data) => qc.setQueryData(["document", id, "extraction"], data),
   });
   const approve = useMutation<unknown, ApiError, void>({
@@ -44,7 +58,7 @@ export function useReviewActions(id: string) {
     mutationFn: () => api.post(`/documents/${id}/process`),
     onSuccess: refresh,
   });
-  return { save, approve, reject, reprocess, start };
+  return { save, saveRecord, approve, reject, reprocess, start };
 }
 
 export function fieldErrorText(

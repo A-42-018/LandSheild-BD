@@ -60,6 +60,8 @@ export async function expectNoHorizontalScroll(page: Page): Promise<void> {
 export const BUYER_NID: Record<string, { nid: string; dob: string }> = {
   "Doc1.png": { nid: "19809990000000002", dob: "1980-07-01" }, // Karim Mia
   "Doc2.png": { nid: "19689990000000003", dob: "1968-11-23" }, // Hasan Ali
+  // H6e: synthetic NID for the buyer of the 1944 sample deed (a new owner, not in the seed)
+  "Historical_Land_Deed.pdf": { nid: "19109990000000009", dob: "1910-03-14" },
 };
 
 /** A deed is approved only with the new owner's NID, so the upload form asks for it. */

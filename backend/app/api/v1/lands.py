@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
-from app.core.rbac import ANY_AUTH, require_roles
+from app.core.rbac import ANY_AUTH, REVIEW_UP, require_roles
 from app.models.user import User
+from app.schemas.document import LandDocuments
 from app.schemas.encumbrance import EncumbrancesResponse
 from app.schemas.graph import LandGraph
 from app.schemas.land import LandPublic
@@ -12,6 +13,7 @@ from app.schemas.ownership import OwnershipResponse, TransactionsResponse
 from app.schemas.pre_purchase import PrePurchaseCheck
 from app.services import graph as graph_svc
 from app.services import land as svc
+from app.services import library as library_svc
 from app.services import me as me_svc
 from app.services import ownership as own_svc
 from app.services import pre_purchase as pp_svc
@@ -63,6 +65,16 @@ def get_transactions(
     db: Session = Depends(get_db),
 ) -> TransactionsResponse:
     return own_svc.get_transactions(db, land_id, user)
+
+
+@router.get("/{land_id}/documents", response_model=LandDocuments)
+def get_land_documents(
+    land_id: str,
+    user: User = Depends(require_roles(*REVIEW_UP)),
+    db: Session = Depends(get_db),
+) -> LandDocuments:
+    """Every document of the land in deed-date order, each with its latest approved record (H7b)."""
+    return library_svc.land_documents(db, user, land_id)
 
 
 @router.get("/{land_id}/graph", response_model=LandGraph)
