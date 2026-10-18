@@ -3,9 +3,9 @@ import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, Info, KeyRound, LogIn } from "lucide-react";
+import { AlertCircle, CheckCircle2, ClipboardCheck, Info, KeyRound, Landmark, LogIn, ShieldCheck, UserRound, type LucideIcon } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
-import { Badge, Button, Input } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { useAuth } from "./AuthContext";
@@ -24,6 +24,8 @@ export const DEMO_ACCOUNTS_BY_AUDIENCE: Record<LoginAudience, string[]> = {
 export const DEMO_ACCOUNTS = [...DEMO_ACCOUNTS_BY_AUDIENCE.citizen, ...DEMO_ACCOUNTS_BY_AUDIENCE.staff];
 /** Shown on the sign-in page so judges can test quickly; must match the backend's DEMO_PASSWORD (start.sh default). */
 export const DEMO_PASSWORD = process.env.NEXT_PUBLIC_DEMO_PASSWORD || "LandShield2026!";
+
+const ROLE_ICON: Record<string, LucideIcon> = { CITIZEN: UserRound, REVIEWER: ClipboardCheck, OFFICER: Landmark, ADMIN: ShieldCheck };
 
 export function safeNext(next: string | null): string {
   return next && next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : "/";
@@ -119,34 +121,60 @@ export default function LoginForm({ audience = "citizen" }: { audience?: LoginAu
           {t("submit")}
         </Button>
       </form>
-      <aside aria-labelledby="demo-accounts" className="glass-card p-4 text-sm" data-testid="demo-accounts">
-        <p id="demo-accounts" className="flex items-center gap-2 font-semibold text-ink">
-          <Info aria-hidden="true" className="h-4 w-4 text-primary" />
-          {t("demoTitle")}
-        </p>
-        <p className="mt-1 text-ink-muted">{t("demoHint")}</p>
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-          {DEMO_ACCOUNTS_BY_AUDIENCE[audience].map((e) => (
-            <li key={e}>
-              <button
-                type="button"
-                onClick={() => setEmail(e)}
-                className="flex min-h-11 w-full flex-col items-start gap-1.5 rounded-xl border border-line/80 bg-surface px-3 py-2.5 text-left shadow-[0_2px_6px_-3px_rgb(var(--shadow)/0.2)] transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-              >
-                <Badge tone="pending">{tr(e.split("@")[0].toUpperCase())}</Badge>
-                <span className="break-all font-mono text-xs text-link">{e}</span>
-              </button>
-            </li>
-          ))}
+      <aside aria-labelledby="demo-accounts" className="rounded-2xl border border-dashed border-primary/35 bg-primary-soft/30 p-4 text-sm" data-testid="demo-accounts">
+        <div className="flex items-start gap-3">
+          <span aria-hidden="true" className="icon-tile !h-9 !w-9 !rounded-lg">
+            <Info className="h-4 w-4" />
+          </span>
+          <div className="min-w-0">
+            <p id="demo-accounts" className="font-semibold text-ink">{t("demoTitle")}</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-ink-muted">{t("demoHint")}</p>
+          </div>
+        </div>
+        <ul className="mt-3 flex flex-col gap-2">
+          {DEMO_ACCOUNTS_BY_AUDIENCE[audience].map((e) => {
+            const role = e.split("@")[0].toUpperCase();
+            const Icon = ROLE_ICON[role] ?? UserRound;
+            const picked = email === e;
+            return (
+              <li key={e}>
+                <button
+                  type="button"
+                  // one tap fills the whole form: the e-mail and the shared demo password
+                  onClick={() => {
+                    setEmail(e);
+                    setPassword(DEMO_PASSWORD);
+                  }}
+                  aria-pressed={picked}
+                  className={`group flex min-h-12 w-full items-center gap-3 rounded-xl border bg-surface px-3 py-2 text-left transition-all hover:border-primary/40 hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                    picked ? "border-primary/60 ring-1 ring-primary/30" : "border-line/80"
+                  }`}
+                >
+                  <span aria-hidden="true" className="icon-tile !h-8 !w-8 !rounded-lg">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-ink">{tr(role)}</span>
+                    <span className="block truncate font-mono text-xs text-ink-muted" title={e}>{e}</span>
+                  </span>
+                  {picked ? (
+                    <CheckCircle2 aria-hidden="true" className="h-5 w-5 shrink-0 text-verified" />
+                  ) : (
+                    <span aria-hidden="true" className="shrink-0 text-xs font-semibold text-primary opacity-70 group-hover:opacity-100">{t("demoUse")}</span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
         </ul>
         <button
           type="button"
           onClick={() => setPassword(DEMO_PASSWORD)}
-          className="mt-2 flex min-h-11 w-full items-center gap-2 rounded-xl border border-line/80 bg-surface px-3 py-2.5 text-left shadow-[0_2px_6px_-3px_rgb(var(--shadow)/0.2)] transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          className="mt-2 flex min-h-11 w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-xl px-3 py-2 text-left text-xs transition-colors hover:bg-surface/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
         >
           <KeyRound aria-hidden="true" className="h-4 w-4 shrink-0 text-primary" />
           <span className="text-ink-muted">{t("demoPassword")}</span>
-          <span className="break-all font-mono text-xs text-link">{DEMO_PASSWORD}</span>
+          <code className="rounded-md bg-surface px-2 py-0.5 font-mono text-ink ring-1 ring-line/80">{DEMO_PASSWORD}</code>
         </button>
       </aside>
       <p className="text-xs text-ink-muted">{t("notice")}</p>

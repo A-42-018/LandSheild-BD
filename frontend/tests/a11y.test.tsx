@@ -314,7 +314,7 @@ const CASES: Case[] = [
   { name: "officer-archive", role: "OFFICER", ui: () => <main><ArchiveSearch /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.archive.title) }) },
   { name: "officer-audit-logs", role: "OFFICER", ui: () => <main><AuditLogs /></main>, ready: (m) => screen.findAllByText(new RegExp(m.admin.audit.title)) },
   { name: "officer-mutations", role: "OFFICER", ui: () => <main><MutationQueue /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.mutation.title) }) },
-  { name: "officer-upload", role: "OFFICER", ui: () => <main><UploadForm /></main>, ready: (m) => screen.findAllByText(new RegExp(m.upload.title)) },
+  { name: "officer-upload", role: "OFFICER", ui: () => <main><UploadForm /></main>, ready: (m) => screen.findAllByText(new RegExp(m.upload.summary.title)) },
   { name: "officer-feedback", role: "OFFICER", ui: () => <main><FeedbackAdmin /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.feedback.admin.title) }) },
   { name: "public-verify", role: null, ui: () => <main><PublicVerifyView landId="LP-10240" /></main>, ready: (m) => screen.findAllByText(/LP-10240/) },
   { name: "not-found", role: null, ui: () => <main><NotFound /></main>, ready: (m) => screen.findByRole("heading", { name: new RegExp(m.errorPages.notFoundTitle) }) },
