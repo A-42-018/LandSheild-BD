@@ -52,7 +52,7 @@ def test_public_record_of_an_approved_version_is_valid_and_has_no_personal_data(
 
 def test_public_record_unknown_draft_and_machine_ids_are_the_same_404(env, jobs):
     doc_id = _approved(env, jobs)
-    other = _historical(env, jobs)  # never approved
+    other = _historical(env, jobs, salt=b"other")  # never approved
     ids = [i for i, st in _rows(env, other).values()] + ["no-such-id", "x" * 36]
     for rid in ids:
         r = env.get(PUB.format(rid))
@@ -110,7 +110,7 @@ def test_pdf_endpoint_puts_this_records_address_in_the_footer(env, jobs, stub_en
     doc_id = _approved(env, jobs)
     r = _dl(env, doc_id, "pdf")
     assert f"/bn/v/r/{_approved_id(env, doc_id)}".encode() in r.content
-    draft = _dl(env, _historical(env, jobs), "pdf")
+    draft = _dl(env, _historical(env, jobs, salt=b"draft"), "pdf")
     assert b"/v/r/" not in draft.content
 
 

@@ -213,7 +213,10 @@ def test_who_may_download(env, jobs):
         for role in ("REVIEWER", "OFFICER", "ADMIN"):
             assert _dl(env, doc_id, what, role).status_code == 200, (what, role)
     assert _dl(env, "no-such-document").status_code == 404
-    assert _dl(env, doc_id, "pdf").status_code == 422  # not available before H8c
+    # H8c: pdf has the same scope as the other downloads (role checked before the PDF engine runs)
+    assert _dl(env, doc_id, "pdf", "CITIZEN").status_code == 403
+    assert env.get(D.format(doc_id) + "/download?what=pdf").status_code == 401
+    assert _dl(env, doc_id, "zip").status_code == 422  # unknown kind
     assert env.get(D.format(doc_id) + "/download", headers=_head(env, "REVIEWER")).status_code == 422
 
 
