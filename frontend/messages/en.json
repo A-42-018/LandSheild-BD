@@ -1795,7 +1795,13 @@
       "seller": "Seller"
     },
     "summary": "Checklist summary",
-    "print": "Print checklist"
+    "print": "Print checklist",
+    "tiles": {
+      "PASS": "checks clear",
+      "WARN": "to review",
+      "FAIL": "indicators",
+      "UNKNOWN": "still to check"
+    }
   },
   "verifyDoc": {
     "title": "Verify a document copy",
