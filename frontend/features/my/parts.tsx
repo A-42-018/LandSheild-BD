@@ -28,6 +28,7 @@ export function ParcelLine({ p }: { p: Pick<ParcelBrief, "land_id" | "district" 
 }
 
 /** One plain sentence per notification kind, plus where tapping it should go. */
+// client-messages: result.txType result.encType status risk.level (tryT() below)
 export function useNotificationText() {
   const t = useTranslations();
   return (n: NotificationItem): { text: string; href: string | null } => {

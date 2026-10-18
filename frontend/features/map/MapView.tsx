@@ -41,6 +41,7 @@ const TILE_URL = resolveTileUrl(process.env.NEXT_PUBLIC_MAP_TILE_URL);
 const ATTRIBUTION =
   'Boundaries: geoBoundaries (CC BY 4.0) via <a href="https://github.com/ifahimreza/bangladesh-geojson">ifahimreza/bangladesh-geojson</a>, simplified';
 
+// client-messages: status risk.level result.units (code() below)
 export default function MapView() {
   const t = useTranslations();
   const locale = useLocale();

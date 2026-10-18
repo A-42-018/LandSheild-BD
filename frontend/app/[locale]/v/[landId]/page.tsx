@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import PublicVerifyView from "@/features/qr/PublicVerifyView";
 import { pageTitle } from "@/lib/page-title";
+import ClientMessages from "@/components/ClientMessages";
 
 export const generateMetadata = pageTitle("publicVerify.title");
 
@@ -8,8 +9,10 @@ export const generateMetadata = pageTitle("publicVerify.title");
 export default function PublicVerifyPage({ params: { locale, landId } }: { params: { locale: string; landId: string } }) {
   setRequestLocale(locale);
   return (
-    <div className="mx-auto max-w-3xl">
-      <PublicVerifyView landId={decodeURIComponent(landId)} />
-    </div>
+    <ClientMessages scope="publicRecord">
+      <div className="mx-auto max-w-3xl">
+        <PublicVerifyView landId={decodeURIComponent(landId)} />
+      </div>
+    </ClientMessages>
   );
 }

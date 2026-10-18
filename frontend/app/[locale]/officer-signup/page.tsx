@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import OfficerSignup from "@/features/officers/OfficerSignup";
 import { pageTitle } from "@/lib/page-title";
+import ClientMessages from "@/components/ClientMessages";
 
 export const generateMetadata = pageTitle("officerSignup.title");
 
@@ -8,8 +9,10 @@ export const generateMetadata = pageTitle("officerSignup.title");
 export default function OfficerSignupPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:pt-2">
-      <OfficerSignup />
-    </div>
+    <ClientMessages scope="officerSignup">
+      <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:pt-2">
+        <OfficerSignup />
+      </div>
+    </ClientMessages>
   );
 }

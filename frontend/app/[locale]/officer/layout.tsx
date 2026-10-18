@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import RequireRole from "@/features/auth/RequireRole";
 import { REVIEW_UP } from "@/features/auth/roles";
 import OfficerShell from "@/features/officer/OfficerShell";
+import ClientMessages from "@/components/ClientMessages";
 
 export default function OfficerLayout({
   children,
@@ -13,8 +14,10 @@ export default function OfficerLayout({
 }) {
   setRequestLocale(locale);
   return (
-    <RequireRole roles={REVIEW_UP}>
-      <OfficerShell>{children}</OfficerShell>
-    </RequireRole>
+    <ClientMessages scope="officer">
+      <RequireRole roles={REVIEW_UP}>
+        <OfficerShell>{children}</OfficerShell>
+      </RequireRole>
+    </ClientMessages>
   );
 }
