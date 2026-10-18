@@ -18,6 +18,7 @@ import RiskCard from "@/features/risk/RiskCard";
 import DocumentConsistencyCard from "./DocumentConsistencyCard";
 import type { VerificationReport } from "./types";
 
+// client-messages: report.disclaimer (the server's disclaimer_code)
 export default function ReportView({ id }: { id: string }) {
   const t = useTranslations();
   const barRef = useStickyBar();
