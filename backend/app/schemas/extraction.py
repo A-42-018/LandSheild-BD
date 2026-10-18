@@ -1,8 +1,8 @@
 """Extraction schema (P27, R4): the 13 extracted fields, their review flags and validation."""
-from typing import Any
+from typing import Any, Literal
 
 from ai.extraction.base import EXTRACTION_FIELDS
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 REQUIRED_FIELDS = (
     "khatian_no", "dag_no", "mouza", "district", "upazila",
@@ -45,9 +45,9 @@ class Extraction(BaseModel):
     ocr_profile: str | None = None  # Tesseract profile that produced the text (None = no image OCR)
     # True: a reviewer forced deed_profile on reprocess (deed_class keeps the classifier's verdict)
     profile_overridden: bool = False
-    # H4: historical deeds keep the full LHDR v1 record the 13 fields were derived from (None for
-    # modern deeds and rows from before H4). H5 adds versions and LHDR edits; until then a PATCH
-    # changes the 13 fields only.
+    # H4: historical deeds keep the full LHDR v1 record the 13 fields are derived from (None for
+    # modern deeds and rows from before H4). H5: the record is the source of truth; a PATCH edits it
+    # by JSON pointer, a flat field edit is written into it, and the 13 fields are derived again.
     record: dict[str, Any] | None = None
     record_schema: str | None = None  # "lhdr/1"
 
@@ -64,6 +64,20 @@ class FieldError(BaseModel):
 class ExtractionValidation(BaseModel):
     valid: bool
     errors: list[FieldError]
+
+
+class RecordIssue(BaseModel):
+    path: str  # JSON pointer into the LHDR record, e.g. /schedule/0/area/value
+    code: str  # MISSING_DEED_REF NO_SELLER NOT_NUMERIC ... (ai/extraction/lhdr.py check())
+    message: str
+
+
+class RecordValidation(BaseModel):
+    """LHDR content rules (H1 check()). Errors block approval; warnings only inform."""
+
+    valid: bool
+    errors: list[RecordIssue]
+    warnings: list[RecordIssue]
 
 
 class ExtractedFieldOut(ExtractedField):
@@ -84,6 +98,11 @@ class ExtractionOut(BaseModel):
     profile_overridden: bool = False  # deed_profile was set by a reviewer, not detected
     record: dict[str, Any] | None = None  # H4: LHDR v1 record of a historical deed
     record_schema: str | None = None
+    record_validation: RecordValidation | None = None  # H5: only when there is a record
+    file_hash: str  # SHA-256 of the original upload (kept forever, shown on every view)
+    # H5: the digital record version this working copy is saved as (None = no version yet)
+    version: int | None = None
+    version_status: str | None = None  # MACHINE | DRAFT | APPROVED
     threshold: float
     fields: list[ExtractedFieldOut]
     edited_by_human: bool
@@ -100,5 +119,25 @@ class FieldEdit(BaseModel):
     value: str | None = None
 
 
+class RecordOp(BaseModel):
+    """One edit of the LHDR record (H5). `path` is a JSON pointer (RFC 6901)."""
+
+    op: Literal["replace", "add", "remove"] = "replace"
+    path: str = Field(min_length=1, max_length=200)
+    value: Any = None
+
+
+MAX_RECORD_OPS = 50
+
+
 class ExtractionPatch(BaseModel):
-    fields: list[FieldEdit] = Field(min_length=1, max_length=len(EXTRACTION_FIELDS))
+    """The 13 flat fields and/or LHDR record ops; record ops run first, then the flat fields."""
+
+    fields: list[FieldEdit] = Field(default_factory=list, max_length=len(EXTRACTION_FIELDS))
+    record: list[RecordOp] = Field(default_factory=list, max_length=MAX_RECORD_OPS)
+
+    @model_validator(mode="after")
+    def _not_empty(self) -> "ExtractionPatch":
+        if not self.fields and not self.record:
+            raise ValueError("give at least one field edit or record op")
+        return self

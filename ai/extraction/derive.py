@@ -48,14 +48,17 @@ def _mid(d: DeedDate | None) -> str | None:
     return (lo or hi).isoformat() if lo or hi else None
 
 
-def _sources(rec: LHDR) -> dict[str, tuple[str | None, Field | None]]:
-    """core field -> (value, the Field it came from)."""
-    out: dict[str, tuple[str | None, Field | None]] = {f: (None, None) for f in EXTRACTION_FIELDS}
+def _sources(rec: LHDR) -> dict[str, tuple[str | None, Field | None, str | None]]:
+    """core field -> (value, the Field it came from, JSON pointer of that Field in the record)."""
+    out: dict[str, tuple[str | None, Field | None, str | None]] = {f: (None, None, None) for f in EXTRACTION_FIELDS}
 
-    def put(name: str, f: Field | None, value: object = None) -> None:
+    def put(name: str, f: Field | None, path: str, value: object = None) -> None:
         v = f.value if f is not None and value is None else value
         if v not in (None, ""):
-            out[name] = (str(v), f)
+            out[name] = (str(v), f, path)
+
+    def at(p: Party) -> str:
+        return f"/parties/{next(i for i, q in enumerate(rec.parties) if q is p)}"
 
     mutual = [p for p in rec.parties if p.role.value in MUTUAL_ROLES and p.name and p.name.value]
     seller, buyer = _first(rec.parties, TRANSFEROR_ROLES), _first(rec.parties, TRANSFEREE_ROLES)
@@ -63,48 +66,56 @@ def _sources(rec: LHDR) -> dict[str, tuple[str | None, Field | None]]:
         seller, buyer = mutual[0], mutual[1] if len(mutual) > 1 else None
     owner = seller or (mutual[0] if mutual else None)
     if seller:
-        put("seller", seller.name)
+        put("seller", seller.name, f"{at(seller)}/name")
     if buyer:
-        put("buyer", buyer.name)
+        put("buyer", buyer.name, f"{at(buyer)}/name")
     if owner:
-        put("owner_name", owner.name)
-        rel = owner.father if owner.father and owner.father.name else owner.husband
+        put("owner_name", owner.name, f"{at(owner)}/name")
+        key = "father" if owner.father and owner.father.name else "husband"
+        rel = getattr(owner, key)
         if rel:
-            put("father_name", rel.name)
+            put("father_name", rel.name, f"{at(owner)}/{key}/name")
 
     if rec.schedule:
         p = rec.schedule[0]
-        put("khatian_no", p.khatian_no, normalize.number(p.khatian_no.value) if p.khatian_no else None)
+        put("khatian_no", p.khatian_no, "/schedule/0/khatian_no", normalize.number(p.khatian_no.value) if p.khatian_no else None)
         if p.dag_no:
-            put("dag_no", p.dag_no[0], normalize.number(p.dag_no[0].value or ""))
-        put("mouza", p.mouza)
-        put("district", p.district)
-        put("upazila", p.thana)
+            put("dag_no", p.dag_no[0], "/schedule/0/dag_no/0", normalize.number(p.dag_no[0].value or ""))
+        put("mouza", p.mouza, "/schedule/0/mouza")
+        put("district", p.district, "/schedule/0/district")
+        put("upazila", p.thana, "/schedule/0/thana")
         if p.area:
             if p.area.value and p.area.value.value is not None:
-                put("land_area", p.area.value, _area(p.area.value.value))
+                put("land_area", p.area.value, "/schedule/0/area/value", _area(p.area.value.value))
             if p.area.unit:
-                put("area_unit", p.area.unit, canonical_unit(p.area.unit.value))
+                put("area_unit", p.area.unit, "/schedule/0/area/unit", canonical_unit(p.area.unit.value))
 
     if rec.registration and rec.registration.deed_no:
-        put("deed_no", rec.registration.deed_no, normalize.number(rec.registration.deed_no.value or ""))
+        put("deed_no", rec.registration.deed_no, "/registration/deed_no", normalize.number(rec.registration.deed_no.value or ""))
     if rec.dates:
-        for d in (rec.dates.execution, rec.dates.registration):
+        for key in ("execution", "registration"):
+            d = getattr(rec.dates, key)
             if out["deed_date"][0] is None and (iso := _mid(d)):
-                put("deed_date", d.gregorian_from or d.gregorian_to, iso)
+                put("deed_date", d.gregorian_from or d.gregorian_to, f"/dates/{key}", iso)
     return out
 
 
 def derive_core(rec: LHDR) -> dict[str, str | None]:
     """{field: value} for the 13 core fields, in EXTRACTION_FIELDS order."""
-    return {k: v for k, (v, _) in _sources(rec).items()}
+    return {k: v for k, (v, _, _) in _sources(rec).items()}
+
+
+def core_paths(rec: LHDR) -> dict[str, str | None]:
+    """{field: JSON pointer of the record value it is derived from} (None = not in the record).
+    deed_date points at the DeedDate object (its value is the middle of the Gregorian range)."""
+    return {k: path for k, (_, _, path) in _sources(rec).items()}
 
 
 def derive_fields(rec: LHDR) -> list[ExtractedField]:
     """The 13 core fields as ExtractedField, carrying confidence and bbox of the value they came from.
     A Field without a stated confidence counts as certain only when a person wrote it."""
     out = []
-    for name, (value, f) in _sources(rec).items():
+    for name, (value, f, _) in _sources(rec).items():
         if value is None or f is None:
             out.append(ExtractedField(name, None, 0.0))
             continue

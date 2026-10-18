@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -22,12 +23,32 @@ Q = {"district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "khatian": "61
 FORBIDDEN_KEYS = {"password_hash", "nid_hash", "contact_hash", "file_path", "id", "geometry"}
 
 
+# TEST_DATABASE_URL=postgresql://... runs the API tests against Postgres (CI job, H5 / D6); the
+# tables are dropped and created again for every test. Unset = a fresh SQLite file per test.
+TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL", "")
+
+
+def _engine(tmp_path):
+    if not TEST_DATABASE_URL:
+        engine = make_engine(f"sqlite:///{tmp_path / 'l.db'}")
+    else:
+        engine = make_engine(TEST_DATABASE_URL)
+        with engine.begin() as conn:  # leftovers of the last test (and archive search tables)
+            # a session another test left open would block the DROP: end those connections first
+            conn.exec_driver_sql(
+                "SELECT pg_terminate_backend(pid) FROM pg_stat_activity "
+                "WHERE datname = current_database() AND pid <> pg_backend_pid()"
+            )
+            conn.exec_driver_sql("DROP SCHEMA public CASCADE; CREATE SCHEMA public")
+    Base.metadata.create_all(engine)
+    return engine
+
+
 @pytest.fixture
 def env(tmp_path):
     svc.clear_revoked()
     svc.reset_login_limits()
-    engine = make_engine(f"sqlite:///{tmp_path / 'l.db'}")
-    Base.metadata.create_all(engine)
+    engine = _engine(tmp_path)
     maker = sessionmaker(bind=engine, expire_on_commit=False)
     app = create_app(Settings(_env_file=None, jwt_secret="test-secret"))
 
@@ -48,7 +69,8 @@ def env(tmp_path):
                 )
             )
         s.commit()
-    return TestClient(app, raise_server_exceptions=False)
+    yield TestClient(app, raise_server_exceptions=False)
+    engine.dispose()  # Postgres: give the connections back before the next test drops the schema
 
 
 def _h(c, role):

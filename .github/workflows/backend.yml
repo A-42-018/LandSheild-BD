@@ -1,0 +1,53 @@
+# Backend tests on SQLite and on Postgres (H5 / D6: production runs on a managed Postgres).
+name: backend
+
+on:
+  push:
+    paths: ["backend/**", "ai/**", "database/**", "scripts/**", ".github/workflows/backend.yml"]
+  pull_request:
+    paths: ["backend/**", "ai/**", "database/**", "scripts/**", ".github/workflows/backend.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        db: [sqlite, postgres]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: landshield_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PG_URL: postgresql://postgres:postgres@localhost:5432/landshield_test
+      DEMO_PASSWORD: ci-demo-password
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tesseract (Bangla + English)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-ben
+      - name: Install
+        run: pip install -e ".[dev,llm,s3,postgres]" opencv-python-headless numpy pymupdf pytesseract scikit-learn
+      - name: Migrations + seed on Postgres
+        if: matrix.db == 'postgres'
+        env:
+          DATABASE_URL: ${{ env.PG_URL }}
+        run: |
+          alembic upgrade head
+          PYTHONPATH=.. python ../scripts/seed.py --mode auto
+          PYTHONPATH=.. python ../scripts/seed.py --mode auto   # second boot: skipped, nothing reset
+          alembic downgrade base
+      - name: Tests
+        run: |
+          if [ "${{ matrix.db }}" = postgres ]; then export TEST_DATABASE_URL="$PG_URL"; fi
+          python -m pytest -q

@@ -3,12 +3,23 @@
 Validation here is about FORMAT of present values (area numeric > 0, deed date valid and not in
 the future, known unit) plus REQUIRED-ness. PATCH enforces format only (a reviewer fills fields
 step by step); GET reports required-ness too, and approval (P29) will require validation.valid.
+
+H5: a historical deed's LHDR record is the source of truth. PATCH edits it by JSON pointer
+(`record` ops, ai/extraction/lhdr_patch.py) and writes flat field edits into it too; the 13 fields
+are then derived from the record again, so the two never disagree. The LHDR content rules
+(`record_validation`) are reported like the field errors; an edit may not add a format error at
+the path it touched, and approval needs a record without errors. Every saved edit also updates the
+document's DRAFT record version (app/services/records.py).
 """
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 
+import pydantic
+from ai.extraction import lhdr, lhdr_patch
 from ai.extraction.base import EXTRACTION_FIELDS, ExtractionResult
 from ai.extraction.classify import DeedClass
+from ai.extraction.derive import derive_core, derive_fields
+from ai.extraction.lhdr_patch import PatchError
 from ai.ocr.base import OCRResult
 from sqlalchemy.orm import Session
 
@@ -29,13 +40,20 @@ from app.schemas.extraction import (
     ExtractionPatch,
     ExtractionValidation,
     FieldError,
+    RecordIssue,
+    RecordValidation,
 )
-from app.services import audit
+from app.services import audit, offices, records
 
 _BN_DIGITS = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
 _NUMERIC_FIELDS = {"khatian_no", "dag_no", "land_area", "deed_no", "deed_date"}
 _DATE_FORMATS = ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y")
 EDITABLE_STATUSES = (DocumentStatus.REVIEW_REQUIRED.value, DocumentStatus.EXTRACTED.value)
+# LHDR check() codes about the format of a present value (the rest are required-ness)
+RECORD_FORMAT_CODES = frozenset({
+    "NOT_NUMERIC", "AREA_NOT_POSITIVE", "UNKNOWN_UNIT", "AMOUNT_NOT_POSITIVE",
+    "DATE_IN_FUTURE", "DATE_RANGE_REVERSED", "BAD_DAY",
+})  # fmt: skip
 
 
 def build_extraction(
@@ -185,8 +203,170 @@ def _validate_doc(doc: Document, ex: Extraction) -> list[FieldError]:
     return errors
 
 
+def check_area(doc: Document, ex: Extraction) -> None:
+    """The record must lie in the office's area (offices.check_record_area). A historical deed names
+    places as they were (থানা রূপগঞ্জ, জেলা ঢাকা in 1944); its computed modern mapping (LHDR section
+    I: Narayanganj / Rupganj) is accepted as well."""
+    by = {f.field: f.value for f in ex.fields}
+    try:
+        offices.check_record_area(doc.office, by.get("district"), by.get("upazila"))
+    except AppError:
+        mm = (ex.record or {}).get("modern_mapping") or {}
+        district, upazila = ((mm.get(k) or {}).get("value") for k in ("district", "upazila"))
+        if not district:
+            raise
+        offices.check_record_area(doc.office, district, upazila)
+
+
+def record_validation(record: dict | None, today: date | None = None) -> RecordValidation | None:
+    if record is None:
+        return None
+    try:
+        rec = lhdr.parse(record)
+    except pydantic.ValidationError:
+        issue = RecordIssue(path="", code="RECORD_INVALID", message="record does not match lhdr/1")
+        return RecordValidation(valid=False, errors=[issue], warnings=[])
+    issues = lhdr.check(rec, today)
+    errors = [RecordIssue(path=i.path, code=i.code, message=i.message) for i in issues
+              if i.severity == "error"]  # fmt: skip
+    warnings = [RecordIssue(path=i.path, code=i.code, message=i.message) for i in issues
+                if i.severity == "warning"]  # fmt: skip
+    return RecordValidation(valid=not errors, errors=errors, warnings=warnings)
+
+
+def fields_from_record(
+    rec: lhdr.LHDR, original: list[ExtractedField] | None
+) -> list[ExtractedField]:
+    """The 13 fields derived from the record. edited_by_human = differs from the machine output."""
+    orig = {f.field: f.value for f in original} if original is not None else None
+    return [
+        ExtractedField(
+            field=f.field,
+            value=f.value,
+            confidence=f.confidence,
+            source_bbox=f.source_bbox,
+            edited_by_human=orig is not None and f.value != orig.get(f.field),
+        )
+        for f in derive_fields(rec)
+    ]
+
+
+def with_core(rec: lhdr.LHDR) -> lhdr.LHDR:
+    """The record with its `core` section (J) set to the 13 values derived from it."""
+    rec.core = lhdr.Core(**derive_core(rec))
+    return rec
+
+
+def _check_flat(patch: ExtractionPatch) -> dict[str, str | None]:
+    """Request-level and format problems of the flat edits, reported per field (422)."""
+    problems: list[FieldError] = []
+    seen: set[str] = set()
+    edits: dict[str, str | None] = {}
+    for e in patch.fields:
+        if e.field not in EXTRACTION_FIELDS:
+            problems.append(FieldError(field=e.field, code="UNKNOWN_FIELD"))
+        elif e.field in seen:
+            problems.append(FieldError(field=e.field, code="DUPLICATE_FIELD"))
+        elif e.value is not None and len(e.value) > MAX_VALUE_LEN:
+            problems.append(
+                FieldError(field=e.field, code="TOO_LONG", params={"max": MAX_VALUE_LEN})
+            )
+        else:
+            edits[e.field] = _normalise(e.field, e.value)
+        seen.add(e.field)
+    # format validation of the edited values only (required-ness is not enforced on PATCH)
+    probe = [ExtractedField(field=n, value=v) for n, v in edits.items()]
+    problems += [err for err in validate_fields(probe) if err.code != "REQUIRED"]
+    if problems:
+        raise AppError(
+            "EXTRACTION_VALIDATION_FAILED", "Extraction values are invalid", 422,
+            [p.model_dump(exclude_none=True) for p in problems],
+        )  # fmt: skip
+    return edits
+
+
+def _within(a: str, b: str) -> bool:
+    return a == b or a.startswith(b + "/") or b.startswith(a + "/")
+
+
+def _patch_record(
+    ex: Extraction, edits: dict[str, str | None], patch: ExtractionPatch
+) -> tuple[Extraction, dict, dict] | None:
+    rec = lhdr.parse(ex.record or {})
+    before = {(i.path, i.code) for i in lhdr.check(rec) if i.code in RECORD_FORMAT_CODES}
+    current = derive_core(rec)
+    changed = {n: v for n, v in edits.items() if current[n] != v}
+    try:
+        rec, changes = lhdr_patch.apply(rec, [o.model_dump() for o in patch.record])
+        rec, core_changes = lhdr_patch.apply_core(rec, changed)
+    except PatchError as e:
+        raise AppError(
+            "RECORD_PATCH_FAILED", "The record edit cannot be applied", 422, [e.to_dict()]
+        ) from None
+    changes += core_changes
+    if not changes:
+        return None
+    touched = [c["path"] for c in changes if c["op"] != "remove"]
+    added = [
+        RecordIssue(path=i.path, code=i.code, message=i.message)
+        for i in lhdr.check(rec)
+        if i.code in RECORD_FORMAT_CODES and (i.path, i.code) not in before
+        and any(_within(i.path, t) for t in touched)
+    ]  # fmt: skip
+    if added:
+        raise AppError(
+            "RECORD_VALIDATION_FAILED", "Record values are invalid", 422,
+            [a.model_dump() for a in added],
+        )  # fmt: skip
+    out = ex.model_copy(deep=True)
+    if out.original_fields is None:  # keep the machine output exactly once
+        out.original_fields = [f.model_copy(deep=True) for f in ex.fields]
+    out.record = lhdr_patch.dump(with_core(rec))
+    out.fields = fields_from_record(rec, out.original_fields)
+    out.edited_by_human = any(f.edited_by_human for f in out.fields) or lhdr_patch.edited(rec)
+    new_core = derive_core(rec)
+    moved = {n for n in EXTRACTION_FIELDS if new_core[n] != current[n]}
+    old = {"record": [{k: c[k] for k in ("op", "path", "old")} for c in changes]}
+    new = {"record": [{k: c[k] for k in ("op", "path", "new")} for c in changes]}
+    if moved:
+        old["fields"] = {n: current[n] for n in sorted(moved)}
+        new["fields"] = {n: new_core[n] for n in sorted(moved)}
+    return out, old, new
+
+
+def apply_patch(ex: Extraction, patch: ExtractionPatch) -> tuple[Extraction, dict, dict] | None:
+    """Validate and apply a PATCH to an extraction (a copy is returned; None = nothing changed).
+    Returns (new extraction, audit old, audit new). Raises AppError 422 and changes nothing."""
+    edits = _check_flat(patch)
+    if ex.record is not None:
+        return _patch_record(ex, edits, patch)
+    if patch.record:
+        raise AppError(
+            "RECORD_NOT_AVAILABLE", "This document has no LHDR record to edit", 422,
+            {"record_schema": ex.record_schema},
+        )  # fmt: skip
+    out = ex.model_copy(deep=True)
+    current = {f.field: f for f in out.fields}
+    changed = {n: v for n, v in edits.items() if current[n].value != v}
+    if not changed:
+        return None
+    if out.original_fields is None:  # keep the machine output exactly once
+        out.original_fields = [f.model_copy(deep=True) for f in out.fields]
+    original = {f.field: f.value for f in out.original_fields}
+    old = {n: current[n].value for n in changed}
+    for n, v in changed.items():
+        current[n].value = v
+        current[n].edited_by_human = v != original[n]
+    out.edited_by_human = any(f.edited_by_human for f in out.fields)
+    return out, {"fields": old}, {"fields": changed}
+
+
 def _to_out(
-    doc: Document, ex: Extraction, threshold: float, viewer: User | None = None
+    doc: Document,
+    ex: Extraction,
+    threshold: float,
+    viewer: User | None = None,
+    version=None,  # the document's latest DocumentRecord
 ) -> ExtractionOut:
     fields = [
         ExtractedFieldOut(
@@ -211,6 +391,10 @@ def _to_out(
         profile_overridden=ex.profile_overridden,
         record=ex.record,
         record_schema=ex.record_schema,
+        record_validation=record_validation(ex.record),
+        file_hash=doc.file_hash,
+        version=version.version if version is not None else None,
+        version_status=version.status if version is not None else None,
         threshold=threshold,
         fields=fields,
         edited_by_human=ex.edited_by_human,
@@ -226,7 +410,7 @@ def get_extraction(
     db: Session, document_id: str, threshold: float, viewer: User | None = None
 ) -> ExtractionOut:
     doc = _get_doc(db, document_id)
-    return _to_out(doc, _load(doc), threshold, viewer)
+    return _to_out(doc, _load(doc), threshold, viewer, records.latest(db, doc.id))
 
 
 def patch_extraction(
@@ -244,51 +428,15 @@ def patch_extraction(
             {"status": doc.processing_status},
         )  # fmt: skip
     ex = _load(doc)
-
-    # 1) request-level problems, reported per field
-    problems: list[FieldError] = []
-    seen: set[str] = set()
-    edits: dict[str, str | None] = {}
-    for e in patch.fields:
-        if e.field not in EXTRACTION_FIELDS:
-            problems.append(FieldError(field=e.field, code="UNKNOWN_FIELD"))
-        elif e.field in seen:
-            problems.append(FieldError(field=e.field, code="DUPLICATE_FIELD"))
-        elif e.value is not None and len(e.value) > MAX_VALUE_LEN:
-            problems.append(
-                FieldError(field=e.field, code="TOO_LONG", params={"max": MAX_VALUE_LEN})
-            )
-        else:
-            edits[e.field] = _normalise(e.field, e.value)
-        seen.add(e.field)
-
-    # 2) format validation of the edited values only (required-ness is not enforced on PATCH)
-    probe = [ExtractedField(field=n, value=v) for n, v in edits.items()]
-    problems += [err for err in validate_fields(probe) if err.code != "REQUIRED"]
-    if problems:
-        raise AppError(
-            "EXTRACTION_VALIDATION_FAILED", "Extraction values are invalid", 422,
-            [p.model_dump(exclude_none=True) for p in problems],
-        )  # fmt: skip
-
-    current = {f.field: f for f in ex.fields}
-    changed = {n: v for n, v in edits.items() if current[n].value != v}
-    if not changed:
-        return _to_out(doc, ex, threshold, user)
-
-    if ex.original_fields is None:  # keep the machine output exactly once
-        ex.original_fields = [f.model_copy(deep=True) for f in ex.fields]
-    original = {f.field: f.value for f in ex.original_fields}
-    old = {n: current[n].value for n in changed}
-    for n, v in changed.items():
-        current[n].value = v
-        current[n].edited_by_human = v != original[n]
-    ex.edited_by_human = any(f.edited_by_human for f in ex.fields)
-
-    doc.extraction_json = ex.dump()  # reassign: JSON column does not track in-place mutation
+    result = apply_patch(ex, patch)
+    if result is None:
+        return _to_out(doc, ex, threshold, user, records.latest(db, doc.id))
+    new_ex, old, new = result
+    doc.extraction_json = new_ex.dump()  # reassign: JSON column does not track in-place mutation
+    row = records.on_edit(db, doc, user, before=ex, after=new_ex)
     audit.log(
         db, user, "DOCUMENT_EXTRACTION_EDIT", "document", doc.id,
-        old={"fields": old}, new={"fields": changed}, ip=ip,
+        old=old, new=new, ip=ip,
     )  # fmt: skip
     db.commit()
-    return _to_out(doc, ex, threshold, user)
+    return _to_out(doc, new_ex, threshold, user, row)

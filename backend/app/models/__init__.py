@@ -4,6 +4,7 @@ from app.models.citizen import Notification, SearchHistory, WatchlistItem
 from app.models.content import ContentItem
 from app.models.deed import Deed
 from app.models.document import Document
+from app.models.document_record import DocumentRecord
 from app.models.encumbrance import LandEncumbrance
 from app.models.enums import (
     AlertStatus,
@@ -13,6 +14,7 @@ from app.models.enums import (
     LandStatus,
     MutationSource,
     MutationStatus,
+    RecordStatus,
     Role,
     TransactionStatus,
     TransactionType,
@@ -36,6 +38,7 @@ __all__ = [
     "ContentItem",
     "Deed",
     "Document",
+    "DocumentRecord",
     "DocumentStatus",
     "EncumbranceStatus",
     "EncumbranceType",
@@ -53,6 +56,7 @@ __all__ = [
     "OfficerRequest",
     "Owner",
     "OwnershipHistory",
+    "RecordStatus",
     "RiskAssessment",
     "Role",
     "SearchHistory",

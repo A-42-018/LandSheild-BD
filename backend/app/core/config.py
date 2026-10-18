@@ -31,6 +31,15 @@ class Settings(BaseSettings):
     upload_rate_limit_per_hour: int = 20  # per user (R4)
     cors_origins: str = "http://localhost:3000"
     storage_path: str = "./storage"
+    # H5 / D6: local = files under STORAGE_PATH (dev, tests; Render's free disk is wiped on
+    # redeploy) | s3 = a private S3-compatible bucket (Cloudflare R2, Supabase Storage, ...)
+    storage_backend: str = "local"
+    s3_endpoint: str = ""  # e.g. https://<account>.r2.cloudflarestorage.com; empty = AWS
+    s3_bucket: str = ""
+    s3_region: str = ""  # R2: auto; Supabase: the project's region
+    s3_access_key_id: str = Field(default="", repr=False)
+    s3_secret_access_key: str = Field(default="", repr=False)
+    s3_force_path_style: bool = True  # bucket in the path, as R2 / Supabase / MinIO expect
     # auto = demo fixture -> checked pdf-text -> tesseract; also tesseract | mock (tests)
     ocr_provider: str = "auto"
     # modern | historical (old-scan clean-up) | auto = modern read, then a historical re-read
@@ -80,6 +89,13 @@ def production_problems(s: Settings) -> list[str]:
         problems.append("COOKIE_SAMESITE must be lax, strict or none")
     if s.cookie_samesite.lower() == "none" and not s.cookie_secure:
         problems.append("COOKIE_SAMESITE=none requires COOKIE_SECURE=true")
+    backend = s.storage_backend.strip().lower()
+    if backend not in {"local", "s3"}:
+        problems.append("STORAGE_BACKEND must be local or s3")
+    if backend == "s3":
+        for name in ("s3_bucket", "s3_access_key_id", "s3_secret_access_key"):
+            if not getattr(s, name):
+                problems.append(f"{name.upper()} must be set when STORAGE_BACKEND=s3")
     origins = s.cors_origin_list
     if not origins:
         problems.append("CORS_ORIGINS must list the frontend origin")

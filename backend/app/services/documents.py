@@ -84,6 +84,8 @@ def upload_document(
         return DocumentUploadOut(**_to_out(db, existing).model_dump(), duplicate=True)
 
     stored = storage.save(data, checked.ext)
+    if stored.sha256 != digest:  # the backend stored something else than it was given
+        raise AppError("STORAGE_ERROR", "The file could not be stored", 500)
     try:
         doc = Document(
             land_id=land.id if land else None,
@@ -113,7 +115,10 @@ def upload_document(
         db.commit()
     except Exception:
         db.rollback()
-        storage.delete(stored.key)  # don't leave an orphan file behind
+        # don't leave an orphan behind, but never remove a file a document points to (S3 keys are
+        # content-addressed: a concurrent upload of the same bytes shares the key)
+        if db.scalar(select(Document.id).where(Document.file_path == stored.key)) is None:
+            storage.delete(stored.key)
         raise
     return DocumentUploadOut(**_to_out(db, doc).model_dump(), duplicate=False)
 
@@ -128,8 +133,12 @@ def get_document(db: Session, document_id: str) -> DocumentOut:
 PREVIEW_MEDIA_TYPES = {"jpg": "image/jpeg", "png": "image/png", "pdf": "application/pdf"}
 
 
-def read_document_file(db: Session, storage: StorageService, document_id: str) -> tuple[bytes, str]:
-    """Bytes + media type of the stored original (reviewer preview, P28). Path never leaves."""
+def read_document_file(
+    db: Session, storage: StorageService, document_id: str
+) -> tuple[bytes, str, str]:
+    """Bytes, media type and SHA-256 of the stored original (reviewer preview, P28). The original
+    is kept for good (H5): every read is checked against the hash taken at upload, so a changed or
+    damaged file is refused instead of served. The storage path never leaves the server."""
     doc = db.get(Document, document_id)
     if doc is None:
         raise AppError("DOCUMENT_NOT_FOUND", "Document not found", 404)
@@ -137,6 +146,11 @@ def read_document_file(db: Session, storage: StorageService, document_id: str) -
         data = storage.read(doc.file_path)
     except StorageError:
         raise AppError("DOCUMENT_FILE_MISSING", "Document file is not available", 404) from None
+    if sha256_hex(data) != doc.file_hash:
+        raise AppError(
+            "DOCUMENT_FILE_CORRUPT", "The stored file does not match its recorded hash", 500,
+            {"file_hash": doc.file_hash},
+        )  # fmt: skip
     ext = doc.file_path.rsplit(".", 1)[-1].lower()
     media = PREVIEW_MEDIA_TYPES.get(ext, "application/octet-stream")
-    return data, media
+    return data, media, doc.file_hash

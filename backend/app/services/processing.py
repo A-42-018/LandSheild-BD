@@ -7,13 +7,17 @@ Deeds (not khatian / porcha) are classified modern | historical on the OCR text 
 document_type stays DEED) and the verdict is stored in extraction_json. A reviewer's reprocess
 with `profile` (modern | historical) reads with that Tesseract profile instead of OCR_PROFILE and
 stores it as deed_profile with profile_overridden (deed_class keeps the classifier's verdict).
+H5: the result is saved as a MACHINE record version too; for a historical deed, values the land
+records corrected (record_assist) are written into the LHDR record, which stays the source of the
+13 fields.
 """
 import logging
 from collections.abc import Callable
 from dataclasses import replace
 
-from ai.extraction import reread
+from ai.extraction import lhdr, lhdr_patch, reread
 from ai.extraction.classify import classify
+from ai.extraction.derive import derive_core
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
@@ -21,7 +25,7 @@ from app.models.document import Document
 from app.models.enums import DocumentStatus
 from app.models.user import User
 from app.schemas.document import DocumentOut
-from app.services import audit, record_assist
+from app.services import audit, record_assist, records
 from app.services.documents import _to_out
 from app.services.extraction import build_extraction, is_survey_doc
 from app.services.providers import Providers, with_ocr_profile
@@ -73,6 +77,15 @@ def _fail(db: Session, doc: Document, code: str) -> None:
     db.commit()
 
 
+def _assist_record(record: dict, fields) -> dict:
+    """Write record_assist's corrected core values into the LHDR record (flagged, not human)."""
+    rec = lhdr.parse(record)
+    core = derive_core(rec)
+    changed = {f.field: f.value for f in fields if f.value is not None and core[f.field] != f.value}
+    rec, _ = lhdr_patch.apply_core(rec, changed, flag="MATCHED_TO_RECORDS")
+    return lhdr_patch.dump(rec)
+
+
 def run_processing(
     session_factory: SessionFactory,
     storage: StorageService,
@@ -104,12 +117,15 @@ def run_processing(
                 alts = reread.candidates(data, result.fields)
                 fields, notes = record_assist.apply(db, result.fields, alts)
                 if notes:
-                    result = replace(result, fields=fields, warnings=[*result.warnings, *notes])
+                    rec = _assist_record(result.record, fields) if result.record else result.record
+                    warnings = [*result.warnings, *notes]
+                    result = replace(result, fields=fields, warnings=warnings, record=rec)
             except Exception:
                 logger.warning("record_assist_failed", extra={"id": document_id}, exc_info=True)
             doc.ocr_text = ocr.text
             doc.ocr_confidence = ocr.confidence
             doc.extraction_json = build_extraction(result, ocr, deed_class, override)
+            version = records.record_machine(db, doc)
             # every document needs human approval regardless of confidence (R4)
             doc.processing_status = DocumentStatus.REVIEW_REQUIRED.value
             audit.log(
@@ -123,6 +139,7 @@ def run_processing(
                     "deed_profile": override or (deed_class.deed_profile if deed_class else None),
                     "profile_overridden": override is not None,
                     "warnings": [*ocr.warnings, *result.warnings],
+                    "record_version": version.version,
                 },
             )  # fmt: skip
             db.commit()

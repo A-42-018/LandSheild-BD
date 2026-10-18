@@ -50,6 +50,9 @@ AUDIT = {
     ("POST", f"{P}/me/nid"): "NID_LINK",
     ("DELETE", f"{P}/me/nid"): "NID_UNLINK",
     ("PATCH", f"{P}/documents/{{document_id}}/party-nids"): "DOCUMENT_PARTY_NID_SET",
+    ("POST", f"{P}/documents/{{document_id}}/records"): "DOCUMENT_RECORD_CORRECTION_START",
+    ("PATCH", f"{P}/documents/{{document_id}}/records/{{version}}"): "DOCUMENT_RECORD_EDIT",
+    ("POST", f"{P}/documents/{{document_id}}/records/{{version}}/approve"): "DOCUMENT_RECORD_APPROVE",
     ("POST", f"{P}/me/password"): "PASSWORD_CHANGE",
 }
 
@@ -127,6 +130,14 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     _fill(env, doc)
     _audited(env, "DOCUMENT_APPROVE", lambda: env.post(f"{P}/documents/{doc}/approve", headers=rev))
     mark("POST", f"{P}/documents/{{document_id}}/approve")
+    _audited(env, "DOCUMENT_RECORD_CORRECTION_START", lambda: env.post(f"{P}/documents/{doc}/records", headers=rev))
+    mark("POST", f"{P}/documents/{{document_id}}/records")
+    v = env.get(f"{P}/documents/{doc}/records", headers=rev).json()["items"][-1]["version"]
+    _audited(env, "DOCUMENT_RECORD_EDIT", lambda: env.patch(
+        f"{P}/documents/{doc}/records/{v}", json={"fields": [{"field": "mouza", "value": "Fixed"}]}, headers=rev))  # fmt: skip
+    mark("PATCH", f"{P}/documents/{{document_id}}/records/{{version}}")
+    _audited(env, "DOCUMENT_RECORD_APPROVE", lambda: env.post(f"{P}/documents/{doc}/records/{v}/approve", headers=off))
+    mark("POST", f"{P}/documents/{{document_id}}/records/{{version}}/approve")
 
     doc2 = _ready(env, b"Doc2")
     _audited(env, "DOCUMENT_REJECT", lambda: env.post(

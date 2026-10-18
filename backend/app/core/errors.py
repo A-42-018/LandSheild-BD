@@ -10,6 +10,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import DataError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logger = logging.getLogger("landshield.errors")
@@ -72,6 +73,17 @@ async def _validation_error_handler(_: Request, exc: RequestValidationError) -> 
     return _json(422, "VALIDATION_ERROR", "Request validation failed", details)
 
 
+async def _data_error_handler(request: Request, exc: DataError) -> JSONResponse:
+    """A value the database cannot store or compare (Postgres: a NUL character in text, an
+    out-of-range number). Input from the client, so 422, not a server error (H5: Postgres)."""
+    logger.warning(
+        "database_rejected_input",
+        extra={"path": request.url.path, "method": request.method,
+               "error": type(exc.orig).__name__},  # fmt: skip
+    )
+    return _json(422, "INVALID_INPUT", "The input contains a value that cannot be stored")
+
+
 async def _unhandled_error_handler(request: Request, exc: Exception) -> JSONResponse:
     logger.error(
         "unhandled_exception",
@@ -85,4 +97,5 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(AppError, _app_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(StarletteHTTPException, _http_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(RequestValidationError, _validation_error_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(DataError, _data_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, _unhandled_error_handler)

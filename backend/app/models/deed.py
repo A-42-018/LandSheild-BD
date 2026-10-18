@@ -1,6 +1,6 @@
 from datetime import date
 
-from sqlalchemy import Date, Float, ForeignKey, Index, String
+from sqlalchemy import Boolean, Date, Float, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import UUID_LEN, Base, CreatedMixin, IdMixin
@@ -40,8 +40,14 @@ class Deed(IdMixin, CreatedMixin, Base):
 
     record_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)  # F4a SHA-256 hex
     signature: Mapped[str | None] = mapped_column(String(128), nullable=True)  # F4a Ed25519, b64url
+    # H5: posted from a historical deed; record_id = its approved digital record (latest version)
+    is_historical: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    record_id: Mapped[str | None] = mapped_column(
+        String(UUID_LEN), ForeignKey("document_records.id"), nullable=True
+    )
 
     land = relationship("LandParcel")
     seller = relationship("Owner", foreign_keys=[seller_id])
     buyer = relationship("Owner", foreign_keys=[buyer_id])
     document = relationship("Document")
+    record = relationship("DocumentRecord")

@@ -13,14 +13,16 @@ from app.schemas.document import (
     ReprocessBody,
 )
 from app.schemas.extraction import ExtractionOut, ExtractionPatch
+from app.schemas.record import RecordVersionList, RecordVersionOut
 from app.services import documents as svc
 from app.services import extraction as extraction_svc
 from app.services import offices as office_svc
 from app.services import party_nid as nid_svc
 from app.services import processing
+from app.services import records as records_svc
 from app.services import review as review_svc
 from app.services.providers import Providers, get_providers
-from app.services.storage import LocalStorage, StorageService
+from app.services.storage import StorageService, make_storage
 from app.services.upload_validation import MAX_UPLOAD_BYTES
 from app.workers.jobs import BackgroundTasksRunner
 
@@ -28,7 +30,11 @@ router = APIRouter(tags=["documents"])
 
 
 def get_storage(request: Request) -> StorageService:
-    return LocalStorage(request.app.state.settings.storage_path)
+    """STORAGE_BACKEND=local (disk under STORAGE_PATH) | s3 (one client per app)."""
+    state = request.app.state
+    if getattr(state, "storage", None) is None:
+        state.storage = make_storage(state.settings)
+    return state.storage
 
 
 def get_session_factory() -> processing.SessionFactory:
@@ -89,11 +95,15 @@ def get_document_file(
     storage: StorageService = Depends(get_storage),
 ) -> Response:
     office_svc.ensure_doc_access(db, user, document_id)
-    data, media = svc.read_document_file(db, storage, document_id)
+    data, media, digest = svc.read_document_file(db, storage, document_id)
     return Response(
         content=data,
         media_type=media,
-        headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store"},
+        headers={
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "private, no-store",
+            "X-File-SHA256": digest,  # the original's hash, checked on every read (H5)
+        },
     )
 
 
@@ -203,3 +213,73 @@ def reprocess_document(
         profile=profile,
     )
     return out
+
+
+# ---- H5: digital record versions ---------------------------------------------------------------
+
+
+@router.get("/documents/{document_id}/records", response_model=RecordVersionList)
+def list_record_versions(
+    document_id: str,
+    user: User = Depends(require_roles(*REVIEW_UP)),
+    db: Session = Depends(get_db),
+) -> RecordVersionList:
+    office_svc.ensure_doc_access(db, user, document_id)
+    return records_svc.list_versions(db, document_id)
+
+
+@router.get("/documents/{document_id}/records/{version}", response_model=RecordVersionOut)
+def get_record_version(
+    document_id: str,
+    version: int,
+    user: User = Depends(require_roles(*REVIEW_UP)),
+    db: Session = Depends(get_db),
+) -> RecordVersionOut:
+    office_svc.ensure_doc_access(db, user, document_id)
+    return records_svc.get_version(db, document_id, version)
+
+
+@router.post("/documents/{document_id}/records", response_model=RecordVersionOut, status_code=201)
+def start_record_correction(
+    document_id: str,
+    request: Request,
+    response: Response,
+    user: User = Depends(require_roles(*REVIEW_UP)),
+    db: Session = Depends(get_db),
+) -> RecordVersionOut:
+    """Open a correction of an approved document's record (the open draft if there is one: 200)."""
+    office_svc.ensure_doc_access(db, user, document_id)
+    ip = request.client.host if request.client else None
+    out, created = records_svc.start_correction(db, user, document_id, ip)
+    if not created:
+        response.status_code = 200
+    return out
+
+
+@router.patch("/documents/{document_id}/records/{version}", response_model=RecordVersionOut)
+def patch_record_correction(
+    document_id: str,
+    version: int,
+    body: ExtractionPatch,
+    request: Request,
+    user: User = Depends(require_roles(*REVIEW_UP)),
+    db: Session = Depends(get_db),
+) -> RecordVersionOut:
+    office_svc.ensure_doc_access(db, user, document_id)
+    ip = request.client.host if request.client else None
+    return records_svc.patch_correction(db, user, document_id, version, body, ip)
+
+
+@router.post(
+    "/documents/{document_id}/records/{version}/approve", response_model=RecordVersionOut
+)
+def approve_record_correction(
+    document_id: str,
+    version: int,
+    request: Request,
+    user: User = Depends(require_roles(*REVIEW_UP)),
+    db: Session = Depends(get_db),
+) -> RecordVersionOut:
+    office_svc.ensure_doc_access(db, user, document_id)
+    ip = request.client.host if request.client else None
+    return records_svc.approve_correction(db, user, document_id, version, ip)
