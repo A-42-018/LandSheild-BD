@@ -38,6 +38,11 @@ class Extraction(BaseModel):
     original_fields: list[ExtractedField] | None = None  # snapshot taken before the first edit
     survey_type: str | None = None  # khatian / porcha: CS | SA | RS | BS (None = not read)
     extras: dict[str, Any] | None = None  # khatian: jl_no, owners + shares, dags
+    # H3 (D1): deeds stay document_type DEED; the classifier's verdict lives here (None = not run:
+    # khatian / porcha, or rows from before H3). deed_class: kind, era, score, year, signals.
+    deed_profile: str | None = None  # modern | historical
+    deed_class: dict[str, Any] | None = None
+    ocr_profile: str | None = None  # Tesseract profile that produced the text (None = no image OCR)
 
     def dump(self) -> dict[str, Any]:
         return self.model_dump(mode="json")
@@ -66,6 +71,9 @@ class ExtractionOut(BaseModel):
     extractor: str | None = None
     model: str | None = None
     warnings: list[str] = Field(default_factory=list)
+    deed_profile: str | None = None  # H3: modern | historical (None = not classified)
+    deed_class: dict[str, Any] | None = None
+    ocr_profile: str | None = None
     threshold: float
     fields: list[ExtractedFieldOut]
     edited_by_human: bool

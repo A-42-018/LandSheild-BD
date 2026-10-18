@@ -8,6 +8,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 
 from ai.extraction.base import EXTRACTION_FIELDS, ExtractionResult
+from ai.extraction.classify import DeedClass
 from ai.ocr.base import OCRResult
 from sqlalchemy.orm import Session
 
@@ -37,7 +38,9 @@ _DATE_FORMATS = ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y")
 EDITABLE_STATUSES = (DocumentStatus.REVIEW_REQUIRED.value, DocumentStatus.EXTRACTED.value)
 
 
-def build_extraction(result: ExtractionResult, ocr: OCRResult | None = None) -> dict:
+def build_extraction(
+    result: ExtractionResult, ocr: OCRResult | None = None, deed_class: DeedClass | None = None
+) -> dict:
     """Provider output -> stored JSON (all 13 fields, absent -> value None / confidence 0)."""
     by = {f.field: f for f in result.fields}
     fields = [
@@ -60,6 +63,9 @@ def build_extraction(result: ExtractionResult, ocr: OCRResult | None = None) -> 
         fields=fields,
         survey_type=survey,
         extras=extras,
+        deed_profile=deed_class.deed_profile if deed_class else None,
+        deed_class=deed_class.to_dict() if deed_class else None,
+        ocr_profile=ocr.profile if ocr else None,
     )
     return ex.dump()
 
@@ -191,6 +197,9 @@ def _to_out(
         extractor=ex.extractor or ex.provider,
         model=ex.model,
         warnings=ex.warnings,
+        deed_profile=ex.deed_profile,
+        deed_class=ex.deed_class,
+        ocr_profile=ex.ocr_profile,
         threshold=threshold,
         fields=fields,
         edited_by_human=ex.edited_by_human,

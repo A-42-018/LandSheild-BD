@@ -1,6 +1,7 @@
 """P41/O4 evaluation. One command:  python ai/evaluation/run_eval.py [--write-docs]
         [--ocr {tesseract,auto}] [--extractor {rules,claude}] [--out FILE]
-        [--set historical [--only NAME]]    (H0: historical-deed set, baseline per LHDR section)
+        [--set historical [--only NAME] [--profile historical] [--input-quality]]
+            (H0: historical-deed set, baseline per LHDR section; H2: OCR input quality before/after)
 
 The OCR is always run on the real image (demo fixtures are never used here). `--extractor claude`
 needs ANTHROPIC_API_KEY (+ `pip install anthropic`); without it the run stops, nothing is faked.
@@ -288,6 +289,16 @@ def render(
 
 
 HIST_BEGIN, HIST_END = "<!-- HIST-EVAL:BEGIN -->", "<!-- HIST-EVAL:END -->"
+HIST_OCR_BEGIN, HIST_OCR_END = "<!-- HIST-OCR:BEGIN -->", "<!-- HIST-OCR:END -->"
+
+
+def _write_block(text: str, begin: str, end: str) -> None:
+    old = DOC.read_text(encoding="utf-8") if DOC.exists() else "# AI pipeline\n"
+    if begin in old and end in old:
+        new = re.sub(re.escape(begin) + r".*?" + re.escape(end), lambda _: text, old, flags=re.S)
+    else:
+        new = old.rstrip() + "\n\n" + text + "\n"
+    DOC.write_text(new, encoding="utf-8")
 
 
 def run_historical(a) -> int:
@@ -303,17 +314,17 @@ def run_historical(a) -> int:
     except Exception as exc:  # Tesseract unavailable
         print(f"Tesseract not runnable ({exc}). Install it and re-run.")
         return 2
-    text = "\n".join([HIST_BEGIN, "", historical.render(historical.run(a.ocr, lang, a.only), a.ocr), "", HIST_END])
+    if a.input_quality:
+        body, begin, end = historical.render_input(historical.input_quality(lang, a.only)), HIST_OCR_BEGIN, HIST_OCR_END
+    else:
+        body = historical.render(historical.run(a.ocr, lang, a.only, a.profile), a.ocr)
+        begin, end = HIST_BEGIN, HIST_END
+    text = "\n".join([begin, "", body, "", end])
     print(text)
     if a.out:
         Path(a.out).write_text(text + "\n", encoding="utf-8")
     if a.write_docs:
-        old = DOC.read_text(encoding="utf-8") if DOC.exists() else "# AI pipeline\n"
-        if HIST_BEGIN in old and HIST_END in old:
-            new = re.sub(re.escape(HIST_BEGIN) + r".*?" + re.escape(HIST_END), lambda _: text, old, flags=re.S)
-        else:
-            new = old.rstrip() + "\n\n" + text + "\n"
-        DOC.write_text(new, encoding="utf-8")
+        _write_block(text, begin, end)
     return 0
 
 
@@ -327,6 +338,10 @@ def main() -> int:
     ap.add_argument("--set", choices=("default", "historical"), default="default",
                     help="historical = H0 deed set (database/sample_data/historical), scored per LHDR section")
     ap.add_argument("--only", help="with --set historical: only files whose name contains this")
+    ap.add_argument("--profile", choices=("modern", "historical", "auto"), default="modern",
+                    help="with --set historical: OCR profile (H2)")
+    ap.add_argument("--input-quality", action="store_true",
+                    help="with --set historical: gold values found in the OCR text, before H2 vs H2 profiles")
     a = ap.parse_args()
     if a.set == "historical":
         return run_historical(a)

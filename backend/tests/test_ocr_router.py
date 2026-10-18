@@ -1,5 +1,6 @@
 # ruff: noqa: F811
-"""O1: fixture -> pdf-text -> Tesseract router. No network, Tesseract stubbed unless installed."""
+"""O1/H2: fixture -> checked pdf-text -> Tesseract router. No network; Tesseract stubbed unless
+installed."""
 from pathlib import Path
 
 import pytest
@@ -15,15 +16,23 @@ from tests.test_lands import _h, env  # noqa: F401
 from tests.test_processing import PROC, _process, jobs  # noqa: F401
 
 SAMPLES = Path(__file__).resolve().parents[2] / "database" / "sample_data"
+# Chrome-printed: damaged Bangla text layer
+BROKEN_PDF = SAMPLES / "historical" / "Historical_Land_Deed.pdf"
+CLEAN_BN = (
+    "দলিল নং ৪৭৮২ জনাব কফিল উদ্দিন পিতা মৃত সমসের আলী বিক্রেতা ক্রেতা "
+    "পশ্চিমে রহিম সেখের জমি তপশিল মৌজা ভবানীপুর"
+)
 needs_tesseract = pytest.mark.skipif(not tess.is_available(), reason="tesseract not installed")
 
 
 class FakeTesseract:
+    text = "khatian 1"
+
     def __init__(self, **kw):
         self.kw = kw
 
     def recognize(self, data, file_type):
-        return OCRResult(text="khatian 1", confidence=0.8, provider="tesseract")
+        return OCRResult(text=self.text, confidence=0.8, provider="tesseract")
 
 
 @pytest.fixture
@@ -128,3 +137,57 @@ def test_real_tesseract_smoke_on_clean_png():
         (SAMPLES / "Clean.png").read_bytes(), "png"
     )
     assert r.provider == "tesseract" and r.text.strip()
+
+
+# ---- H2: checked text layer -------------------------------------------------------------------
+
+
+def test_broken_text_layer_is_replaced_by_ocr(monkeypatch, fake_tesseract):
+    monkeypatch.setattr(FakeTesseract, "text", CLEAN_BN)
+    r = AutoOCRProvider(demo_fixtures=False).recognize(BROKEN_PDF.read_bytes(), "pdf")
+    assert r.provider == "tesseract" and r.text == CLEAN_BN
+    assert r.warnings == ("TEXT_LAYER_REJECTED",)
+
+
+def test_broken_text_layer_kept_as_suspect_without_tesseract(no_tesseract):
+    r = AutoOCRProvider(demo_fixtures=False).recognize(BROKEN_PDF.read_bytes(), "pdf")
+    assert r.provider == "pdf-text" and r.warnings == ("TEXT_LAYER_SUSPECT",) and r.confidence < 0.5
+    assert len(r.tables) == 1 and r.tables[0].grid()[1][3] == "১২০"  # PyMuPDF table finder
+
+
+def test_empty_ocr_does_not_beat_a_damaged_layer(monkeypatch, fake_tesseract):
+    monkeypatch.setattr(FakeTesseract, "text", "")
+    r = AutoOCRProvider(demo_fixtures=False).recognize(BROKEN_PDF.read_bytes(), "pdf")
+    assert r.provider == "pdf-text" and r.warnings == ("TEXT_LAYER_SUSPECT",)
+
+
+def test_profile_is_passed_to_tesseract(monkeypatch, fake_tesseract):
+    seen = {}
+    monkeypatch.setattr(FakeTesseract, "__init__", lambda self, **kw: seen.update(kw))
+    AutoOCRProvider(demo_fixtures=False, profile="historical").recognize(png(salt=b"p"), "png")
+    assert seen["profile"] == "historical"
+
+
+def test_settings_wire_ocr_profile():
+    p = get_providers(Settings(_env_file=None, ocr_provider="auto", ocr_profile="Historical"))
+    assert p.ocr.profile == "historical"
+
+
+def test_clean_text_pdf_with_ruled_table_returns_grid(no_tesseract):
+    pymupdf = pytest.importorskip("pymupdf")
+    doc = pymupdf.open()
+    page = doc.new_page()
+    page.insert_text((72, 60), "Deed of sale. Schedule of the land sold, recorded at the registry.")
+    xs, ys = [72, 200, 330, 460], [100, 125, 150]
+    for y in ys:
+        page.draw_line((xs[0], y), (xs[-1], y))
+    for x in xs:
+        page.draw_line((x, ys[0]), (x, ys[-1]))
+    cells = [("Mouza", "Barmi"), ("Khatian", "1245"), ("Dag", "785")]
+    for x, (head, val) in zip(xs, cells, strict=False):
+        page.insert_text((x + 4, 117), head)
+        page.insert_text((x + 4, 142), val)
+    r = AutoOCRProvider(demo_fixtures=False).recognize(doc.tobytes(), "pdf")
+    assert r.provider == "pdf-text" and r.confidence == 0.99 and not r.warnings
+    assert r.tables
+    assert r.tables[0].grid() == [["Mouza", "Khatian", "Dag"], ["Barmi", "1245", "785"]]

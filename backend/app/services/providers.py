@@ -90,6 +90,7 @@ def get_providers(settings: Settings) -> Providers:
             preprocess=preprocess,
             timeout_s=settings.ocr_timeout_s,
             max_pages=settings.ocr_max_pages,
+            profile=settings.ocr_profile.strip().lower(),
         )
     elif ocr_name == "tesseract":
         if not is_available():
@@ -99,6 +100,7 @@ def get_providers(settings: Settings) -> Providers:
             preprocess=preprocess,
             timeout_s=settings.ocr_timeout_s,
             max_pages=settings.ocr_max_pages,
+            profile=settings.ocr_profile.strip().lower(),
         )
     else:
         raise _unavailable("OCR", ocr_name, KNOWN_OCR)  # paddle: P42

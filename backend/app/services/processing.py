@@ -3,12 +3,15 @@
 `start_processing` runs in the request (validates + flips to PROCESSING + audit).
 `run_processing` is the background job: it opens its own session (the request session is
 closed by then), runs OCR then Document-AI, and always ends in REVIEW_REQUIRED or FAILED.
+Deeds (not khatian / porcha) are classified modern | historical on the OCR text (H3, D1: the
+document_type stays DEED) and the verdict is stored in extraction_json.
 """
 import logging
 from collections.abc import Callable
 from dataclasses import replace
 
 from ai.extraction import reread
+from ai.extraction.classify import classify
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
@@ -18,7 +21,7 @@ from app.models.user import User
 from app.schemas.document import DocumentOut
 from app.services import audit, record_assist
 from app.services.documents import _to_out
-from app.services.extraction import build_extraction
+from app.services.extraction import build_extraction, is_survey_doc
 from app.services.providers import Providers
 from app.services.storage import StorageService
 
@@ -83,6 +86,7 @@ def run_processing(
             data = storage.read(doc.file_path)
             file_type = doc.file_path.rsplit(".", 1)[-1]
             ocr = providers.ocr.recognize(data, file_type)
+            deed_class = None if is_survey_doc(doc) else classify(ocr.text, ocr.tables)
             result = providers.ai.extract(data, ocr)
             try:  # best effort: check misread values against the land records, never fail the document
                 alts = reread.candidates(data, result.fields)
@@ -93,7 +97,7 @@ def run_processing(
                 logger.warning("record_assist_failed", extra={"id": document_id}, exc_info=True)
             doc.ocr_text = ocr.text
             doc.ocr_confidence = ocr.confidence
-            doc.extraction_json = build_extraction(result, ocr)
+            doc.extraction_json = build_extraction(result, ocr, deed_class)
             # every document needs human approval regardless of confidence (R4)
             doc.processing_status = DocumentStatus.REVIEW_REQUIRED.value
             audit.log(
@@ -104,6 +108,7 @@ def run_processing(
                     "ocr_provider": ocr.provider,
                     "ai_provider": result.provider,
                     "model": result.model,
+                    "deed_profile": deed_class.deed_profile if deed_class else None,
                     "warnings": [*ocr.warnings, *result.warnings],
                 },
             )  # fmt: skip
