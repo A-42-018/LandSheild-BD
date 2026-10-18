@@ -321,7 +321,6 @@ Risk scoring is fully rule-based. Generative AI is never used to decide a risk l
 | UI, design system and usability | [ui.md](docs/ui.md) · [ui-ux-roadmap.md](docs/ui-ux-roadmap.md) · [usability.md](docs/usability.md) |
 | Security, GIS | [security.md](docs/security.md) · [gis.md](docs/gis.md) |
 | Demo, presentation, acceptance | [demo-script.md](docs/demo-script.md) · [final-presentation.md](docs/final-presentation.md) · [acceptance.md](docs/acceptance.md) |
-| Project state | [plan.md](plan.md) · [roadmap.md](roadmap.md) |
 
 Repository layout: `frontend/` · `backend/` · `ai/` · `database/` · `docs/` · `scripts/` · `models/`.
 
