@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.deed import Deed
-from app.models.enums import TransactionStatus
+from app.models.enums import OwnershipKind, TransactionStatus
 from app.models.owner import Owner
 from app.models.ownership import OwnershipHistory
 from app.models.transaction import Transaction
@@ -58,7 +58,11 @@ def get_graph(db: Session, land_id: str, viewer: User) -> LandGraph:
     ).all()
     current = db.scalars(
         select(OwnershipHistory)
-        .where(OwnershipHistory.land_id == land.id, OwnershipHistory.end_date.is_(None))
+        .where(
+            OwnershipHistory.land_id == land.id,
+            OwnershipHistory.end_date.is_(None),
+            OwnershipHistory.kind == OwnershipKind.CURRENT.value,
+        )
         .order_by(
             OwnershipHistory.start_date.is_(None),
             OwnershipHistory.start_date,

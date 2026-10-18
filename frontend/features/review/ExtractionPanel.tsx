@@ -6,6 +6,8 @@ import { Badge, Button, Card, Input } from "@/components/ui";
 import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { BAND_TONE, bandFor, percent } from "./confidence";
 import DeedProfileSwitch from "./DeedProfileSwitch";
+import DeedView from "./deed/DeedView";
+import { issuesOf, RecordEditProvider } from "./deed/RecordEdit";
 import EngineBadge from "./EngineBadge";
 import ReviewActions, { REVIEWABLE } from "./ReviewActions";
 import PartyNidPanel from "./PartyNidPanel";
@@ -150,6 +152,8 @@ export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
   const withNid = !!doc && needsPartyNid(doc.document_type);
   // the backend refuses to approve a deed without the new owner's NID; say so before the click
   const needsNid = withNid && !doc?.party_nids?.buyer;
+  // H6a: a historical deed with an LHDR record shows the sectioned digital deed; everything else keeps the 13 rows
+  const historical = data.deed_profile === "historical" && !!data.record;
   const lowLabels = data.low_confidence_fields.map((f) => (t.has(`fields.${f}`) ? t(`fields.${f}`) : f));
 
   return (
@@ -167,22 +171,51 @@ export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
       )}
       <EngineBadge data={data} />
       <DeedProfileSwitch data={data} actions={actions} />
-      <Card title={t("fieldsTitle")} icon={<ListChecks />}>
-        <dl className="divide-y divide-line">
-          {data.fields.map((f) => (
-            <FieldRow
-              key={f.field}
-              f={f}
-              t={t}
-              label={t.has(`fields.${f.field}`) ? t(`fields.${f.field}`) : f.field}
-              threshold={data.threshold}
-              editable={editable}
-              errors={editable ? data.validation.errors.filter((e) => e.field === f.field) : []}
-              onSave={(value) => actions.save.mutateAsync({ field: f.field, value })}
-            />
-          ))}
-        </dl>
-      </Card>
+      {historical ? (
+        <>
+          <RecordEditProvider documentId={data.document_id} editable={editable} issues={issuesOf(data)}>
+            <DeedView record={data.record!} threshold={data.threshold} />
+          </RecordEditProvider>
+          <details data-testid="core-fields" className="text-sm">
+            <summary className="cursor-pointer font-medium text-ink">{t("deed.coreFields")}</summary>
+            <div className="mt-2">
+            <Card title={t("fieldsTitle")} icon={<ListChecks />}>
+              <dl className="divide-y divide-line">
+                {data.fields.map((f) => (
+                  <FieldRow
+                    key={f.field}
+                    f={f}
+                    t={t}
+                    label={t.has(`fields.${f.field}`) ? t(`fields.${f.field}`) : f.field}
+                    threshold={data.threshold}
+                    editable={editable}
+                    errors={editable ? data.validation.errors.filter((e) => e.field === f.field) : []}
+                    onSave={(value) => actions.save.mutateAsync({ field: f.field, value })}
+                  />
+                ))}
+              </dl>
+            </Card>
+            </div>
+          </details>
+        </>
+      ) : (
+        <Card title={t("fieldsTitle")} icon={<ListChecks />}>
+          <dl className="divide-y divide-line">
+            {data.fields.map((f) => (
+              <FieldRow
+                key={f.field}
+                f={f}
+                t={t}
+                label={t.has(`fields.${f.field}`) ? t(`fields.${f.field}`) : f.field}
+                threshold={data.threshold}
+                editable={editable}
+                errors={editable ? data.validation.errors.filter((e) => e.field === f.field) : []}
+                onSave={(value) => actions.save.mutateAsync({ field: f.field, value })}
+              />
+            ))}
+          </dl>
+        </Card>
+      )}
       {withNid && doc && <PartyNidPanel doc={doc} editable={editable} />}
       <ReviewActions data={data} actions={actions} needsNid={needsNid} />
       <p className="text-xs text-ink-muted">{t("disclaimer")}</p>

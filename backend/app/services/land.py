@@ -2,7 +2,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
-from app.models.enums import Role
+from app.models.enums import OwnershipKind, Role
 from app.models.land_parcel import LandParcel
 from app.models.owner import Owner
 from app.models.ownership import OwnershipHistory
@@ -73,7 +73,10 @@ def current_owners(db: Session, land: LandParcel) -> list[Owner]:
         db.execute(
             select(Owner)
             .join(OwnershipHistory, OwnershipHistory.owner_id == Owner.id)
-            .where(OwnershipHistory.land_id == land.id, OwnershipHistory.end_date.is_(None))
+            .where(OwnershipHistory.land_id == land.id,
+                OwnershipHistory.end_date.is_(None),
+                OwnershipHistory.kind == OwnershipKind.CURRENT.value,
+            )
             .order_by(OwnershipHistory.start_date, Owner.name)
         ).scalars()
     )

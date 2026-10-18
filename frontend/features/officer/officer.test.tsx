@@ -55,6 +55,7 @@ const ACT = [{ id: "a1", action: "DOCUMENT_APPROVE", entity_type: "document", ac
   { id: "a2", action: "SOMETHING_NEW", entity_type: "x", actor: null, created_at: "2026-10-01T11:00:00Z" }];
 const router = (queue: any = LIST([item()]), alerts: any = LIST([ALERT()], 2), queueErr?: unknown) =>
   vi.fn((p: string) => {
+    if (p.startsWith("/documents?")) return Promise.resolve(LIST([]));
     if (p.startsWith("/officer/stats")) return Promise.resolve(STATS);
     if (p.startsWith("/risk-alerts")) return Promise.resolve(p.includes("limit=1") && p.includes("severity") ? { items: [], total: 1, limit: 1, offset: 0 } : alerts);
     if (p.startsWith("/officer/activity")) return Promise.resolve({ items: ACT, total: 2, limit: 8, offset: 0 });

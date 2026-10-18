@@ -9,11 +9,13 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ai.extraction import lhdr
 from app.core.config import get_settings
 from app.models.deed import Deed
 from app.models.document import Document
+from app.models.document_record import DocumentRecord
 from app.models.encumbrance import LandEncumbrance
-from app.models.enums import DocumentStatus, TransactionStatus
+from app.models.enums import DocumentStatus, OwnershipKind, RecordStatus, TransactionStatus
 from app.models.land_parcel import LandParcel
 from app.models.mutation import MutationRecord
 from app.models.owner import Owner
@@ -43,6 +45,9 @@ class TxRecord:
     from_document: bool = (
         False  # posted from an uploaded document (F2a will auto-create its mutation)
     )
+    # H9a: the sale of an approved historical deed (a past chain-of-title link). The modern rules
+    # (dates, areas, sellers, duplicates, ML) skip it; only the chain walks (`_reachable`) use it.
+    historical: bool = False
 
 
 @dataclass(frozen=True)
@@ -101,6 +106,41 @@ class SurveyRecord:
 
 
 @dataclass(frozen=True)
+class HistoricalLink:
+    """A past chain-of-title link (H9a) from an approved historical deed: seller -> buyer.
+
+    Ids only; names come from `LandContext.owners` and never reach evidence params.
+    """
+
+    transaction_id: str
+    document_id: str | None
+    seller_id: str
+    buyer_id: str
+    start_date: date | None  # the deed date (None = unknown)
+
+
+@dataclass(frozen=True)
+class HistoricalDeedInfo:
+    """What the approved digital record (LHDR) of a historical deed says about the plot and the price (H9d).
+
+    Ids, dag / khatian numbers and money only; names never reach evidence params.
+    """
+
+    transaction_id: str
+    document_id: str
+    seller_id: str
+    buyer_id: str
+    deed_date: date | None
+    dags: tuple[str, ...] = ()  # normalised dag numbers of the schedule
+    khatians: tuple[tuple[str, str], ...] = ()  # (survey, khatian no) of the schedule
+    kind: str | None = None  # DeedKind value
+    era: str | None = None  # Era value
+    currency: str | None = None  # INR | PKR | BDT as written on the deed
+    amount: float | None = None
+    area_decimal: float | None = None  # total area in decimal (shatak); None = not convertible
+
+
+@dataclass(frozen=True)
 class LandContext:
     land_id: str
     area: float
@@ -115,6 +155,8 @@ class LandContext:
     survey_records: tuple[SurveyRecord, ...] = field(default_factory=tuple)  # F5c
     # F4c: (entity_type, entity_id) of records whose live row differs from the ledger
     integrity_failures: tuple[tuple[str, str], ...] = field(default_factory=tuple)
+    historical_links: tuple[HistoricalLink, ...] = field(default_factory=tuple)  # H9c
+    historical_deeds: tuple[HistoricalDeedInfo, ...] = field(default_factory=tuple)  # H9d
 
 
 @dataclass(frozen=True)
@@ -129,8 +171,14 @@ class Evidence:
         return {"code": self.code, "severity": self.severity, "params": dict(self.params)}
 
 
-def active_transactions(ctx: LandContext) -> list[TxRecord]:
-    return [t for t in ctx.transactions if t.status != TransactionStatus.REJECTED.value]
+def active_transactions(ctx: LandContext, include_historical: bool = False) -> list[TxRecord]:
+    """Not-rejected sales. Historical-deed sales are left out unless asked for: a 1944 deed is a
+    past link of the chain of title, not a transfer the modern rules can judge."""
+    return [
+        t
+        for t in ctx.transactions
+        if t.status != TransactionStatus.REJECTED.value and (include_historical or not t.historical)
+    ]
 
 
 _PENDING = (DocumentStatus.REVIEW_REQUIRED.value, DocumentStatus.EXTRACTED.value)
@@ -226,6 +274,107 @@ def _survey_records(db: Session, land: LandParcel) -> tuple[SurveyRecord, ...]:
     return tuple(out)
 
 
+def _historical_links(db: Session, land: LandParcel) -> tuple[HistoricalLink, ...]:
+    rows = db.execute(
+        select(OwnershipHistory, Transaction)
+        .join(Transaction, Transaction.id == OwnershipHistory.source_transaction_id)
+        .where(
+            OwnershipHistory.land_id == land.id,
+            OwnershipHistory.kind == OwnershipKind.HISTORICAL.value,
+            Transaction.status != TransactionStatus.REJECTED.value,
+        )
+        .order_by(
+            OwnershipHistory.start_date.is_(None), OwnershipHistory.start_date, Transaction.id
+        )
+    ).all()
+    return tuple(
+        HistoricalLink(t.id, t.source_document_id, t.seller_id, h.owner_id, h.start_date)
+        for h, t in rows
+    )
+
+
+_DECIMAL_PER_UNIT = {  # one unit in decimal (shatak); archaic units are left out on purpose
+    "decimal": 1.0, "acre": 100.0, "bigha": 33.0, "katha": 720 / 435.6,
+    "sqft": 1 / 435.6, "sqm": 1 / 40.4686,
+}  # fmt: skip
+
+
+def _num(v) -> float | None:
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+
+
+def _digits(v: str) -> str:
+    return str(v).translate(str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")).strip().casefold()
+
+
+def _area_decimal(plots: list[dict]) -> float | None:
+    total = 0.0
+    for p in plots:
+        a = p.get("area") or {}
+        eq = _num(a.get("decimal_equiv"))
+        if eq is None:
+            unit = lhdr.canonical_unit(a.get("unit"))
+            v = _num(a.get("value"))
+            if unit not in _DECIMAL_PER_UNIT or v is None:
+                return None
+            eq = v * _DECIMAL_PER_UNIT[unit]
+        total += eq
+    return total if plots and total > 0 else None
+
+
+def _historical_deeds(
+    db: Session, land: LandParcel, links: tuple[HistoricalLink, ...]
+) -> tuple[HistoricalDeedInfo, ...]:
+    """The newest APPROVED lhdr/1 record of each historical deed on this parcel."""
+    out: list[HistoricalDeedInfo] = []
+    for link in links:
+        if link.document_id is None:
+            continue
+        row = db.scalars(
+            select(DocumentRecord)
+            .where(
+                DocumentRecord.document_id == link.document_id,
+                DocumentRecord.status == RecordStatus.APPROVED.value,
+                DocumentRecord.record_schema == lhdr.SCHEMA,
+            )
+            .order_by(DocumentRecord.version.desc())
+        ).first()
+        if row is None:
+            continue
+        try:
+            rec = lhdr.plain(lhdr.parse(row.record_json))
+        except Exception:  # a record that does not parse has nothing to compare
+            continue
+        plots = rec.get("schedule") or []
+        cons = rec.get("consideration") or {}
+        docsec = rec.get("document") or {}
+        dags = sorted({_digits(d) for p in plots for d in (p.get("dag_no") or []) if str(d).strip()})
+        khat = sorted(
+            {
+                (str(p.get("survey") or ""), _digits(p["khatian_no"]))
+                for p in plots
+                if p.get("khatian_no")
+            }
+        )
+        out.append(
+            HistoricalDeedInfo(
+                transaction_id=link.transaction_id,
+                document_id=link.document_id,
+                seller_id=link.seller_id,
+                buyer_id=link.buyer_id,
+                deed_date=link.start_date,
+                dags=tuple(dags),
+                khatians=tuple(khat),
+                kind=docsec.get("kind"),
+                era=docsec.get("era"),
+                currency=cons.get("era_currency"),
+                amount=_num(cons.get("amount")),
+                area_decimal=_area_decimal(plots),
+            )
+        )
+    return tuple(out)
+
+
 def load_land_context(
     db: Session, land: LandParcel, review_threshold: float | None = None
 ) -> LandContext:
@@ -233,7 +382,10 @@ def load_land_context(
         review_threshold = get_settings().review_conf_threshold
     periods = db.scalars(
         select(OwnershipHistory)
-        .where(OwnershipHistory.land_id == land.id)
+        .where(
+            OwnershipHistory.land_id == land.id,
+            OwnershipHistory.kind == OwnershipKind.CURRENT.value,  # H9a: past links are for H9c
+        )
         .order_by(OwnershipHistory.start_date.is_(None), OwnershipHistory.start_date)
     ).all()
     txs = db.scalars(
@@ -247,8 +399,19 @@ def load_land_context(
         )
     ).all()
     muts = _mutations(db, land)
+    links = _historical_links(db, land)
+    historical_tx = set(
+        db.scalars(
+            select(OwnershipHistory.source_transaction_id).where(
+                OwnershipHistory.land_id == land.id,
+                OwnershipHistory.kind == OwnershipKind.HISTORICAL.value,
+                OwnershipHistory.source_transaction_id.is_not(None),
+            )
+        )
+    )
     owner_ids = (
         {p.owner_id for p in periods}
+        | {x for h in links for x in (h.seller_id, h.buyer_id)}
         | {s for t in txs for s in (t.seller_id, t.buyer_id)}
         | {m.applicant_owner_id for m in muts}
     )
@@ -272,6 +435,7 @@ def load_land_context(
                 status=t.status,
                 deed_no=t.deed.deed_no if t.deed is not None else None,
                 from_document=t.source_document_id is not None,
+                historical=t.id in historical_tx,
             )
             for t in txs
         ),
@@ -281,4 +445,6 @@ def load_land_context(
         encumbrances=_encumbrances(db, land),
         survey_records=_survey_records(db, land),
         integrity_failures=ledger.integrity_failures(db, land),
+        historical_links=links,
+        historical_deeds=_historical_deeds(db, land, links),
     )

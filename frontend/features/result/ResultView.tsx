@@ -11,6 +11,9 @@ import ReadAloud from "@/components/ReadAloud";
 import { ApiError } from "@/lib/api";
 import { useStickyBar } from "@/lib/sticky-bar";
 import { useAuth } from "@/features/auth/AuthContext";
+import { hasRole, REVIEW_UP } from "@/features/auth/roles";
+import LandDocuments from "@/features/library/LandDocuments";
+import { useLandDocuments } from "@/features/library/useDocumentPage";
 import { localDigits } from "@/lib/intl-locale";
 import LandInfoCard from "./LandInfoCard";
 import OwnershipTimeline from "./OwnershipTimeline";
@@ -37,7 +40,10 @@ export default function ResultView({ landId }: { landId?: string }) {
   const t = useTranslations();
   const barRef = useStickyBar();
   const locale = useLocale();
-  const { api } = useAuth();
+  const { api, user } = useAuth();
+  // H7d: the land's documents are for staff (the endpoint answers citizens with 403)
+  const staff = hasRole(user?.role, REVIEW_UP);
+  const docs = useLandDocuments(landId, staff);
   const enc = landId ? encodeURIComponent(landId) : "";
   const enabled = Boolean(landId);
 
@@ -118,7 +124,7 @@ export default function ResultView({ landId }: { landId?: string }) {
               <LandInfoCard land={land.data} bare />
             </Section>
             <Section title={t("result.tabOwnership")} count={n(own.data?.entries?.length)} testId="section-ownership">
-              {tabPanel(own, () => <OwnershipTimeline entries={own.data?.entries ?? []} />, lerr)}
+              {tabPanel(own, () => <OwnershipTimeline entries={own.data?.entries ?? []} staff={staff} />, lerr)}
             </Section>
             <Section title={t("result.tabTransactions")} count={n(tx.data?.transactions?.length)} testId="section-transactions">
               {tabPanel(tx, () => <TransactionsTable transactions={tx.data?.transactions ?? []} />, lerr)}
@@ -129,6 +135,11 @@ export default function ResultView({ landId }: { landId?: string }) {
             <Section title={t("result.tabEncumbrance")} count={n(encs.data?.encumbrances?.length)} testId="section-encumbrance">
               {tabPanel(encs, () => <EncumbranceTable items={encs.data?.encumbrances ?? []} />, lerr)}
             </Section>
+            {staff && landId && (
+              <Section title={t("result.tabDocuments")} count={n(docs.data?.total)} testId="section-documents">
+                <LandDocuments landId={landId} />
+              </Section>
+            )}
             {/* Remount once the assessment arrives so the section opens by itself when there is something to read. */}
             <Section
               key={risk.data ? "ready" : "wait"}

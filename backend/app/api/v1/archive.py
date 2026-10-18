@@ -18,6 +18,8 @@ def search_archive(
     q: str = Query(min_length=1, max_length=200),
     survey: str | None = Query(default=None, max_length=2),
     district: str | None = Query(default=None, max_length=100),
+    year_from: int | None = Query(default=None, ge=1000, le=2200),
+    year_to: int | None = Query(default=None, ge=1000, le=2200),
     office_division: str | None = Query(default=None, max_length=100),
     office_district: str | None = Query(default=None, max_length=100),
     office_upazila: str | None = Query(default=None, max_length=100),
@@ -35,4 +37,7 @@ def search_archive(
             ),
         ) if c is not None
     ]
-    return svc.search(db, q, survey, district, limit, offset, and_(*conds) if conds else None)
+    return svc.search(
+        db, q, survey, district, limit, offset, and_(*conds) if conds else None,
+        year_from, year_to,
+    )

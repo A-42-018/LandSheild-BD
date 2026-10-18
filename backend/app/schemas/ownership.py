@@ -15,6 +15,8 @@ class OwnershipEntry(BaseModel):
     start_date: date | None = None
     end_date: date | None = None
     is_current: bool
+    kind: str = "CURRENT"  # CURRENT | HISTORICAL (H9a: a past chain-of-title link from a historical deed)
+    historical: bool = False
     confidence: float | None = None
     document: DocumentRef | None = None
 

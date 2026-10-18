@@ -34,6 +34,10 @@ export const EVIDENCE_CODES = [
   "UNDER_ACQUISITION",
   "ACTIVE_MORTGAGE",
   "SURVEY_CHAIN_GAP",
+  "HISTORICAL_CHAIN_GAP",
+  "HISTORICAL_SELLER_NOT_OWNER",
+  "HISTORICAL_DAG_CONFLICT",
+  "HISTORICAL_CONSIDERATION_IMPLAUSIBLE",
 ] as const;
 
 export function evidenceKey(code: string): string {
@@ -78,6 +82,12 @@ export function evidenceValues(e: Evidence, t: T, locale: string): Record<string
     mutationUnit: unit(p.mutation_unit),
     deedArea: n(p.deed_area),
     deedUnit: unit(p.deed_unit),
+    earlierDate: d(p.earlier_date),
+    dags: Array.isArray(p.dags) ? (p.dags as unknown[]).map((x) => localDigits(str(x), locale)).join(", ") : "",
+    currency: str(p.currency),
+    perDecimal: n(p.per_decimal),
+    rangeLow: n(p.range_low),
+    rangeHigh: n(p.range_high),
     units: Array.isArray(p.units) ? (p.units as unknown[]).map(unit).join(", ") : "",
   };
 }

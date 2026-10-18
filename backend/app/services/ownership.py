@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.models.document import Document
 from app.models.encumbrance import LandEncumbrance
+from app.models.enums import OwnershipKind
 from app.models.land_parcel import LandParcel
 from app.models.mutation import MutationRecord
 from app.models.owner import Owner
@@ -59,7 +60,9 @@ def get_ownership(db: Session, land_id: str, viewer: User) -> OwnershipResponse:
             owner=_person(owner, viewer),
             start_date=h.start_date,
             end_date=h.end_date,
-            is_current=h.end_date is None,
+            is_current=h.end_date is None and h.kind == OwnershipKind.CURRENT.value,
+            kind=h.kind,
+            historical=h.kind == OwnershipKind.HISTORICAL.value,
             confidence=h.confidence,
             document=_doc_ref(doc),
         )

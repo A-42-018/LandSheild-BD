@@ -31,6 +31,8 @@ services:
         sync: false          # you type it in the Render dashboard
       - key: CORS_ORIGINS
         sync: false          # https://<your-site>.netlify.app (no trailing slash)
+      - key: PUBLIC_SITE_URL
+        sync: false          # https://<your-site>.netlify.app: the origin the PDF's QR code points to (no trailing slash)
       - key: SIGNING_KEY
         sync: false          # Ed25519 seed (base64url, 32 bytes); without it the disk-less instance signs with a new key on every restart
 # Start command (Dockerfile CMD): alembic upgrade head + seed --mode $SEED_MODE (auto: reset on SQLite, only-if-empty on Postgres) on every boot.

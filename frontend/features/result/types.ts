@@ -23,6 +23,9 @@ export interface OwnershipEntry {
   start_date: string | null;
   end_date: string | null;
   is_current: boolean;
+  /** CURRENT, or HISTORICAL = a past chain-of-title link from an approved historical deed (H9a). */
+  kind?: "CURRENT" | "HISTORICAL";
+  historical?: boolean;
   confidence: number | null;
   document: DocRef | null;
 }

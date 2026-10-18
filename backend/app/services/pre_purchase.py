@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.encumbrance import LandEncumbrance
-from app.models.enums import MutationStatus
+from app.models.enums import MutationStatus, OwnershipKind
 from app.models.mutation import MutationRecord
 from app.models.owner import Owner
 from app.models.ownership import OwnershipHistory
@@ -28,7 +28,11 @@ def _seller_row(db: Session, land_pk: str, seller: str | None) -> CheckRow:
     owners = db.scalars(
         select(Owner.name)
         .join(OwnershipHistory, OwnershipHistory.owner_id == Owner.id)
-        .where(OwnershipHistory.land_id == land_pk, OwnershipHistory.end_date.is_(None))
+        .where(
+            OwnershipHistory.land_id == land_pk,
+            OwnershipHistory.end_date.is_(None),
+            OwnershipHistory.kind == OwnershipKind.CURRENT.value,
+        )
     ).all()
     if not (seller or "").strip() or not owners:
         return CheckRow(code="SELLER_MATCHES_OWNER", status=UNKNOWN, detail={})

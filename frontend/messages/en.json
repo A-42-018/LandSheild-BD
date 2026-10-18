@@ -134,7 +134,11 @@
       "ACTIVE_MORTGAGE": "Recorded: an active mortgage ({referenceNo}) is attached to this parcel. Informational.",
       "UNKNOWN": "Review required for indicator",
       "RECORD_INTEGRITY_FAILED": "Potential inconsistency: a record of this parcel differs from the ledger entry written when it was approved. Review required.",
-      "SURVEY_CHAIN_GAP": "Possible inconsistency: {unlinked} of {owners} owner(s) in the {toSurvey} survey record have no recorded link to the {fromSurvey} survey holders. Review required."
+      "SURVEY_CHAIN_GAP": "Possible inconsistency: {unlinked} of {owners} owner(s) in the {toSurvey} survey record have no recorded link to the {fromSurvey} survey holders. Review required.",
+      "HISTORICAL_CHAIN_GAP": "Possible inconsistency: the buyer in the {date} historical deed has no recorded link to the owners of the later {toSurvey} khatian (the seller matches the {fromSurvey} khatian). Review required.",
+      "HISTORICAL_SELLER_NOT_OWNER": "Possible inconsistency: the seller in the {date} historical deed does not match any owner in the CS / SA khatian of this parcel. Review required.",
+      "HISTORICAL_DAG_CONFLICT": "{basis, select, DAG {Possible inconsistency: the historical deed of {date} conveys dag {dags}, already conveyed by the deed of {earlierDate}, and its seller is not linked to that deed's buyer. Review required.} other {Possible inconsistency: the historical deed of {date} conveys the same khatian as the deed of {earlierDate}, and its seller is not linked to that deed's buyer. Review required.}}",
+      "HISTORICAL_CONSIDERATION_IMPLAUSIBLE": "{reason, select, CURRENCY_ERA {Possible inconsistency: the price in the {date} historical deed is written in {currency}, which does not fit the era of the deed. Review required.} BELOW_RANGE {Possible inconsistency: the price in the {date} historical deed ({perDecimal} {currency} per decimal) is below the usual range for its era ({rangeLow}–{rangeHigh}). Flag only. Review required.} other {Possible inconsistency: the price in the {date} historical deed ({perDecimal} {currency} per decimal) is above the usual range for its era ({rangeLow}–{rangeHigh}). Flag only. Review required.}}"
     }
   },
   "home": {
@@ -292,6 +296,9 @@
     "unknownDate": "Date not recorded",
     "confidence": "Confidence",
     "sourceDocument": "Source document",
+    "openSourceDocument": "Open the source document ({type})",
+    "historicalLink": "Historical link",
+    "historicalFrom": "From {date} (end not known)",
     "mutations": "Mutation history",
     "noMutations": "No mutation (khatian transfer) application for this land yet.",
     "mutationNo": "Mutation no.",
@@ -373,7 +380,8 @@
       }
     },
     "notFound": "No land matches this ID.",
-    "notFoundHint": "Check the ID and search again. Example: LP-10100."
+    "notFoundHint": "Check the ID and search again. Example: LP-10100.",
+    "tabDocuments": "Documents"
   },
   "report": {
     "title": "Land verification report",
@@ -526,7 +534,11 @@
       "reset": "Reset",
       "alt": "Uploaded document",
       "error": "We could not load the document image. Try again.",
-      "note": "Preview of the uploaded original (first page for PDFs)."
+      "note": "Preview of the uploaded original (first page for PDFs).",
+      "highlighted": "Showing “{label}” (page {page})",
+      "clearHighlight": "Clear",
+      "noBox": "The box cannot be drawn on this page of the preview.",
+      "pdfNoBox": "The PDF viewer opens on that page; the box cannot be drawn on it."
     },
     "fields": {
       "owner_name": "Owner name",
@@ -637,6 +649,221 @@
       "next": "Next document",
       "noNext": "No other document is waiting.",
       "keys": "Keys: A approve · R reject · N next document"
+    },
+    "deed": {
+      "intro": "The deed as read, section by section. Values are shown as the system uses them; the text exactly as written on the deed is shown underneath when it differs.",
+      "coreFields": "Core fields (derived from the record)",
+      "sections": {
+        "registration": "Registration",
+        "dates": "Dates",
+        "parties": "Parties",
+        "consideration": "Consideration",
+        "schedule": "Schedule (tapshil)",
+        "boundaries": "Boundaries (chouhaddi)",
+        "titleRecital": "Title recital",
+        "execution": "Execution and attestation"
+      },
+      "notRead": "Not read",
+      "none": "None recorded",
+      "yes": "Yes",
+      "no": "No",
+      "edited": "edited",
+      "confidence": "Confidence",
+      "asWritten": "As written",
+      "band": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "legibility": {
+        "faded": "Faded",
+        "damaged": "Damaged",
+        "illegible": "Illegible"
+      },
+      "kind": "Deed kind",
+      "era": "Era",
+      "deedNo": "Deed no.",
+      "deedNoVerbatim": "Deed no. as written",
+      "volume": "Volume / book",
+      "regPages": "Pages",
+      "office": "Sub-registry office",
+      "regYear": "Registration year",
+      "endorsement": "Registrar's endorsement",
+      "docPages": "Pages in the document",
+      "execution": "Execution date",
+      "registrationDate": "Registration date",
+      "dateVerbatim": "Date as written",
+      "calendar": "Calendar",
+      "day": "Day",
+      "month": "Month",
+      "dateYear": "Year (in that calendar)",
+      "precision": "Precision",
+      "gregorianFrom": "Gregorian from",
+      "gregorianTo": "Gregorian to",
+      "honorific": "Honorific",
+      "name": "Name",
+      "father": "Father",
+      "deceased": "Father deceased",
+      "husband": "Husband",
+      "mother": "Mother",
+      "village": "Village",
+      "post": "Post office",
+      "thana": "Thana",
+      "district": "District",
+      "profession": "Profession",
+      "religion": "Religion",
+      "nationality": "Nationality",
+      "share": "Share",
+      "amount": "Amount",
+      "inWords": "Amount in words",
+      "currencyWritten": "Currency as written",
+      "eraCurrency": "Currency of the era",
+      "payMode": "Mode of payment",
+      "plotN": "Plot {n}",
+      "pargana": "Pargana",
+      "mouza": "Mouza",
+      "jlNo": "JL no.",
+      "survey": "Survey",
+      "khatianNo": "Khatian no.",
+      "dagNo": "Dag no.",
+      "areaValue": "Area",
+      "areaUnit": "Unit",
+      "areaParts": "Area (archaic units)",
+      "areaWords": "Area in words",
+      "decimalEquiv": "Decimal equivalent",
+      "landClass": "Land class",
+      "north": "North",
+      "south": "South",
+      "east": "East",
+      "west": "West",
+      "basis": "Basis of title",
+      "priorDeed": "Earlier deed",
+      "nature": "Nature of transfer",
+      "encumbranceFree": "Free of encumbrance",
+      "sellerMark": "Seller's signature / thumb-print",
+      "writerName": "Deed writer",
+      "licenceNo": "Writer's licence no.",
+      "witnesses": "Witnesses",
+      "stamps": "Stamps",
+      "stampN": "Stamp {n}",
+      "stampType": "Stamp {n} type",
+      "sealN": "Seal {n}",
+      "roles": {
+        "SELLER": "Seller",
+        "BUYER": "Buyer",
+        "DONOR": "Donor",
+        "DONEE": "Donee",
+        "MORTGAGOR": "Mortgagor",
+        "MORTGAGEE": "Mortgagee",
+        "PRINCIPAL": "Principal",
+        "ATTORNEY": "Attorney",
+        "WAQIF": "Waqif",
+        "MUTAWALLI": "Mutawalli",
+        "SHARER": "Co-sharer",
+        "EXCHANGER": "Exchanger",
+        "WITNESS": "Witness",
+        "IDENTIFIER": "Identifier",
+        "OTHER": "Other"
+      },
+      "kinds": {
+        "SALE_SAF_KABALA": "Sale (saf kabala)",
+        "GIFT_HEBA": "Gift (heba)",
+        "GIFT_DANPATRA": "Gift (danpatra)",
+        "PARTITION_BANTONNAMA": "Partition (bantonnama)",
+        "EXCHANGE_EWAZ": "Exchange (ewaz)",
+        "MORTGAGE_REHEN": "Mortgage (rehen)",
+        "WAQF": "Waqf",
+        "POWER_OF_ATTORNEY": "Power of attorney",
+        "AGREEMENT_BAINANAMA": "Agreement (bainanama)",
+        "OTHER": "Other"
+      },
+      "eras": {
+        "BRITISH_INDIA": "British India (before 1947)",
+        "EAST_BENGAL_PAKISTAN": "East Bengal / East Pakistan (1947–1971)",
+        "BANGLADESH": "Bangladesh"
+      },
+      "calendars": {
+        "bangla": "Bangla (Bongabdo)",
+        "gregorian": "Gregorian",
+        "hijri": "Hijri"
+      },
+      "precisions": {
+        "day": "Exact day",
+        "day±1": "Day, give or take 1",
+        "month": "Month",
+        "year": "Year"
+      },
+      "surveys": {
+        "CS": "CS",
+        "SA": "SA",
+        "RS": "RS",
+        "BS": "BS",
+        "DIARA": "Diara",
+        "OTHER": "Other"
+      },
+      "stampTypes": {
+        "REVENUE": "Revenue",
+        "NON_JUDICIAL": "Non-judicial",
+        "COURT_FEE": "Court fee",
+        "OTHER": "Other"
+      },
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "errors": {
+        "notNumber": "Enter a number.",
+        "saveFailed": "The value could not be saved. Try again.",
+        "valueRequired": "Enter a value."
+      },
+      "issues": {
+        "UNKNOWN": "This value is not valid.",
+        "MISSING_DEED_REF": "Enter the deed number or the registration volume.",
+        "MISSING_EXECUTION_DATE": "The execution date as written is required.",
+        "NOT_NUMERIC": "This value must contain digits.",
+        "AREA_NOT_POSITIVE": "The area must be greater than zero.",
+        "UNKNOWN_UNIT": "This area unit is not known.",
+        "AMOUNT_NOT_POSITIVE": "The consideration must be greater than zero.",
+        "DATE_IN_FUTURE": "The date cannot be in the future.",
+        "DATE_RANGE_REVERSED": "The end of the range is before its start.",
+        "BAD_DAY": "The day must be between 1 and 32.",
+        "ERA_MISMATCH": "The era does not match the execution date.",
+        "RECORD_INVALID": "The value does not fit the deed format.",
+        "INVALID_PATH": "This value cannot be edited.",
+        "PATH_NOT_EDITABLE": "This value cannot be edited.",
+        "VALUE_TOO_LARGE": "The value is too long."
+      },
+      "role": "Role",
+      "partyN": "Party {n}",
+      "witnessN": "Witness {n}",
+      "dagN": "Dag {n}",
+      "plotCentre": "This plot",
+      "add": "Add",
+      "remove": "Remove",
+      "removeSure": "Remove this item?",
+      "removeYes": "Yes, remove",
+      "addParty": "Add party",
+      "addPlot": "Add plot",
+      "addDag": "Add dag no.",
+      "addWitness": "Add witness",
+      "addStamp": "Add stamp",
+      "addSeal": "Add seal",
+      "stampKind": "Stamp type",
+      "stampValue": "Stamp value",
+      "seals": "Seals",
+      "sealText": "Seal text",
+      "locate": "Show on page",
+      "flags": {
+        "DISAGREE": "Two readings differ",
+        "NOT_IN_TEXT": "Not found in the OCR text"
+      },
+      "flagHelp": {
+        "DISAGREE": "The rule parser and the AI read this value differently. Pick the right reading.",
+        "NOT_IN_TEXT": "The AI read this value but it could not be matched to the scanned text. Check it against the original."
+      },
+      "candidates": {
+        "title": "Other reading",
+        "use": "Use this reading"
+      }
     }
   },
   "landing": {
@@ -798,7 +1025,8 @@
       "archive": "Archive search",
       "feedback": "Feedback and grievance",
       "today": "Today's work",
-      "hearings": "Hearing calendar"
+      "hearings": "Hearing calendar",
+      "documents": "My documents"
     },
     "kpi": {
       "title": "Key figures",
@@ -1655,7 +1883,7 @@
   },
   "archive": {
     "title": "Archive search",
-    "purpose": "Search the OCR text and fields of approved documents, including khatians and porchas of every survey.",
+    "purpose": "Search the OCR text and fields of approved documents: khatians and porchas of every survey, and the parties, mouza, khatian and dag of historical deeds. Narrow by deed year.",
     "filters": "Archive search filters",
     "query": "Search text",
     "survey": "Survey",
@@ -1671,14 +1899,23 @@
       "land": "Land ID",
       "place": "District · Upazila · Mouza",
       "khatian": "Khatian",
-      "excerpt": "Excerpt"
+      "excerpt": "Excerpt",
+      "years": "Deed year",
+      "open": "Document"
     },
     "surveys": {
       "CS": "CS (Cadastral)",
       "SA": "SA (State Acquisition)",
       "RS": "RS (Revisional)",
       "BS": "BS (Bangladesh)"
-    }
+    },
+    "yearFrom": "Deed year from",
+    "yearTo": "Deed year to",
+    "yearInvalid": "Enter a four-digit year, for example 1944.",
+    "yearsReversed": "The first year must not be after the second.",
+    "historical": "Historical",
+    "open": "Open",
+    "openRow": "Open the document for {place}"
   },
   "tools": {
     "title": "Citizen tools",
@@ -2749,5 +2986,175 @@
     "note": "These sample documents are only for easy testing. You can also pick a real document from your own device.",
     "loading": "Attaching file…",
     "loadError": "The file could not be loaded. Try again."
+  },
+  "library": {
+    "title": "My documents",
+    "purpose": "Every document you uploaded or your office holds, with its status and whether a digital version exists.",
+    "tabsLabel": "Document lists",
+    "filters": "Document filters",
+    "reset": "Clear filters",
+    "noNumber": "No number yet",
+    "openRow": "Open document {name}",
+    "historical": "Historical",
+    "needsAction": "Needs my action",
+    "digitisedYes": "Digital v{version}",
+    "digitisedNo": "Not yet",
+    "tabs": {
+      "mine": "My uploads",
+      "office": "My office",
+      "action": "Needs my action"
+    },
+    "empty": {
+      "mine": "You have not uploaded a document that matches these filters.",
+      "office": "Your office holds no document that matches these filters.",
+      "action": "Nothing is waiting for you."
+    },
+    "cols": {
+      "file": "File",
+      "deedNo": "Deed no.",
+      "mouza": "Mouza",
+      "type": "Document",
+      "deedDate": "Deed date",
+      "status": "Status",
+      "uploaded": "Uploaded",
+      "digitised": "Digital version",
+      "download": "Download"
+    },
+    "search": {
+      "label": "Search",
+      "placeholder": "Deed no, mouza, party name or land ID",
+      "submit": "Search"
+    },
+    "filter": {
+      "all": "All",
+      "status": "Status",
+      "type": "Document type",
+      "profile": "Kind of deed",
+      "sort": "Sort by",
+      "from": "Uploaded from",
+      "to": "Uploaded to"
+    },
+    "profiles": {
+      "modern": "Modern",
+      "historical": "Historical"
+    },
+    "sorts": {
+      "created_at": "Upload date",
+      "status": "Status",
+      "deed_date": "Deed date"
+    },
+    "statuses": {
+      "UPLOADED": "Uploaded",
+      "PROCESSING": "Processing",
+      "EXTRACTED": "Extracted",
+      "REVIEW_REQUIRED": "Review required",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "FAILED": "Failed"
+    },
+    "recent": {
+      "title": "Recently uploaded by me",
+      "empty": "You have not uploaded a document yet.",
+      "all": "See all my documents"
+    },
+    "doc": {
+      "title": "Document",
+      "purpose": "The original upload next to its digital version, with every saved version and who changed what.",
+      "crumbLibrary": "My documents",
+      "back": "Back to my documents",
+      "reviewLink": "Open the review screen",
+      "underReview": "This document is still being reviewed. The digital version shown is the latest saved reading, not an approved record.",
+      "notFound": "This document does not exist or you cannot see it.",
+      "original": "Original upload",
+      "digital": "Digital version",
+      "noVersions": "There is no digital version of this document yet.",
+      "noVersionsReview": "One is created when the document has been read.",
+      "versionsTitle": "Versions",
+      "versionLabel": "Version",
+      "versionOption": "v{version} · {status}",
+      "status": "Status",
+      "createdBy": "Created by",
+      "byJob": "Automatic reading",
+      "approvedBy": "Approved by",
+      "notApproved": "Not approved yet",
+      "schema": "Record format",
+      "fileHash": "Original file SHA-256",
+      "recordHash": "Record SHA-256",
+      "none": "Not available",
+      "recordStatus": {
+        "MACHINE": "Machine reading",
+        "DRAFT": "Reviewed draft",
+        "APPROVED": "Approved",
+        "SUPERSEDED": "Superseded"
+      },
+      "signature": {
+        "label": "Signature",
+        "VALID": "Signature valid ✓",
+        "INVALID": "Signature does not match",
+        "UNSIGNED": "Not signed yet"
+      },
+      "history": {
+        "title": "Version history",
+        "empty": "No changes are recorded for this version.",
+        "byJob": "Automatic reading",
+        "events": {
+          "CREATED": "Version created",
+          "EDIT": "Edited",
+          "CORRECTION_START": "Correction started",
+          "BASELINE": "Baseline kept",
+          "APPROVE": "Approved and signed"
+        }
+      }
+    },
+    "landDocs": {
+      "loadError": "The documents of this land could not be loaded.",
+      "empty": "No document is linked to this land yet.",
+      "noNumber": "No number yet",
+      "undated": "No date",
+      "chainLink": "In the chain of title"
+    },
+    "download": {
+      "button": "Download",
+      "label": "Download formats",
+      "draftNote": "This version is not approved yet. PDF, JSON and the bundle are marked as a draft.",
+      "preparing": "Preparing…",
+      "noRecord": "There is no digital version yet.",
+      "done": "{what} downloaded.",
+      "kinds": {
+        "pdf": "Digital deed (PDF)",
+        "json": "Digital deed (JSON)",
+        "original": "Original upload",
+        "bundle": "Complete bundle (ZIP)"
+      },
+      "hints": {
+        "pdf": "Laid out section by section, with a QR code to check it.",
+        "json": "The record in machine-readable form, with its hash and signature.",
+        "original": "The exact file that was uploaded.",
+        "bundle": "Original, PDF, JSON and a manifest of hashes."
+      },
+      "errors": {
+        "rateLimited": "Too many downloads. Please wait a while and try again.",
+        "pdfUnavailable": "The PDF cannot be made on this server right now. JSON and the original still work.",
+        "notAllowed": "You cannot download this document.",
+        "failed": "The download did not work. Please try again."
+      }
+    }
+  },
+  "publicRecord": {
+    "title": "Digital deed check",
+    "purpose": "Check that a printed or downloaded digital deed matches the signed registry entry.",
+    "state": {
+      "VALID": "Valid — this digital deed matches the signed registry entry.",
+      "INVALID": "Not valid — the stored record does not match its signature. Do not rely on this deed."
+    },
+    "superseded": "A newer approved version of this deed exists. This page checks the version printed on your copy.",
+    "detailsTitle": "Deed details",
+    "deedNo": "Deed no",
+    "version": "Version",
+    "approvedAt": "Approved on",
+    "none": "—",
+    "privacyNote": "This public page shows only whether the record is valid, the deed number, the version and the approval date. Names, plots and other details are available to signed-in users with permission.",
+    "notFound": "No approved digital deed matches this code. Scan the QR code again or check the printed copy.",
+    "loadError": "We could not load this check. Try again."
   }
 }

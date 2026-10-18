@@ -19,6 +19,7 @@ AUDIT = {
     ("POST", f"{P}/auth/refresh"): None,  # session plumbing: runs on every page load, would drown the log
     ("POST", f"{P}/public/verify-document"): None,  # F4b: anonymous read-only comparison, nothing written
     ("POST", f"{P}/public/verify-document/fields"): None,  # F4b: same, JSON mode
+    ("POST", f"{P}/public/records/verify"): None,  # H8b: anonymous read-only check of a downloaded record
     ("POST", f"{P}/public/feedback"): "FEEDBACK_SUBMIT",
     ("POST", f"{P}/public/page-rating"): None,  # anonymous one-click rating, stored as its own row; would drown the log
     ("PATCH", f"{P}/feedback/{{feedback_id}}"): "FEEDBACK_UPDATE",
@@ -104,6 +105,9 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
     r = env.post(f"{P}/public/verify-document", files={"file": ("a.png", b"\x89PNG\r\n\x1a\n", "image/png")})
     assert r.status_code in (200, 400, 415, 422)  # route reached; nothing here may write an audit row
     mark("POST", f"{P}/public/verify-document")
+    r = env.post(f"{P}/public/records/verify", json={"format": "x", "document": {}, "version": 1, "record_schema": "core/1", "integrity": {}, "record": {}})
+    assert r.status_code == 200 and r.json() == {"state": "INVALID"}
+    mark("POST", f"{P}/public/records/verify")
     assert _ids(env) == before, "public verify-document must not write audit rows"
     _audited(env, "LOGOUT", lambda: env.post(f"{P}/auth/logout"))
     mark("POST", f"{P}/auth/logout")

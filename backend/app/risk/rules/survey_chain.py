@@ -23,7 +23,7 @@ def _reachable(ctx: LandContext, start: list[str]) -> list[str]:
     reach = list(start)
     moves = [
         (ctx.owners[t.seller_id].name, ctx.owners[t.buyer_id].name)
-        for t in active_transactions(ctx)
+        for t in active_transactions(ctx, include_historical=True)  # H9a: deeds are chain links
         if t.seller_id in ctx.owners and t.buyer_id in ctx.owners
     ]
     changed = True

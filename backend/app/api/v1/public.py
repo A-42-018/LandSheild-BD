@@ -1,4 +1,8 @@
+import json
+
 from fastapi import APIRouter, Depends, File, Query, Request, Response, UploadFile
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.api.v1.auth import get_settings_dep
@@ -19,14 +23,18 @@ from app.schemas.public import (
     PublicKey,
     PublicLandSummary,
     PublicMutationStatus,
+    PublicRecord,
     PublicSeal,
     PublicSignature,
     PublicVerify,
+    RecordVerifyBody,
+    RecordVerifyOut,
 )
 from app.services import audit, doc_verify, signing
 from app.services import feedback as feedback_svc
 from app.services import map as map_svc
 from app.services import public as svc
+from app.services import records as records_svc
 from app.services.upload_validation import MAX_UPLOAD_BYTES
 
 router = APIRouter(prefix="/public", tags=["public"])
@@ -210,3 +218,70 @@ def feedback_status(
 ) -> PublicFeedbackStatus:
     _guard(request, response, settings)
     return feedback_svc.public_status(db, reference_no)
+
+
+MAX_RECORD_VERIFY_BYTES = 1024 * 1024
+
+
+async def _record_body(request: Request) -> RecordVerifyBody:
+    """The posted record file, read with a hard 1 MB cap: the declared Content-Length is checked
+    first, then the bytes actually received (a chunked body has no length), before any JSON
+    parsing. Bad JSON or a wrong shape is the usual 422 VALIDATION_ERROR."""
+    too_large = AppError("RECORD_TOO_LARGE", "The record file is too large", 413)
+    declared = request.headers.get("content-length", "")
+    if declared.isdigit() and int(declared) > MAX_RECORD_VERIFY_BYTES:
+        raise too_large
+    buf = bytearray()
+    async for chunk in request.stream():
+        buf += chunk
+        if len(buf) > MAX_RECORD_VERIFY_BYTES:
+            raise too_large
+    try:
+        raw = json.loads(bytes(buf))
+    except (ValueError, UnicodeDecodeError):
+        raise RequestValidationError(
+            [{"type": "json_invalid", "loc": ("body",), "msg": "JSON decode error", "input": None}]
+        ) from None
+    try:
+        return RecordVerifyBody.model_validate(raw)
+    except ValidationError as e:
+        raise RequestValidationError(
+            [{**err, "loc": ("body", *err["loc"])} for err in e.errors(include_url=False)]
+        ) from None
+
+
+@router.post(
+    "/records/verify",
+    response_model=RecordVerifyOut,
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {"application/json": {"schema": RecordVerifyBody.model_json_schema()}},
+        }
+    },
+)
+def public_record_verify(
+    request: Request,
+    response: Response,
+    body: RecordVerifyBody = Depends(_record_body),
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> RecordVerifyOut:
+    """H8b: send a downloaded digital-record JSON, get VALID or INVALID (one changed byte is
+    INVALID). Read-only; the answer carries no data from the record."""
+    _guard(request, response, settings)
+    return RecordVerifyOut(state=records_svc.verify_export(db, body.model_dump()))
+
+
+@router.get("/records/{record_id}", response_model=PublicRecord)
+def public_record(
+    record_id: str,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> PublicRecord:
+    """H8d: target of the PDF's QR code. VALID / INVALID + deed no, version and approval date;
+    unknown, draft and machine ids are all 404 RECORD_NOT_FOUND. No personal data."""
+    _guard(request, response, settings)
+    return PublicRecord(**records_svc.public_record(db, record_id))

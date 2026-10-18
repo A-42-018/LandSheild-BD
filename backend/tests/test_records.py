@@ -30,11 +30,12 @@ from tests.test_review import _fill, _post
 D = "/api/v1/documents/{}"
 
 
-def _historical(env, jobs) -> str:  # noqa: F811
-    """Upload + process a deed read as the sample historical deed (rules only, no API key)."""
+def _historical(env, jobs, salt: bytes = b"") -> str:  # noqa: F811
+    """Upload + process a deed read as the sample historical deed (rules only, no API key).
+    Same bytes are a duplicate upload (200, the first document); pass a salt for a second one."""
     providers = Providers(_TextOCR(), MockDocumentAIProvider(), HistoricalDeedProvider())
     env.app.dependency_overrides[get_job_providers] = lambda: providers
-    r = _up(env, "deed.png", png() + b"H5-historical")
+    r = _up(env, "deed.png", png() + b"H5-historical" + salt)
     assert r.status_code == 201
     doc_id = r.json()["id"]
     assert _process(env, doc_id).status_code == 202  # TestClient runs the job after the response

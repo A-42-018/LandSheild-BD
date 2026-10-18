@@ -4,7 +4,7 @@
 from datetime import date
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.models.document import Document
 from app.models.land_parcel import LandParcel
@@ -151,3 +151,142 @@ def test_loader_reads_only_approved_khatians_and_rule_runs(env):
         ctx = load_land_context(s, land)
         assert [r.survey_type for r in ctx.survey_records] == ["CS", "RS"]
         assert "SURVEY_CHAIN_GAP" in [e.code for e in run_rules(ctx)]
+
+
+# ---------------------------------------------------------------- H9e: LHDR fields + year range
+
+from app.services import archive as archive_svc  # noqa: E402
+from tests.test_documents import png, store  # noqa: E402,F401
+from tests.test_processing import jobs  # noqa: E402,F401
+from tests.test_records import _approve_historical, _historical  # noqa: E402,F401
+
+
+def _approved_sample(env, jobs):
+    doc_id = _historical(env, jobs)
+    _approve_historical(env, doc_id)
+    return doc_id
+
+
+def test_sample_deed_is_found_by_party_mouza_and_years(env, jobs):
+    doc_id = _approved_sample(env, jobs)
+    h = _h(env, "REVIEWER")
+    for q in ("রামকান্ত", "ভবানীপুর", "কফিল", "সমসের"):  # buyer, mouza, seller, seller's father
+        r = env.get(URL, params={"q": q, "year_from": 1940, "year_to": 1950}, headers=h).json()
+        assert [i["document_id"] for i in r["items"]] == [doc_id], q
+    hit = r["items"][0]
+    assert (hit["year_from"], hit["year_to"], hit["historical"]) == (1944, 1944, True)
+    assert hit["mouza"] == "ভবানীপুর"  # from the record; no parcel is linked to it
+
+
+def test_dag_and_khatian_match_in_both_digit_scripts(env, jobs):
+    doc_id = _approved_sample(env, jobs)
+    h = _h(env, "OFFICER")
+    for q in ("455", "৪৫৫", "120", "১২০"):
+        r = env.get(URL, params={"q": q}, headers=h).json()
+        assert doc_id in [i["document_id"] for i in r["items"]], q
+
+
+def test_year_range_overlaps_and_excludes_other_years(env, jobs):
+    _approved_sample(env, jobs)
+    h = _h(env, "REVIEWER")
+    q = {"q": "রামকান্ত"}
+    assert env.get(URL, params={**q, "year_from": 1950, "year_to": 1960}, headers=h).json()["total"] == 0
+    assert env.get(URL, params={**q, "year_to": 1943}, headers=h).json()["total"] == 0
+    assert env.get(URL, params={**q, "year_from": 1945}, headers=h).json()["total"] == 0
+    assert env.get(URL, params={**q, "year_from": 1944, "year_to": 1944}, headers=h).json()["total"] == 1
+    assert env.get(URL, params={**q, "year_to": 1950}, headers=h).json()["total"] == 1  # open start
+
+
+def test_year_filter_drops_documents_without_a_year(seeded):
+    h = _h(seeded, "REVIEWER")
+    assert seeded.get(URL, params={"q": "বারমী"}, headers=h).json()["total"] == 2
+    assert seeded.get(URL, params={"q": "বারমী", "year_from": 1900}, headers=h).json()["total"] == 0
+    hit = seeded.get(URL, params={"q": "বারমী"}, headers=h).json()["items"][0]
+    assert (hit["year_from"], hit["year_to"], hit["historical"]) == (None, None, False)
+
+
+def test_bad_years_are_refused(seeded):
+    h = _h(seeded, "REVIEWER")
+    assert seeded.get(URL, params={"q": "x", "year_from": 1950, "year_to": 1940}, headers=h).status_code == 422
+    assert seeded.get(URL, params={"q": "x", "year_from": 12}, headers=h).status_code == 422
+    assert seeded.get(URL, params={"q": "x", "year_to": "abc"}, headers=h).status_code == 422
+
+
+def test_same_answers_on_the_python_scan_used_for_office_scoped_users(env, jobs):
+    doc_id = _approved_sample(env, jobs)
+    with _db(env) as s:
+        cond = Document.id.is_not(None)
+        found = archive_svc.search(s, "রামকান্ত", None, None, 10, 0, cond, 1940, 1950)
+        assert [i.document_id for i in found.items] == [doc_id]
+        assert (found.items[0].year_from, found.items[0].historical) == (1944, True)
+        assert archive_svc.search(s, "রামকান্ত", None, None, 10, 0, cond, 1950, 1960).total == 0
+        assert archive_svc.search(s, "455", None, None, 10, 0, cond).total == 1
+
+
+def test_signature_changes_with_the_approved_record_version(env, jobs):
+    doc_id = _approved_sample(env, jobs)
+    with _db(env) as s:
+        rows, versions = archive_svc._approved(s)
+        before = archive_svc._signature(rows, versions)
+        versions[doc_id] += 1  # what an approved correction does
+        assert archive_svc._signature(rows, versions) != before
+
+
+def test_an_old_index_without_year_columns_is_upgraded(env, jobs):
+    """SQLite: an FTS5 table from before H9e is rebuilt. Postgres: the missing columns are added
+    (only then: the catalog is checked first, an ALTER TABLE on every search would lock it)."""
+    doc_id = _approved_sample(env, jobs)
+    h = _h(env, "REVIEWER")
+    with _db(env) as s:
+        pg = s.get_bind().dialect.name == "postgresql"
+        if pg:
+            assert env.get(URL, params={"q": "রামকান্ত"}, headers=h).status_code == 200  # builds it
+            for col in ("year_from", "year_to", "historical"):
+                s.execute(text(f"ALTER TABLE archive_index DROP COLUMN {col}"))
+            s.execute(text("DELETE FROM archive_index"))  # force a rebuild into the new columns
+        else:
+            s.execute(text("DROP TABLE IF EXISTS archive_fts"))
+            s.execute(text("CREATE VIRTUAL TABLE archive_fts USING fts5(doc_id, body)"))
+        s.commit()
+    r = env.get(URL, params={"q": "রামকান্ত", "year_from": 1940}, headers=h).json()
+    assert [i["document_id"] for i in r["items"]] == [doc_id]
+    if pg:
+        with _db(env) as s:
+            cols = set(s.scalars(text(
+                "SELECT column_name FROM information_schema.columns "
+                "WHERE table_schema = current_schema() AND table_name = 'archive_index'"
+            )))  # fmt: skip
+            assert {"year_from", "year_to", "historical"} <= cols
+
+
+def test_modern_deeds_carry_their_deed_year(env):
+    """A modern (core/1) deed has no LHDR record; its flat deed_date is its year, so a year filter
+    keeps it instead of dropping every modern deed."""
+    with _db(env) as s:
+        for h, iso in (("m1", "2018-05-01"), ("m2", "১২/০৩/২০০৯")):
+            doc = _doc(None, "দলিল মৌজা কাশিমপুর", None, h=h)
+            doc.document_type = "DEED"
+            doc.extraction_json["fields"].append({"field": "deed_date", "value": iso, "confidence": 0.9})
+            s.add(doc)
+        s.commit()
+    h = _h(env, "REVIEWER")
+    q = {"q": "কাশিমপুর"}
+    r = env.get(URL, params={**q, "year_from": 2015, "year_to": 2020}, headers=h).json()
+    assert r["total"] == 1 and (r["items"][0]["year_from"], r["items"][0]["year_to"]) == (2018, 2018)
+    assert r["items"][0]["historical"] is False
+    assert env.get(URL, params={**q, "year_to": 2010}, headers=h).json()["total"] == 1  # the 2009 deed
+    with _db(env) as s:  # same answer on the office-scoped scan
+        found = archive_svc.search(s, "কাশিমপুর", None, None, 10, 0, Document.id.is_not(None), 2015, 2020)
+        assert [i.year_from for i in found.items] == [2018]
+
+
+def test_a_search_on_an_unchanged_index_parses_no_record(env, jobs, monkeypatch):
+    _approved_sample(env, jobs)
+    h = _h(env, "REVIEWER")
+    assert env.get(URL, params={"q": "রামকান্ত"}, headers=h).json()["total"] == 1  # builds the index
+    calls = []
+    real = archive_svc.lhdr.parse
+    monkeypatch.setattr(archive_svc.lhdr, "parse", lambda *a, **k: calls.append(1) or real(*a, **k))
+    for _ in range(3):
+        assert env.get(URL, params={"q": "রামকান্ত"}, headers=h).json()["total"] == 1
+    assert calls == []  # only the record versions are read to check the signature

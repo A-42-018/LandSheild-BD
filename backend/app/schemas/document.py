@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -79,3 +80,80 @@ class PartyNidsPatch(BaseModel):
 
     buyer: PartyNidIn | None = None
     seller: PartyNidIn | None = None
+
+
+# ---- H7a: document library -----------------------------------------------------------------------
+
+
+class LibraryTab(StrEnum):
+    """Tab presets of the library page."""
+
+    MINE = "mine"  # uploaded by me
+    OFFICE = "office"  # held by my office and the offices beneath it
+    ACTION = "action"  # waiting for me: review I may decide, or my own upload to process / retry
+
+
+class LibrarySort(StrEnum):
+    CREATED_AT = "created_at"  # newest first by default
+    STATUS = "status"
+    DEED_DATE = "deed_date"  # documents without a deed date always come last
+
+
+class LibraryItem(BaseModel):
+    """One row of the library. No file path, hash or uploader identity (see DocumentOut)."""
+
+    id: str
+    land_id: str | None = None  # LP-xxxxx
+    document_type: str
+    processing_status: str
+    file_type: str  # jpg | png | pdf (the preview thumbnail is GET /documents/{id}/file)
+    created_at: datetime
+    office: OfficeBrief | None = None
+    deed_no: str | None = None
+    mouza: str | None = None
+    deed_date: date | None = None  # ISO date of the deed (the middle of a historical date range)
+    deed_profile: str | None = None  # modern | historical (None = not read yet / no profile)
+    historical: bool = False
+    uploaded_by_me: bool = False
+    digitised: bool = False  # an APPROVED digital record exists
+    approved_version: int | None = None  # version number of that APPROVED record
+    versions: int = 0  # how many record versions the document has (MACHINE, DRAFT, ...)
+    needs_my_action: bool = False
+
+
+class LibraryList(BaseModel):
+    items: list[LibraryItem]
+    total: int
+    limit: int
+    offset: int
+
+
+# ---- H7b: the documents of one land --------------------------------------------------------------
+
+
+class ApprovedRecordBrief(BaseModel):
+    """The latest APPROVED digital record of a document (no record content, no hash of the file)."""
+
+    version: int
+    record_schema: str  # lhdr/1 | core/1
+    approved_at: datetime | None = None
+    approved_by: str | None = None  # user name
+    signature_status: str  # VALID | INVALID | UNSIGNED
+
+
+class ChainLinkBrief(BaseModel):
+    """The past chain-of-title link this document created on the land (H9a / H9b). No names."""
+
+    start_date: date | None = None
+    end_date: date | None = None
+
+
+class LandDocumentItem(LibraryItem):
+    approved_record: ApprovedRecordBrief | None = None
+    chain_link: ChainLinkBrief | None = None  # set when an approved historical deed is a link of the chain
+
+
+class LandDocuments(BaseModel):
+    land_id: str  # LP-xxxxx
+    items: list[LandDocumentItem]  # deed date, oldest first; documents without a date come last
+    total: int

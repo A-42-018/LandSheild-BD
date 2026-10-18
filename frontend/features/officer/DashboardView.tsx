@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import OfficerPageHeader from "@/features/officer/OfficerPageHeader";
 import PageTip from "@/components/PageTip";
 import { useAuth } from "@/features/auth/AuthContext";
+import RecentUploads from "@/features/library/RecentUploads";
 import Activity from "./Activity";
 import Alerts from "./Alerts";
 import Charts from "./Charts";
@@ -20,6 +21,7 @@ export default function DashboardView() {
       <KpiCards />
       <Charts />
       <QueueTable />
+      <RecentUploads />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Alerts />

@@ -31,6 +31,11 @@ class RecordStatus(StrEnum):  # H5 document_records.status
     SUPERSEDED = "SUPERSEDED"
 
 
+class OwnershipKind(StrEnum):  # H9a ownership_history.kind
+    CURRENT = "CURRENT"  # ownership posted by a sale / mutation (end_date null = holds it now)
+    HISTORICAL = "HISTORICAL"  # a past link of the chain of title, from an approved historical deed
+
+
 class TransactionStatus(StrEnum):
     RECORDED = "RECORDED"
     FLAGGED = "FLAGGED"

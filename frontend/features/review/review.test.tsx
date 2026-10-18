@@ -144,7 +144,7 @@ describe("ReviewView", () => {
     expect(screen.getByTestId("zoom-level")).toHaveTextContent("100%");
     fireEvent.click(screen.getByRole("button", { name: en.review.preview.zoomIn }));
     expect(screen.getByTestId("zoom-level")).toHaveTextContent("150%");
-    expect(img.style.width).toBe("150%");
+    expect(img.parentElement!.style.width).toBe("150%");
     fireEvent.click(screen.getByRole("button", { name: en.review.preview.reset }));
     expect(screen.getByTestId("zoom-level")).toHaveTextContent("100%");
   });

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -91,3 +92,32 @@ class PublicMutationStatus(BaseModel):
     applied_at: datetime
     days_pending: int | None = None  # None once decided
     steps: list[PublicMutationStep]
+
+
+class RecordVerifyBody(BaseModel):
+    """A digital-record JSON file as downloaded (H8b). Only its shape is checked here; the
+    content is checked against the signature."""
+
+    format: str = Field(max_length=50)
+    document: dict[str, Any]
+    version: int
+    status: str | None = None
+    draft: bool | None = None
+    record_schema: str = Field(max_length=50)
+    created_at: str | None = None
+    integrity: dict[str, Any]
+    record: dict[str, Any]
+
+
+class PublicRecord(BaseModel):
+    """H8d: what the QR page of a digital record shows. No names, ids of people or field values."""
+
+    state: str  # VALID | INVALID  (stored hash + signature re-checked on every read)
+    deed_no: str | None = None
+    version: int
+    approved_at: datetime | None = None
+    superseded: bool = False  # a newer approved version exists
+
+
+class RecordVerifyOut(BaseModel):
+    state: str  # VALID | INVALID  (nothing else is returned: no names, ids or values)

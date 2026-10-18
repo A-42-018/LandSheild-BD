@@ -25,3 +25,12 @@ export type SignatureState = "VALID" | "INVALID" | "UNSIGNED" | "NOT_FOUND";
 export interface PublicSignatureDto {
   state: SignatureState;
 }
+
+/** H8d: GET /public/records/{id} — what the PDF's QR code opens. No personal data. */
+export interface PublicRecordDto {
+  state: "VALID" | "INVALID";
+  deed_no: string | null;
+  version: number;
+  approved_at: string | null;
+  superseded: boolean;
+}

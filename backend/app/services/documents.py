@@ -154,3 +154,12 @@ def read_document_file(
     ext = doc.file_path.rsplit(".", 1)[-1].lower()
     media = PREVIEW_MEDIA_TYPES.get(ext, "application/octet-stream")
     return data, media, doc.file_hash
+
+
+def original_extension(db: Session, document_id: str) -> str:
+    """File extension of the stored original (letters and digits only), for download names."""
+    doc = db.get(Document, document_id)
+    if doc is None:
+        raise AppError("DOCUMENT_NOT_FOUND", "Document not found", 404)
+    ext = doc.file_path.rsplit(".", 1)[-1].lower() if "." in doc.file_path else ""
+    return ext if ext.isalnum() and len(ext) <= 5 else "bin"
