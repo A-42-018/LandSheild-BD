@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { SHELL_MESSAGES, pickMessages } from "@/i18n/client-messages";
 import Header from "@/components/Header";
 import TopStrip from "@/components/TopStrip";
 import NoticeTicker from "@/components/NoticeTicker";
@@ -60,7 +61,8 @@ export default async function LocaleLayout({
         <script src="/theme-init.js" />
       </head>
       <body className={locale === "bn" ? "font-bn" : "font-sans"}>
-        <NextIntlClientProvider messages={messages}>
+        {/* Only the shell's namespaces; routes add theirs with <ClientMessages> (i18n/client-messages.ts). */}
+        <NextIntlClientProvider messages={pickMessages(messages, SHELL_MESSAGES)}>
           <Providers>
           <a
             href="#main"

@@ -15,6 +15,7 @@ const EXTRA_LINKS = [
 ] as const;
 
 /** Header bar links (U1.2): হোম · সেবাসমূহ ▾ · নাগরিক টুলস · নির্দেশিকা · নোটিশ · যোগাযোগ. The remaining pages live in the user menu. */
+// client-messages: nav (labelKey values come from navItemsFor and EXTRA_LINKS)
 export default function HeaderNav() {
   const t = useTranslations();
   const { user } = useAuth();

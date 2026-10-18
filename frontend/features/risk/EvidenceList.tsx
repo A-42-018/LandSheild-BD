@@ -9,6 +9,7 @@ import type { Evidence } from "./types";
 const ICON = { HIGH: AlertOctagon, MEDIUM: AlertTriangle, INFO: Info } as const;
 const EDGE = { HIGH: "border-l-critical", MEDIUM: "border-l-review", INFO: "border-l-pending" } as const;
 
+// client-messages: risk.evidence result.units result.unknownDate (evidenceKey, evidenceValues)
 export default function EvidenceList({ evidence }: { evidence: Evidence[] }) {
   const t = useTranslations();
   const locale = useLocale();

@@ -1,8 +1,13 @@
 import { setRequestLocale } from "next-intl/server";
 import TrackView from "@/features/track/TrackView";
+import ClientMessages from "@/components/ClientMessages";
 
 // Public (no login, no RequireRole): status, dates and office only.
 export default function TrackPage({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
-  return <TrackView />;
+  return (
+    <ClientMessages scope="track">
+      <TrackView />
+    </ClientMessages>
+  );
 }

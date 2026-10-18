@@ -32,6 +32,7 @@ const NAV_ICON: Record<string, LucideIcon> = {
   "/admin": ShieldCheck,
 };
 
+// client-messages: officer.nav (labelKey values in OFFICER_NAV)
 export default function OfficerShell({ children }: { children: ReactNode }) {
   const t = useTranslations();
   const locale = useLocale();

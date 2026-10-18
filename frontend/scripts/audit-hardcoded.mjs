@@ -11,6 +11,7 @@ const ALLOW = new Set([
   "LandShield BD", "EN", "BN", "LandShield",
   "ifahimreza/bangladesh-geojson", // third-party data source name (proper noun)
   "LP-10100", // example land ID format, not prose
+  "A", "R", "N", // <kbd> keycaps of the reviewer shortcuts (U3.3), the key to press, not prose
 ]);
 
 const walk = (d) =>

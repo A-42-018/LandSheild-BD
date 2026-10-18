@@ -23,6 +23,7 @@ function initials(name: string): string {
   return ((parts[0]?.[0] ?? "?") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
 }
 
+// client-messages: nav (labelKey values come from navItemsFor)
 export default function UserMenu() {
   const t = useTranslations();
   const { status, user, logout } = useAuth();
