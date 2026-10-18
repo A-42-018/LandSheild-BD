@@ -107,7 +107,11 @@ describe("Navbar (UD3)", () => {
   it("services dropdown: All services + public pages for anonymous; the signed-in pages are added by role", () => {
     const items = () => within(document.getElementById("services-menu-panel")!).getAllByRole("link", { hidden: true }).map((a) => a.textContent);
     render(wrap(<Navbar />));
-    expect(items()).toEqual([en.nav.allServices, en.nav.verify, en.nav.track, en.nav.verifyDoc, en.nav.map]);
+    expect(items()).toEqual([en.nav.allServices, en.nav.verify, en.nav.track, en.nav.verifyDoc, en.nav.myLands, en.nav.map]);
+    auth = { status: "authenticated", user: { name: "C", role: "CITIZEN" }, logout };
+    cleanup();
+    render(wrap(<Navbar />));
+    expect(items()).toEqual([en.nav.allServices, en.nav.verify, en.nav.check, en.nav.track, en.nav.verifyDoc, en.nav.myLands, en.nav.map]);
     auth = { status: "authenticated", user: { name: "O", role: "OFFICER" }, logout };
     cleanup();
     render(wrap(<Navbar />));

@@ -239,4 +239,10 @@ describe("navItemsFor", () => {
     expect(navItemsFor("OFFICER", items).map((i) => i.href)).toEqual(["/", "/q"]);
     expect(navItemsFor("ADMIN", items).map((i) => i.href)).toEqual(["/", "/q", "/u"]);
   });
+  it("guest items are shown to signed-out visitors but still filtered by role once signed in", () => {
+    const withGuest: NavItem[] = [...items, { href: "/m", labelKey: "m", roles: ["CITIZEN"], guest: true }];
+    expect(navItemsFor(null, withGuest).map((i) => i.href)).toEqual(["/", "/m"]);
+    expect(navItemsFor("CITIZEN", withGuest).map((i) => i.href)).toEqual(["/", "/m"]);
+    expect(navItemsFor("OFFICER", withGuest).map((i) => i.href)).toEqual(["/", "/q"]);
+  });
 });
