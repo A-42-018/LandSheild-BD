@@ -174,7 +174,7 @@ export default function ReviewView({ id }: { id: string }) {
           data-testid="review-columns"
         >
           <div
-            className={`min-w-0 xl:pr-4 ${pane === "doc" ? "" : "max-md:hidden"}`}
+            className={`min-w-0 xl:sticky xl:top-20 xl:self-start xl:pr-4 ${pane === "doc" ? "" : "max-md:hidden"}`}
           >
             <DocumentPreview id={id} fileType={d.file_type} />
           </div>

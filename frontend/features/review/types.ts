@@ -185,6 +185,19 @@ export interface ExtractionOut {
   validation: { valid: boolean; errors: FieldError[] };
   /** true: the viewer uploaded this document (and is not ADMIN), so approving is refused */
   self_approval_blocked?: boolean;
+  /** the record lies outside the area of the office it was filed under: approving is refused */
+  area_conflict?: AreaConflict | null;
+}
+
+/** RECORD_OUTSIDE_AREA details (also sent ahead in ExtractionOut.area_conflict) */
+export interface AreaConflict {
+  office?: string;
+  office_name_en?: string;
+  office_name_bn?: string;
+  district?: string | null;
+  upazila?: string | null;
+  /** set instead when the land itself is held by another office */
+  land_id?: string;
 }
 
 /** Statuses for which GET /documents/{id}/extraction returns data. */

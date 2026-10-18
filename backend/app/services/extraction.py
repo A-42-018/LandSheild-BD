@@ -218,6 +218,15 @@ def check_area(doc: Document, ex: Extraction) -> None:
         offices.check_record_area(doc.office, district, upazila)
 
 
+def area_conflict(doc: Document, ex: Extraction) -> dict | None:
+    """check_area's refusal details, or None when approving would pass the area check."""
+    try:
+        check_area(doc, ex)
+    except AppError as e:
+        return e.details if isinstance(e.details, dict) else {}
+    return None
+
+
 def record_validation(record: dict | None, today: date | None = None) -> RecordValidation | None:
     if record is None:
         return None
@@ -403,6 +412,7 @@ def _to_out(
         validation=ExtractionValidation(valid=not errors, errors=errors),
         original_fields=ex.original_fields if ex.edited_by_human else None,
         self_approval_blocked=bool(viewer and self_approval_blocked(doc, viewer)),
+        area_conflict=area_conflict(doc, ex),
     )
 
 

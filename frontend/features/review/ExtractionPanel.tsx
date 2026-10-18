@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { AlertTriangle, ListChecks, Pencil } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { AlertTriangle, Ban, ListChecks, Pencil } from "lucide-react";
 import { Badge, Button, Card, Input } from "@/components/ui";
 import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { BAND_TONE, bandFor, percent } from "./confidence";
@@ -9,7 +9,9 @@ import DeedProfileSwitch from "./DeedProfileSwitch";
 import DeedView from "./deed/DeedView";
 import { issuesOf, RecordEditProvider } from "./deed/RecordEdit";
 import EngineBadge from "./EngineBadge";
-import ReviewActions, { REVIEWABLE } from "./ReviewActions";
+import ReviewActions, { areaText, REVIEWABLE } from "./ReviewActions";
+import ReviewFocusBar from "./ReviewFocusBar";
+import { NoFocus, ReviewFocusProvider, useFocusEntry } from "./focus";
 import PartyNidPanel from "./PartyNidPanel";
 import { needsPartyNid } from "@/features/upload/PartyNidFields";
 import { useDocumentStatus } from "./useReviewData";
@@ -41,6 +43,11 @@ function FieldRow({
   const [serverErrors, setServerErrors] = useState<FieldError[]>([]);
   const [saveFailed, setSaveFailed] = useState(false);
   const band = bandFor(f.confidence, threshold);
+  const hidden = useFocusEntry(
+    `field-${f.field}`,
+    band !== "high" || errors.length > 0 ? "check" : f.value ? "fine" : "empty",
+    editing,
+  );
   // the input is disabled while saving and so loses focus; give it back when the save is refused
   const focus = useFocusFirstInvalid();
 
@@ -70,14 +77,15 @@ function FieldRow({
 
   const shown = (editing ? serverErrors : errors).map((e) => fieldErrorText(t as never, e));
   const errorText = shown.join(" ") || (saveFailed ? t("actions.saveFailed") : "");
+  if (hidden) return null;
 
   return (
     <div
       data-testid={`field-${f.field}`}
-      className="flex flex-col gap-1 border-l-4 py-2 pl-3 data-[band=high]:border-l-verified data-[band=medium]:border-l-review data-[band=low]:border-l-critical "
+      className="grid gap-x-3 gap-y-0.5 border-l-4 py-1.5 pl-3 pr-1 transition-colors hover:bg-primary-soft/40 data-[band=high]:border-l-verified data-[band=medium]:border-l-review data-[band=low]:border-l-critical sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)]"
       data-band={band}
     >
-      <dt className="text-xs font-medium uppercase tracking-wide text-ink-muted">{label}</dt>
+      <dt className="pt-1 text-xs font-medium text-ink-muted">{label}</dt>
       <dd className="flex min-w-0 flex-1 flex-col gap-1">
         {editing ? (
           <form
@@ -109,12 +117,12 @@ function FieldRow({
         ) : (
           <>
             <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-              <span className={f.value ? "break-words text-ink" : "text-ink-muted"} data-testid={`value-${f.field}`}>
+              <span className={f.value ? "break-words font-medium text-ink" : "text-ink-muted"} data-testid={`value-${f.field}`}>
                 {f.value ? f.value : t("valueNotFound")}
               </span>
               <span className="flex items-center gap-1">
                 {f.edited_by_human && <Badge tone="pending">{t("edited")}</Badge>}
-                <Badge tone={BAND_TONE[band]} data-band={band} title={t("confidence")}>
+                <Badge tone={BAND_TONE[band]} data-band={band} title={t("confidence")} className="!px-2 !py-0 font-medium">
                   {t(`band.${band}`)} · {percent(f.confidence)}%
                 </Badge>
                 {editable && (
@@ -124,10 +132,10 @@ function FieldRow({
                     icon={<Pencil />}
                     onClick={open}
                     aria-label={`${t("edit")}: ${label}`}
+                    title={t("edit")}
+                    className="!px-2 [@media(pointer:fine)]:!min-h-8"
                     data-testid={`edit-${f.field}`}
-                  >
-                    {t("edit")}
-                  </Button>
+                  />
                 )}
               </span>
             </div>
@@ -144,7 +152,16 @@ function FieldRow({
 }
 
 export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
+  return (
+    <ReviewFocusProvider>
+      <Panel data={data} />
+    </ReviewFocusProvider>
+  );
+}
+
+function Panel({ data }: { data: ExtractionOut }) {
   const t = useTranslations("review");
+  const locale = useLocale();
   const te = useTranslations("errors");
   const actions = useReviewActions(data.document_id);
   const editable = REVIEWABLE.includes(data.processing_status);
@@ -155,22 +172,43 @@ export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
   // H6a: a historical deed with an LHDR record shows the sectioned digital deed; everything else keeps the 13 rows
   const historical = data.deed_profile === "historical" && !!data.record;
   const lowLabels = data.low_confidence_fields.map((f) => (t.has(`fields.${f}`) ? t(`fields.${f}`) : f));
+  const errorCount = editable
+    ? data.validation.errors.length + (data.record_validation?.errors.length ?? 0)
+    : 0;
 
   return (
     <div className="flex min-w-0 flex-col gap-4" data-testid="extraction-panel">
+      {editable && data.area_conflict && (
+        // said first: approving will be refused whatever the fields say, so do not check them all
+        <div role="alert" data-testid="area-conflict-banner" className="glass-card border-l-[4px] border-l-critical p-4 text-sm">
+          <p className="flex items-start gap-2 font-semibold text-critical">
+            <Ban aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{areaText(t, data.area_conflict, locale)}</span>
+          </p>
+        </div>
+      )}
       {data.has_low_confidence && (
-        <div role="alert" data-testid="low-confidence-banner" className="glass-card border-l-[4px] border-l-review p-4 text-sm">
+        <div role="alert" data-testid="low-confidence-banner" className="glass-card border-l-[4px] border-l-review px-4 py-3 text-sm">
           <p className="flex items-center gap-2 font-semibold text-review">
             <AlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0" />
             <span>{te("lowConfidence")}</span>
           </p>
-          <p className="mt-1 text-ink">
-            {t("lowConfidenceFields")}: {lowLabels.join(", ")}
-          </p>
+          {/* the sectioned deed counts its own values in the bar below; these 13 are folded away there */}
+          {!historical && (
+            <p className="mt-1 text-ink">
+              {t("lowConfidenceFields")}: {lowLabels.join(", ")}
+            </p>
+          )}
         </div>
       )}
-      <EngineBadge data={data} />
-      <DeedProfileSwitch data={data} actions={actions} />
+      <ReviewFocusBar errors={errorCount} sections={historical} />
+      <details data-testid="reading-info" className="glass-card px-4 py-2 text-sm">
+        <summary className="cursor-pointer py-1 font-medium text-ink">{t("focus.readingInfo")}</summary>
+        <div className="flex flex-col gap-3 pb-2 pt-2">
+          <EngineBadge data={data} />
+          <DeedProfileSwitch data={data} actions={actions} />
+        </div>
+      </details>
       {historical ? (
         <>
           <RecordEditProvider documentId={data.document_id} editable={editable} issues={issuesOf(data)}>
@@ -179,22 +217,24 @@ export default function ExtractionPanel({ data }: { data: ExtractionOut }) {
           <details data-testid="core-fields" className="text-sm">
             <summary className="cursor-pointer font-medium text-ink">{t("deed.coreFields")}</summary>
             <div className="mt-2">
-            <Card title={t("fieldsTitle")} icon={<ListChecks />}>
-              <dl className="divide-y divide-line">
-                {data.fields.map((f) => (
-                  <FieldRow
-                    key={f.field}
-                    f={f}
-                    t={t}
-                    label={t.has(`fields.${f.field}`) ? t(`fields.${f.field}`) : f.field}
-                    threshold={data.threshold}
-                    editable={editable}
-                    errors={editable ? data.validation.errors.filter((e) => e.field === f.field) : []}
-                    onSave={(value) => actions.save.mutateAsync({ field: f.field, value })}
-                  />
-                ))}
-              </dl>
-            </Card>
+            <NoFocus>
+              <Card title={t("fieldsTitle")} icon={<ListChecks />}>
+                <dl className="divide-y divide-line">
+                  {data.fields.map((f) => (
+                    <FieldRow
+                      key={f.field}
+                      f={f}
+                      t={t}
+                      label={t.has(`fields.${f.field}`) ? t(`fields.${f.field}`) : f.field}
+                      threshold={data.threshold}
+                      editable={editable}
+                      errors={editable ? data.validation.errors.filter((e) => e.field === f.field) : []}
+                      onSave={(value) => actions.save.mutateAsync({ field: f.field, value })}
+                    />
+                  ))}
+                </dl>
+              </Card>
+            </NoFocus>
             </div>
           </details>
         </>

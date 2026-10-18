@@ -109,7 +109,8 @@ export default function DocumentPreview({
           </Button>
         </p>
       )}
-      <div className="max-h-[70vh] min-h-[16rem] overflow-auto glass-card !rounded-card">
+      {/* ≥ 1280 px the pane is sticky beside the fields: fill the screen, so the deed stays in view */}
+      <div className="max-h-[70vh] min-h-[16rem] overflow-auto glass-card !rounded-card xl:h-[calc(100vh-12rem)] xl:max-h-none">
         {file.loading && <LoadingState />}
         {file.error && (
           <ErrorState message={t("preview.error")} onRetry={file.retry} />
@@ -150,7 +151,7 @@ export default function DocumentPreview({
             key={`${zoom}-${page}`}
             title={t("preview.alt")}
             src={`${file.url}#page=${page}&zoom=${zoom}`}
-            className="h-[70vh] w-full"
+            className="h-[70vh] w-full xl:h-full"
           />
         )}
       </div>
