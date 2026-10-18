@@ -3,7 +3,7 @@
 
 The layout / endpoint tests run without a PDF library (the renderer is replaced by a stub that
 returns the HTML). The render and round-trip tests need WeasyPrint + Pango (and PyMuPDF / Tesseract)
-and are skipped until H8a's engine is installed: pip install -e "./backend[pdf]" pymupdf
+and are skipped until the engine is installed: pip install -e "./backend[pdf]" (WeasyPrint needs Pango)
 """
 import json
 from pathlib import Path
@@ -138,19 +138,26 @@ def test_pdf_keeps_exact_bangla_text():
 
 
 def test_round_trip_our_pdf_back_through_the_pipeline():
-    """H8c done criterion: PDF -> OCR / text layer -> historical parser -> >= 99 % of the gold values."""
+    """H8c done criterion (H10): PDF -> the H2 router must trust our text layer (no OCR fallback) and
+    >= 99 % of the values printed in the PDF must come back unchanged, in order. The H4 deed parser is
+    not used: it reads deed prose (`পিতা- মৃত X, সাং-`), not our label / value layout."""
+    import unicodedata
+
     _engine()
-    from ai.evaluation.historical import score_doc
-    from ai.extraction.derive import derive_fields
-    from ai.extraction.historical_deed import HistoricalDeedProvider
     from ai.ocr.router import AutoOCRProvider
 
-    gold = json.loads(GOLD.read_text(encoding="utf-8"))
+    norm = lambda t: " ".join(unicodedata.normalize("NFC", t).split())  # noqa: E731
     pdf = dp.deed_pdf(lhdr.SCHEMA, _record(), META)
     res = AutoOCRProvider(demo_fixtures=False, profile="historical").recognize(pdf, "pdf")
-    out = HistoricalDeedProvider().extract(pdf, res)
-    core = {f.field: f.value for f in out.fields}
-    s = score_doc(core, gold, record=out.record)
-    ok = sum(a for a, _ in s["sections"].values())
-    total = sum(n for _, n in s["sections"].values())
-    assert ok / total >= 0.99, f"{ok}/{total}; missed {s['missed']}"
+    assert res.provider == "pdf-text", res.provider
+    text = norm(res.text)
+    values = [norm(v) for s in dp.build_view(lhdr.SCHEMA, _record()) for b in s["blocks"] for _, _, v in b if v]
+    values += [norm(str(META[k])) for k in ("deed_no", "record_hash", "file_hash", "signature")]
+    pos, missed = 0, []
+    for v in values:
+        at = text.find(v, pos)
+        if at < 0:
+            missed.append(v)
+        else:
+            pos = at + len(v)
+    assert len(values) >= 40 and (len(values) - len(missed)) / len(values) >= 0.99, f"{len(missed)}/{len(values)} missed: {missed}"

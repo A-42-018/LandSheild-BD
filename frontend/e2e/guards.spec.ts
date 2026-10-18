@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { API, apiLogin, signIn } from "./fixtures";
 
+/** RequireRole renders messages/en.json errors.permission. */
+const NO_PERMISSION = "Your account is not allowed to do this. Sign in with another account.";
+
 const STAFF_PAGES = ["/en/officer", "/en/officer/upload", "/en/officer/audit-logs", "/en/admin"];
 
 test.describe("anonymous visitors", () => {
@@ -24,7 +27,7 @@ test.describe("citizen is blocked from staff areas", () => {
     test(`${path} → permission message`, async ({ page }) => {
       await signIn(page, "citizen");
       await page.goto(path);
-      await expect(page.getByText("You don't have permission to perform this action.").first()).toBeVisible();
+      await expect(page.getByText(NO_PERMISSION).first()).toBeVisible();
     });
   }
 
@@ -43,20 +46,20 @@ test.describe("role ladder", () => {
     await page.goto("/en/officer");
     await expect(page.getByRole("heading", { name: "Officer dashboard" })).toBeVisible();
     await page.goto("/en/admin");
-    await expect(page.getByText("You don't have permission to perform this action.").first()).toBeVisible();
+    await expect(page.getByText(NO_PERMISSION).first()).toBeVisible();
   });
 
   test("admin reaches the admin console", async ({ page }) => {
     await signIn(page, "admin");
     await page.goto("/en/admin");
-    await expect(page.getByText("You don't have permission to perform this action.")).toHaveCount(0);
+    await expect(page.getByText(NO_PERMISSION)).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Administration" })).toBeVisible();
   });
 
   test("reviewer cannot upload", async ({ page }) => {
     await signIn(page, "reviewer");
     await page.goto("/en/officer/upload");
-    await expect(page.getByText("You don't have permission to perform this action.").first()).toBeVisible();
+    await expect(page.getByText(NO_PERMISSION).first()).toBeVisible();
   });
 });
 
@@ -76,6 +79,6 @@ test.describe("citizen area /my (U3.2)", () => {
   test("staff get the permission message", async ({ page }) => {
     await signIn(page, "officer");
     await page.goto("/en/my");
-    await expect(page.getByText("You don't have permission to perform this action.").first()).toBeVisible();
+    await expect(page.getByText(NO_PERMISSION).first()).toBeVisible();
   });
 });

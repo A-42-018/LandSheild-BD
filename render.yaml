@@ -1,5 +1,6 @@
-# Backend on Render (free web service). NOT tested from this sandbox.
-# SQLite on Render's free disk is wiped on each redeploy/restart: the demo data is re-seeded on every start.
+# Backend on Render (free web service).
+# Without D6 (docs/deploy-render.md) the database is SQLite on Render's free disk, which is wiped on each
+# redeploy/restart: the demo data is re-seeded on every start and uploads are lost.
 services:
   - type: web
     name: landshield-api
@@ -17,12 +18,30 @@ services:
         value: "true"
       - key: COOKIE_SAMESITE
         value: none
+      # D6 (docs/deploy-render.md §2-3): set in the dashboard, never here. A `value:` in this file would be
+      # written back on every Blueprint sync and silently switch production back to the wiped SQLite disk.
+      # Left empty, DATABASE_URL falls back to the image's SQLite and STORAGE_BACKEND to local.
       - key: DATABASE_URL
-        value: sqlite:///./landshield.db   # D6 (docs/deploy-render.md): replace with the managed Postgres URL in the dashboard
+        sync: false          # postgresql://...?sslmode=require (Neon / Supabase)
       - key: STORAGE_PATH
         value: ./storage
-      # D6 persistent files: set STORAGE_BACKEND=s3 + the S3_* values in the dashboard (docs/deploy-render.md).
+      - key: STORAGE_BACKEND
+        sync: false          # s3
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
       # SEED_MODE defaults to auto: SQLite is re-seeded on every boot, a Postgres database only when empty.
+      - key: ANTHROPIC_API_KEY
+        sync: false          # optional (D3); empty = rules only. Gateway: also ANTHROPIC_BASE_URL + ANTHROPIC_AUTH
+      - key: CLAUDE_DAILY_CAP
+        value: "100"         # max Claude calls per day; over the cap the rules read alone
       - key: JWT_SECRET
         generateValue: true
       - key: HASH_SALT

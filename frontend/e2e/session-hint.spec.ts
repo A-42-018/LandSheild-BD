@@ -17,15 +17,15 @@ test.describe("silent session restore", () => {
     await page.goto("/en/login");
     await page.getByLabel("Email").fill("officer@demo.landshield.test");
     await page.getByLabel("Password").fill(process.env.DEMO_PASSWORD ?? "LandShield2026!");
-    await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await page.waitForURL(/\/en\/?$/);
+    await page.locator("#main").getByRole("button", { name: "Sign in", exact: true }).click();
+    await page.waitForURL(/\/en\/officer\/?$/); // U3.1: officers land on their dashboard
     await page.reload();
     await page.goto("/en/officer");
     await expect(page.getByTestId("alerts-card")).toBeVisible({ timeout: 15_000 });
     await page.getByRole("button", { name: "Account menu" }).click();
     await page.getByRole("button", { name: "Sign out" }).click();
     await page.goto("/en/officer");
-    await expect(page).toHaveURL(/\/login/);
+    await expect(page).toHaveURL(/\/en\/officer-login\?next=/);
     expect(await page.evaluate(() => window.localStorage.getItem("ls-session"))).toBeNull();
   });
 });

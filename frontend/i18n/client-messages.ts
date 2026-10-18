@@ -47,8 +47,14 @@ export const MESSAGE_SCOPES = {
   guide: ["guide.video", "guide.more", "readAloud"],
   verify: [...LAND_SEARCH, "services"],
   /** full result, ownership graph and printable report (signed in) */
-  record: ["result", "risk", "graph", "report", "readAloud", "page", "qr", "my.watch"],
+  record: [
+    "result", "risk", "graph", "report", "readAloud", "page", "qr", "my.watch",
+    // the land's deed list and its version panel (H6-H8)
+    "library.digitisedNo", "library.digitisedYes", "library.historical", "library.landDocs", "library.openRow", "library.doc", "upload.types",
+  ],
   publicRecord: ["publicVerify", "page.dataAsOf", "page.publicPurpose", "risk.disclaimer"],
+  /** public QR page of one approved deed record (/v/r/[recordId], H8) */
+  publicDeedRecord: ["publicRecord", "publicVerify.signIn"],
   check: ["check", "services", "verify"],
   verifyDocument: ["verifyDoc", "services", "demoDocs"],
   track: ["track", "services", "mutation", "feedback.kinds", "feedback.status", "pageTip"],
@@ -61,7 +67,7 @@ export const MESSAGE_SCOPES = {
   my: ["my", "result", "authShell", "pageTip"],
   officer: [
     "officer", "auth", "area", "officerSignup", "review", "reviewer", "mutation", "hearings", "archive", "upload", "result", "risk",
-    "feedback", "admin.audit", "pageTip", "partyNid", "demoDocs",
+    "feedback", "admin.audit", "pageTip", "partyNid", "demoDocs", "library",
   ],
   admin: ["admin", "auth", "officer.activity", "upload.types"],
 } satisfies Record<string, readonly string[]>;

@@ -24,7 +24,7 @@ OCR_MAX_PAGES=5             # more pages: first N read + warning PAGES_TRUNCATED
 
 - Result: text, per-word boxes (original image coordinates) and confidence; `documents.ocr_text` and `documents.ocr_confidence` (mean word confidence, 0..1) are stored. The extraction JSON records `ocr_source` (`demo` / `pdf-text` / `tesseract`), `extractor` (`rules` / `claude`), `model` and `warnings`.
 - Without the Tesseract binary an upload that is not a demo sample ends `FAILED` with `failure_code=OCR_UNAVAILABLE` (verify-document answers 503). There is no fallback to the mock. If none of the requested languages is installed: `TESSERACT_LANG_MISSING`.
-- Docker/Render: the image downloads `tessdata_best` `ben` + `eng` into the Tesseract data directory.
+- Docker/Render: the image downloads the standard `tessdata` (`tesseract-ocr/tessdata`, branch `main`) `ben` + `eng` into the Tesseract data directory (`tessdata_best` was about 2x slower on the free CPU, see `Dockerfile`).
 - Tests force `OCR_PROVIDER=mock` / `DOCUMENT_AI_PROVIDER=mock`; they need neither Tesseract nor the network.
 
 ## Optional: Claude field reader

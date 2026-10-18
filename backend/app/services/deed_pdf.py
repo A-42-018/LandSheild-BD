@@ -1,9 +1,9 @@
-"""H8c: the digital deed as a PDF (WeasyPrint = the assumed H8a engine, decision D7 still open).
+"""H8c: the digital deed as a PDF (D7: WeasyPrint draws, a PyMuPDF text layer keeps Bangla exact).
 
 `build_view` turns one record version into plain sections A-I (engine independent, tested without
-any PDF library). `render_html` lays them out; `render_pdf` needs WeasyPrint + Pango and raises
-PDF_ENGINE_UNAVAILABLE (503) without them. NIDs are printed as the last 4 digits only. A version
-that is not approved is marked "DRAFT - NOT APPROVED" on every page.
+any PDF library). `render_html` lays them out; `render_pdf` needs WeasyPrint + Pango + PyMuPDF and
+raises PDF_ENGINE_UNAVAILABLE (503) without them. NIDs are printed as the last 4 digits only. A
+version that is not approved is marked "DRAFT - NOT APPROVED" on every page.
 """
 from __future__ import annotations
 
@@ -150,11 +150,15 @@ def build_view(schema: str, record: dict) -> list[dict]:
     return out
 
 
-def _font_uri() -> str:
+def _font_path() -> Path:
     for name in FONT_FILES:
         if (FONTS / name).exists():
-            return (FONTS / name).as_uri()
+            return FONTS / name
     raise AppError("PDF_FONT_MISSING", "No Bangla font is installed for the PDF", 503)
+
+
+def _font_uri() -> str:
+    return _font_path().as_uri()
 
 
 def render_html(view: list[dict], meta: dict) -> str:
@@ -232,12 +236,68 @@ def _css_str(s: str) -> str:
     return s.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ")
 
 
+PX = 0.75  # CSS px -> PDF pt
+
+
 def render_pdf(html: str) -> bytes:
+    """D7 (H8a spike, H10): WeasyPrint draws the page, but its Bangla text layer is not exact
+    (conjuncts and the pre-base vowel sign extract as stray glyphs, with Noto Sans Bengali too).
+    So the drawn text is hidden from extractors (`text_layer`) and an exact, invisible copy of
+    every line is laid over it."""
     try:
+        import pymupdf  # noqa: F401, PLC0415
         from weasyprint import HTML  # noqa: PLC0415
+        from weasyprint.formatting_structure.boxes import TextBox  # noqa: PLC0415
     except (ImportError, OSError):  # missing package or missing Pango
         raise AppError("PDF_ENGINE_UNAVAILABLE", "The PDF engine is not installed on this server", 503) from None
-    return HTML(string=html).write_pdf()
+    doc = HTML(string=html).render()
+    lines = [
+        [
+            (b.text, b.position_x * PX, (b.position_y + b.baseline) * PX, b.width * PX,
+             b.style["font_size"] * PX)
+            for b in page._page_box.descendants()
+            if isinstance(b, TextBox) and b.text.strip()
+        ]
+        for page in doc.pages
+    ]  # fmt: skip
+    return text_layer(doc.write_pdf(), lines)
+
+
+def text_layer(pdf: bytes, lines: list[list[tuple[str, float, float, float, float]]]) -> bytes:
+    """Wrap each page's drawn content in an empty /ActualText (extractors skip it, viewers still
+    draw it) and write every line `(text, x, baseline, width, size)` in pt as invisible (render
+    mode 3), unshaped text: one glyph per code point in logical order, so the text layer reads back
+    exactly. Each line is stretched to the drawn width so selection and reading order follow the
+    page."""
+    import pymupdf  # noqa: PLC0415
+
+    bn = pymupdf.Font(fontfile=str(_font_path()))
+    latin = pymupdf.Font("helv")  # characters the Bangla font lacks (•, –, ·)
+    out = pymupdf.open(stream=pdf, filetype="pdf")
+    for page, rows in zip(out, lines, strict=True):
+        page.clean_contents()
+        for xref in page.get_contents():
+            hidden = b"/Span <</ActualText ()>> BDC\n" + out.xref_stream(xref) + b"\nEMC\n"
+            out.update_stream(xref, hidden)
+        page.insert_font(fontname="lsbn", fontbuffer=bn.buffer)
+        for text, x, y, width, size in rows:
+            runs: list[list] = []  # [font name, Font, text]
+            for ch in text:
+                f = ("lsbn", bn) if bn.has_glyph(ord(ch)) or ch == " " else ("helv", latin)
+                if runs and runs[-1][0] == f[0]:
+                    runs[-1][2] += ch
+                else:
+                    runs.append([*f, ch])
+            natural = sum(f.text_length(t, fontsize=size) for _, f, t in runs)
+            sx = width / natural if natural > 0 and width > 0 else 1.0
+            for name, f, t in runs:
+                at = pymupdf.Point(x, y)
+                page.insert_text(
+                    at, t, fontname=name, fontsize=size, render_mode=3,
+                    morph=(at, pymupdf.Matrix(sx, 1)),
+                )
+                x += f.text_length(t, fontsize=size) * sx
+    return out.tobytes(garbage=3, deflate=True)
 
 
 def deed_pdf(schema: str, record: dict, meta: dict) -> bytes:

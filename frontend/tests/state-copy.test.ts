@@ -17,8 +17,8 @@ const STATE_KEY = /(^|\.)(empty\w*|loading\w*|searching|slow|notFound|noMatch|no
 const stateKeys = (m: Record<string, unknown>) => entries(m).filter(([k]) => STATE_KEY.test(k) && !k.startsWith("risk.evidence") && !k.startsWith("officer.activity.actions"));
 
 /** Words a citizen would not say at a land office (docs/ui.md). */
-// "লোড" alone would also hit "আপলোড" (upload), which staff screens may keep.
-const BANNED_BN = [/অনুগ্রহ করে/, /(?<!আপ)লোড/, /প্রক্রিয়াকরণ/, /প্রক্রিয়া করতে/, /ব্যর্থ/, /সম্পন্ন করা যায়নি/, /নথিভুক্ত নেই/];
+// "লোড" alone would also hit "আপলোড" (upload) and "ডাউনলোড" (download), which staff screens may keep.
+const BANNED_BN = [/অনুগ্রহ করে/, /(?<!আপ|ডাউন)লোড/, /প্রক্রিয়াকরণ/, /প্রক্রিয়া করতে/, /ব্যর্থ/, /সম্পন্ন করা যায়নি/, /নথিভুক্ত নেই/];
 /** Pages that promise features later. */
 const PLACEHOLDER = [/placeholder/i, /under construction/i, /coming soon/i, /later phase/i, /নির্মাণাধীন/, /নির্মাণ কাজ/, /শীঘ্রই আসছে/, /পরবর্তী ধাপে আসবে/, /অস্থায়ী পৃষ্ঠা/];
 

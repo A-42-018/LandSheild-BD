@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import PublicRecordView from "@/features/qr/PublicRecordView";
 import { pageTitle } from "@/lib/page-title";
+import ClientMessages from "@/components/ClientMessages";
 
 export const generateMetadata = pageTitle("publicRecord.title");
 
@@ -8,8 +9,10 @@ export const generateMetadata = pageTitle("publicRecord.title");
 export default function PublicRecordPage({ params: { locale, recordId } }: { params: { locale: string; recordId: string } }) {
   setRequestLocale(locale);
   return (
-    <div className="mx-auto max-w-3xl">
-      <PublicRecordView recordId={decodeURIComponent(recordId)} />
-    </div>
+    <ClientMessages scope="publicDeedRecord">
+      <div className="mx-auto max-w-3xl">
+        <PublicRecordView recordId={decodeURIComponent(recordId)} />
+      </div>
+    </ClientMessages>
   );
 }

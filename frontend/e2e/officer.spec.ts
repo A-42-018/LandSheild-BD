@@ -111,7 +111,7 @@ test.describe("officer flow (mock providers, seeded database)", () => {
       const risk = page.getByTestId("risk-section");
       await expect(risk).toBeVisible();
       await expect(risk.getByText("High", { exact: true }).first()).toBeVisible();
-      const score = parseInt(await page.getByTestId("risk-score").innerText(), 10);
+      const score = Number((await page.getByTestId("risk-score").innerText()).match(/Risk score (\d+) of 100/)?.[1]);
       expect(score).toBeGreaterThanOrEqual(60);
 
       await page.getByRole("button", { name: "Generate verification report" }).click();

@@ -57,6 +57,36 @@ Pre-run Doc1 + Doc2 on LP-10234 before recording, or use LP-10240 (identical out
 
 > Four-eyes rule: whoever uploaded a document cannot approve it (`SELF_APPROVAL_FORBIDDEN`, 403). Live demo: upload as the officer, approve as `reviewer@demo.landshield.test`; or do both as admin (admin is exempt, as in the recorded video).
 
+## C. Historical deed (≈ 2.5 min, mentor feedback, H10)
+
+Answers both mentor points: a 1944 deed becomes a structured digital deed, and the officer can find, view
+and download both the upload and its digital version. The flow is the one `e2e/historical.spec.ts` and
+`e2e/library.spec.ts` run end to end.
+
+**Setup (differs from A/B):** the sample deed has no mock fixture, so the backend reads it for real:
+`OCR_PROVIDER=auto DOCUMENT_AI_PROVIDER=rules` (Claude optional), Tesseract with `ben` + `eng`
+(`TESSDATA_PREFIX` → `ai/tessdata`), and the `pdf` extra for the PDF download (WeasyPrint needs Pango; on
+macOS start the backend with `DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib`). File:
+`database/sample_data/historical/Historical_Land_Deed.pdf`. Buyer NID + date of birth: the synthetic pair in
+`frontend/e2e/fixtures.ts` (`BUYER_NID`). Accounts: `officer@` uploads, `reviewer@` approves (four-eyes).
+Reading one page takes 10–20 s locally, longer on Render's free CPU, so pre-run it there.
+
+| # | Time | Step | Where | Say / show |
+|---|------|------|-------|------------|
+| 1 | 0:00 | Upload | `/en/officer/upload` as officer, the PDF + buyer NID | An ordinary deed upload. No special option: the system detects that it is historical |
+| 2 | 0:15 | Damaged PDF text | review screen, reading method | "The text stored inside this PDF was damaged, so the page image was read instead": the bug that broke the sample deed |
+| 3 | 0:30 | Digital deed | extraction panel: "Historical deed — detected automatically" | Section by section like the paper: registration, Bangla-calendar date ১৫ই ফাল্গুন ১৩৫০ with its 1944 range, both parties with fathers and addresses, consideration, তপশিল, চৌহদ্দি, witnesses and stamps |
+| 4 | 0:55 | Verbatim + source | click a value | Normalised vs "As written", the confidence badge, the spot highlighted on the page. Old ঢাকা / রূপগঞ্জ → today's Narayanganj / Rupganj |
+| 5 | 1:10 | Correct | edit Volume, **Add witness** | Every edit audited; the officer cannot approve their own upload |
+| 6 | 1:25 | Approve | sign in as reviewer → same document → **Approve** | Record frozen as an approved version: SHA-256 + Ed25519 signature |
+| 7 | 1:40 | My documents | `/en/officer/documents` → My uploads (as officer) | Status, "Historical" tag, digitised: yes |
+| 8 | 1:50 | Document page | open the row | Original upload left, digital deed right, version picker v1 machine → approved, **Signature valid ✓**, file hash |
+| 9 | 2:05 | Download | **Download → Digital deed (PDF)**, then the bundle | Bangla PDF with hashes, signature and a QR code. Copy a Bangla line out of it: the text is exact (D7) |
+| 10 | 2:20 | Scan QR | phone camera on the PDF, or open `/en/v/r/{record id}` | Public **Valid** page: deed no, version, approval date, no personal data |
+| 11 | 2:30 | Chain of title | land page → Ownership | The 1944 sale shows as **Historical link**; the current owner is unchanged (D2) |
+
+Fallback: if the upload stalls, use the document from the rehearsal run (My documents → My uploads) and start at step 7.
+
 ## Pre-baked fallbacks (no upload needed)
 | Land ID | Shows | Expected (as seeded) |
 |---|---|---|

@@ -4,7 +4,9 @@ Run (from the repo root, in an env with the `pdf` extra + pymupdf):
     pip install -e "./backend[pdf]" pymupdf
     python scripts/pdf_spike.py [--out scripts/_out] [--font path/to/font.ttf]
 
-Candidates: weasyprint (Pango + HarfBuzz) and fpdf2 (+ uharfbuzz shaping). For each one it renders
+Candidates: weasyprint (Pango + HarfBuzz), fpdf2 (+ uharfbuzz shaping) and, since H10, the D7
+fallback weasyprint+layer (the app's `deed_pdf.render_pdf`: WeasyPrint draws, an invisible PyMuPDF
+text layer). For each one it renders
 the same page, extracts the text with PyMuPDF (pypdf if PyMuPDF is missing), compares every source
 string exactly (NFC, whitespace collapsed), scores the page with ai/ocr/quality.py, and records
 render time, PDF size and installed package size. Exit 0 when at least one candidate round-trips
@@ -37,6 +39,8 @@ LINES = [
 SOURCES = WORDS + LINES
 FONT_CANDIDATES = ["NotoSansBengali-Regular.ttf", "FreeSans.ttf"]  # ai/fonts/, first found wins
 PACKAGES = {"weasyprint": ["weasyprint", "pydyf", "tinyhtml5", "tinycss2", "cssselect2", "pyphen"],
+            "weasyprint+layer": ["weasyprint", "pydyf", "tinyhtml5", "tinycss2", "cssselect2",
+                                 "pyphen", "pymupdf"],
             "fpdf2": ["fpdf2", "uharfbuzz", "fonttools", "defusedxml"]}
 
 
@@ -54,17 +58,28 @@ def pick_font(arg: str | None) -> Path:
     raise SystemExit("no Bangla font in ai/fonts/ (see ai/fonts/README.md) and no --font given")
 
 
-def render_weasyprint(font: Path, out: Path) -> None:
-    from weasyprint import HTML
-
+def spike_html(font: Path) -> str:
     body = "".join(f"<p class=w>{w}</p>" for w in WORDS) + "".join(f"<p>{x}</p>" for x in LINES)
-    html = (
+    return (
         f"<html lang='bn'><head><meta charset='utf-8'><style>"
         f"@font-face{{font-family:Bn;src:url('{font.as_uri()}')}}"
         f"body{{font-family:Bn;font-size:14pt}}p.w{{font-size:20pt}}</style></head>"
         f"<body>{body}</body></html>"
     )
-    HTML(string=html).write_pdf(str(out))
+
+
+def render_weasyprint(font: Path, out: Path) -> None:
+    from weasyprint import HTML
+
+    HTML(string=spike_html(font)).write_pdf(str(out))
+
+
+def render_weasyprint_layer(font: Path, out: Path) -> None:
+    """D7 fallback (H10): WeasyPrint draws, the app's PyMuPDF text layer replaces its text."""
+    sys.path.insert(0, str(ROOT / "backend"))
+    from app.services.deed_pdf import render_pdf
+
+    out.write_bytes(render_pdf(spike_html(font)))
 
 
 def render_fpdf2(font: Path, out: Path) -> None:
@@ -82,9 +97,9 @@ def render_fpdf2(font: Path, out: Path) -> None:
 
 def extract(path: Path) -> tuple[str, str]:
     try:
-        import fitz  # PyMuPDF
+        import pymupdf
 
-        with fitz.open(path) as doc:
+        with pymupdf.open(path) as doc:
             return "\n".join(p.get_text() for p in doc), "pymupdf"
     except ImportError:
         from pypdf import PdfReader
@@ -110,9 +125,11 @@ def installed_mb(names: list[str]) -> float | None:
 
 def run_candidate(name: str, fn, font: Path, out_dir: Path) -> dict:
     res: dict = {"engine": name}
-    mod = {"weasyprint": "weasyprint", "fpdf2": "fpdf"}[name]
+    mod = {"weasyprint": "weasyprint", "weasyprint+layer": "weasyprint", "fpdf2": "fpdf"}[name]
     try:
         importlib.import_module(mod)
+        if name == "weasyprint+layer":
+            importlib.import_module("pymupdf")
         if name == "fpdf2":
             importlib.import_module("uharfbuzz")
     except ImportError as e:
@@ -152,6 +169,7 @@ def main() -> int:
     font = pick_font(args.font)
     results = [
         run_candidate("weasyprint", render_weasyprint, font, out_dir),
+        run_candidate("weasyprint+layer", render_weasyprint_layer, font, out_dir),
         run_candidate("fpdf2", render_fpdf2, font, out_dir),
     ]
     winners = [r["engine"] for r in results if r.get("passes")]
