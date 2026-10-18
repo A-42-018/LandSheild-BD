@@ -43,6 +43,13 @@ class Extraction(BaseModel):
     deed_profile: str | None = None  # modern | historical
     deed_class: dict[str, Any] | None = None
     ocr_profile: str | None = None  # Tesseract profile that produced the text (None = no image OCR)
+    # True: a reviewer forced deed_profile on reprocess (deed_class keeps the classifier's verdict)
+    profile_overridden: bool = False
+    # H4: historical deeds keep the full LHDR v1 record the 13 fields were derived from (None for
+    # modern deeds and rows from before H4). H5 adds versions and LHDR edits; until then a PATCH
+    # changes the 13 fields only.
+    record: dict[str, Any] | None = None
+    record_schema: str | None = None  # "lhdr/1"
 
     def dump(self) -> dict[str, Any]:
         return self.model_dump(mode="json")
@@ -74,6 +81,9 @@ class ExtractionOut(BaseModel):
     deed_profile: str | None = None  # H3: modern | historical (None = not classified)
     deed_class: dict[str, Any] | None = None
     ocr_profile: str | None = None
+    profile_overridden: bool = False  # deed_profile was set by a reviewer, not detected
+    record: dict[str, Any] | None = None  # H4: LHDR v1 record of a historical deed
+    record_schema: str | None = None
     threshold: float
     fields: list[ExtractedFieldOut]
     edited_by_human: bool

@@ -13,6 +13,9 @@ export interface FieldError {
   params?: Record<string, unknown> | null;
 }
 
+/** Tesseract profile of a deed (H3): detected, or forced by a reviewer on reprocess. */
+export type DeedProfile = "modern" | "historical";
+
 export interface ExtractionOut {
   document_id: string;
   processing_status: string;
@@ -21,6 +24,11 @@ export interface ExtractionOut {
   extractor?: string | null; // rules | claude | mock
   model?: string | null;
   warnings?: string[];
+  /** deeds only: null for khatian / porcha and for results from before detection existed */
+  deed_profile?: DeedProfile | null;
+  ocr_profile?: DeedProfile | null; // profile Tesseract read with (null = no image OCR)
+  /** true: a reviewer chose deed_profile; false: the classifier detected it */
+  profile_overridden?: boolean;
   threshold: number;
   fields: ExtractedFieldOut[];
   edited_by_human: boolean;

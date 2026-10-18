@@ -114,22 +114,30 @@ def reject_document(
     return _to_out(db, doc)
 
 
-def request_reprocess(db: Session, user: User, document_id: str, ip: str | None) -> DocumentOut:
-    """REVIEW_REQUIRED|EXTRACTED|FAILED -> PROCESSING; the caller queues run_processing."""
+def request_reprocess(
+    db: Session, user: User, document_id: str, ip: str | None, profile: str | None = None
+) -> DocumentOut:
+    """REVIEW_REQUIRED|EXTRACTED|FAILED -> PROCESSING; the caller queues run_processing.
+    `profile` (modern | historical) is the reviewer's deed profile switch: the job then reads with
+    that Tesseract profile instead of OCR_PROFILE. Deeds only (khatian / porcha have no profile)."""
     doc = _get(db, document_id)
     _require_status(
         doc, REPROCESSABLE_STATUSES, "DOCUMENT_NOT_REPROCESSABLE",
         "Only documents awaiting review or failed can be reprocessed",
     )  # fmt: skip
-    old = {
-        "status": doc.processing_status,
-        "edited_by_human": bool((doc.extraction_json or {}).get("edited_by_human")),
-    }
+    if profile is not None and is_survey_doc(doc):
+        raise AppError(
+            "PROFILE_NOT_APPLICABLE", "Only deeds have a modern / historical profile", 422,
+            {"document_type": doc.document_type},
+        )  # fmt: skip
+    ex = doc.extraction_json or {}
+    old = {"status": doc.processing_status, "edited_by_human": bool(ex.get("edited_by_human"))}
+    new = {"status": DocumentStatus.PROCESSING.value}
+    if profile is not None:
+        old["deed_profile"] = ex.get("deed_profile")
+        new["profile"] = profile
     doc.processing_status = DocumentStatus.PROCESSING.value
     doc.extraction_json = None  # machine output is regenerated; human edits are discarded
-    audit.log(
-        db, user, "DOCUMENT_REPROCESS_REQUEST", "document", doc.id,
-        old=old, new={"status": DocumentStatus.PROCESSING.value}, ip=ip,
-    )  # fmt: skip
+    audit.log(db, user, "DOCUMENT_REPROCESS_REQUEST", "document", doc.id, old=old, new=new, ip=ip)
     db.commit()
     return _to_out(db, doc)

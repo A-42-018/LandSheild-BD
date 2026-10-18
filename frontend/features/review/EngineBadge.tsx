@@ -10,7 +10,7 @@ const SOURCE_KEY: Record<string, string> = {
   "pdf-text": "pdfText",
   tesseract: "tesseract",
 };
-const EXTRACTOR_KEY: Record<string, string> = { rules: "rules", claude: "claude" };
+const EXTRACTOR_KEY: Record<string, string> = { rules: "rules", claude: "claude", fused: "fused" };
 
 export default function EngineBadge({ data }: { data: ExtractionOut }) {
   const t = useTranslations("review.engine");

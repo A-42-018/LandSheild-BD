@@ -157,6 +157,14 @@ class Source(_Model):
     bbox: Annotated[list[float], pydantic.Field(min_length=4, max_length=4)] | None = None  # x, y, w, h
 
 
+class Candidate(_Model):
+    """Another reading of the same value (H4 fusion: the rules and the LLM disagreed)."""
+
+    value: Any = None
+    method: Method | None = None
+    confidence: Annotated[float, pydantic.Field(ge=0, le=1)] | None = None
+
+
 class Field(_Model, Generic[T]):
     """One value read from the deed. `value` is normalised; `verbatim` is exactly as written."""
 
@@ -167,6 +175,8 @@ class Field(_Model, Generic[T]):
     method: Method | None = None
     legibility: Legibility | None = None
     edited_by_human: bool = False
+    candidates: list[Candidate] = []  # other readings, for the reviewer's "both readings" picker
+    flags: list[str] = []  # review hints: DISAGREE, NOT_IN_TEXT (H4 fusion)
 
     @classmethod
     def model_parametrized_name(cls, params: tuple[type[Any], ...]) -> str:

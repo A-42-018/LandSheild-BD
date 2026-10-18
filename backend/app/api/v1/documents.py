@@ -5,7 +5,13 @@ from app.core.db import get_db, get_sessionmaker
 from app.core.ratelimit import check_rate
 from app.core.rbac import OFFICER_UP, REVIEW_UP, require_roles
 from app.models.user import User
-from app.schemas.document import DocumentOut, DocumentUploadOut, PartyNidsPatch, RejectBody
+from app.schemas.document import (
+    DocumentOut,
+    DocumentUploadOut,
+    PartyNidsPatch,
+    RejectBody,
+    ReprocessBody,
+)
 from app.schemas.extraction import ExtractionOut, ExtractionPatch
 from app.services import documents as svc
 from app.services import extraction as extraction_svc
@@ -181,6 +187,7 @@ def reprocess_document(
     document_id: str,
     request: Request,
     background: BackgroundTasks,
+    body: ReprocessBody | None = None,  # no body = detect the deed profile again
     user: User = Depends(require_roles(*REVIEW_UP)),
     db: Session = Depends(get_db),
     storage: StorageService = Depends(get_storage),
@@ -189,8 +196,10 @@ def reprocess_document(
 ) -> DocumentOut:
     office_svc.ensure_doc_access(db, user, document_id)
     ip = request.client.host if request.client else None
-    out = review_svc.request_reprocess(db, user, document_id, ip)  # -> PROCESSING
+    profile = body.profile if body else None
+    out = review_svc.request_reprocess(db, user, document_id, ip, profile)  # -> PROCESSING
     BackgroundTasksRunner(background).submit(
-        processing.run_processing, session_factory, storage, providers, document_id
+        processing.run_processing, session_factory, storage, providers, document_id,
+        profile=profile,
     )
     return out

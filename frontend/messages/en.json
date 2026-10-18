@@ -594,15 +594,27 @@
       },
       "extractors": {
         "rules": "Rules",
-        "claude": "Claude"
+        "claude": "Claude",
+        "fused": "Rules + Claude"
       },
       "note": "Low-confidence fields are checked by a reviewer.",
       "warnings": {
         "PAGES_TRUNCATED": "Only the first pages of this PDF were read.",
         "TEXT_LAYER_REJECTED": "The text stored inside this PDF was damaged, so the page image was read instead.",
         "TEXT_LAYER_SUSPECT": "The text stored inside this PDF looks damaged and could not be re-read from the image. Check every field.",
-        "CLAUDE_FALLBACK": "The optional AI reader was unavailable; the rule-based reader was used."
+        "CLAUDE_FALLBACK": "The optional AI reader was unavailable; the rule-based reader was used.",
+        "HISTORICAL_PROFILE": "This looks like an old deed, so the page was read again with the old-scan setting."
       }
+    },
+    "profile": {
+      "label": "Deed type",
+      "modern": "Modern deed",
+      "historical": "Historical deed",
+      "detected": "detected automatically",
+      "overridden": "set by a reviewer",
+      "toHistorical": "Read again as a historical deed",
+      "toModern": "Read again as a modern deed",
+      "hint": "If the deed type is wrong, read the document again with the other type. Manual edits are discarded."
     },
     "failed": {
       "OCR_UNAVAILABLE": "Text recognition is not available on this server right now. Please try again later.",
