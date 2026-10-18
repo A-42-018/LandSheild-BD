@@ -53,7 +53,7 @@ describe("OwnershipTimeline historical link (H9b)", () => {
   it("citizens see the source document as plain text", () => {
     wrap(<OwnershipTimeline entries={ENTRIES} />);
     expect(screen.queryByRole("link")).toBeNull();
-    expect(screen.getByText("DEED")).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")[0]).toHaveTextContent(`${en.result.sourceDocument}: DEED`);
   });
 
   it("shows a real range when the link ends at the next holder", () => {

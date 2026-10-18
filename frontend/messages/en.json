@@ -3107,7 +3107,7 @@
       }
     },
     "landDocs": {
-      "loadError": "The documents of this land could not be loaded.",
+      "loadError": "The documents of this land could not be loaded. Try again.",
       "empty": "No document is linked to this land yet.",
       "noNumber": "No number yet",
       "undated": "No date",

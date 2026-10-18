@@ -14,6 +14,8 @@ const ALLOWED: Record<string, string[]> = {
   "track.errors.format": ["MUT-2026-0001"],
   "track.example": ["MUT-2026-0001"],
   "info.dataSources.s2.items.i1": ["CC BY 4.0"],
+  "library.doc.fileHash": ["SHA-256"],
+  "library.doc.recordHash": ["SHA-256"],
 };
 
 function entries(obj: Record<string, unknown>, prefix = ""): [string, string][] {

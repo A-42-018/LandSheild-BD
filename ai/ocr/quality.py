@@ -12,13 +12,17 @@ Three signals, each 0..1, multiplied into `score`:
   (word start, after another vowel sign, doubled). Measured per Bangla character.
 - dictionary: for well-known deed words with conjuncts, how often the word itself is found versus
   its "skeleton" with the conjuncts dropped (the exact damage pattern above).
-- junk: replacement characters, private-use glyphs and control characters.
+- junk: replacement characters, private-use glyphs and control characters, plus non-ASCII
+  letters and symbols glued to a Bangla letter (`দªলল`, `পªЕশ্চি°মে`): a PDF writer that cannot
+  map a shaped glyph back to Unicode emits stray code points like these (WeasyPrint, H10), which
+  no correct text has.
 
 Text with almost no Bangla is judged on junk only.
 """
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass
 
 THRESHOLD = 0.8  # below this a PDF text layer is not trusted on its own
@@ -109,10 +113,34 @@ def _is_junk(ch: str) -> bool:
     return ch == "�" or 0xE000 <= o <= 0xF8FF or (o < 32 and ch not in "\n\t\r")
 
 
+def _is_bn_letter(ch: str) -> bool:
+    return "\u0980" <= ch <= "\u09e5" or "\u09f0" <= ch <= "\u09ff"  # the block without its digits
+
+
+def _is_foreign(ch: str) -> bool:
+    """A non-ASCII letter or symbol outside the Bangla block (punctuation such as । – · “ is
+    fine)."""
+    if ord(ch) <= 0x7F or "\u0980" <= ch <= "\u09ff" or ch in _JOINERS:
+        return False
+    return unicodedata.category(ch)[0] in "LS"
+
+
+def foreign_in_bangla(text: str) -> int:
+    """Foreign letters / symbols directly before or after a Bangla letter."""
+    n = 0
+    for i, ch in enumerate(text):
+        if _is_foreign(ch):
+            before = i > 0 and _is_bn_letter(text[i - 1])
+            after = i + 1 < len(text) and _is_bn_letter(text[i + 1])
+            n += before or after
+    return n
+
+
 def assess(text: str | None) -> Quality:
     text = text or ""
     visible = [c for c in text if not c.isspace()]
-    junk = sum(map(_is_junk, visible)) / len(visible) if visible else 0.0
+    bad_chars = sum(map(_is_junk, visible)) + foreign_in_bangla(text)
+    junk = bad_chars / len(visible) if visible else 0.0
     score = max(0.0, 1.0 - junk / JUNK_LIMIT)
     bn = len(_BN_LETTER.findall(text))
     bad, hits, misses = 0, 0, 0

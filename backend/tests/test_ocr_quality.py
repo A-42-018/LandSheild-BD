@@ -3,7 +3,15 @@ from pathlib import Path
 
 import pytest
 from ai.mock_fixtures import find_fixture
-from ai.ocr.quality import THRESHOLD, assess, bad_marks, better, dictionary, skeleton
+from ai.ocr.quality import (
+    THRESHOLD,
+    assess,
+    bad_marks,
+    better,
+    dictionary,
+    foreign_in_bangla,
+    skeleton,
+)
 
 REPO = Path(__file__).resolve().parents[2]
 SAMPLES = REPO / "database" / "sample_data"
@@ -74,3 +82,13 @@ def test_all_historical_pdf_text_layers_fail():
     pdfs = sorted(HIST.glob("*.pdf"))
     assert len(pdfs) == 4
     assert all(not assess(pdf_text_layer(p.read_bytes())).ok for p in pdfs)
+
+
+def test_stray_glyph_codes_in_bangla_fail():
+    """H10: a PDF writer that cannot map shaped Bangla glyphs back to Unicode (WeasyPrint) leaves
+    stray letters / symbols inside the words. That layer scored 1.0 before; it must not be
+    trusted."""
+    broken = "এই সাফ কবিলা দªল°লর তপªশিলভুক্ত সম্পªত্তির ªবি°ক্রেতা ˥মোঃ আব্দুল কªরমে। সম্পªত্তির পªЕশ্চি°মে খাল, পূ°বির্বে রাস্তা।"
+    assert foreign_in_bangla(broken) >= 10 and not assess(broken).ok
+    fine = "দলিল নং ৪৭৮২/খ – ১৫ই ফাল্গুন, ১৩৫০ বঙ্গাব্দ · “বিক্রেতা” কফিল উদ্দিন। Deed no 4782 · SHA-256 ••••0123"
+    assert foreign_in_bangla(fine) == 0 and assess(fine).score == 1.0

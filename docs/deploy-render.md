@@ -20,8 +20,8 @@ Check each free tier's limits when signing up, and wake the services before a pr
 1. Create the database and copy its connection string (with SSL), e.g.
    `postgresql://user:password@host/dbname?sslmode=require`. `postgres://` and `postgresql://` are both
    fine: the backend switches them to the psycopg 3 driver itself.
-2. Render dashboard > `landshield-api` > Environment: set `DATABASE_URL` to it (replacing the SQLite value
-   from `render.yaml`).
+2. Render dashboard > `landshield-api` > Environment: set `DATABASE_URL` to it (`render.yaml` lists it as
+   `sync: false`; left empty, the image falls back to SQLite on the wiped disk).
 3. On the next start the Docker CMD runs `alembic upgrade head` (all migrations, including 0017
    `document_records`) and `seed.py --mode auto`: on Postgres it seeds **only an empty database**, so later
    restarts keep real uploads. `SEED_MODE=reset` would wipe everything on every boot: do not set it with a
@@ -74,4 +74,33 @@ On the deployed site: upload the sample historical deed, approve it, redeploy th
 that the document is still listed, the original still downloads with the same SHA-256 (`X-File-SHA256`),
 and `GET /documents/{id}/records` still shows the approved version with `signature_status: VALID`.
 
-Not done yet (H10): creating the accounts, setting the variables, the restart test.
+## 6. Go-live checklist (H10)
+
+The code side is done and tested locally (SQLite and a real Postgres 16, S3 through a fake client). These
+steps need your accounts and the Render dashboard, so they are yours to run; tick them off here.
+
+1. **Accounts (D6, §1):** create the Postgres database and the private bucket + a bucket-scoped key.
+2. **Render > `landshield-api` > Environment:**
+   - `DATABASE_URL`, `STORAGE_BACKEND=s3`, `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`,
+     `S3_SECRET_ACCESS_KEY` (§2–3). Since H10 `render.yaml` lists them as `sync: false`, so a Blueprint
+     sync never puts the SQLite URL back.
+   - `SIGNING_KEY` stays as it is (a new key turns every stored signature INVALID).
+   - `PUBLIC_SITE_URL` = the frontend origin, no trailing slash: the PDF's QR code points there.
+   - `ANTHROPIC_API_KEY` (D3, optional) and `CLAUDE_DAILY_CAP` (default 100 calls a day). Through a
+     gateway also `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH`. Without a key the rules read alone.
+3. **Deploy**, then in the logs: `alembic upgrade head` reaches the newest migration and `seed.py --mode
+   auto` seeds the empty database once.
+4. **Restart test (acceptance, §5):** upload `database/sample_data/historical/Historical_Land_Deed.pdf`,
+   approve it (a second officer: four-eyes), then **Manual Deploy > Restart** (or redeploy). Afterwards:
+   - it is still under **My documents → My uploads**
+   - **Download → Original upload** gives the same SHA-256 as before (`shasum -a 256`)
+   - the document page shows **Signature valid ✓**, and the PDF's QR code opens a **Valid** check page
+5. **Text-layer gate in production:** on the review screen of that upload the reading method must say the
+   page image was read because the PDF's stored text was damaged (`TEXT_LAYER_REJECTED`), not
+   "PDF text". Then upload a digital-deed PDF downloaded from the app: it must be read from its text
+   layer (no such warning), and the Bangla values must match.
+6. **PDF download works:** **Download → Digital deed (PDF)** opens with correct Bangla. A 503
+   "cannot be made on this server" means Pango or WeasyPrint is missing from the image (see `Dockerfile`).
+7. **Claude on (if a key is set):** the reading method on a new upload says Claude, not rules, and no
+   `CLAUDE_FALLBACK` warning appears. Then run the LLM-on eval locally (ocr-accuracy.md) and record it.
+8. **Backups (§4):** schedule the weekly dump.

@@ -42,8 +42,9 @@ s3 = [
 ]
 
 pdf = [
-  "weasyprint>=62",  # H8a spike candidate A (Pango + HarfBuzz; needs libpango in the image)
-  "fpdf2>=2.8",  # H8a spike candidate B
+  "weasyprint>=62",  # H8c digital deed PDF (Pango + HarfBuzz; needs libpango in the image)
+  "pymupdf>=1.24",  # D7: the exact invisible Bangla text layer over WeasyPrint's drawing
+  "fpdf2>=2.8",  # H8a spike candidate B (scripts/pdf_spike.py only)
   "uharfbuzz>=0.39",  # H8a fpdf2 text shaping
   "segno>=1.6",  # H8d QR code in the PDF footer (pure Python)
 ]

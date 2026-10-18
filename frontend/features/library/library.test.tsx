@@ -33,7 +33,7 @@ const LIST = (items: any[], total = items.length) => ({ items, total, limit: 20,
 
 function wrap(ui: React.ReactNode, get: any, messages: any = en, locale = "en") {
   const client = { refresh: vi.fn().mockResolvedValue({ user }), get } as unknown as ApiClient;
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false, retryDelay: 0 } } }); // the hooks retry a 500 twice
   return render(
     <NextIntlClientProvider locale={locale} messages={messages}>
       <QueryClientProvider client={qc}>
