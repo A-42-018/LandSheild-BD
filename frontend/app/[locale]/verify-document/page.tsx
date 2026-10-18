@@ -3,6 +3,7 @@ import ServiceLayout from "@/components/ServiceLayout";
 import { DeedArt } from "@/features/landing/Illustrations";
 import VerifyDocumentView from "@/features/verify-document/VerifyDocumentView";
 import { pageTitle } from "@/lib/page-title";
+import ClientMessages from "@/components/ClientMessages";
 
 export const generateMetadata = pageTitle("nav.verifyDoc");
 
@@ -11,8 +12,10 @@ export default async function VerifyDocumentPage({ params: { locale } }: { param
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
   return (
-    <ServiceLayout service="verifyDoc" title={t("nav.verifyDoc")} purpose={t("page.verifyDocPurpose")} art={<DeedArt />} tip="verifyDoc">
-      <VerifyDocumentView />
-    </ServiceLayout>
+    <ClientMessages scope="verifyDocument">
+      <ServiceLayout service="verifyDoc" title={t("nav.verifyDoc")} purpose={t("page.verifyDocPurpose")} art={<DeedArt />} tip="verifyDoc">
+        <VerifyDocumentView />
+      </ServiceLayout>
+    </ClientMessages>
   );
 }

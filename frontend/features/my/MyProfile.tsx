@@ -89,7 +89,7 @@ function DetailsForm() {
         <p className="text-ink">{user?.email}</p>
         <p className="text-sm text-ink-muted">{t("emailNote")}</p>
       </div>
-      {m.isError && <p role="alert" className="text-sm text-critical">{t("errors.generic")} {t("errors.genericHint")}</p>}
+      {m.isError && <p role="alert" className="text-sm text-critical">{t("errors.generic")}</p>}
       <Button type="submit" loading={m.isPending} icon={<Save />} className="self-start">{t("save")}</Button>
     </form>
   );

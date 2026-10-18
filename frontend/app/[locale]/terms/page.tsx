@@ -1,10 +1,15 @@
 import { setRequestLocale } from "next-intl/server";
 import { TextPage } from "@/features/info/InfoPage";
 import { pageTitle } from "@/lib/page-title";
+import ClientMessages from "@/components/ClientMessages";
 
 export const generateMetadata = pageTitle("info.terms.title");
 
 export default function Page({ params: { locale } }: { params: { locale: string } }) {
   setRequestLocale(locale);
-  return <TextPage slug="terms" />;
+  return (
+    <ClientMessages scope="info">
+      <TextPage slug="terms" />
+    </ClientMessages>
+  );
 }
