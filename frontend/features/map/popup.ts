@@ -1,3 +1,5 @@
+import { formatArea } from "@/features/result/format";
+import { localDigits } from "@/lib/intl-locale";
 import type { MapPropsDto } from "./types";
 
 export interface PopupLabels {
@@ -8,6 +10,8 @@ export interface PopupLabels {
   status: string;
   risk: string;
   view: string;
+  /** Route locale: numbers show in its digits (land IDs stay Latin). */
+  locale: string;
   /** Translate a backend code; must fall back to the raw code when unknown. */
   statusText: (code: string) => string;
   riskText: (code: string) => string;
@@ -33,9 +37,9 @@ export function buildPopup(
   const dl = document.createElement("dl");
   const rows: [string, string][] = [
     [labels.landId, p.land_id],
-    [labels.dag, p.dag_no],
-    [labels.khatian, p.khatian_no],
-    [labels.area, `${p.area} ${labels.unitText(p.area_unit)}`],
+    [labels.dag, localDigits(p.dag_no, labels.locale)],
+    [labels.khatian, localDigits(p.khatian_no, labels.locale)],
+    [labels.area, formatArea(p.area, p.area_unit, labels.locale, labels.unitText(p.area_unit))],
     [labels.status, labels.statusText(p.status)],
     [labels.risk, labels.riskText(p.risk_level)],
   ];

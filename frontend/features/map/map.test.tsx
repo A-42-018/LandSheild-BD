@@ -83,7 +83,7 @@ describe("filterFeatures / riskColor", () => {
 
 describe("buildPopup", () => {
   const labels: PopupLabels = {
-    landId: "Land ID", dag: "Dag", khatian: "Khatian", area: "Area", status: "Status", risk: "Risk", view: "View details",
+    landId: "Land ID", dag: "Dag", khatian: "Khatian", area: "Area", status: "Status", risk: "Risk", view: "View details", locale: "en",
     statusText: (c) => c, riskText: (c) => c, unitText: (c) => c,
   };
   it("shows the six public fields and a details link, text only", () => {
@@ -97,6 +97,16 @@ describe("buildPopup", () => {
     a.dispatchEvent(ev);
     expect(ev.defaultPrevented).toBe(true);
     expect(open).toHaveBeenCalledWith("LP-10100");
+  });
+  it("shows dag, khatian and area in Bangla digits under bn, land ID stays Latin", () => {
+    const bnLabels: PopupLabels = { ...labels, locale: "bn", unitText: (c) => (c === "decimal" ? "শতাংশ" : c) };
+    const el = buildPopup(feat("LP-10240", "HIGH", { dag_no: "101", khatian_no: "501/2", area: 15 }).properties, bnLabels, "/x", vi.fn());
+    const text = el.textContent ?? "";
+    expect(text).toContain("১০১");
+    expect(text).toContain("৫০১/২");
+    expect(text).toContain("১৫ শতাংশ");
+    expect(text.replaceAll("LP-10240", "")).not.toMatch(/[0-9]/);
+    expect(text).toContain("LP-10240");
   });
   it("never turns stored values into markup", () => {
     const evil = feat("<img src=x onerror=alert(1)>", "LOW", { dag_no: "<b>1</b>" }).properties;
@@ -177,6 +187,14 @@ describe("MapView", () => {
     expect(screen.getByLabelText(bn.map.filterLabel)).toBeInTheDocument();
     expect(screen.getByTestId("parcel-LP-10240")).toHaveTextContent(bn.risk.level.HIGH);
     await waitFor(() => expect(screen.getByTestId("map-canvas")).toHaveAttribute("aria-label", bn.map.canvasLabel));
+  });
+
+  it("lists dag, khatian and area in Bangla digits (no Latin digits besides the land ID)", async () => {
+    const data: MapCollectionDto = { type: "FeatureCollection", features: [feat("LP-10240", "HIGH", { dag_no: "101", khatian_no: "501", area: 15 })] };
+    wrap(client(ok(data)), bn, "bn");
+    const row = await screen.findByTestId("parcel-LP-10240");
+    expect(row).toHaveTextContent("দাগ নং ১০১ · খতিয়ান নং ৫০১ · ১৫ শতাংশ");
+    expect((row.textContent ?? "").replaceAll("LP-10240", "")).not.toMatch(/[0-9]/);
   });
 
   it("is in the nav for every signed-in role, not for anonymous", () => {

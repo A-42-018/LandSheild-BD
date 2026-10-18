@@ -1,7 +1,7 @@
 "use client";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { EyeOff, Layers, ListTree, Maximize2, Minimize2, Search } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button, EmptyState, ErrorState, LoadingState, Select } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
@@ -41,6 +41,7 @@ const ATTRIBUTION =
 
 export default function MapView() {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const q = useParcelMap();
   const divisions = useDivisions();
@@ -117,6 +118,7 @@ export default function MapView() {
     status: t("map.popup.status"),
     risk: t("map.popup.risk"),
     view: t("map.popup.view"),
+    locale,
     statusText: (c) => code("status", c),
     riskText: (c) => code("risk.level", c),
     unitText: (c) => code("result.units", c),

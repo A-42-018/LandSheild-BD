@@ -11,7 +11,7 @@ const base = {
   onOpen: vi.fn(),
   hrefFor: (id: string) => `/x/${id}`,
   labels: {
-    landId: "Land ID", dag: "Dag", khatian: "Khatian", area: "Area", status: "Status", risk: "Risk", view: "View",
+    landId: "Land ID", dag: "Dag", khatian: "Khatian", area: "Area", status: "Status", risk: "Risk", view: "View", locale: "en",
     statusText: (c: string) => c, riskText: (c: string) => c, unitText: (c: string) => c,
   },
   ariaLabel: "Map",

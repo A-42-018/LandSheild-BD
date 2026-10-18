@@ -1,10 +1,12 @@
 "use client";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui";
 import RiskBadge from "@/components/domain/RiskBadge";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { Link } from "@/i18n/navigation";
+import { formatArea } from "@/features/result/format";
+import { localDigits } from "@/lib/intl-locale";
 import type { MapFeatureDto } from "./types";
 
 const LEFT: Record<string, string> = {
@@ -25,6 +27,7 @@ export default function ParcelList({
 }) {
   const t = useTranslations("map");
   const tu = useTranslations("result.units");
+  const locale = useLocale();
   return (
     <section aria-labelledby="map-list-title" className="flex flex-col gap-2">
       <h2 id="map-list-title" className="text-lg font-semibold text-ink">
@@ -47,7 +50,8 @@ export default function ParcelList({
                 {p.land_id}
               </span>
               <span className="text-sm text-ink-muted">
-                {t("popup.dag")} {p.dag_no} · {t("popup.khatian")} {p.khatian_no} · {p.area} {unit}
+                {t("popup.dag")} {localDigits(p.dag_no, locale)} · {t("popup.khatian")} {localDigits(p.khatian_no, locale)} ·{" "}
+                {formatArea(p.area, p.area_unit, locale, unit)}
               </span>
               <StatusBadge code={p.status} />
               <RiskBadge level={p.risk_level} />
