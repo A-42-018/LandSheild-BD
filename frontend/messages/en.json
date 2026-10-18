@@ -944,7 +944,7 @@
         "desc": "Check that a deed copy or QR code matches the signed record."
       },
       "myLands": {
-        "title": "Find my land by NID",
+        "title": "Find your land by NID",
         "desc": "Sign in, link your NID with your date of birth, and see every plot recorded in your name."
       }
     },
@@ -2511,7 +2511,7 @@
         }
       },
       "myLands": {
-        "title": "Find my land by NID",
+        "title": "Find your land by NID",
         "who": "Signed-in citizens. Only you can see your own list.",
         "need": {
           "n1": "A citizen account on LandShield",
@@ -2522,7 +2522,7 @@
         "office": "LandShield demo review team. The land office named in each record is shown when you open it.",
         "apply": {
           "n1": "Sign in as a citizen.",
-          "n2": "Open Find my land by NID and link your NID with your date of birth.",
+          "n2": "Open Find your land by NID and link your NID with your date of birth.",
           "n3": "See the land you own now and owned before, and open any record."
         }
       }
