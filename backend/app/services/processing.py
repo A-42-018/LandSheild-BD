@@ -94,7 +94,12 @@ def run_processing(
             ocr_provider = with_ocr_profile(providers.ocr, override) if override else providers.ocr
             ocr = ocr_provider.recognize(data, file_type)
             deed_class = None if survey else classify(ocr.text, ocr.tables)
-            result = providers.ai.extract(data, ocr)
+            profile_now = override or (deed_class.deed_profile if deed_class else None)
+            hist = providers.historical
+            if profile_now == "historical" and hist is not None and ocr.provider != "demo":
+                result = hist.extract(data, ocr, deed_class)  # H4: LHDR record + the core 13
+            else:
+                result = providers.ai.extract(data, ocr)
             try:  # best effort: check misread values against the land records, never fail the document
                 alts = reread.candidates(data, result.fields)
                 fields, notes = record_assist.apply(db, result.fields, alts)

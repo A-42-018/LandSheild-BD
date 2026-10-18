@@ -259,6 +259,52 @@
       "title": "Calendar",
       "type": "string"
     },
+    "Candidate": {
+      "additionalProperties": false,
+      "description": "Another reading of the same value (H4 fusion: the rules and the LLM disagreed).",
+      "properties": {
+        "value": {
+          "default": null,
+          "title": "Value"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "text-layer",
+                "ocr+rules",
+                "llm",
+                "fused",
+                "human",
+                "computed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        }
+      },
+      "title": "Candidate",
+      "type": "object"
+    },
     "Consideration": {
       "additionalProperties": false,
       "properties": {
@@ -983,6 +1029,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldCalendar",
@@ -1081,6 +1143,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldCurrency",
@@ -1179,6 +1257,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldDeedKind",
@@ -1277,6 +1371,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldEra",
@@ -1375,6 +1485,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldPrecision",
@@ -1473,6 +1599,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldRole",
@@ -1571,6 +1713,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldStampType",
@@ -1669,6 +1827,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldSurvey",
@@ -1771,6 +1945,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldNumber",
@@ -1873,6 +2063,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldIntOrText",
@@ -1972,6 +2178,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldBool",
@@ -2072,6 +2294,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldDate",
@@ -2171,6 +2409,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldInt",
@@ -2270,6 +2524,22 @@
           "default": false,
           "title": "Edited By Human",
           "type": "boolean"
+        },
+        "candidates": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
         }
       },
       "title": "FieldText",

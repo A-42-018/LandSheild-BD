@@ -87,20 +87,33 @@ def _hit(path: str, got: dict[str, str], want: str, gold_flat: dict[str, str]) -
     return norm(got[path]) == norm(want)
 
 
-def score_doc(pred_core: dict[str, str | None], gold: dict) -> dict:
-    """{core: (ok, n), sections: {section: [ok, n]}, missed_core: [...]}."""
+def record_paths(record: dict) -> dict[str, str]:
+    """An extractor's LHDR record (plain values, H4) as {path: value}; `core` is scored on its own."""
+    from ai.extraction.lhdr import parse, plain
+
+    return {k: v for k, v in flatten(plain(parse(record))).items() if not k.startswith(("/core/", "/schema"))}
+
+
+def score_doc(pred_core: dict[str, str | None], gold: dict, record: dict | None = None) -> dict:
+    """{core: (ok, n), sections: {section: [ok, n]}, missed_core: [...], missed: [paths]}.
+    With `record` (H4 LHDR output) every gold path is compared; without it only the 13 core
+    fields count, placed at their LHDR paths (the H0 baseline)."""
     gflat = {k: v for k, v in flatten(gold).items() if k != "/schema"}
-    paths = core_to_paths(pred_core, gold)
+    paths = record_paths(record) if record is not None else core_to_paths(pred_core, gold)
+    missed: list[str] = []
     sections: dict[str, list[int]] = defaultdict(lambda: [0, 0])
     for path, want in gflat.items():
         sec = SECTIONS[path.split("/")[1]]
         sections[sec][1] += 1
         if sec == SECTIONS["core"]:  # J is scored on the fields themselves
-            sections[sec][0] += norm(pred_core.get(path.split("/")[2])) == norm(want)
+            ok = norm(pred_core.get(path.split("/")[2])) == norm(want)
         else:
-            sections[sec][0] += _hit(path, paths, want, gflat)
+            ok = _hit(path, paths, want, gflat)
+        sections[sec][0] += ok
+        if not ok:
+            missed.append(path)
     core_gold = gold.get("core", {})
-    ok, missed = 0, []
+    ok, missed_core = 0, []
     for f in CORE:
         want, got = core_gold.get(f), pred_core.get(f)
         if want in (None, ""):
@@ -108,9 +121,9 @@ def score_doc(pred_core: dict[str, str | None], gold: dict) -> dict:
         if norm(got) == norm(want):
             ok += 1
         else:
-            missed.append(f)
+            missed_core.append(f)
     n = sum(1 for f in CORE if core_gold.get(f) not in (None, ""))
-    return {"core": (ok, n), "sections": dict(sections), "missed_core": missed}
+    return {"core": (ok, n), "sections": dict(sections), "missed_core": missed_core, "missed": missed}
 
 
 def run(ocr_name: str = "auto", lang: str = "ben+eng", only: str | None = None, profile: str = "modern") -> dict:
@@ -169,6 +182,83 @@ def render(result: dict, ocr_name: str = "auto") -> str:
     a, b = sum(v[0] for v in tot.values()), sum(v[1] for v in tot.values())
     out += [f"| **All values** | **{_pct(a, b)}** |", "",
             "Reproduce: `python ai/evaluation/run_eval.py --set historical`"]
+    return "\n".join(out)
+
+
+# ---- H4: the LHDR extractor, every gold value --------------------------------------------------
+
+def lhdr_llm():
+    """Claude for `--lhdr --extractor claude`, configured like the backend (backend/.env, env vars),
+    with a private cache so eval runs never touch the app's cache."""
+    from app.core.config import Settings
+
+    from ai.extraction.claude import ClaudeDocumentAIProvider
+
+    s = Settings()
+    if not s.anthropic_api_key:
+        raise SystemExit("ANTHROPIC_API_KEY is not set (backend/.env or the environment); nothing is faked.")
+    return ClaudeDocumentAIProvider(s.anthropic_api_key, s.claude_model, timeout_s=max(s.claude_timeout_s, 120),
+                                    daily_cap=10_000, cache_dir=HIST_DIR.parents[2] / "backend" / "storage" / "claude_eval_cache",
+                                    base_url=s.anthropic_base_url, auth=s.anthropic_auth)
+
+
+def run_lhdr(ocr_name: str = "auto", lang: str = "ben+eng", only: str | None = None, profile: str = "auto",
+             llm=None) -> dict:
+    """OCR -> H4 historical-deed extractor (rules, fused with `llm` when given) -> every gold value."""
+    from ai.extraction.historical_deed import HistoricalDeedProvider
+    from ai.ocr.router import AutoOCRProvider
+    from ai.ocr.tesseract import TesseractOCRProvider
+
+    ocr = (AutoOCRProvider(demo_fixtures=False, lang=lang, profile=profile) if ocr_name == "auto"
+           else TesseractOCRProvider(lang=lang, profile=profile))
+    ext = HistoricalDeedProvider(llm)
+    rows = []
+    for item in load_set():
+        if only and only not in item["file"]:
+            continue
+        data = item["path"].read_bytes()
+        res = ocr.recognize(data, item["path"].suffix.lstrip("."))
+        out = ext.extract(data, res)
+        got = {f.field: f.value for f in out.fields}
+        s = score_doc(got, item["gold"], out.record)
+        all_ok = (sum(v[0] for v in s["sections"].values()), sum(v[1] for v in s["sections"].values()))
+        rows.append({"file": item["file"], "variant": item["variant"], "ocr": res.provider, "extractor": out.provider,
+                     "warnings": out.warnings, "all": all_ok, **s})
+    return {"rows": rows, "llm": getattr(llm, "model", None)}
+
+
+def render_lhdr(result: dict, profile: str = "auto") -> str:
+    rows = result["rows"]
+    engine = f"rules + `{result['llm']}` fused" if result.get("llm") else "rules only (no API key)"
+    out = ["### Historical deeds: H4 extractor (LHDR)", "",
+           f"- Extractor: `ai/extraction/historical_deed.py`, {engine}; OCR `--ocr auto`, profile `{profile}`",
+           "- Every gold value counts (all LHDR sections, not only the 13 core fields), exact match after normalising",
+           "  Bangla digits, spaces and units; a value the deed does not print is not in the gold",
+           "- **Synthetic deeds except the two real samples (`Historical_Land_Deed*.pdf`).**", "",
+           "| File | Variant | OCR | Extractor | All values | Core 13 |", "|---|---|---|---|---|---|"]
+    for r in rows:
+        fb = next((w for w in r["warnings"] if w.startswith("CLAUDE_FALLBACK")), "")
+        out.append(f"| {r['file']} | {r['variant']} | {r['ocr']} | {r['extractor']}{' (' + fb + ')' if fb else ''} | "
+                   f"{_pct(*r['all'])} | {r['core'][0]}/{r['core'][1]} |")
+    typed = [r for r in rows if r["variant"] != "scanned"]
+    scanned = [r for r in rows if r["variant"] == "scanned"]
+
+    def tot(rs: list[dict], k: str) -> tuple[int, int]:
+        return sum(r[k][0] for r in rs), sum(r[k][1] for r in rs)
+
+    out += ["", f"**All values: {_pct(*tot(rows, 'all'))}** · typed + render {_pct(*tot(typed, 'all'))} · "
+                f"scanned {_pct(*tot(scanned, 'all'))}",
+            f"**Core 13: {_pct(*tot(rows, 'core'))}**", "",
+            "| Section | Correct |", "|---|---|"]
+    secs: dict[str, list[int]] = defaultdict(lambda: [0, 0])
+    for r in rows:
+        for sec, (a, b) in r["sections"].items():
+            secs[sec][0] += a
+            secs[sec][1] += b
+    out += [f"| {sec} | {_pct(*secs[sec])} |" for sec in SECTIONS.values() if sec in secs]
+    out += ["", "Targets (roadmap H4, with the LLM on): >= 90 % on typed samples, >= 75 % on scanned variants.", "",
+            f"Reproduce: `python ai/evaluation/run_eval.py --set historical --lhdr --profile {profile}"
+            + (" --extractor claude`" if result.get("llm") else "`")]
     return "\n".join(out)
 
 

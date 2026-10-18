@@ -26,6 +26,7 @@ class ExtractionResult:
     extras: dict = field(default_factory=dict)
     model: str | None = None  # LLM model name when provider == "claude"
     warnings: list[str] = field(default_factory=list)  # e.g. CLAUDE_FALLBACK:timeout
+    record: dict | None = None  # historical deeds (H4): the LHDR v1 record behind the 13 fields
 
 
 class DocumentAIProvider(Protocol):

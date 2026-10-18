@@ -1,6 +1,6 @@
 # Historical Land Deed Digitisation — Roadmap (H0–H10)
 
-Status: **H0, H1, H2 done (2026-10-18), H3–H10 not started** (updated 2026-10-18; all decisions D1–D6 made, see §5).
+Status: **H0–H3 done, H4 done on the rules side (2026-10-18), H5–H10 not started** (updated 2026-10-18; all decisions D1–D6 made, see §5).
 Trigger: mentor feedback:
 1. LandShield cannot digitise a historical (pre-1971 / pre-1947) land deed. There is no digital
    format for one, and the extractor read only 1 of 13 fields from the sample
@@ -166,6 +166,7 @@ Each phase can be merged on its own. Branch per phase: `h<N>-<slug>`, worktree `
 3. **Grounding & fusion** `ai/extraction/fuse.py`: every LLM value is cross-checked against the OCR text (extend `validate.py`). Where rules and LLM agree, confidence goes up. Where they disagree, the reviewer sees both as candidates. Where the LLM value is not found in the text, confidence is cut and the value is flagged. Nothing is auto-trusted.
 4. **Normaliser / gazetteer**: historical thana/district → modern upazila/district (reuse `land_offices.json` / map data), plus Bangla digits and units.
 - **Done when:** the sample deed gives ≥ 30 correct values with rules only (no API key), and the full set with the LLM on. Eval targets: **≥ 90 % field accuracy on typed samples, ≥ 75 % on scanned variants.**
+- **Done, rules side (2026-10-18; LLM-on run pending an API key).** Branch `h4-extraction-engine`. `ai/extraction/historical_deed.py` (rule parser + `HistoricalDeedProvider`), `bangla.py` (number words, Bangla-calendar dates with the pre-1987 ±1-day range and the exact 1987 / 2019 calendars, money, area incl. archaic parts, boundaries), `gazetteer.py` (historical thana/district → modern, from `land_offices.json` + old districts + city thanas), `claude_lhdr.py` (strict `submit_lhdr` tool, answer → LHDR), `fuse.py` (agree / disagree → candidate + `DISAGREE` / LLM-only grounded, `NOT_IN_TEXT`). The job uses it when `deed_profile = historical`; the record is stored in `extraction_json.record` and returned by the extraction API (an early piece of H5; versions and LHDR edits stay H5). §7 API fix applied to both Claude calls (auto tool choice + strict, no temperature, effort, streaming, refusal, `fallbacks: "default"` on the first-party API); default model `claude-sonnet-5-5`. Results with rules only (`run_eval.py --set historical --lhdr --profile auto`): sample deed **77/80** values (13/13 core; was 1/13), all files 84.4 % of all gold values (H0: 2.1 %), typed + render 86.4 %, scanned 77.9 %, core 13 at 89.0 %. Additions beyond the plan: `Field.candidates` / `Field.flags` in the LHDR schema; consensus over repeated place names; figure-vs-words checks. Open: the LLM-on eval (`--lhdr --extractor claude`), which decides the 90 % typed target; table detection on the hd05 scan (no grid found) and the multi-column real sample stay weak.
 
 ### H5 — Storage, API & permanent keeping
 - `extraction_json` gets `profile`, `record` (LHDR) and `schema`. The 13 `fields` are derived from it, so old rows and modern deeds are unaffected.

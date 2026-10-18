@@ -475,3 +475,110 @@ Like any reprocess it discards manual edits; the audit trail records the chosen 
 
 H4 will use `deed_profile` to pick the historical parser.
 
+### Historical deed extraction (H4)
+
+A deed whose `deed_profile` is `historical` (detected, or forced by the reviewer's switch) no longer goes
+to the generic extractor: the job calls `HistoricalDeedProvider` (`ai/extraction/historical_deed.py`),
+which returns an LHDR v1 record plus the 13 core fields derived from it (`derive.py`), so review,
+approval, posting, risk and search keep working unchanged. Modern deeds, khatian / porcha and demo
+fixtures take the old path. The record is stored in `extraction_json.record` (`record_schema:
+"lhdr/1"`) and returned by `GET /documents/{id}/extraction`; versions and LHDR edits are H5 (a
+PATCH still changes the 13 fields only).
+
+**Rule parser (no API key needed).** The OCR text and the H2 cell grid are cut into header,
+১ম / ২য় পক্ষ, body, তপশিল and signature row; each part has its own parser:
+
+| Part | What is read |
+|---|---|
+| header | `দলিল নং` (verbatim `৪৭৮২/খ` + normalised `4782/খ`), execution date, sub-registry office, `বহি নং …, জিল্দ …` |
+| parties | role from the heading word or the deed kind (sale / gift / mortgage / POA / waqf / partition / exchange); `HONORIFIC NAME, পিতা- [মৃত] X, মাতা- …, সাং- …, থানা- …, জেলা- …, পেশা- …, ধর্ম- …, জাতীয়তা- …`; side-by-side parties (the second real sample) from the word boxes |
+| body | consideration `১,৫০০/- (এক হাজার পাঁচশত) টাকা` + payment mode; how the seller holds the land; চিরস্থায়ী / রেহেন; নিষ্কণ্টক |
+| তপশিল | the grid: a header row names the columns, label rows (`জমির পরিমাণ`), full-width `চৌহদ্দি` rows; else `label: value` lines; পরগণা, জে.এল. |
+| signature row | seller's mark; witnesses and deed writer (+ licence) by column from the word boxes |
+
+`ai/extraction/bangla.py` holds the value parsers: Bangla number words (1–99 are a table; শত / হাজার /
+লক্ষ / কোটি multiply), Bangla-calendar dates (before the 1987 reform a range of ±1 day from the
+traditional month starts; after it the exact 1987 / 2019 calendars), money, area (modern units with a
+decimal equivalent; archaic `কানি / গণ্ডা / কড়া …` kept as parts, no decimal claimed because the
+kani differs by district), boundaries. `ai/extraction/gazetteer.py` maps the historical thana +
+district to today's division / district / upazila (land_offices.json + the old districts and the
+city thanas that are not upazilas today; an ambiguous name such as কালীগঞ্জ without a district gives
+nothing).
+
+Clean-up is normalisation, never invention; the value as read stays in `verbatim`: closed vocabularies
+snap when one entry is clearly closest (religion, nationality, land class, mark, month names, number
+words), place names snap to the gazetteer, a place printed several times takes the spelling most of
+its readings share (`রাপগঞ্জ` in the table, `রূপগঞ্জ` in both addresses), figure vs words of an amount
+or area → the words win (`৯৫০০/- (এক হাজার পাঁচশত)` = 1500), a leading `৯` that makes a Bangla year
+impossible is `১` (with a note), Latin `8` among Bangla digits is `৪`. Confidence = mean OCR word
+confidence of the value's words × the pattern strength (lower for snapped or partly unreadable values).
+
+**Vision LLM (`submit_lhdr`).** With Claude configured (`DOCUMENT_AI_PROVIDER=auto|claude` and a key),
+`ClaudeDocumentAIProvider.extract_lhdr` sends every page image (≤ 5, PDFs rendered so a broken text layer
+never reaches the model) plus the OCR text, with a glossary of archaic terms and the rules
+"verbatim + normalised, null if unsure, legibility". The strict tool schema is in
+`ai/extraction/claude_lhdr.py`; computed values (Gregorian range, era, currency, modern place, core) are
+not asked for. Request shape (roadmap §7 fix, also applied to `submit_fields`): `tool_choice: auto` with the
+prompt naming the tool and `strict: true`, no `temperature`, `output_config.effort: medium` where the model
+takes it, streaming for the large answer, a `refusal` stop reason handled as a fallback, and on the
+first-party API `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`; not sent through a
+gateway). Default model `claude-sonnet-5-5`. Same per-file cache and daily cap; any failure → the rule
+record alone, warning `CLAUDE_FALLBACK:<reason>`.
+
+**Fusion (`ai/extraction/fuse.py`).** Lists are aligned by content (parties by role + name, plots by dag /
+khatian / mouza). Both agree → method `fused`, confidence 1 − (1 − a)(1 − b). They disagree → the
+better-grounded reading is the value, the other a `candidate`, flag `DISAGREE`, confidence × 0.7.
+Only the LLM read it → checked against the OCR text (fuzzy ≥ 85, exact token for numbers): found ×
+0.9, not found × 0.6 + flag `NOT_IN_TEXT`. Values that are not printed (codes, computed dates) are only
+agreed, not grounded. `Field.candidates` / `Field.flags` are new in the LHDR schema for this.
+
+Tests: `backend/tests/test_historical_deed.py` (parsers, gazetteer, rule parser on the sample deed's OCR
+text, grid with several plots, tool answer → record, strict schema, fusion, request shape with a fake
+streaming client, job stores the record; the Tesseract end-to-end test is skipped without Tesseract).
+Eval below; the LLM-on run needs a key and is not recorded yet.
+
+<!-- HIST-LHDR:BEGIN -->
+
+### Historical deeds: H4 extractor (LHDR)
+
+- Extractor: `ai/extraction/historical_deed.py`, rules only (no API key); OCR `--ocr auto`, profile `auto`
+- Every gold value counts (all LHDR sections, not only the 13 core fields), exact match after normalising
+  Bangla digits, spaces and units; a value the deed does not print is not in the gold
+- **Synthetic deeds except the two real samples (`Historical_Land_Deed*.pdf`).**
+
+| File | Variant | OCR | Extractor | All values | Core 13 |
+|---|---|---|---|---|---|
+| Historical_Land_Deed.pdf | typed | tesseract | rules | 96.2% (77/80) | 13/13 |
+| Historical_Land_Deed.png | render | tesseract | rules | 95.0% (76/80) | 13/13 |
+| Historical_Land_Deed_scan.jpg | scanned | tesseract | rules | 88.8% (71/80) | 12/13 |
+| Historical_Land_Deed_Sample.pdf | typed | tesseract | rules | 64.4% (56/87) | 10/13 |
+| hd02_gift_1938.png | typed | tesseract | rules | 90.1% (73/81) | 13/13 |
+| hd03_sale_rupee_1962.pdf | typed | tesseract | rules | 89.5% (77/86) | 13/13 |
+| hd03_sale_rupee_1962.png | render | tesseract | rules | 89.5% (77/86) | 12/13 |
+| hd03_sale_rupee_1962_scan.jpg | scanned | tesseract | rules | 87.2% (75/86) | 13/13 |
+| hd04_multiplot_1958.png | typed | tesseract | rules | 96.6% (113/117) | 13/13 |
+| hd05_archaic_units_1931.png | typed | tesseract | rules | 77.0% (67/87) | 10/12 |
+| hd05_archaic_units_1931_scan.jpg | scanned | tesseract | rules | 58.6% (51/87) | 4/12 |
+| hd06_mortgage_2page_1965.pdf | typed | tesseract | rules | 79.4% (85/107) | 11/13 |
+
+**All values: 84.4% (898/1064)** · typed + render 86.4% (701/811) · scanned 77.9% (197/253)
+**Core 13: 89.0% (137/154)**
+
+| Section | Correct |
+|---|---|
+| A. Document | 100.0% (52/52) |
+| B. Registration | 94.6% (35/37) |
+| C. Dates | 74.0% (71/96) |
+| D. Parties | 88.2% (246/279) |
+| E. Consideration | 96.4% (53/55) |
+| F. Schedule | 82.6% (195/236) |
+| G. Title recital | 71.4% (25/35) |
+| H. Execution | 64.6% (62/96) |
+| I. Modern mapping | 91.7% (22/24) |
+| J. Core 13 | 89.0% (137/154) |
+
+Targets (roadmap H4, with the LLM on): >= 90 % on typed samples, >= 75 % on scanned variants.
+
+Reproduce: `python ai/evaluation/run_eval.py --set historical --lhdr --profile auto`
+
+<!-- HIST-LHDR:END -->

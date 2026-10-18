@@ -1,7 +1,8 @@
 """P41/O4 evaluation. One command:  python ai/evaluation/run_eval.py [--write-docs]
         [--ocr {tesseract,auto}] [--extractor {rules,claude}] [--out FILE]
-        [--set historical [--only NAME] [--profile historical] [--input-quality]]
-            (H0: historical-deed set, baseline per LHDR section; H2: OCR input quality before/after)
+        [--set historical [--only NAME] [--profile historical] [--input-quality] [--lhdr]]
+            (H0: historical-deed set, baseline per LHDR section; H2: OCR input quality before/after;
+             H4: --lhdr scores the LHDR extractor on every gold value, --extractor claude fuses Claude)
 
 The OCR is always run on the real image (demo fixtures are never used here). `--extractor claude`
 needs ANTHROPIC_API_KEY (+ `pip install anthropic`); without it the run stops, nothing is faked.
@@ -290,6 +291,8 @@ def render(
 
 HIST_BEGIN, HIST_END = "<!-- HIST-EVAL:BEGIN -->", "<!-- HIST-EVAL:END -->"
 HIST_OCR_BEGIN, HIST_OCR_END = "<!-- HIST-OCR:BEGIN -->", "<!-- HIST-OCR:END -->"
+HIST_LHDR_BEGIN, HIST_LHDR_END = "<!-- HIST-LHDR:BEGIN -->", "<!-- HIST-LHDR:END -->"
+HIST_LLM_BEGIN, HIST_LLM_END = "<!-- HIST-LHDR-LLM:BEGIN -->", "<!-- HIST-LHDR-LLM:END -->"
 
 
 def _write_block(text: str, begin: str, end: str) -> None:
@@ -306,8 +309,8 @@ def run_historical(a) -> int:
     from ai.evaluation import historical
     from ai.ocr.tesseract import installed_languages, resolve_lang
 
-    if a.extractor != "rules":
-        print("--set historical scores the rule extractor only until H4 adds the LHDR extractor.")
+    if a.extractor != "rules" and not a.lhdr:
+        print("--extractor claude on the historical set needs --lhdr (the H4 extractor).")
         return 2
     try:
         lang = resolve_lang(a.lang, installed_languages())
@@ -316,6 +319,11 @@ def run_historical(a) -> int:
         return 2
     if a.input_quality:
         body, begin, end = historical.render_input(historical.input_quality(lang, a.only)), HIST_OCR_BEGIN, HIST_OCR_END
+    elif a.lhdr:
+        llm = historical.lhdr_llm() if a.extractor == "claude" else None
+        res = historical.run_lhdr("auto", lang, a.only, a.profile, llm)
+        body = historical.render_lhdr(res, a.profile)
+        begin, end = (HIST_LLM_BEGIN, HIST_LLM_END) if llm else (HIST_LHDR_BEGIN, HIST_LHDR_END)
     else:
         body = historical.render(historical.run(a.ocr, lang, a.only, a.profile), a.ocr)
         begin, end = HIST_BEGIN, HIST_END
@@ -340,6 +348,8 @@ def main() -> int:
     ap.add_argument("--only", help="with --set historical: only files whose name contains this")
     ap.add_argument("--profile", choices=("modern", "historical", "auto"), default="modern",
                     help="with --set historical: OCR profile (H2)")
+    ap.add_argument("--lhdr", action="store_true",
+                    help="with --set historical: the H4 extractor, every gold value scored (--extractor claude: fused with Claude)")
     ap.add_argument("--input-quality", action="store_true",
                     help="with --set historical: gold values found in the OCR text, before H2 vs H2 profiles")
     a = ap.parse_args()

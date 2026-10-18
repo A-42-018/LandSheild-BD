@@ -66,7 +66,11 @@ def test_valid_tool_call_is_parsed(tmp_path):
     assert by["buyer"].value == "Karim Mia" and len(res.fields) == len(EXTRACTION_FIELDS)
     assert by["owner_name"].value is None and by["owner_name"].confidence == 0.0
     kw = client.calls[0]
-    assert kw["extra_body"]["temperature"] == 0 and kw["tool_choice"]["name"] == "submit_fields"
+    # current models return 400 on forced tool_choice and on temperature (roadmap §7)
+    assert kw["tool_choice"] == {"type": "auto"}
+    assert "temperature" not in kw and "extra_body" not in kw
+    assert kw["tools"][0]["strict"] is True and "submit_fields" in kw["system"]
+    assert "output_config" not in kw  # Haiku 4.5 takes no effort
     assert "DATA" in kw["system"] and kw["timeout"] == 30
     assert kw["messages"][0]["content"][0]["type"] == "image"
 

@@ -72,6 +72,8 @@ def build_extraction(
         deed_class=deed_class.to_dict() if deed_class else None,
         ocr_profile=ocr.profile if ocr else None,
         profile_overridden=profile_override is not None,
+        record=result.record,
+        record_schema=result.record.get("schema") if result.record else None,
     )
     return ex.dump()
 
@@ -207,6 +209,8 @@ def _to_out(
         deed_class=ex.deed_class,
         ocr_profile=ex.ocr_profile,
         profile_overridden=ex.profile_overridden,
+        record=ex.record,
+        record_schema=ex.record_schema,
         threshold=threshold,
         fields=fields,
         edited_by_human=ex.edited_by_human,

@@ -6,6 +6,8 @@ sys.path when needed.
 OCR: auto (demo fixture -> pdf-text -> Tesseract, O1) | tesseract (no mock fallback) | mock (tests).
 Document AI: auto (Claude when ANTHROPIC_API_KEY is set, else rules; demo samples keep their
 stored result) | rules | claude (falls back to rules on any failure) | mock (tests).
+Historical deeds (H4): `historical` = the LHDR rule parser, fused with Claude's `submit_lhdr`
+reading when Claude is configured (auto / claude with a key); None with the mock extractor.
 """
 import copy
 import logging
@@ -22,6 +24,7 @@ if _REPO_ROOT not in sys.path:
 
 from ai.extraction.base import DocumentAIProvider, ExtractionResult  # noqa: E402
 from ai.extraction.claude import ClaudeDocumentAIProvider  # noqa: E402
+from ai.extraction.historical_deed import HistoricalDeedProvider  # noqa: E402
 from ai.extraction.mock import MockDocumentAIProvider  # noqa: E402
 from ai.extraction.rules import RuleBasedDocumentAIProvider  # noqa: E402
 from ai.mock_fixtures import is_demo_fixture  # noqa: E402
@@ -41,6 +44,7 @@ KNOWN_AI = ("auto", "mock", "rules", "claude", "vlm", "remote")
 class Providers:
     ocr: OCRProvider
     ai: DocumentAIProvider
+    historical: HistoricalDeedProvider | None = None  # H4: deeds whose profile is historical
 
 
 class AutoDocumentAIProvider:
@@ -116,7 +120,11 @@ def get_providers(settings: Settings) -> Providers:
     else:
         raise _unavailable("OCR", ocr_name, KNOWN_OCR)  # paddle: P42
     doc_ai: DocumentAIProvider
+    historical: HistoricalDeedProvider | None = HistoricalDeedProvider()
+    if ai_name in ("auto", "claude") and settings.anthropic_api_key:
+        historical = HistoricalDeedProvider(llm=_claude(settings))
     if ai_name == "mock":
+        historical = None
         doc_ai = MockDocumentAIProvider()
     elif ai_name == "rules":
         doc_ai = RuleBasedDocumentAIProvider()
@@ -129,4 +137,4 @@ def get_providers(settings: Settings) -> Providers:
         doc_ai = AutoDocumentAIProvider(primary, demo)
     else:
         raise _unavailable("Document AI", ai_name, KNOWN_AI)  # vlm/remote: P42
-    return Providers(ocr=ocr, ai=doc_ai)
+    return Providers(ocr=ocr, ai=doc_ai, historical=historical)

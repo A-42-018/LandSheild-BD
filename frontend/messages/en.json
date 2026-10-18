@@ -594,7 +594,8 @@
       },
       "extractors": {
         "rules": "Rules",
-        "claude": "Claude"
+        "claude": "Claude",
+        "fused": "Rules + Claude"
       },
       "note": "Low-confidence fields are checked by a reviewer.",
       "warnings": {
