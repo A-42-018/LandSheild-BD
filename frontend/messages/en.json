@@ -583,7 +583,12 @@
       "reprocessFailed": "We could not ask for a new reading. Try again.",
       "rejectFailed": "We could not reject this document. Try again.",
       "saveFailed": "We could not save this change. Try again.",
-      "notReviewable": "This document is no longer waiting for review. Open the page again."
+      "notReviewable": "This document was already decided or sent back to be read again, so it cannot be approved now. The page shows its current state.",
+      "outsideArea": "This deed is for land in {place}, outside the area of {office}, the office it was filed under, so it cannot be approved there. Reject it with this reason, or ask an administrator to file it under the right office.",
+      "landMismatch": "The khatian or dag number on this deed does not match land {land}, which it was uploaded for. Correct them, or reject the deed.",
+      "landOtherOffice": "Land {land} is held by another land office, so this deed cannot be approved from here.",
+      "notReady": "This document has not been read yet. Wait until processing finishes.",
+      "outsideAreaShort": "Cannot be approved: the land is outside the area of the office this deed was filed under (see the note at the top)."
     },
     "decision": {
       "APPROVED": "This document has been approved.",
@@ -864,6 +869,21 @@
         "title": "Other reading",
         "use": "Use this reading"
       }
+    },
+    "focus": {
+      "title": "Check this deed",
+      "hint": "Compare each value with the deed. The target button shows where a value is on the page.",
+      "needs": "Need checking: {n}",
+      "fine": "Look fine: {n}",
+      "empty": "Not read: {n}",
+      "errors": "Errors: {n}",
+      "modeLabel": "Show",
+      "all": "All values",
+      "check": "Only what needs checking",
+      "jump": "Go to",
+      "allFine": "Nothing to check in this part.",
+      "readingInfo": "How this document was read",
+      "addValue": "Add {label}"
     }
   },
   "landing": {

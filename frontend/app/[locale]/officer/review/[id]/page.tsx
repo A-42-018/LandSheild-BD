@@ -9,7 +9,7 @@ export const generateMetadata = pageTitle("review.title");
 export default function ReviewPage({ params: { locale, id } }: { params: { locale: string; id: string } }) {
   setRequestLocale(locale);
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-6xl has-[[data-wide-page]]:max-w-none">
       <RequireRole roles={REVIEW_UP}>
         <ReviewView id={id} />
       </RequireRole>

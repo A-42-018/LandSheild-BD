@@ -213,12 +213,17 @@ def test_new_land_is_held_by_the_office_and_wrong_area_is_blocked(env, jobs):
     with _db(env) as s:  # filed under a Rupganj office, but the record says Dhaka / Savar
         s.get(Document, doc_id).office_id = _office(env, **RUPGANJ)
         s.commit()
+    # the review screen says so before the reviewer checks every field
+    ext = env.get(f"/api/v1/documents/{doc_id}/extraction", headers=_h(env, "REVIEWER")).json()
+    assert ext["area_conflict"]["district"] == "Dhaka" and ext["area_conflict"]["office_name_en"]
     r = _post(env, doc_id, "approve")
     assert r.status_code == 409 and r.json()["code"] == "RECORD_OUTSIDE_AREA"
     with _db(env) as s:
         assert s.get(Document, doc_id).processing_status == "REVIEW_REQUIRED"
         s.get(Document, doc_id).office_id = _office(env, **SAVAR)
         s.commit()
+    ext = env.get(f"/api/v1/documents/{doc_id}/extraction", headers=_h(env, "REVIEWER")).json()
+    assert ext["area_conflict"] is None
     ok = _post(env, doc_id, "approve")
     assert ok.status_code == 200, ok.text
     with _db(env) as s:
