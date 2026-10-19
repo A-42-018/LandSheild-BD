@@ -234,9 +234,14 @@ async function recordDoc1() {
     return { Authorization: `Bearer ${(await r.json()).access_token}` };
   };
   const officer = await token("officer");
+  // every upload names a land office; Doc1 lies in Gazipur, so file it under a Gazipur district office
+  const offices = await (await api.get(`${API}/offices?division=Dhaka&district=Gazipur`)).json();
   const up = await api.post(`${API}/documents/upload`, {
     headers: officer,
-    multipart: { file: { name: "Doc1.png", mimeType: "image/png", buffer: fs.readFileSync(SAMPLE("Doc1.png")) } },
+    multipart: {
+      file: { name: "Doc1.png", mimeType: "image/png", buffer: fs.readFileSync(SAMPLE("Doc1.png")) },
+      office_id: offices.items[0].id,
+    },
   });
   const { id } = await up.json();
   const status = async () => (await (await api.get(`${API}/documents/${id}`, { headers: officer })).json()).processing_status;

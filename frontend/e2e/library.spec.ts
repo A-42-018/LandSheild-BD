@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
-import { API, apiToken, fillBuyerNid, signIn } from "./fixtures";
+import { API, apiToken, fillBuyerNid, pickOffice, signIn } from "./fixtures";
 
 // H7d: an officer uploads the 1944 sample deed, finds it under My uploads, a reviewer approves it, and the
 // document page then shows the original, the digital deed, the versions, the hashes and a valid signature;
@@ -23,6 +23,7 @@ test.describe("document library: upload → My uploads → approve → document 
       await page.goto("/en/officer/upload");
       await page.locator('input[type="file"]').setInputFiles(SAMPLE);
       await expect(page.getByTestId("selected-file")).toBeVisible();
+      await pickOffice(page, FILE);
       await fillBuyerNid(page, FILE);
       const uploaded = page.waitForResponse((r) => r.url().endsWith("/documents/upload") && r.request().method() === "POST");
       await page.getByRole("button", { name: "Upload", exact: true }).click();

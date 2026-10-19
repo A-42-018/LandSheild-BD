@@ -1,8 +1,6 @@
 import { Info } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
-import { HOTLINE } from "@/features/help/help";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { localDigits } from "@/lib/intl-locale";
 import { contours } from "./Backdrop";
 import SkylineStrip from "./SkylineStrip";
 
@@ -20,7 +18,6 @@ const RINGS = contours([
 /** Footer (U1.7, roadmap P11): village → city strip on top (U1.8), brand row, then the five standard columns. "Planned and built by" holds the demo-project note instead of ministry credits; no app or social links exist, so those columns say so or point to real contact routes. */
 export default function Footer() {
   const t = useTranslations();
-  const locale = useLocale();
   return (
     <>
     <SkylineStrip />
@@ -72,11 +69,6 @@ export default function Footer() {
           <div>
             <p className={HEAD}>{t("footer.contactTitle")}</p>
             <ul className={LIST}>
-              <li>
-                <a href={`tel:${HOTLINE}`} data-testid="footer-hotline" className={LINK}>
-                  {t("footer.hotline")}: {localDigits(HOTLINE, locale)}
-                </a>
-              </li>
               <li><Link href="/feedback" className={LINK}>{t("feedback.title")}</Link></li>
               <li><Link href="/login" className={LINK}>{t("nav.login")}</Link></li>
             </ul>

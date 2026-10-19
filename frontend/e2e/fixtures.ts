@@ -64,6 +64,25 @@ export const BUYER_NID: Record<string, { nid: string; dob: string }> = {
   "Historical_Land_Deed.pdf": { nid: "19109990000000009", dob: "1910-03-14" },
 };
 
+/** The district each sample deed lies in: the upload files it under that district's land office. */
+const SAMPLE_DISTRICT: Record<string, string> = { "Doc1.png": "Gazipur", "Doc2.png": "Gazipur" };
+
+/**
+ * Every upload names a land office, and the record must lie in that office's area. The demo officer has
+ * no office of their own, so pick the sample's district (Dhaka division) and its first district-level
+ * office; a district office takes records from any of its upazilas.
+ */
+export async function pickOffice(page: Page, file: string): Promise<void> {
+  const box = page.getByTestId("office-sortlist");
+  if (await box.getByTestId("my-office").isVisible()) return; // an office officer files into their own office
+  await box.getByLabel("Division").selectOption("Dhaka");
+  await box.getByLabel("Zila (District)").selectOption(SAMPLE_DISTRICT[file] ?? "Dhaka");
+  const office = box.getByLabel("Land office");
+  await expect(office).toBeEnabled();
+  await expect(office.locator("option")).not.toHaveCount(1); // the placeholder alone: still loading
+  await office.selectOption({ index: 1 });
+}
+
 /** A deed is approved only with the new owner's NID, so the upload form asks for it. */
 export async function fillBuyerNid(page: Page, file: string): Promise<void> {
   const owner = BUYER_NID[file];

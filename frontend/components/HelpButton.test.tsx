@@ -32,7 +32,7 @@ describe("HelpButton (U1.6)", () => {
     expect(screen.queryByRole("link", { name: en.help.links.faq })).not.toBeInTheDocument();
   });
 
-  it("opens to FAQ, guide, feedback and the hotline", () => {
+  it("opens to FAQ, guide and feedback, with no phone link", () => {
     render(wrap("en"));
     fireEvent.click(screen.getByRole("button", { name: en.help.button }));
     expect(screen.getByRole("button", { name: en.help.button })).toHaveAttribute("aria-expanded", "true");
@@ -40,15 +40,7 @@ describe("HelpButton (U1.6)", () => {
     expect(within(panel).getByRole("link", { name: en.help.links.faq })).toHaveAttribute("href", "/faq");
     expect(within(panel).getByRole("link", { name: en.help.links.guide })).toHaveAttribute("href", "/guide");
     expect(within(panel).getByRole("link", { name: en.help.links.feedback })).toHaveAttribute("href", "/feedback");
-    expect(within(panel).getByRole("link", { name: /16122/ })).toHaveAttribute("href", "tel:16122");
-  });
-
-  it("shows the hotline in Bangla digits but dials the ASCII number", () => {
-    render(wrap("bn"));
-    fireEvent.click(screen.getByRole("button", { name: bn.help.button }));
-    const call = screen.getByRole("link", { name: /১৬১২২/ });
-    expect(call).toHaveAttribute("href", "tel:16122");
-    expect(screen.getByRole("region", { name: bn.help.panelLabel }).textContent).not.toMatch(/[0-9]/);
+    expect(panel.querySelector('a[href^="tel:"]')).toBeNull();
   });
 
   it("Escape closes it and returns focus to the button", () => {

@@ -100,6 +100,13 @@ const CAPTION_JS = () => {
     await go("/en/officer/upload");
     await page.locator('input[type="file"]').setInputFiles(SAMPLE(file));
     await wait(1.2);
+    // every upload names a land office: the samples lie in Gazipur (Dhaka division)
+    const box = page.getByTestId("office-sortlist");
+    await box.getByLabel("Division").selectOption("Dhaka");
+    await box.getByLabel("Zila (District)").selectOption("Gazipur");
+    const office = box.getByLabel("Land office");
+    await office.locator("option").nth(1).waitFor({ state: "attached" }); // the list has loaded
+    await office.selectOption({ index: 1 });
     await page.getByRole("button", { name: "Upload", exact: true }).click();
     await page.getByTestId("upload-result").waitFor();
     await wait(1);
