@@ -2728,7 +2728,7 @@
     "p3": "Officer and reviewer access is role-based and audited.",
     "notice": "Demo e-governance prototype. Not a government website.",
     "groupCitizen": "Citizen",
-    "groupStaff": "Land office staff",
+    "groupStaff": "Officer/Admin",
     "tabLoginShort": "Sign in",
     "tabSignupShort": "Sign up",
     "tabStaffShort": "Sign in",
