@@ -77,7 +77,8 @@ export default async function LocaleLayout({
             <NoticeTicker />
           </div>
           <PublicBackdrop />
-          <main id="main" className="mx-auto max-w-[75rem] px-4 py-8 has-[[data-wide-page]]:max-w-[100rem] print:max-w-none print:p-0">
+          {/* At least one screen tall, so a short loading card or result panel can't pull the footer into view. */}
+          <main id="main" className="mx-auto min-h-svh max-w-[75rem] px-4 py-8 has-[[data-wide-page]]:max-w-[100rem] print:min-h-0 print:max-w-none print:p-0">
             {children}
             <PageHelpful />
           </main>

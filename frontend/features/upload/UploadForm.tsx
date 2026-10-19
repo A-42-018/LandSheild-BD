@@ -179,6 +179,8 @@ export default function UploadForm() {
       setProgress(0);
       return api.upload<DocumentUploadOut>("/documents/upload", form, { onProgress: setProgress });
     },
+    // the long form gives way to a short result card; bring it into view instead of leaving the page scrolled past it
+    onSuccess: () => window.scrollTo({ top: 0 }),
   });
 
   const apiCode: UploadErrorCode | null = m.error
