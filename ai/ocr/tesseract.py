@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import io
 import logging
+import threading
 from dataclasses import replace
 from statistics import fmean
 
@@ -46,6 +47,9 @@ RECOVER_MAX = 10  # missed-line spots re-read per page
 BANGLA_FIRST_SLACK = 0.03  # `ben`-only cell reading may be this much less confident and still win
 SPLIT_DEPTH = 3  # an unreadable strip is cut in half at most this many times (<= 8 pieces)
 PROFILES = ("modern", "historical", "auto")
+# One OCR pass at a time per process: each holds the rendered pages, the preprocessed copies and the
+# per-cell crops, and two at once (BackgroundTasks run in a thread pool) push the 512 MB free instance over its limit.
+_OCR_SLOT = threading.Semaphore(1)
 
 
 def _import_pytesseract():
@@ -434,6 +438,10 @@ class TesseractOCRProvider:
         return [OCRWord(c.text, c.confidence, c.bbox) for c in t.cells if c.text]
 
     def recognize(self, data: bytes, file_type: str) -> OCRResult:
+        with _OCR_SLOT:
+            return self._recognize_profiles(data, file_type)
+
+    def _recognize_profiles(self, data: bytes, file_type: str) -> OCRResult:
         if self.profile != "auto":
             return self._recognize(data, file_type, self.profile)
         first = self._recognize(data, file_type, "modern")
