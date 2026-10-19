@@ -210,6 +210,23 @@ def _resolve_land(
     return land, True
 
 
+def check_attachable(doc: Document, land: LandParcel, extraction: Extraction) -> None:
+    """The checks posting runs on a document's chosen land (khatian/dag, office, survey/JL),
+    without filling anything in: the reviewer's answer to LAND_AMBIGUOUS (D7) is held to them."""
+    v = {f.field: f.value for f in extraction.fields}
+    if _key(land.khatian_no) != _key(v.get("khatian_no")) or _key(land.dag_no) != _key(
+        v.get("dag_no")
+    ):
+        raise AppError(
+            "LAND_IDENTIFIER_MISMATCH",
+            "Document khatian/dag do not match this land",
+            409,
+            {"land_id": land.land_id},
+        )
+    _same_office(doc, land)
+    _check_survey(land, *_doc_survey(extraction))
+
+
 def _inherit_survey(extraction: Extraction, land: LandParcel) -> None:
     """A deed names no survey: it takes the one of the parcel the officer chose (frozen with it)."""
     if not extraction.survey_type and land.survey_type:

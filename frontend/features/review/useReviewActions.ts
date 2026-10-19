@@ -46,6 +46,14 @@ export function useReviewActions(id: string) {
     mutationFn: () => api.post(`/documents/${id}/approve`),
     onSettled: () => Promise.all([refresh(), refreshQueue()]),
   });
+  // D7: approval found several lands; the reviewer attaches the one on the deed, then approves again
+  const attachLand = useMutation<{ land_id: string | null }, ApiError, string>({
+    mutationFn: (landId) => api.put(`/documents/${id}/land`, { land_id: landId }),
+    onSuccess: () => {
+      approve.reset();
+      return refresh();
+    },
+  });
   const reject = useMutation<unknown, ApiError, string>({
     mutationFn: (reason) => api.post(`/documents/${id}/reject`, { reason }),
     onSuccess: () => Promise.all([refresh(), refreshQueue()]),
@@ -63,7 +71,7 @@ export function useReviewActions(id: string) {
     mutationFn: () => api.post(`/documents/${id}/process`),
     onSuccess: refresh,
   });
-  return { save, saveRecord, saveSurvey, approve, reject, reprocess, start };
+  return { save, saveRecord, saveSurvey, approve, attachLand, reject, reprocess, start };
 }
 
 export function fieldErrorText(

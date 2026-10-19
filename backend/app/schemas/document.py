@@ -43,6 +43,10 @@ class DocumentUploadOut(DocumentOut):
     duplicate: bool = False  # True: identical bytes already stored; nothing new was saved
 
 
+class LandAttachBody(BaseModel):
+    land_id: str = Field(min_length=1, max_length=32)  # LP-xxxxx, the land the officer chose
+
+
 class RejectBody(BaseModel):
     reason: str
 

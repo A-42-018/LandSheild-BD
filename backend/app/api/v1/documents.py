@@ -23,6 +23,7 @@ from app.models.user import User
 from app.schemas.document import (
     DocumentOut,
     DocumentUploadOut,
+    LandAttachBody,
     LibraryList,
     LibrarySort,
     LibraryTab,
@@ -298,6 +299,19 @@ def approve_document(
     ip = request.client.host if request.client else None
     require_nid = request.app.state.settings.owner_nid_required
     return review_svc.approve_document(db, user, document_id, ip, require_nid)
+
+
+@router.put("/documents/{document_id}/land", response_model=DocumentOut)
+def attach_land(
+    document_id: str,
+    body: LandAttachBody,
+    request: Request,
+    user: User = Depends(require_roles(*REVIEW_UP)),
+    db: Session = Depends(get_db),
+) -> DocumentOut:
+    office_svc.ensure_doc_access(db, user, document_id)
+    ip = request.client.host if request.client else None
+    return review_svc.attach_land(db, user, document_id, body.land_id, ip)
 
 
 @router.patch("/documents/{document_id}/party-nids", response_model=DocumentOut)

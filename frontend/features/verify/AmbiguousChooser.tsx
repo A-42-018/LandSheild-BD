@@ -24,15 +24,24 @@ export default function AmbiguousChooser({
   kind,
   candidates,
   onPick,
+  showLandId = false,
+  disabled = false,
+  intro,
 }: {
   kind: AmbiguityKind;
   candidates: AmbiguityCandidate[];
   onPick: (c: AmbiguityCandidate) => void;
+  /** officers see the LP number (the public verify page keeps it out of the label) */
+  showLandId?: boolean;
+  disabled?: boolean;
+  /** replaces the citizen-facing intro sentence */
+  intro?: string;
 }) {
   const t = useTranslations("verify.chooser");
   const ta = useTranslations("archive");
   const label = (c: AmbiguityCandidate) =>
     [
+      showLandId ? c.land_id : null,
       c.survey_type ? (ta.has(`surveys.${c.survey_type}`) ? ta(`surveys.${c.survey_type}`) : c.survey_type) : t("noSurvey"),
       c.jl_no ? `JL ${c.jl_no}` : t("noJl"),
       c.mouza,
@@ -41,13 +50,14 @@ export default function AmbiguousChooser({
       .join(" · ");
   return (
     <Card title={t("title")} icon={<Layers />} data-testid="ambiguous-chooser" role="alert">
-      <p className="mb-3 text-ink-muted">{kind === "land" ? t("landIntro") : t("mouzaIntro")}</p>
+      <p className="mb-3 text-ink-muted">{intro ?? (kind === "land" ? t("landIntro") : t("mouzaIntro"))}</p>
       <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {candidates.map((c, i) => (
           <li key={`${c.land_id ?? c.jl_no}-${i}`}>
             <button
               type="button"
               onClick={() => onPick(c)}
+              disabled={disabled}
               data-testid="chooser-option"
               className="min-h-touch w-full rounded-xl border border-line/70 bg-surface/60 px-4 py-2.5 text-start font-medium text-ink hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             >

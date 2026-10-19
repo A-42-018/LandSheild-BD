@@ -4,11 +4,13 @@ H5: approval also freezes the working copy as the APPROVED, signed record versio
 posted deed to it (deeds.record_id, deeds.is_historical); a historical deed's LHDR record must be
 free of content errors. Reprocessing discards the open record versions (SUPERSEDED, kept).
 """
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
 from app.models.document import Document
 from app.models.enums import DocumentStatus
+from app.models.land_parcel import LandParcel
 from app.models.user import User
 from app.schemas.document import DocumentOut
 from app.schemas.extraction import Extraction
@@ -111,6 +113,41 @@ def approve_document(
     except Exception as exc:
         db.rollback()
         raise AppError("POSTING_FAILED", "Could not post the approved document", 500) from exc
+    return _to_out(db, doc)
+
+
+def attach_land(
+    db: Session, user: User, document_id: str, land_code: str, ip: str | None
+) -> DocumentOut:
+    """The reviewer says which land a document is about (the answer to approval's 409
+    LAND_AMBIGUOUS, D7: never picked silently). Same checks as posting; nothing posts yet."""
+    doc = _get(db, document_id)
+    _require_status(
+        doc, EDITABLE_STATUSES, "DOCUMENT_NOT_REVIEWABLE", "Document is not awaiting review"
+    )
+    if is_survey_doc(doc):  # archived, never posted to a land
+        raise AppError(
+            "LAND_NOT_APPLICABLE", "Only deeds are posted to a land", 422,
+            {"document_type": doc.document_type},
+        )  # fmt: skip
+    if doc.extraction_json is None:
+        raise AppError(
+            "EXTRACTION_NOT_READY", "No extraction available for this document", 409,
+            {"status": doc.processing_status},
+        )  # fmt: skip
+    land = db.scalar(select(LandParcel).where(LandParcel.land_id == land_code.strip()))
+    if land is None:
+        raise AppError("LAND_NOT_FOUND", "Land parcel not found", 404)
+    posting.check_attachable(doc, land, Extraction.model_validate(doc.extraction_json))
+    old = db.get(LandParcel, doc.land_id) if doc.land_id else None
+    if old is not None and old.id == land.id:
+        return _to_out(db, doc)
+    doc.land_id = land.id
+    audit.log(
+        db, user, "DOCUMENT_LAND_ATTACH", "document", doc.id,
+        old={"land_id": old.land_id if old else None}, new={"land_id": land.land_id}, ip=ip,
+    )  # fmt: skip
+    db.commit()
     return _to_out(db, doc)
 
 

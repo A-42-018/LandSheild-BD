@@ -626,7 +626,10 @@
       "reprocessFailed": "We could not ask for a new reading. Try again.",
       "rejectFailed": "We could not reject this document. Try again.",
       "saveFailed": "We could not save this change. Try again.",
-      "notReviewable": "This document is no longer waiting for review. Open the page again."
+      "notReviewable": "This document is no longer waiting for review. Open the page again.",
+      "landIntro": "Several lands match this deed's khatian and dag. Choose the land the deed is about, then approve again.",
+      "landAttached": "Attached to land {land}. Approve again to post it.",
+      "landAttachFailed": "This land does not fit the deed (khatian, dag, survey or office). Choose another."
     },
     "decision": {
       "APPROVED": "This document has been approved.",

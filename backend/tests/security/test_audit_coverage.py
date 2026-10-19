@@ -51,6 +51,7 @@ AUDIT = {
     ("POST", f"{P}/me/nid"): "NID_LINK",
     ("DELETE", f"{P}/me/nid"): "NID_UNLINK",
     ("PATCH", f"{P}/documents/{{document_id}}/party-nids"): "DOCUMENT_PARTY_NID_SET",
+    ("PUT", f"{P}/documents/{{document_id}}/land"): "DOCUMENT_LAND_ATTACH",
     ("POST", f"{P}/documents/{{document_id}}/records"): "DOCUMENT_RECORD_CORRECTION_START",
     ("PATCH", f"{P}/documents/{{document_id}}/records/{{version}}"): "DOCUMENT_RECORD_EDIT",
     ("POST", f"{P}/documents/{{document_id}}/records/{{version}}/approve"): "DOCUMENT_RECORD_APPROVE",
@@ -76,6 +77,18 @@ def _audited(env, action, call, ok=(200, 201, 202, 204)):
     got = _new_actions(env, before)
     assert action in got, f"{action} not written; got {got}"
     return r
+
+
+def _land_for(env, doc) -> str:
+    """A legacy land carrying the document's khatian / dag, for the reviewer to attach it to."""
+    from app.models.land_parcel import LandParcel
+
+    v = {f["field"]: f["value"] for f in env.get(f"{P}/documents/{doc}/extraction", headers=_h(env, "REVIEWER")).json()["fields"]}
+    with _db(env) as s:
+        s.add(LandParcel(land_id="LP-88001", district=v["district"], upazila=v["upazila"], mouza=v["mouza"],
+                         khatian_no=v["khatian_no"], dag_no=v["dag_no"], area=10, area_unit="decimal", status="ACTIVE"))
+        s.commit()
+    return "LP-88001"
 
 
 def test_every_write_route_is_classified():
@@ -132,6 +145,8 @@ def test_every_write_route_writes_its_audit_row(env, store, jobs):
         "buyer": {"nid": "19859990000000077", "date_of_birth": "1985-05-05"}}, headers=rev))  # fmt: skip
     mark("PATCH", f"{P}/documents/{{document_id}}/party-nids")
     _fill(env, doc)
+    _audited(env, "DOCUMENT_LAND_ATTACH", lambda: env.put(f"{P}/documents/{doc}/land", json={"land_id": _land_for(env, doc)}, headers=rev))
+    mark("PUT", f"{P}/documents/{{document_id}}/land")
     _audited(env, "DOCUMENT_APPROVE", lambda: env.post(f"{P}/documents/{doc}/approve", headers=rev))
     mark("POST", f"{P}/documents/{{document_id}}/approve")
     _audited(env, "DOCUMENT_RECORD_CORRECTION_START", lambda: env.post(f"{P}/documents/{doc}/records", headers=rev))
