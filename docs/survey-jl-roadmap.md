@@ -295,16 +295,15 @@ is time before the final round.
 
 ---
 
-## 5. Kickoff prompt (paste in a new chat with the latest zip attached)
-
-Replace `SJ<n>` with the first ⬜ phase in §4 (start with SJ1).
+## 5. Kickoff prompt (same text every session; attach the latest zip)
 
 ```text
-Unzip the attached LandShield BD project. Do phase SJ<n> from docs/survey-jl-roadmap.md.
-Do NOT read plan.md, roadmap.md or the whole roadmap file. Run `grep -n "^### \|^## " docs/survey-jl-roadmap.md`, then read only §2 (Decisions) and the SJ<n> card.
-Do exactly that card: read only its Read list, change only its Touch list, no other repo exploration. Run only its Test line (set up the backend/frontend as in roadmap.md §3 "Sandbox notes" only if the test needs it).
-If the session is running out: stop at a green state, mark SJ<n> 🟡 in §4 and write the remaining steps there as SJ<n>-b.
-When done: mark SJ<n> ✅ in §4 with a one-line note of what changed and what tests ran, then give me ONE zip of the whole project, made from the project root with:
+Unzip the attached LandShield BD project. Work from docs/survey-jl-roadmap.md only. Do NOT read plan.md, roadmap.md or the whole roadmap file.
+1. Pick the phase: run `grep -nE "^\| SJ[0-9]+ .*(⬜|🟡|✅)" docs/survey-jl-roadmap.md` to see the §4 tracker. If a row is 🟡, continue it (do the SJ<n>-b steps written in its Notes). Otherwise take the first ⬜ row from top to bottom. If only SJ9 (optional) is left, ask me before starting it. Tell me which phase you picked before starting.
+2. Run `grep -n "^### \|^## " docs/survey-jl-roadmap.md`, then read only §2 (Decisions) and that phase's card.
+3. Do exactly that card: read only its Read list, change only its Touch list, no other repo exploration. Run only its Test line (set up the backend/frontend as in roadmap.md §3 "Sandbox notes" only if the test needs it).
+4. If the session is running out: stop at a green state, mark the phase 🟡 in §4 and write the remaining steps in its Notes as SJ<n>-b.
+5. When done: mark the phase ✅ in §4 with a one-line note of what changed and what tests ran, then give me ONE zip of the whole project, made from the project root with:
 zip -qr ../landshield.zip . -x 'node_modules/*' '*/node_modules/*' '*/.venv/*' '*__pycache__*' '*/.next/*' '.git/*' 'storage/*' '*/storage/*' '*/e2e-storage/*' '*.db' '*.env' '*/.env.local' '*.DS_Store' '*/test-results/*' '*.tsbuildinfo' '*.egg-info/*' 'ai/tessdata/*'
-Finish with a short list of the files you changed and a suggested commit message "SJ<n>: <summary>".
+6. Finish with the list of files you changed and a suggested commit message "SJ<n>: <summary>".
 ```
