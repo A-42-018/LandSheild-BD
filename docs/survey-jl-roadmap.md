@@ -305,6 +305,6 @@ Do NOT read plan.md, roadmap.md or the whole roadmap file. Run `grep -n "^### \|
 Do exactly that card: read only its Read list, change only its Touch list, no other repo exploration. Run only its Test line (set up the backend/frontend as in roadmap.md §3 "Sandbox notes" only if the test needs it).
 If the session is running out: stop at a green state, mark SJ<n> 🟡 in §4 and write the remaining steps there as SJ<n>-b.
 When done: mark SJ<n> ✅ in §4 with a one-line note of what changed and what tests ran, then give me ONE zip of the whole project, made from the project root with:
-zip -qr ../landshield.zip . -x 'node_modules/*' '*/node_modules/*' '*/.venv/*' '*__pycache__*' '*/.next/*' '.git/*' '*/storage/*' '*/e2e-storage/*' '*.db' '*.env' '*/.env.local' '*.DS_Store'
+zip -qr ../landshield.zip . -x 'node_modules/*' '*/node_modules/*' '*/.venv/*' '*__pycache__*' '*/.next/*' '.git/*' 'storage/*' '*/storage/*' '*/e2e-storage/*' '*.db' '*.env' '*/.env.local' '*.DS_Store' '*/test-results/*' '*.tsbuildinfo' '*.egg-info/*' 'ai/tessdata/*'
 Finish with a short list of the files you changed and a suggested commit message "SJ<n>: <summary>".
 ```
