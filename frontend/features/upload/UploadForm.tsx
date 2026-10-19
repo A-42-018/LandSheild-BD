@@ -143,7 +143,7 @@ export default function UploadForm() {
   const tp = useTranslations("partyNid");
   const { api, user } = useAuth();
   const myOffice = user?.office ?? null; // an office officer files only into their own office
-  const needsOffice = !myOffice && user?.role === "ADMIN";
+  const needsOffice = !!user && !myOffice;
   const [office, setOffice] = useState<Office | null>(null);
   const [officeError, setOfficeError] = useState(false);
   const fileId = useId();

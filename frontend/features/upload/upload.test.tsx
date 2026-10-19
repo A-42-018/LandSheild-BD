@@ -12,6 +12,8 @@ import { MAX_BYTES, errorCodeFromApi, validateFile } from "./validation";
 import type { DocumentUploadOut } from "./types";
 
 const officer = { id: "1", name: "O", email: "o@x.co", role: "OFFICER", preferred_language: "en" };
+// an office officer files into their own office, so the office step needs no input
+const lockedOfficer = { ...officer, office: { id: "o0", code: "LO-0", office_type: "Union Land Office", name_en: "Test Office", name_bn: "টেস্ট অফিস", division_en: "Dhaka", division_bn: "ঢাকা", district_en: "Dhaka", district_bn: "ঢাকা", upazila_en: "Savar", upazila_bn: "সাভার" } };
 
 const doc = (over: Partial<DocumentUploadOut> = {}): DocumentUploadOut => ({
   id: "d1",
@@ -25,7 +27,7 @@ const doc = (over: Partial<DocumentUploadOut> = {}): DocumentUploadOut => ({
   ...over,
 });
 
-function client(upload: any, get: any = vi.fn(), post: any = vi.fn(), user: any = officer): ApiClient {
+function client(upload: any, get: any = vi.fn(), post: any = vi.fn(), user: any = lockedOfficer): ApiClient {
   return { refresh: vi.fn().mockResolvedValue({ user }), upload, get, post } as unknown as ApiClient;
 }
 
@@ -280,6 +282,15 @@ describe("UploadForm office sortlist", () => {
     await waitFor(() => expect(upload).toHaveBeenCalled());
     expect((upload.mock.calls[0][1] as FormData).get("office_id")).toBeNull();
     expect(await screen.findByTestId("doc-office")).toHaveTextContent("Dhaka / ঢাকা › Dhaka / ঢাকা › Savar / সাভার");
+  });
+
+  it("does not let an officer without an office upload until one is picked", async () => {
+    const upload = vi.fn().mockResolvedValue(doc());
+    wrap(client(upload, places, vi.fn(), officer));
+    choose(pdf());
+    fireEvent.click(await screen.findByRole("button", { name: en.upload.submit }));
+    expect(upload).not.toHaveBeenCalled();
+    expect(await screen.findByText(en.upload.errors.OFFICE_REQUIRED)).toBeInTheDocument();
   });
 
   it("makes an admin pick the office (Division > Zila > Upozila) before uploading", async () => {
