@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ApiError } from "@/lib/api";
 import { useStickyBar } from "@/lib/sticky-bar";
 import { Button, useToast } from "@/components/ui";
+import AmbiguousChooser, { candidatesOf } from "@/features/verify/AmbiguousChooser";
 import RejectModal from "./RejectModal";
 import { useReviewShortcuts } from "./useReviewShortcuts";
 import { useReviewActions } from "./useReviewActions";
@@ -100,7 +101,9 @@ export default function ReviewActions({
   }
   if (!REVIEWABLE.includes(status)) return null;
 
-  const { approve, reject, reprocess } = actions;
+  const { approve, reject, reprocess, attachLand } = actions;
+  // D7: approval found several lands for this deed; the reviewer picks one (never picked silently)
+  const landChoices = approve.error?.code === "LAND_AMBIGUOUS" ? candidatesOf("land", approve.error.details) : [];
   const invalid = !data.validation.valid;
   const ownUpload = !!data.self_approval_blocked;
   const busy = approve.isPending || reject.isPending || reprocess.isPending;
@@ -151,8 +154,33 @@ export default function ReviewActions({
             {tn("errors.OWNER_NID_REQUIRED")}
           </p>
         )}
-        {approve.isError && (
-          <p role="alert" className="text-sm text-critical">{failure(approve.error, t("actions.approveFailed"))}</p>
+        {landChoices.length > 0 ? (
+          <AmbiguousChooser
+            kind="land"
+            candidates={landChoices}
+            showLandId
+            intro={t("actions.landIntro")}
+            disabled={attachLand.isPending}
+            onPick={(c) => c.land_id && attachLand.mutate(c.land_id)}
+          />
+        ) : (
+          approve.isError && (
+            <p role="alert" className="text-sm text-critical">{failure(approve.error, t("actions.approveFailed"))}</p>
+          )
+        )}
+        {attachLand.isError && (
+          <p role="alert" data-testid="land-attach-failed" className="text-sm text-critical">
+            {attachLand.error?.code === "DOCUMENT_NOT_REVIEWABLE"
+              ? t("actions.notReviewable")
+              : [404, 409, 422].includes(attachLand.error?.status ?? 0)
+                ? t("actions.landAttachFailed")
+                : t("actions.landAttachRetry")}
+          </p>
+        )}
+        {attachLand.isSuccess && !approve.isError && attachLand.data?.land_id && (
+          <p role="status" data-testid="land-attached" className="text-sm text-ink">
+            {t("actions.landAttached", { land: attachLand.data.land_id })}
+          </p>
         )}
         <RejectModal
           open={rejecting}

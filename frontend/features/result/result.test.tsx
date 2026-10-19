@@ -76,6 +76,25 @@ function wrap(c: ApiClient, landId?: string, messages: any = en, locale = "en") 
   );
 }
 
+describe("ResultView survey fields (SJ6)", () => {
+  it("shows Survey, JL and sheet, and the amber notice only on SHEET_MISMATCH", async () => {
+    const withSv = { ...land("LP-10100", ["Hasan Ali"]), survey_type: "RS", jl_no: "12", map_sheet_no: "7", warnings: ["SHEET_MISMATCH"] };
+    wrap(client((path) => okGet(path === "/lands/LP-10100" ? "/lands/LP-10100" : path).then((d) => (path === "/lands/LP-10100" ? withSv : d))), "LP-10100");
+    const info = await screen.findByTestId("land-info");
+    expect(info).toHaveTextContent(en.result.survey);
+    expect(info).toHaveTextContent(en.result.jlNo);
+    expect(info).toHaveTextContent(en.result.sheetNo);
+    expect(screen.getByTestId("sheet-warning")).toHaveTextContent(en.result.sheetMismatch);
+  });
+
+  it("shows no warning and no survey row for an old record", async () => {
+    wrap(client(okGet), "LP-10100");
+    await screen.findByTestId("land-info");
+    expect(screen.queryByTestId("sheet-warning")).toBeNull();
+    expect(screen.queryByText(en.result.jlNo)).toBeNull();
+  });
+});
+
 describe("ResultView", () => {
   it("renders LP-10100: land info, ordered timeline, 2 transactions, banner, disclaimer, risk section", async () => {
     wrap(client(okGet), "LP-10100");

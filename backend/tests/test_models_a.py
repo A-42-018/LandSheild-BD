@@ -59,7 +59,8 @@ def test_parcel_land_id_unique(db: Session):
 
 
 def test_parcel_composite_identifiers_unique(db: Session):
-    db.add_all([_parcel(), _parcel(land_id="LS-0002")])
+    # SJ1: the key includes survey + JL, so a true duplicate must carry the same ones
+    db.add_all([_parcel(survey_type="RS", jl_no="45"), _parcel(land_id="LS-0002", survey_type="RS", jl_no="45")])
     with pytest.raises(IntegrityError):
         db.commit()
 

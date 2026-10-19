@@ -23,13 +23,13 @@ cd backend && PYTHONPATH=.. python -c "import json; from app.main import app; pr
 | health | `GET /health` | none |
 | auth | `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`; `GET /auth/me` | public / signed-in |
 | public | `GET /public/verify/{land_id}` (no names, 60/min/IP) | none |
-| public (U2.1) | `GET /public/lands/search?district&upazila&mouza&khatian&dag` → masked summary: place, khatian/dag, area, status, risk level, owner count + owners as `R*** U***`, `open_case`, counts. No father name, NID, deeds or ids; every hit audited as `PUBLIC_LAND_SEARCH` (hashed IP); unknown = 404 `LAND_NOT_FOUND` | none, 60/min/IP (shared public bucket) |
+| public (U2.1) | `GET /public/lands/search?district&upazila&mouza&khatian&dag[&survey&jl_no&sheet_no]` → masked summary (also `survey_type`, `jl_no`, `map_sheet_no`, `warnings`; survey/JL/sheet params and errors: see "Land search by survey / JL / sheet" below): place, khatian/dag, area, status, risk level, owner count + owners as `R*** U***`, `open_case`, counts. No father name, NID, deeds or ids; every hit audited as `PUBLIC_LAND_SEARCH` (hashed IP); unknown = 404 `LAND_NOT_FOUND` | none, 60/min/IP (shared public bucket) |
 | public (U2.3) | `GET /public/map` → parcel outlines + dag/khatian numbers + district/upazila/mouza; no owners, risk, status or area. `GET /gis/*` boundaries are now readable without sign-in (open data, cache 5 min) | none, 120/min/IP |
 | public (F2c) | `GET /public/mutation-status/{mutation_no}` → status, step dates (applied · review · hearing · decided), AC Land office, days pending. No names, no land id; unknown/malformed number = 404 `MUTATION_NOT_FOUND` | none, 60/min/IP |
 | public (F4a) | `GET /public/keys` (Ed25519 public key), `GET /public/seal/{land_id}` (signed QR payload), `GET /public/signature` (check a seal: VALID · INVALID · UNKNOWN) | none, 60/min/IP |
 | public (F4b) | `POST /public/verify-document` (multipart copy, compared then discarded, never stored), `POST /public/verify-document/fields` (typed fields) | none, stricter verify-doc limit |
 | gis | `GET /gis/capabilities`, `/gis/divisions`, `/gis/districts`, `/gis/upazilas`, `/gis/mouzas`, `/gis/search`, `/gis/unions` (union and mouza lists answer "not enabled" without a dataset, see docs/gis.md) | any signed-in |
-| lands | `GET /lands/search`, `/lands/{id}`, `/lands/{id}/ownership`, `/lands/{id}/transactions`, `/lands/{id}/graph`, `/lands/map`; `GET /lands/{id}/risk` | any signed-in |
+| lands | `GET /lands/search?...&survey&jl_no&sheet_no` (see below), `/lands/{id}`, `/lands/{id}/ownership`, `/lands/{id}/transactions`, `/lands/{id}/graph`, `/lands/map`; `GET /lands/{id}/risk` | any signed-in |
 | lands (F1/F3) | `GET /lands/{id}/mutations` (mutation history + registration↔mutation mismatches), `/lands/{id}/encumbrances` (court case · khas · acquisition · mortgage), `/lands/{id}/pre-purchase-check?seller=` (six-row "Check Before You Buy", no owner names in payload; seller ≤ 120 chars) | any signed-in |
 | archive (F5c) | `GET /archive/search?q=&survey=CS\|SA\|RS\|BS&district=&limit=&offset=` (full-text over approved documents; FTS5 on SQLite, `tsvector` + GIN on Postgres; empty `q` → 422 `INVALID_QUERY`) | REVIEWER and above |
 | mutations (F2) | `GET /mutations` (officer queue), `GET /mutations/{id}` (detail + pre-checks) | REVIEWER and above |
@@ -114,3 +114,26 @@ curl -s -X POST $API/documents/upload -H "Authorization: Bearer $TOKEN" \
 ```
 
 > Status: these examples were checked against the route and schema definitions in the code. They were **not** executed against a live server in the P58 sandbox (no installed dependencies, no network).  Upload form fields: `file` (required), `document_type` (default `DEED`), `land_id` (optional).
+
+## Land search by survey / JL / sheet (SJ3)
+
+`GET /lands/search` and `GET /public/lands/search` take the 5 place/khatian/dag fields plus:
+
+| Param | Meaning |
+|---|---|
+| `survey` | `CS` / `SA` / `RS` / `BS`. A parcel matches when its survey equals it **or is NULL** (old rows); a parcel that carries this survey beats a NULL one. Omitted is accepted for one release, but gives 409 if that leaves more than one parcel. |
+| `jl_no` | Optional, leading zeros ignored. Checked against the mouza registry; a parcel matches when its JL equals it or is NULL (an exact JL beats NULL). |
+| `sheet_no` | Optional check only, never a lookup key (D6). A parcel JL that disagrees with the registry never turns the hit into a 422. |
+| `land_id` | Optional: the candidate the user picked from a 409 `LAND_AMBIGUOUS`. The other fields must still match, so it reveals nothing new. |
+
+Responses add `survey_type`, `jl_no`, `map_sheet_no`, `warnings` (`["SHEET_MISMATCH"]` when `sheet_no` differs from the parcel's sheet or is not a sheet of that mouza for that survey; the result is still 200).
+
+| Status | Code | When |
+|---|---|---|
+| 404 | `LAND_NOT_FOUND` | no parcel matches |
+| 409 | `LAND_AMBIGUOUS` | several parcels match; `details.candidates = [{land_id, survey_type, jl_no, mouza}]` (no owner data); the client asks the user to pick one and repeats the search with `survey`/`jl_no` and `land_id`. Posting uses the same code and shape when a document matches several parcels |
+| 422 | `JL_MISMATCH` | `jl_no` does not belong to that mouza (`details.options` lists the right JLs) |
+| 409 | `MOUZA_AMBIGUOUS` | the mouza name exists under more than one JL in that upazila; `details.options` lists the JLs, the client repeats the search with `jl_no` |
+| 409 | `LAND_SURVEY_MISMATCH` | write path (posting a deed/extraction): the parcel found belongs to another survey or JL than the document; officer corrects `survey_type`/`jl_no` in review (`survey_type: ""` clears it) |
+| 409 | `LAND_SURVEY_TAKEN` | write path: filling a legacy parcel's survey/JL would duplicate another parcel (`details.other_land_id`); attach the document to that one |
+| 422 | `VALIDATION_ERROR` | `survey` is not one of CS/SA/RS/BS |

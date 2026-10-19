@@ -35,13 +35,14 @@ function extraction(over: Record<string, any> = {}, top: Partial<ExtractionOut> 
   };
 }
 
-function setup(opts: { status?: string; ext?: ExtractionOut; patch?: any; post?: any; messages?: any; locale?: string; partyNids?: Record<string, string> } = {}) {
+function setup(opts: { status?: string; ext?: ExtractionOut; patch?: any; post?: any; put?: any; messages?: any; locale?: string; partyNids?: Record<string, string> } = {}) {
   const ext = opts.ext ?? extraction();
   const get = vi.fn((path: string) => Promise.resolve(path.endsWith("/extraction") ? ext : doc(opts.status, opts.partyNids)));
   const patch = opts.patch ?? vi.fn().mockResolvedValue(ext);
   const post = opts.post ?? vi.fn().mockResolvedValue(doc());
+  const put = opts.put ?? vi.fn().mockResolvedValue(doc());
   const blob = vi.fn().mockResolvedValue(new Blob(["x"], { type: "image/png" }));
-  const client = { refresh: vi.fn().mockResolvedValue({ user: reviewer }), get, patch, post, blob } as unknown as ApiClient;
+  const client = { refresh: vi.fn().mockResolvedValue({ user: reviewer }), get, patch, post, put, blob } as unknown as ApiClient;
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <NextIntlClientProvider locale={opts.locale ?? "en"} messages={opts.messages ?? en}>
@@ -52,7 +53,7 @@ function setup(opts: { status?: string; ext?: ExtractionOut; patch?: any; post?:
       </QueryClientProvider>
     </NextIntlClientProvider>,
   );
-  return { get, patch, post };
+  return { get, patch, post, put };
 }
 
 beforeEach(() => {
@@ -221,6 +222,57 @@ describe("approve / reject / reprocess", () => {
     setup({ post: vi.fn().mockRejectedValue(new ApiError(409, "NID_NAME_MISMATCH", "x", { party: "buyer" })) });
     fireEvent.click(await screen.findByTestId("approve-btn"));
     expect(await screen.findByText(en.partyNid.errors.NID_NAME_MISMATCH)).toBeInTheDocument();
+  });
+
+  describe("several lands match the deed (LAND_AMBIGUOUS, D7)", () => {
+    const candidates = [
+      { land_id: "LP-10001", survey_type: "RS", jl_no: "45", mouza: "Ashulia" },
+      { land_id: "LP-12001", survey_type: "CS", jl_no: "45", mouza: "Ashulia" },
+      { land_id: "LP-12003", survey_type: null, jl_no: null, mouza: "Ashulia" },
+    ];
+    const ambiguous = () => new ApiError(409, "LAND_AMBIGUOUS", "x", { candidates });
+
+    it("offers the candidates with their LP number, attaches the chosen one, then approves again", async () => {
+      const post = vi.fn().mockRejectedValueOnce(ambiguous()).mockResolvedValue(doc("APPROVED"));
+      const { put } = setup({ post, put: vi.fn().mockResolvedValue({ ...doc(), land_id: "LP-12001" }) });
+      fireEvent.click(await screen.findByTestId("approve-btn"));
+      const chooser = await screen.findByTestId("ambiguous-chooser");
+      expect(chooser).toHaveTextContent(en.review.actions.landIntro);
+      const options = within(chooser).getAllByTestId("chooser-option");
+      expect(options.map((o) => o.textContent)).toEqual([
+        `LP-10001 · ${en.archive.surveys.RS} · JL 45 · Ashulia`,
+        `LP-12001 · ${en.archive.surveys.CS} · JL 45 · Ashulia`,
+        `LP-12003 · ${en.verify.chooser.noSurvey} · ${en.verify.chooser.noJl} · Ashulia`,
+      ]);
+      expect(screen.queryByText(en.review.actions.approveFailed)).toBeNull(); // nothing picked for them
+      fireEvent.click(options[1]);
+      await waitFor(() => expect(put).toHaveBeenCalledWith("/documents/d1/land", { land_id: "LP-12001" }));
+      expect(await screen.findByTestId("land-attached")).toHaveTextContent("LP-12001");
+      expect(screen.queryByTestId("ambiguous-chooser")).toBeNull();
+      fireEvent.click(screen.getByTestId("approve-btn"));
+      await waitFor(() => expect(post).toHaveBeenCalledTimes(2));
+    });
+
+    it("keeps the chooser and says so when the server refuses the chosen land", async () => {
+      const post = vi.fn().mockRejectedValue(ambiguous());
+      const put = vi.fn().mockRejectedValue(new ApiError(409, "LAND_SURVEY_MISMATCH", "x", { land_id: "LP-12001" }));
+      setup({ post, put });
+      fireEvent.click(await screen.findByTestId("approve-btn"));
+      fireEvent.click((await screen.findAllByTestId("chooser-option"))[1]);
+      expect(await screen.findByTestId("land-attach-failed")).toHaveTextContent(en.review.actions.landAttachFailed);
+      expect(screen.getByTestId("ambiguous-chooser")).toBeInTheDocument();
+      expect(screen.queryByTestId("land-attached")).toBeNull();
+    });
+
+    it("asks to try again (not to choose another land) when the request itself failed", async () => {
+      const post = vi.fn().mockRejectedValue(ambiguous());
+      const put = vi.fn().mockRejectedValue(new ApiError(0, "NETWORK_ERROR", "Network error"));
+      setup({ post, put });
+      fireEvent.click(await screen.findByTestId("approve-btn"));
+      fireEvent.click((await screen.findAllByTestId("chooser-option"))[0]);
+      expect(await screen.findByTestId("land-attach-failed")).toHaveTextContent(en.review.actions.landAttachRetry);
+      expect(screen.getByTestId("ambiguous-chooser")).toBeInTheDocument();
+    });
   });
 
   it("reject needs a reason, then posts it", async () => {

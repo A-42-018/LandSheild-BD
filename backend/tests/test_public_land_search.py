@@ -16,6 +16,7 @@ B = "/api/v1/public/lands/search"
 KEYS = {
     "land_id", "district", "upazila", "mouza", "khatian_no", "dag_no", "area", "area_unit",
     "status", "risk_level", "owner_count", "owners_masked", "open_case", "counts",
+    "survey_type", "jl_no", "map_sheet_no", "warnings",
 }  # fmt: skip
 BANNED = (
     "rahim", "karim", "hasan", "jamal", "father", "nid", "hash", "deed", "file_path", "evidence",
@@ -59,6 +60,10 @@ def test_same_parcel_as_signed_in_search(env):
 def test_no_full_names_or_restricted_values_for_any_parcel(env):
     for code in PLACES:
         r = env.get(B, params=_q(code))
+        if code == "LP-10001":  # shares khatian/dag with the SJ1 demo lands LP-12001/12003: ambiguous by design
+            assert r.status_code == 409 and r.json()["code"] == "LAND_AMBIGUOUS", r.text
+            assert not any(w in r.text.lower() for w in BANNED), r.text
+            continue
         assert r.status_code == 200, (code, r.text)
         assert set(r.json()) == KEYS
         text = json.dumps(r.json()).lower()

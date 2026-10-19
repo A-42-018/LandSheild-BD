@@ -47,10 +47,13 @@ function wrap(c: ApiClient, messages: any = en, locale = "en") {
   );
 }
 
+const survey = (m: any = en) => screen.getByLabelText(new RegExp(`^${m.verify.survey}`));
+
 function fill(m: any = en) {
   fireEvent.change(screen.getByLabelText(new RegExp(`^${m.verify.district}`)), { target: { value: "Gazipur" } });
   fireEvent.change(screen.getByLabelText(new RegExp(m.verify.upazila)), { target: { value: "Sreepur" } });
   fireEvent.change(screen.getByLabelText(new RegExp(m.verify.mouza)), { target: { value: "Barmi" } });
+  fireEvent.change(survey(m), { target: { value: "RS" } });
   fireEvent.change(screen.getByLabelText(new RegExp(m.verify.khatian)), { target: { value: "১২৪৫" } });
   fireEvent.change(screen.getByLabelText(new RegExp(m.verify.dag)), { target: { value: "785" } });
 }
@@ -60,11 +63,25 @@ beforeEach(() => push.mockClear());
 describe("schema", () => {
   it("normalizes Bangla digits: ১২৪৫ → 1245", () => {
     expect(normalizeDigits("১২৪৫")).toBe("1245");
-    const r = verifySchema.parse({ district: "Gazipur", upazila: "Sreepur", mouza: " Barmi ", khatian: "১২৪৫", dag: "৭৮৫" });
-    expect(r).toMatchObject({ khatian: "1245", dag: "785", mouza: "Barmi" });
+    const r = verifySchema.parse({ district: "Gazipur", upazila: "Sreepur", mouza: " Barmi ", survey: "RS", khatian: "১২৪৫", dag: "৭৮৫" });
+    expect(r).toMatchObject({ khatian: "1245", dag: "785", mouza: "Barmi", survey: "RS" });
   });
   it("rejects non-numeric khatian and empty fields", () => {
-    expect(verifySchema.safeParse({ district: "", upazila: "", mouza: "", khatian: "abc", dag: "" }).success).toBe(false);
+    expect(verifySchema.safeParse({ district: "", upazila: "", mouza: "", survey: "RS", khatian: "abc", dag: "" }).success).toBe(false);
+  });
+  const base = { district: "Gazipur", upazila: "Sreepur", mouza: "Barmi", khatian: "1", dag: "2" };
+  it("requires a survey, with no default", () => {
+    const r = verifySchema.safeParse({ ...base, survey: "" });
+    expect(r.success).toBe(false);
+    expect(!r.success && r.error.issues[0].message).toBe("surveyRequired");
+    expect(verifySchema.safeParse({ ...base, survey: "XX" }).success).toBe(false);
+    expect(verifySchema.safeParse({ ...base }).success).toBe(false);
+  });
+  it("takes JL and sheet as optional text, converting Bangla digits", () => {
+    expect(verifySchema.parse({ ...base, survey: "CS", jl_no: "", sheet_no: "" })).toMatchObject({ jl_no: "", sheet_no: "" });
+    expect(verifySchema.parse({ ...base, survey: "CS", jl_no: " ০১২ ", sheet_no: "৩ক" })).toMatchObject({ jl_no: "012", sheet_no: "3ক" });
+    expect(verifySchema.safeParse({ ...base, survey: "CS", jl_no: "12a" }).success).toBe(false);
+    expect(verifySchema.safeParse({ ...base, survey: "CS", sheet_no: "x".repeat(21) }).success).toBe(false);
   });
 });
 
@@ -84,6 +101,19 @@ describe("geo", () => {
     expect(of("Sirajgonj")).not.toContain("Singra");
     expect(of("Lalmonirhat")).toContain("Lalmonirhat Sadar");
     expect(of("Kurigram")).not.toContain("Lalmonirhat Sadar");
+  });
+});
+
+describe("PublicSummary survey fields", () => {
+  it("shows Survey, JL and sheet, and an amber notice on SHEET_MISMATCH", async () => {
+    const request = vi.fn().mockResolvedValue({ ...SUMMARY, survey_type: "RS", jl_no: "12", map_sheet_no: "7", warnings: ["SHEET_MISMATCH"] });
+    wrap(visitor(request as any));
+    fill();
+    fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+    const sum = await screen.findByTestId("public-summary");
+    expect(sum).toHaveTextContent(en.result.survey);
+    expect(sum).toHaveTextContent("JL no.");
+    expect(sum).toHaveTextContent(en.result.sheetMismatch);
   });
 });
 
@@ -107,17 +137,135 @@ describe("VerifyForm", () => {
     const url = get.mock.calls.map((c) => c[0] as string).find((u) => u.startsWith("/lands/search")) as string;
     expect(url).toContain("khatian=1245");
     expect(url).toContain("district=Gazipur");
+    expect(url).toContain("survey=RS");
+    expect(url).not.toContain("jl_no"); // optional: left out when empty
+    expect(url).not.toContain("sheet_no");
+  });
+
+  it("does not search without a survey and shows surveyRequired", async () => {
+    const get = vi.fn();
+    wrap(client(get as any));
+    fill();
+    fireEvent.change(survey(), { target: { value: "" } });
+    fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+    expect(await screen.findByText(en.verify.errors.surveyRequired)).toBeInTheDocument();
+    expect(get).not.toHaveBeenCalledWith(expect.stringContaining("/lands/search"));
+  });
+
+  it("sends the sheet number from 'More details' (Bangla digits converted)", async () => {
+    const get = vi.fn().mockResolvedValue({ land_id: "LP-10100" });
+    wrap(client(get as any));
+    fill();
+    fireEvent.change(screen.getByLabelText(new RegExp(en.verify.sheetNo)), { target: { value: "৭" } });
+    fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+    await waitFor(() => expect(push).toHaveBeenCalled());
+    const url = get.mock.calls.map((c) => c[0] as string).find((u) => u.startsWith("/lands/search")) as string;
+    expect(url).toContain("sheet_no=7");
+  });
+
+  it("LAND_AMBIGUOUS shows the chooser; picking one signed in opens that land_id", async () => {
+    const cands = [
+      { land_id: "LP-10001", survey_type: "CS", jl_no: "12", mouza: "Barmi" },
+      { land_id: "LP-12001", survey_type: "RS", jl_no: "12", mouza: "Barmi" },
+    ];
+    const get = vi.fn().mockRejectedValue(new ApiError(409, "LAND_AMBIGUOUS", "x", { candidates: cands }));
+    wrap(client(get as any));
+    fill();
+    fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+    const chooser = await screen.findByTestId("ambiguous-chooser");
+    expect(chooser).toHaveTextContent(en.verify.chooser.landIntro);
+    const opts = within(chooser).getAllByTestId("chooser-option");
+    expect(opts).toHaveLength(2);
+    expect(opts[0]).toHaveTextContent(`${en.archive.surveys.CS} · JL 12 · Barmi`);
+    expect(chooser).not.toHaveTextContent("R***");
+    fireEvent.click(opts[1]);
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/verify/result?land_id=LP-12001"));
+  });
+
+  it("LAND_AMBIGUOUS as a visitor: picking re-runs the public search with that survey and JL", async () => {
+    const cands = [
+      { land_id: "LP-10001", survey_type: "CS", jl_no: "12", mouza: "Barmi" },
+      { land_id: "LP-12001", survey_type: "RS", jl_no: "12", mouza: "Barmi" },
+    ];
+    const request = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError(409, "LAND_AMBIGUOUS", "x", { candidates: cands }))
+      .mockResolvedValueOnce({ ...SUMMARY, survey_type: "CS", jl_no: "12" });
+    wrap(visitor(request as any));
+    fill();
+    fireEvent.change(survey(), { target: { value: "" } });
+    fireEvent.change(survey(), { target: { value: "RS" } });
+    fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+    const chooser = await screen.findByTestId("ambiguous-chooser");
+    fireEvent.click(within(chooser).getAllByTestId("chooser-option")[0]);
+    expect(await screen.findByTestId("public-summary")).toBeInTheDocument();
+    const url = request.mock.calls[1][0] as string;
+    expect(url).toContain("survey=CS");
+    expect(url).toContain("jl_no=12");
+    expect(url).toContain("land_id=LP-10001"); // reaches the picked row even when a legacy one also fits
+    expect(screen.queryByTestId("ambiguous-chooser")).toBeNull();
+  });
+
+  it("a visitor's legacy pick (no survey, no JL) is sent once as land_id, not on the next search", async () => {
+    const cands = [
+      { land_id: "LP-10001", survey_type: "RS", jl_no: "12", mouza: "Barmi" },
+      { land_id: "LP-12003", survey_type: null, jl_no: null, mouza: "Barmi" },
+    ];
+    const request = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError(409, "LAND_AMBIGUOUS", "x", { candidates: cands }))
+      .mockResolvedValue(SUMMARY);
+    wrap(visitor(request as any));
+    fill();
+    fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+    const chooser = await screen.findByTestId("ambiguous-chooser");
+    fireEvent.click(within(chooser).getAllByTestId("chooser-option")[1]);
+    expect(await screen.findByTestId("public-summary")).toBeInTheDocument();
+    expect(request.mock.calls[1][0] as string).toContain("land_id=LP-12003");
+    fireEvent.click(screen.getByRole("button", { name: en.verify.submit }));
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(3));
+    expect(request.mock.calls[2][0] as string).not.toContain("land_id");
+  });
+
+  it("MOUZA_AMBIGUOUS lists the JL options in the chooser", async () => {
+    const options = [
+      { jl_no: "4", mouza: "Ashulia" },
+      { jl_no: "9", mouza: "Ashulia" },
+    ];
+    const get = vi.fn().mockRejectedValue(new ApiError(409, "MOUZA_AMBIGUOUS", "x", { options }));
+    wrap(client(get as any));
+    fill();
+    fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+    const chooser = await screen.findByTestId("ambiguous-chooser");
+    expect(chooser).toHaveTextContent(en.verify.chooser.mouzaIntro);
+    expect(within(chooser).getAllByTestId("chooser-option")[1]).toHaveTextContent("JL 9");
+  });
+
+  it("shows jlMismatch when the API says JL_MISMATCH", async () => {
+    const get = vi.fn().mockRejectedValue(new ApiError(422, "JL_MISMATCH", "x"));
+    wrap(client(get as any));
+    fill();
+    fireEvent.change(screen.getByLabelText(new RegExp(en.verify.jlNo)), { target: { value: "99" } });
+    fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(en.verify.errors.jlMismatch);
   });
 
   it("fills itself from the hero's query and searches once (U1.3)", async () => {
-    window.history.pushState({}, "", "/verify?district=Gazipur&upazila=Sreepur&mouza=Barmi&khatian=1245&dag=785");
+    window.history.pushState({}, "", "/verify?district=Gazipur&upazila=Sreepur&mouza=Barmi&survey=RS&jl_no=12&sheet_no=7&khatian=1245&dag=785");
     const get = vi.fn().mockResolvedValue({ land_id: "LP-10100" });
     try {
       wrap(client(get as any));
       await waitFor(() => expect(push).toHaveBeenCalledWith("/verify/result?land_id=LP-10100"));
       expect(screen.getByLabelText(new RegExp(en.verify.upazila))).toHaveValue("Sreepur");
       expect(screen.getByLabelText(new RegExp(en.verify.mouza))).toHaveValue("Barmi");
-      expect(get.mock.calls.filter((c) => (c[0] as string).startsWith("/lands/search"))).toHaveLength(1);
+      expect(survey()).toHaveValue("RS");
+      expect(screen.getByLabelText(new RegExp(en.verify.jlNo))).toHaveValue("12");
+      expect(screen.getByLabelText(new RegExp(en.verify.sheetNo))).toHaveValue("7");
+      const searches = get.mock.calls.map((c) => c[0] as string).filter((u) => u.startsWith("/lands/search"));
+      expect(searches).toHaveLength(1);
+      expect(searches[0]).toContain("survey=RS");
+      expect(searches[0]).toContain("jl_no=12");
+      expect(searches[0]).toContain("sheet_no=7");
     } finally {
       window.history.pushState({}, "", "/");
     }
@@ -151,6 +299,56 @@ describe("VerifyForm", () => {
     expect(input.value).toBe("Barmi");
     fireEvent.change(input, { target: { value: "মাও" } });
     expect(within(screen.getByRole("listbox")).getAllByRole("option")).toHaveLength(1);
+  });
+
+  it("picking a mouza fills its JL read-only, with an edit link", async () => {
+    const get = vi.fn(async (url: string) => {
+      if (url.startsWith("/gis/search"))
+        return { hits: [{ level: "upazila", id: "77", name: "Sreepur", bn_name: "", path: "Dhaka / Gazipur" }] };
+      if (url.startsWith("/gis/mouzas"))
+        return { enabled: true, mouzas: [{ id: "a", name: "Barmi", bn_name: "", jl_no: "012" }, { id: "c", name: "Mawna", bn_name: "", jl_no: "005" }] };
+      return { land_id: "LP-1" };
+    });
+    wrap(client(get as any));
+    fill();
+    const input = screen.getByLabelText(new RegExp(en.verify.mouza)) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "" } });
+    fireEvent.focus(input);
+    fireEvent.mouseDown(within(await screen.findByRole("listbox")).getAllByRole("option")[0]);
+    const jl = screen.getByLabelText(new RegExp(en.verify.jlNo)) as HTMLInputElement;
+    expect(jl.value).toBe("012");
+    expect(jl).toHaveAttribute("readonly");
+    fireEvent.click(screen.getByRole("button", { name: en.verify.jlEdit }));
+    expect(jl).not.toHaveAttribute("readonly");
+    fireEvent.change(jl, { target: { value: "5" } });
+    fireEvent.click(screen.getByRole("button", { name: en.verify.submit }));
+    await waitFor(() => expect(push).toHaveBeenCalled());
+    const url = get.mock.calls.map((c) => c[0] as string).find((u) => u.startsWith("/lands/search")) as string;
+    expect(url).toContain("jl_no=5");
+  });
+
+  it("a mouza name shared by 2+ JLs forces the JL choice", async () => {
+    const get = vi.fn(async (url: string) => {
+      if (url.startsWith("/gis/search"))
+        return { hits: [{ level: "upazila", id: "77", name: "Sreepur", bn_name: "", path: "Dhaka / Gazipur" }] };
+      if (url.startsWith("/gis/mouzas"))
+        return { enabled: true, mouzas: [{ id: "a", name: "Barmi", bn_name: "", jl_no: "012" }, { id: "b", name: "Barmi", bn_name: "", jl_no: "034" }] };
+      return { land_id: "LP-1" };
+    });
+    wrap(client(get as any));
+    fill(); // types "Barmi" by hand: no pick, still a clash
+    // the plain JL input is swapped for a select once the mouza list has loaded
+    await waitFor(() => expect(screen.getByLabelText(new RegExp(en.verify.jlNo)).tagName).toBe("SELECT"));
+    const jl = screen.getByLabelText(new RegExp(en.verify.jlNo)) as HTMLSelectElement;
+    expect(within(jl).getAllByRole("option").map((o) => o.textContent)).toEqual([en.verify.jlChoose, "JL 012", "JL 034"]);
+    fireEvent.click(screen.getByRole("button", { name: en.verify.submit }));
+    expect(await screen.findByText(en.verify.errors.jlNeeded)).toBeInTheDocument();
+    expect(get.mock.calls.some((c) => String(c[0]).startsWith("/lands/search"))).toBe(false);
+    fireEvent.change(jl, { target: { value: "034" } });
+    fireEvent.click(screen.getByRole("button", { name: en.verify.submit }));
+    await waitFor(() => expect(push).toHaveBeenCalled());
+    const url = get.mock.calls.map((c) => c[0] as string).find((u) => u.startsWith("/lands/search")) as string;
+    expect(url).toContain("jl_no=34");
   });
 
   it("mouza combobox works from the keyboard: arrows move, Enter picks, Escape closes", async () => {
@@ -212,6 +410,7 @@ describe("VerifyForm", () => {
       const [url, opts] = request.mock.calls[0];
       expect(url).toContain("/public/lands/search?");
       expect(url).toContain("khatian=1245");
+      expect(url).toContain("survey=RS");
       expect(opts).toEqual({ anonymous: true });
       expect((c.get as any).mock.calls.filter((a: any[]) => String(a[0]).startsWith("/lands/"))).toEqual([]);
       expect(push).not.toHaveBeenCalled();
@@ -231,7 +430,7 @@ describe("VerifyForm", () => {
     });
 
     it("answers the hero's query on its own once the visitor state is known", async () => {
-      window.history.pushState({}, "", "/verify?district=Gazipur&upazila=Sreepur&mouza=Barmi&khatian=1250&dag=790");
+      window.history.pushState({}, "", "/verify?district=Gazipur&upazila=Sreepur&mouza=Barmi&survey=RS&khatian=1250&dag=790");
       const request = vi.fn().mockResolvedValue(SUMMARY);
       try {
         wrap(visitor(request as any));

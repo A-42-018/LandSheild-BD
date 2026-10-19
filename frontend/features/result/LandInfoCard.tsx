@@ -1,6 +1,6 @@
 "use client";
 import { useLocale, useTranslations } from "next-intl";
-import { Compass, Landmark, MapPin, Map as MapIcon, Ruler, ShieldCheck, Users, type LucideIcon } from "lucide-react";
+import { Compass, Landmark, Layers, MapPin, Map as MapIcon, Ruler, ShieldCheck, TriangleAlert, Users, type LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui";
 import StatusBadge from "@/components/domain/StatusBadge";
 import { districtName, upazilaName } from "@/lib/geo";
@@ -13,15 +13,37 @@ export function useUnitLabel() {
   return (u: string) => (t.has(u) ? t(u) : u);
 }
 
+/** Survey label from `archive.surveys.*`; falls back to the raw code. */
+export function useSurveyLabel() {
+  const t = useTranslations("archive.surveys");
+  return (s: string) => (t.has(s) ? t(s) : s);
+}
+
+/** D6: amber notice, never an error: the record is still shown. */
+export function SheetWarning({ warnings }: { warnings?: string[] }) {
+  const t = useTranslations("result");
+  if (!warnings?.includes("SHEET_MISMATCH")) return null;
+  return (
+    <p role="status" data-testid="sheet-warning" className="mb-3 flex items-start gap-2 rounded-xl border border-amber-400/60 bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      <TriangleAlert aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+      {t("sheetMismatch")}
+    </p>
+  );
+}
+
 /** Record fields as icon-tile rows under the land ID and place. `bare` drops the card frame when a collapsible section already supplies the title (U2.4). */
 export default function LandInfoCard({ land, chip, bare }: { land: LandInfo; chip?: React.ReactNode; bare?: boolean }) {
   const t = useTranslations("result");
   const locale = useLocale();
   const unit = useUnitLabel();
+  const survey = useSurveyLabel();
   const rows: [string, React.ReactNode, LucideIcon][] = [
     [t("district"), districtName(land.district, locale), MapPin],
     [t("upazila"), upazilaName(land.district, land.upazila, locale), MapPin],
     [t("mouza"), land.mouza, MapIcon],
+    ...(land.survey_type ? ([[t("survey"), survey(land.survey_type), Layers]] as [string, React.ReactNode, LucideIcon][]) : []),
+    ...(land.jl_no ? ([[t("jlNo"), localDigits(land.jl_no, locale), Compass]] as [string, React.ReactNode, LucideIcon][]) : []),
+    ...(land.map_sheet_no ? ([[t("sheetNo"), localDigits(land.map_sheet_no, locale), MapIcon]] as [string, React.ReactNode, LucideIcon][]) : []),
     [t("khatian"), localDigits(land.khatian_no, locale), Compass],
     [t("dag"), localDigits(land.dag_no, locale), Compass],
     [t("area"), formatArea(land.area, land.area_unit, locale, unit(land.area_unit)), Ruler],
@@ -30,6 +52,7 @@ export default function LandInfoCard({ land, chip, bare }: { land: LandInfo; chi
   const place = [districtName(land.district, locale), upazilaName(land.district, land.upazila, locale), land.mouza].filter(Boolean).join(" · ");
   const body = (
     <>
+      <SheetWarning warnings={land.warnings} />
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-mono text-xl font-bold text-ink sm:text-2xl">

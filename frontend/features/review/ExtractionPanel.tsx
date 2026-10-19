@@ -13,6 +13,7 @@ import ReviewActions, { areaText, REVIEWABLE } from "./ReviewActions";
 import ReviewFocusBar from "./ReviewFocusBar";
 import { NoFocus, ReviewFocusProvider, useFocusEntry } from "./focus";
 import PartyNidPanel from "./PartyNidPanel";
+import SurveyJlPanel from "./SurveyJlPanel";
 import { needsPartyNid } from "@/features/upload/PartyNidFields";
 import { useDocumentStatus } from "./useReviewData";
 import { fieldErrorText, toFieldErrors, useReviewActions } from "./useReviewActions";
@@ -171,6 +172,7 @@ function Panel({ data }: { data: ExtractionOut }) {
   const needsNid = withNid && !doc?.party_nids?.buyer;
   // H6a: a historical deed with an LHDR record shows the sectioned digital deed; everything else keeps the 13 rows
   const historical = data.deed_profile === "historical" && !!data.record;
+  const surveyDoc = doc?.document_type === "KHATIAN" || doc?.document_type === "PORCHA"; // SJ7
   const lowLabels = data.low_confidence_fields.map((f) => (t.has(`fields.${f}`) ? t(`fields.${f}`) : f));
   const errorCount = editable
     ? data.validation.errors.length + (data.record_validation?.errors.length ?? 0)
@@ -209,10 +211,11 @@ function Panel({ data }: { data: ExtractionOut }) {
           <DeedProfileSwitch data={data} actions={actions} />
         </div>
       </details>
+      {surveyDoc && <SurveyJlPanel data={data} editable={editable} actions={actions} />}
       {historical ? (
         <>
           <RecordEditProvider documentId={data.document_id} editable={editable} issues={issuesOf(data)}>
-            <DeedView record={data.record!} threshold={data.threshold} />
+            <DeedView record={data.record!} threshold={data.threshold} landId={doc?.land_id} />
           </RecordEditProvider>
           <details data-testid="core-fields" className="text-sm">
             <summary className="cursor-pointer font-medium text-ink">{t("deed.coreFields")}</summary>

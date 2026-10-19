@@ -160,6 +160,8 @@ def list_land_records(
             area_unit=p.area_unit,
             status=p.status,
             updated_at=p.updated_at,
+            survey_type=p.survey_type,
+            jl_no=p.jl_no,
         )  # fmt: skip
         for p in rows
     ]

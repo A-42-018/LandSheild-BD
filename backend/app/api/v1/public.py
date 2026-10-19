@@ -10,6 +10,7 @@ from app.core.config import Settings
 from app.core.db import get_db
 from app.core.errors import AppError
 from app.core.ratelimit import check_rate
+from app.models.enums import SurveyType
 from app.schemas.feedback import (
     FeedbackIn,
     FeedbackReceipt,
@@ -83,6 +84,10 @@ def public_land_search(
     mouza: str = Query(min_length=1, max_length=100),
     khatian: str = Query(min_length=1, max_length=50),
     dag: str = Query(min_length=1, max_length=50),
+    survey: SurveyType | None = Query(default=None),  # SJ3: omitted = 409 if it is ambiguous
+    jl_no: str | None = Query(default=None, max_length=20),
+    sheet_no: str | None = Query(default=None, max_length=20),
+    land_id: str | None = Query(default=None, max_length=64),  # a pick from the 409 chooser
     db: Session = Depends(get_db),
     settings: Settings = Depends(get_settings_dep),
 ) -> PublicLandSummary:
@@ -90,7 +95,16 @@ def public_land_search(
     _guard(request, response, settings)
     ip = request.client.host if request.client else None
     land, summary = svc.search_land_summary(
-        db, district=district, upazila=upazila, mouza=mouza, khatian=khatian, dag=dag
+        db,
+        district=district,
+        upazila=upazila,
+        mouza=mouza,
+        khatian=khatian,
+        dag=dag,
+        survey_type=survey.value if survey else None,
+        jl_no=jl_no,
+        sheet_no=sheet_no,
+        land_id=land_id,
     )
     audit.log(db, None, "PUBLIC_LAND_SEARCH", "land", land.id, ip=ip)
     db.commit()

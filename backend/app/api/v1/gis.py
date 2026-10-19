@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query, Request, Response
 from app.api.v1.auth import get_settings_dep
 from app.core.config import Settings
 from app.core.ratelimit import check_rate
-from app.schemas.gis import GisCapabilities, GisCollection, MouzaList, SearchResult, UnionList
+from app.schemas.gis import GisCapabilities, GisCollection, MouzaList, MouzaResolved, SearchResult, UnionList
 from app.services import gis as svc
 
 
@@ -50,6 +50,16 @@ def mouzas(
     union_id: str | None = Query(default=None, min_length=1, max_length=12, pattern=r"^\d+$"),
 ) -> MouzaList:
     return svc.mouzas(upazila_id, union_id)
+
+
+@router.get("/mouzas/resolve", response_model=MouzaResolved)
+def resolve_mouza(
+    district: str = Query(min_length=1, max_length=80),
+    upazila: str = Query(min_length=1, max_length=80),
+    mouza: str = Query(min_length=1, max_length=80),
+    jl_no: str | None = Query(default=None, max_length=12),
+) -> MouzaResolved:
+    return svc.resolve_mouza(district, upazila, mouza, jl_no)
 
 
 @router.get("/search", response_model=SearchResult)

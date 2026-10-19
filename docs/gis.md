@@ -36,3 +36,6 @@ What stays: `/gis/unions` and `/gis/mouzas` read `database/gis/mouzas.json` if i
 
 ## Not done yet
 Mouza layer/polygons, plot selection, parcel ↔ land-record links, and a synthetic demo mouza list.
+
+## Demo mouza file (SJ2)
+`database/gis/mouzas.json` is **synthetic demo data** (marked `_note` and `source`): 5 unions and mouzas for Savar, Dhamrai, Rupganj and neighbours, including two mouzas both named Ashulia (JL 45 in Savar, JL 17 in Dhamrai) and, per mouza, map sheets per survey (`sheets: [{sheet_no, survey, plots}]`). It is read only when `MOUZA_ENABLED_DIVISION_ID=3` (set in `.env.example` and `render.yaml`). `GET /gis/mouzas/resolve` maps a mouza name (+ JL) to its record; the verify form uses it to fill the JL and `find_by_location` uses it to raise `JL_MISMATCH` and `SHEET_MISMATCH`. No real survey data is included.

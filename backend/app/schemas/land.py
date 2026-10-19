@@ -16,4 +16,8 @@ class LandPublic(BaseModel):
     area: float
     area_unit: str
     status: str
+    survey_type: str | None = None
+    jl_no: str | None = None
+    map_sheet_no: str | None = None
+    warnings: list[str] = []  # e.g. SHEET_MISMATCH (D6)
     current_owners: list[LandOwnerPublic]

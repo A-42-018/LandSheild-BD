@@ -14,6 +14,8 @@ services:
         value: "off"        # scikit-learn is too heavy for the free 512 MB instance; rules still run
       - key: APP_ENV
         value: prod
+      - key: MOUZA_ENABLED_DIVISION_ID
+        value: "3"          # synthetic demo mouza/JL/sheet registry (database/gis/mouzas.json), Dhaka division
       - key: COOKIE_SECURE
         value: "true"
       - key: COOKIE_SAMESITE

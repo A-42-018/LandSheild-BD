@@ -109,7 +109,7 @@ def test_stats_are_office_scoped_and_count_settled_and_upcoming(env, case):
     other, _ = _approved_officer(env, "r2@x.office", **RUPGANJ)
     _go(env, case, admin, hearing_at=_in_days(3).isoformat())
     a, s, o = (env.get(STATS, headers=h).json() for h in (admin, savar, other))
-    assert a["total_records"] == 12 and 0 < s["total_records"] < 12 and o["total_records"] == 0
+    assert a["total_records"] == 15 and 0 < s["total_records"] < 15 and o["total_records"] == 0
     assert (s["pending_mutations"], s["hearings_upcoming"]) == (1, 1)
     assert (o["pending_mutations"], o["hearings_upcoming"], o["active_encumbrances"]) == (0, 0, 0)
     assert o["ledger_status"] == "INTACT"  # the chain is system-wide

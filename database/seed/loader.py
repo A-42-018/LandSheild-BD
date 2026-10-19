@@ -142,11 +142,19 @@ def seed(db: Session, demo_password: str | None = None, do_reset: bool = False) 
             mouza=ln["mouza"], dag_no=ln["dag_no"], khatian_no=ln["khatian_no"],
             area=ln["area"], area_unit=ln["area_unit"], status="ACTIVE",
             geometry=geometry.get(ln["key"]),
+            survey_type=ln.get("survey_type"), jl_no=ln.get("jl_no"),
+            map_sheet_no=ln.get("map_sheet_no"),
         )
         # databases seeded before P50 have no polygon yet: backfill only when still empty
         row = db.get(LandParcel, sid("land", ln["key"]))
         if row is not None and row.geometry is None and ln["key"] in geometry:
             row.geometry = geometry[ln["key"]]
+            db.flush()
+        # databases seeded before SJ1 have no survey/JL/sheet: backfill only what is still empty
+        if row is not None:
+            for col in ("survey_type", "jl_no", "map_sheet_no"):
+                if getattr(row, col) is None and ln.get(col) is not None:
+                    setattr(row, col, ln[col])
             db.flush()
     for d in data["deeds"]:
         created += _ensure(

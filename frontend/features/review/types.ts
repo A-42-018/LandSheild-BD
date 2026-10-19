@@ -174,6 +174,8 @@ export interface ExtractionOut {
   /** H4/H5: LHDR record of a historical deed, its content issues and the saved version */
   record?: LhdrRecord | null;
   record_schema?: string | null;
+  survey_type?: string | null; // SJ7: khatian / porcha only
+  jl_no?: string | null;
   record_validation?: { valid: boolean; errors: RecordIssue[]; warnings: RecordIssue[] } | null;
   version?: number | null;
   version_status?: string | null; // MACHINE | DRAFT | APPROVED

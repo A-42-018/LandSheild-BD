@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
 from app.models.document import Document
-from app.models.enums import DocumentStatus, Role
+from app.models.enums import DocumentStatus, Role, SurveyType
 from app.models.user import User
 from app.schemas.extraction import (
     AREA_UNITS,
@@ -44,6 +44,7 @@ from app.schemas.extraction import (
     RecordValidation,
 )
 from app.services import audit, offices, records
+from app.services.gis import norm_jl
 
 _BN_DIGITS = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
 _NUMERIC_FIELDS = {"khatian_no", "dag_no", "land_area", "deed_no", "deed_date"}
@@ -343,9 +344,56 @@ def _patch_record(
     return out, old, new
 
 
+SURVEY_CODES = tuple(s.value for s in SurveyType)
+
+
 def apply_patch(ex: Extraction, patch: ExtractionPatch) -> tuple[Extraction, dict, dict] | None:
     """Validate and apply a PATCH to an extraction (a copy is returned; None = nothing changed).
-    Returns (new extraction, audit old, audit new). Raises AppError 422 and changes nothing."""
+    Returns (new extraction, audit old, audit new). Raises AppError 422 and changes nothing.
+    SJ4: the officer may also correct the survey type and the JL (khatian / porcha)."""
+    _check_survey_meta(patch)
+    if patch.fields or patch.record:
+        res = _apply_flat_or_record(ex, patch)
+    else:
+        res = None
+    if patch.survey_type is None and patch.jl_no is None:
+        return res
+    out, old, new = res if res is not None else (ex.model_copy(deep=True), {}, {})
+    if patch.survey_type is not None:  # "" clears a wrongly read survey (back to unknown)
+        st = patch.survey_type.strip().upper() or None
+        if st != (out.survey_type or None):
+            old["survey_type"], new["survey_type"] = out.survey_type, st
+            out.survey_type = st
+    if patch.jl_no is not None:
+        jl = norm_jl(patch.jl_no)
+        extras = dict(out.extras or {})
+        if jl != (extras.get("jl_no") or ""):
+            old["jl_no"], new["jl_no"] = extras.get("jl_no"), jl
+            extras["jl_no"] = jl
+            out.extras = extras
+    if res is None and not new:
+        return None
+    return out, old, new
+
+
+def _check_survey_meta(patch: ExtractionPatch) -> None:
+    st = (patch.survey_type or "").strip().upper()
+    if st and st not in SURVEY_CODES:
+        raise AppError(
+            "EXTRACTION_INVALID", "Survey type must be CS, SA, RS or BS", 422,
+            [{"field": "survey_type", "code": "INVALID"}],
+        )  # fmt: skip
+    jl = norm_jl(patch.jl_no)
+    if jl and not (jl.isascii() and jl.isdigit()):
+        raise AppError(
+            "EXTRACTION_INVALID", "JL number must be digits", 422,
+            [{"field": "jl_no", "code": "NOT_NUMERIC"}],
+        )  # fmt: skip
+
+
+def _apply_flat_or_record(
+    ex: Extraction, patch: ExtractionPatch
+) -> tuple[Extraction, dict, dict] | None:
     edits = _check_flat(patch)
     if ex.record is not None:
         return _patch_record(ex, edits, patch)
@@ -400,6 +448,8 @@ def _to_out(
         profile_overridden=ex.profile_overridden,
         record=ex.record,
         record_schema=ex.record_schema,
+        survey_type=ex.survey_type,
+        jl_no=(ex.extras or {}).get("jl_no"),
         record_validation=record_validation(ex.record),
         file_hash=doc.file_hash,
         version=version.version if version is not None else None,

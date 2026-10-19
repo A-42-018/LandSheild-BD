@@ -13,7 +13,7 @@ from app.services import posting
 from tests.test_documents import _db, _files, _up, png, store  # noqa: F401
 from tests.test_extraction import _patch, _ready
 from tests.test_lands import _h, env  # noqa: F401
-from tests.test_processing import _actions, _row, jobs  # noqa: F401
+from tests.test_processing import _actions, _process, _row, jobs  # noqa: F401
 from tests.test_review import _post
 
 
@@ -42,8 +42,17 @@ def _count_owners(s, name):
     return s.scalar(select(func.count()).select_from(Owner).where(Owner.name == name))
 
 
-def _approve(env, marker: bytes, edits: dict | None = None) -> str:
-    doc_id = _ready(env, marker)
+def _ready_for(env, marker: bytes, land: str) -> str:
+    """Upload with the land chosen, as the upload form's Land ID field does."""
+    r = _up(env, "scan.png", png() + b"LSMOCK:" + marker, land_id=land)
+    assert r.status_code == 201, r.text
+    doc_id = r.json()["id"]
+    assert _process(env, doc_id).status_code == 202
+    return doc_id
+
+
+def _approve(env, marker: bytes, edits: dict | None = None, land: str | None = None) -> str:
+    doc_id = _ready_for(env, marker, land) if land else _ready(env, marker)
     if edits:
         assert _patch(env, doc_id, edits).status_code == 200
     r = _post(env, doc_id, "approve")
@@ -104,7 +113,8 @@ def test_demo_flow_doc1_then_doc2_raises_duplicate_alert(env, jobs):
 
 
 def test_clean_record_is_recorded_and_hands_over_ownership(env, jobs):
-    _approve(env, b"Clean")
+    # the Clean deed names no survey and LP-12001 / LP-12003 share its khatian and dag (D7)
+    _approve(env, b"Clean", land="LP-10001")
     with _db(env) as s:
         (t,) = _txs(s, "LP-10001")
         assert t.status == "RECORDED" and t.risk_score == 0
@@ -146,7 +156,7 @@ def test_same_name_without_matching_father_is_a_new_owner(env, jobs):
 def test_posting_failure_rolls_everything_back(env, jobs, monkeypatch):
     with _db(env) as s:
         owners_before = s.scalar(select(func.count()).select_from(Owner))
-    doc_id = _ready(env, b"Clean")
+    doc_id = _ready_for(env, b"Clean", "LP-10001")
     assert _patch(env, doc_id, {"buyer": "Brand New Buyer"}).status_code == 200
 
     def boom(*a, **k):

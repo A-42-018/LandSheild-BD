@@ -1,6 +1,8 @@
 import { normalizeDigits } from "@/lib/intl-locale";
 
-export const SURVEYS = ["CS", "SA", "RS", "BS"] as const;
+import { SURVEYS } from "@/lib/surveys";
+
+export { SURVEYS };
 export const ARCHIVE_PAGE_SIZE = 10;
 
 export type ArchiveHit = {

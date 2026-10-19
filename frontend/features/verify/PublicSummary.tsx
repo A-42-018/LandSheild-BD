@@ -8,7 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { districtName, upazilaName } from "@/lib/geo";
 import { localDigits } from "@/lib/intl-locale";
 import { formatArea } from "@/features/result/format";
-import { useUnitLabel } from "@/features/result/LandInfoCard";
+import { SheetWarning, useSurveyLabel, useUnitLabel } from "@/features/result/LandInfoCard";
 
 /** GET /public/lands/search (U2.1): owners arrive already masked ("R*** U***"); nothing here can unmask them. */
 export interface PublicLandSummary {
@@ -26,6 +26,10 @@ export interface PublicLandSummary {
   owners_masked: string[];
   open_case: boolean;
   counts: { active_encumbrances: number; pending_mutations: number };
+  survey_type?: string | null;
+  jl_no?: string | null;
+  map_sheet_no?: string | null;
+  warnings?: string[];
 }
 
 /** U2.2: what a visitor sees without signing in: risk, place, owner count with masked names, case yes/no.
@@ -35,10 +39,14 @@ export default function PublicSummary({ data }: { data: PublicLandSummary }) {
   const tr = useTranslations("result");
   const locale = useLocale();
   const unit = useUnitLabel();
+  const survey = useSurveyLabel();
   const n = (v: number) => localDigits(v, locale);
   const place = [districtName(data.district, locale), upazilaName(data.district, data.upazila, locale), data.mouza].join(" · ");
   const full = `/verify/result?land_id=${encodeURIComponent(data.land_id)}`;
   const rows: [string, React.ReactNode, LucideIcon][] = [
+    ...(data.survey_type ? ([[tr("survey"), survey(data.survey_type), MapPinned]] as [string, React.ReactNode, LucideIcon][]) : []),
+    ...(data.jl_no ? ([[tr("jlNo"), localDigits(data.jl_no, locale), MapPinned]] as [string, React.ReactNode, LucideIcon][]) : []),
+    ...(data.map_sheet_no ? ([[tr("sheetNo"), localDigits(data.map_sheet_no, locale), MapPinned]] as [string, React.ReactNode, LucideIcon][]) : []),
     [tr("khatian"), localDigits(data.khatian_no, locale), MapPinned],
     [tr("dag"), localDigits(data.dag_no, locale), MapPinned],
     [tr("area"), formatArea(data.area, data.area_unit, locale, unit(data.area_unit)), Scale],
@@ -49,6 +57,7 @@ export default function PublicSummary({ data }: { data: PublicLandSummary }) {
   ];
   return (
     <Card title={t("title")} variant="record" data-testid="public-summary" aria-live="polite">
+      <SheetWarning warnings={data.warnings} />
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-mono text-xl font-bold text-ink">

@@ -73,7 +73,7 @@ All data is **synthetic**. Risk wording is always "possible" or "indicator", nev
 
 ### For citizens (public or signed in)
 
-- **Land search and verification** by division, district, upazila, mouza, khatian and dag, with a quick summary before sign-in and the full report after it.
+- **Land search and verification** by division, district, upazila, mouza, survey (CS/SA/RS/BS), JL, khatian and dag, with an optional map sheet check, a quick summary before sign-in and the full report after it. The same khatian/dag in two surveys or two same-named mouzas gives a chooser instead of a wrong record.
 - **Plain-language result**: a risk verdict, the number of warning signs, "what to do now" steps, then collapsible sections for land information, ownership, transactions, mutation, cases/encumbrance and evidence.
 - **Read aloud** (Listen button) on result pages, and the "What to do on this page?" tip on every task page.
 - **Ownership graph** (React Flow) with flagged links, and a list view for screen readers.

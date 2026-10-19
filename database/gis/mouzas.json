@@ -1,0 +1,133 @@
+{
+ "_note": "synthetic demo data",
+ "source": "Synthetic demo data (not real survey records)",
+ "unions": [
+  {
+   "id": "90014901",
+   "upazila_id": "149",
+   "name": "Ashulia",
+   "bn_name": "আশুলিয়া"
+  },
+  {
+   "id": "90014501",
+   "upazila_id": "145",
+   "name": "Ashulia North",
+   "bn_name": "উত্তর আশুলিয়া"
+  },
+  {
+   "id": "90016201",
+   "upazila_id": "162",
+   "name": "Barmi",
+   "bn_name": "বারমী"
+  },
+  {
+   "id": "90016001",
+   "upazila_id": "160",
+   "name": "Mouchak",
+   "bn_name": "মৌচাক"
+  },
+  {
+   "id": "90022401",
+   "upazila_id": "224",
+   "name": "Bhulta",
+   "bn_name": "ভুলতা"
+  }
+ ],
+ "mouzas": [
+  {
+   "id": "990149045",
+   "upazila_id": "149",
+   "union_id": "90014901",
+   "code": "045",
+   "name": "Ashulia",
+   "bn_name": "আশুলিয়া",
+   "jl_no": "45",
+   "sheets": [
+    {
+     "sheet_no": "2",
+     "survey": "CS",
+     "plots": 180
+    },
+    {
+     "sheet_no": "3",
+     "survey": "RS",
+     "plots": 220
+    },
+    {
+     "sheet_no": "4",
+     "survey": "RS",
+     "plots": 205
+    }
+   ]
+  },
+  {
+   "id": "990145017",
+   "upazila_id": "145",
+   "union_id": "90014501",
+   "code": "017",
+   "name": "Ashulia",
+   "bn_name": "আশুলিয়া",
+   "jl_no": "17",
+   "sheets": [
+    {
+     "sheet_no": "1",
+     "survey": "RS",
+     "plots": 140
+    }
+   ]
+  },
+  {
+   "id": "990162088",
+   "upazila_id": "162",
+   "union_id": "90016201",
+   "code": "088",
+   "name": "Barmi",
+   "bn_name": "বারমী",
+   "jl_no": "88",
+   "sheets": [
+    {
+     "sheet_no": "5",
+     "survey": "RS",
+     "plots": 260
+    }
+   ]
+  },
+  {
+   "id": "990160061",
+   "upazila_id": "160",
+   "union_id": "90016001",
+   "code": "061",
+   "name": "Mouchak",
+   "bn_name": "মৌচাক",
+   "jl_no": "61",
+   "sheets": [
+    {
+     "sheet_no": "2",
+     "survey": "RS",
+     "plots": 190
+    }
+   ]
+  },
+  {
+   "id": "990224072",
+   "upazila_id": "224",
+   "union_id": "90022401",
+   "code": "072",
+   "name": "Bhulta",
+   "bn_name": "ভুলতা",
+   "jl_no": "72",
+   "sheets": [
+    {
+     "sheet_no": "4",
+     "survey": "RS",
+     "plots": 210
+    },
+    {
+     "sheet_no": "6",
+     "survey": "RS",
+     "plots": 175
+    }
+   ]
+  }
+ ]
+}

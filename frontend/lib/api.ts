@@ -191,6 +191,7 @@ export function createApiClient(opts: ApiClientOptions = {}) {
     get: <T>(path: string) => request<T>(path),
     post: <T>(path: string, body?: unknown) => request<T>(path, { method: "POST", body: body ?? {} }),
     patch: <T>(path: string, body?: unknown) => request<T>(path, { method: "PATCH", body: body ?? {} }),
+    put: <T>(path: string, body?: unknown) => request<T>(path, { method: "PUT", body: body ?? {} }),
     del: <T = void>(path: string) => request<T>(path, { method: "DELETE" }),
     refresh,
     async login(email: string, password: string): Promise<TokenResponse> {

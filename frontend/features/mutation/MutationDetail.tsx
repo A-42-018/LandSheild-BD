@@ -25,6 +25,7 @@ const CHECK_ICON: Record<string, JSX.Element> = {
 export default function MutationDetail({ id }: { id: string }) {
   const t = useTranslations("mutation");
   const tRes = useTranslations("result");
+  const tArc = useTranslations("archive");
   const locale = useLocale();
   const { user } = useAuth();
   const q = useMutationDetail(id);
@@ -74,6 +75,8 @@ export default function MutationDetail({ id }: { id: string }) {
         </div>
         <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <Row label={t("cols.land")}><span className="font-mono">{m.land_id}</span></Row>
+          <Row label={t("survey")}>{m.survey_type ? (tArc.has(`surveys.${m.survey_type}`) ? tArc(`surveys.${m.survey_type}`) : m.survey_type) : "—"}</Row>
+          <Row label={t("jlNo")}>{m.jl_no ?? "—"}</Row>
           <Row label={t("cols.applicant")}>{m.applicant}</Row>
           <Row label={t("cols.area")}>{formatArea(m.area, m.area_unit, locale, unit(m.area_unit))}</Row>
           <Row label={t("khatian")}>{`${m.previous_khatian_no ?? "—"} → ${m.new_khatian_no ?? "—"}`}</Row>

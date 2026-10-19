@@ -61,6 +61,16 @@ class MouzaOut(BaseModel):
     sheets: list[SheetRef] = []
 
 
+class MouzaResolved(BaseModel):
+    id: str
+    name: str
+    bn_name: str
+    upazila_id: str
+    union_id: str | None = None
+    jl_no: str | None = None
+    sheets: list[SheetRef] = []
+
+
 class MouzaList(BaseModel):
     enabled: bool
     upazila_id: str

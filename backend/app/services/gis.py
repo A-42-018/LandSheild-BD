@@ -2,8 +2,8 @@
 """National admin-boundary data for the map (P61-P65). Read-only, file-backed, third-party/simplified.
 
 Files live in database/gis (built by scripts/build_gis_data.py). Unions and mouzas are read from
-an optional database/gis/mouzas.json (not shipped: no synthetic mouza data yet) and are served ONLY
-for the divisions in MOUZA_ENABLED_DIVISION_ID (empty by default, so both lists are empty).
+database/gis/mouzas.json (synthetic demo data, SJ2) and are served ONLY for the divisions in
+MOUZA_ENABLED_DIVISION_ID (empty = both lists are empty).
 """
 
 import json
@@ -20,6 +20,8 @@ from app.schemas.gis import (
     GisFeature,
     MouzaList,
     MouzaOut,
+    MouzaResolved,
+    SheetRef,
     SearchHit,
     SearchResult,
     UnionList,
@@ -240,3 +242,80 @@ def search(q: str, limit: int = 20) -> SearchResult:
     order = {"division": 0, "district": 1, "upazila": 2, "union": 3, "mouza": 4}
     hits.sort(key=lambda h: (order[h.level], not _fold(h.name).startswith(needle), h.name))
     return SearchResult(hits=hits[:limit], out_of_scope_hint=not any(h.level == "mouza" for h in hits))
+
+
+def norm_jl(value: str | None) -> str:
+    """JL as stored: Bangla digits converted, spaces trimmed, no leading zeros ('০৪৫' -> '45')."""
+    raw = unicodedata.normalize("NFKC", str(value or "")).translate(_BN_DIGITS).strip()
+    return raw.lstrip("0") or ("0" if raw else "")
+
+
+def _name_key(text: str) -> str:
+    return unicodedata.normalize("NFC", text).strip().casefold()
+
+
+def _place_ids(district: str, upazila: str) -> set[str]:
+    """Upazila ids whose district and upazila names match (English or Bangla, case-insensitive)."""
+    dkey, ukey = _name_key(district), _name_key(upazila)
+    dist_ids = {
+        str(f["properties"]["id"])
+        for f in _features("districts")
+        if dkey in (_name_key(f["properties"]["name"]), _name_key(f["properties"].get("bn_name", "")))
+    }
+    return {
+        str(f["properties"]["id"])
+        for f in _features("upazilas")
+        if str(f["properties"]["district_id"]) in dist_ids
+        and ukey in (_name_key(f["properties"]["name"]), _name_key(f["properties"].get("bn_name", "")))
+    }
+
+
+def _jl_options(rows: list[dict[str, Any]]) -> list[dict[str, str]]:
+    return [
+        {"jl_no": str(m.get("jl_no") or ""), "mouza": str(m["name"]), "mouza_id": str(m["id"]), "union_id": str(m.get("union_id") or "")}
+        for m in sorted(rows, key=_jl_key)
+    ]
+
+
+def resolve_mouza(district: str, upazila: str, mouza: str, jl_no: str | None = None) -> MouzaResolved:
+    """The one mouza matching district/upazila/name (and JL when given).
+
+    MOUZA_NOT_FOUND 404, MOUZA_AMBIGUOUS 409 (details.options lists the JLs), JL_MISMATCH 422.
+    """
+    ups = _place_ids(district, upazila)
+    ukeys = {u for u in ups if _in_scope(u)}
+    mkey = _name_key(mouza)
+    rows = [
+        m
+        for m in _mouzas()
+        if str(m.get("upazila_id")) in ukeys and mkey in (_name_key(str(m.get("name", ""))), _name_key(str(m.get("bn_name", ""))))
+    ]
+    if not rows:
+        raise AppError("MOUZA_NOT_FOUND", "Mouza not found in this upazila", 404)
+    jl = norm_jl(jl_no)
+    if jl:
+        hit = [m for m in rows if norm_jl(m.get("jl_no")) == jl]
+        if not hit:
+            raise AppError("JL_MISMATCH", "This JL number does not belong to that mouza", 422, details={"options": _jl_options(rows)})
+        rows = hit
+    if len(rows) > 1:
+        raise AppError("MOUZA_AMBIGUOUS", "More than one mouza has this name; give the JL number", 409, details={"options": _jl_options(rows)})
+    m = rows[0]
+    return MouzaResolved(
+        id=str(m["id"]),
+        name=m["name"],
+        bn_name=m.get("bn_name", ""),
+        upazila_id=str(m["upazila_id"]),
+        union_id=m.get("union_id"),
+        jl_no=norm_jl(m.get("jl_no")) or None,
+        sheets=[SheetRef(**s) for s in m.get("sheets", [])],
+    )
+
+
+def sheets_for(mouza_id: str, survey: str | None = None) -> list[SheetRef]:
+    """Map sheets of a mouza, optionally only those of one survey (CS/SA/RS/BS)."""
+    m = next((x for x in _mouzas() if str(x.get("id")) == str(mouza_id)), None)
+    if m is None:
+        raise AppError("MOUZA_NOT_FOUND", "Mouza not found", 404)
+    want = (survey or "").strip().upper()
+    return [SheetRef(**s) for s in m.get("sheets", []) if not want or str(s.get("survey", "")).upper() == want]

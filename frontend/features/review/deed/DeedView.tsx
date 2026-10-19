@@ -24,11 +24,14 @@ export default function DeedView({
   record,
   threshold = 0.85,
   readOnly = false,
+  landId,
 }: {
   record: LhdrRecord;
   threshold?: number;
   /** H7d: no edit controls, whatever provider is above (a saved version is never edited here) */
   readOnly?: boolean;
+  /** SJ7: the linked parcel, so the schedule can show its survey and JL */
+  landId?: string | null;
 }) {
   const t = useTranslations("review.deed");
   // the review screen's "Go to" links jump to these anchors (only one editable deed is on a page)
@@ -41,7 +44,7 @@ export default function DeedView({
       {at("dates", <DatesSection record={record} threshold={threshold} />)}
       {at("parties", <PartiesSection record={record} threshold={threshold} />)}
       {at("consideration", <ConsiderationSection record={record} threshold={threshold} />)}
-      {at("schedule", <ScheduleSection record={record} threshold={threshold} />)}
+      {at("schedule", <ScheduleSection record={record} threshold={threshold} landId={landId} />)}
       {at("titleRecital", <TitleRecitalSection record={record} threshold={threshold} />)}
       {at("execution", <ExecutionSection record={record} threshold={threshold} />)}
     </div>

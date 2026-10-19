@@ -54,10 +54,11 @@ describe("landing hero (U1.3)", () => {
     fireEvent.change(screen.getByLabelText(/^District/), { target: { value: "Gazipur" } });
     fireEvent.change(screen.getByLabelText(/^Upazila/), { target: { value: "Sreepur" } });
     fireEvent.change(screen.getByLabelText(/^Mouza/), { target: { value: "Barmi" } });
+    fireEvent.change(screen.getByLabelText(new RegExp(`^${en.verify.survey}`)), { target: { value: "RS" } });
     fireEvent.change(screen.getByLabelText(/^Khatian/), { target: { value: "১২৪৫" } });
     fireEvent.change(screen.getByLabelText(/^Dag/), { target: { value: "785" } });
     fireEvent.click(screen.getByRole("button", { name: en.verify.submit }));
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/verify?district=Gazipur&upazila=Sreepur&mouza=Barmi&khatian=1245&dag=785"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/verify?district=Gazipur&upazila=Sreepur&mouza=Barmi&survey=RS&khatian=1245&dag=785"));
   });
 
   it("mutation tab checks the number, then opens /track?no=", () => {

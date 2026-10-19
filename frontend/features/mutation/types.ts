@@ -34,6 +34,8 @@ export interface MutationList {
 }
 
 export interface MutationDetailData extends MutationQueueItem {
+  survey_type?: string | null;
+  jl_no?: string | null;
   previous_khatian_no: string | null;
   new_khatian_no: string | null;
   ac_land_office: string | null;

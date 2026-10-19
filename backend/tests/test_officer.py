@@ -52,7 +52,7 @@ def _get(env, path, role="REVIEWER", **params):
 def test_stats_match_seed(env):
     b = _get(env, "stats").json()
     assert b == {
-        "total_records": 12, "pending_review": 0, "high_risk": 0, "verified": 12, "open_alerts": 0,
+        "total_records": 15, "pending_review": 0, "high_risk": 0, "verified": 15, "open_alerts": 0,
         "pending_mutations": 0, "active_encumbrances": 3, "settled_this_month": b["settled_this_month"],
         "hearings_upcoming": 0, "ledger_status": "INTACT",
         "ledger_entries": b["ledger_entries"],
@@ -71,7 +71,7 @@ def test_stats_reflect_documents_and_alerts(env):
     b = _get(env, "stats").json()
     keys = ("total_records", "pending_review", "high_risk", "verified", "open_alerts")
     assert {k: b[k] for k in keys} == {
-        "total_records": 12, "pending_review": 2, "high_risk": 1, "verified": 10, "open_alerts": 3,
+        "total_records": 15, "pending_review": 2, "high_risk": 1, "verified": 13, "open_alerts": 3,
     }
 
 

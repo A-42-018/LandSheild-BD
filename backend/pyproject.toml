@@ -78,6 +78,7 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.File", "f
 "tests/test_processing.py" = ["F811"]  # reuses env/store fixtures
 "tests/test_extraction.py" = ["F811"]  # reuses env/store/jobs fixtures
 "tests/test_review.py" = ["F811"]  # reuses env/jobs fixtures
+"tests/test_attach_land.py" = ["F811"]  # reuses env/jobs fixtures
 "tests/test_admin_audit.py" = ["F811"]  # reuses env fixture from test_lands
 "tests/test_risk_ml.py" = ["F811"]  # reuses env fixture from test_lands
 

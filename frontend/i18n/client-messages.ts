@@ -39,6 +39,9 @@ const LAND_SEARCH = [
   ...["area", "currentOwners", "dag", "district", "fatherName", "khatian", "landId", "landInfo", "mouza", "noOwners", "status", "units", "upazila"].map(
     (k) => `result.${k}`,
   ),
+  // survey / JL / sheet (SJ5-SJ6)
+  ...["jlNo", "sheetMismatch", "sheetNo", "survey"].map((k) => `result.${k}`),
+  "archive.surveys",
 ];
 
 export const MESSAGE_SCOPES = {
@@ -48,7 +51,7 @@ export const MESSAGE_SCOPES = {
   verify: [...LAND_SEARCH, "services"],
   /** full result, ownership graph and printable report (signed in) */
   record: [
-    "result", "risk", "graph", "report", "readAloud", "page", "qr", "my.watch",
+    "result", "risk", "graph", "report", "readAloud", "page", "qr", "my.watch", "archive.surveys",
     // the land's deed list and its version panel (H6-H8)
     "library.digitisedNo", "library.digitisedYes", "library.historical", "library.landDocs", "library.openRow", "library.doc", "upload.types",
   ],
@@ -68,8 +71,10 @@ export const MESSAGE_SCOPES = {
   officer: [
     "officer", "auth", "area", "officerSignup", "review", "reviewer", "mutation", "hearings", "archive", "upload", "result", "risk",
     "feedback", "admin.audit", "pageTip", "partyNid", "demoDocs", "library",
+    // the land chooser of an ambiguous deed in the review actions (D7)
+    "verify.chooser",
   ],
-  admin: ["admin", "auth", "officer.activity", "upload.types"],
+  admin: ["admin", "auth", "officer.activity", "upload.types", "archive.surveys"],
 } satisfies Record<string, readonly string[]>;
 
 export type MessageScope = keyof typeof MESSAGE_SCOPES;

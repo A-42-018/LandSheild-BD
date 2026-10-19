@@ -44,6 +44,10 @@ class PublicLandSummary(BaseModel):
     owners_masked: list[str]
     open_case: bool  # an ACTIVE court case is recorded against the parcel
     counts: PublicCounts
+    survey_type: str | None = None
+    jl_no: str | None = None
+    map_sheet_no: str | None = None
+    warnings: list[str] = []  # e.g. SHEET_MISMATCH (D6)
 
 
 class PublicKey(BaseModel):

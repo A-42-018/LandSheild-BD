@@ -408,8 +408,9 @@ def get_mutation(
     if m is None:
         raise AppError("MUTATION_NOT_FOUND", "Mutation not found", 404)
     base = _item(db, m).model_dump()
+    land = db.get(LandParcel, m.land_id)
     return MutationDetail(
-        **base, previous_khatian_no=m.previous_khatian_no, new_khatian_no=m.new_khatian_no,
+        **base, survey_type=land.survey_type, jl_no=land.jl_no, previous_khatian_no=m.previous_khatian_no, new_khatian_no=m.new_khatian_no,
         ac_land_office=m.ac_land_office, checklist=m.checklist,
         deed_no=m.deed.deed_no if m.deed else None, transaction_id=m.transaction_id,
         allowed_transitions=_allowed(db, m, actor),

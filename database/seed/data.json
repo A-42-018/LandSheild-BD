@@ -13,18 +13,21 @@
     {"key": "jamal", "name": "Jamal Hossain", "father_name": "Sirajul Islam", "nid": "19909990000000004", "dob": "1990-01-30", "contact": "SYN-TEL-0004"}
   ],
   "lands": [
-    {"key": "LP-10001", "scenario": "CLEAN", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "101", "khatian_no": "501", "area": 15, "area_unit": "decimal"},
-    {"key": "LP-10100", "scenario": "NORMAL_CHAIN", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "210", "khatian_no": "610", "area": 20, "area_unit": "decimal"},
-    {"key": "LP-10234", "scenario": "LIVE_DEMO", "district": "Gazipur", "upazila": "Sreepur", "mouza": "Barmi", "dag_no": "785", "khatian_no": "1245", "area": 10, "area_unit": "decimal"},
-    {"key": "LP-10240", "scenario": "DOUBLE_SALE", "district": "Gazipur", "upazila": "Sreepur", "mouza": "Barmi", "dag_no": "790", "khatian_no": "1250", "area": 10, "area_unit": "decimal"},
-    {"key": "LP-10300", "scenario": "AREA_MISMATCH", "district": "Gazipur", "upazila": "Kaliakair", "mouza": "Mouchak", "dag_no": "310", "khatian_no": "710", "area": 10, "area_unit": "decimal"},
-    {"key": "LP-10400", "scenario": "SELLER_MISMATCH", "district": "Gazipur", "upazila": "Kaliakair", "mouza": "Mouchak", "dag_no": "410", "khatian_no": "810", "area": 12, "area_unit": "decimal"},
-    {"key": "LP-10500", "scenario": "DUPLICATE_DEED", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "510", "khatian_no": "910", "area": 8, "area_unit": "decimal"},
-    {"key": "LP-10600", "scenario": "UNMUTATED_SALE", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "610", "khatian_no": "1010", "area": 12, "area_unit": "decimal"},
-    {"key": "LP-10700", "scenario": "MUTATION_OTHER_PERSON", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "710", "khatian_no": "1110", "area": 9, "area_unit": "decimal"},
-    {"key": "LP-10800", "scenario": "ACTIVE_CASE", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "810", "khatian_no": "1210", "area": 10, "area_unit": "decimal"},
-    {"key": "LP-10900", "scenario": "KHAS_LAND", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "910", "khatian_no": "1310", "area": 25, "area_unit": "decimal"},
-    {"key": "LP-11000", "scenario": "ACQUISITION", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "1010", "khatian_no": "1410", "area": 18, "area_unit": "decimal"}
+    {"key": "LP-10001", "scenario": "CLEAN", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "101", "khatian_no": "501", "area": 15, "area_unit": "decimal", "survey_type": "RS", "jl_no": "45", "map_sheet_no": "3"},
+    {"key": "LP-10100", "scenario": "NORMAL_CHAIN", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "210", "khatian_no": "610", "area": 20, "area_unit": "decimal", "survey_type": "RS", "jl_no": "45", "map_sheet_no": "3"},
+    {"key": "LP-10234", "scenario": "LIVE_DEMO", "district": "Gazipur", "upazila": "Sreepur", "mouza": "Barmi", "dag_no": "785", "khatian_no": "1245", "area": 10, "area_unit": "decimal", "survey_type": "RS", "jl_no": "88", "map_sheet_no": "5"},
+    {"key": "LP-10240", "scenario": "DOUBLE_SALE", "district": "Gazipur", "upazila": "Sreepur", "mouza": "Barmi", "dag_no": "790", "khatian_no": "1250", "area": 10, "area_unit": "decimal", "survey_type": "RS", "jl_no": "88", "map_sheet_no": "5"},
+    {"key": "LP-10300", "scenario": "AREA_MISMATCH", "district": "Gazipur", "upazila": "Kaliakair", "mouza": "Mouchak", "dag_no": "310", "khatian_no": "710", "area": 10, "area_unit": "decimal", "survey_type": "RS", "jl_no": "61", "map_sheet_no": "2"},
+    {"key": "LP-10400", "scenario": "SELLER_MISMATCH", "district": "Gazipur", "upazila": "Kaliakair", "mouza": "Mouchak", "dag_no": "410", "khatian_no": "810", "area": 12, "area_unit": "decimal", "survey_type": "RS", "jl_no": "61", "map_sheet_no": "2"},
+    {"key": "LP-10500", "scenario": "DUPLICATE_DEED", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "510", "khatian_no": "910", "area": 8, "area_unit": "decimal", "survey_type": "RS", "jl_no": "72", "map_sheet_no": "4"},
+    {"key": "LP-10600", "scenario": "UNMUTATED_SALE", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "610", "khatian_no": "1010", "area": 12, "area_unit": "decimal", "survey_type": "RS", "jl_no": "45", "map_sheet_no": "4"},
+    {"key": "LP-10700", "scenario": "MUTATION_OTHER_PERSON", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "710", "khatian_no": "1110", "area": 9, "area_unit": "decimal", "survey_type": "RS", "jl_no": "72", "map_sheet_no": "4"},
+    {"key": "LP-10800", "scenario": "ACTIVE_CASE", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "810", "khatian_no": "1210", "area": 10, "area_unit": "decimal", "survey_type": "RS", "jl_no": "45", "map_sheet_no": "3"},
+    {"key": "LP-10900", "scenario": "KHAS_LAND", "district": "Narayanganj", "upazila": "Rupganj", "mouza": "Bhulta", "dag_no": "910", "khatian_no": "1310", "area": 25, "area_unit": "decimal", "survey_type": "RS", "jl_no": "72", "map_sheet_no": "6"},
+    {"key": "LP-11000", "scenario": "ACQUISITION", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "1010", "khatian_no": "1410", "area": 18, "area_unit": "decimal", "survey_type": "RS", "jl_no": "45", "map_sheet_no": "4"},
+    {"key": "LP-12001", "scenario": "SURVEY_CLASH", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "101", "khatian_no": "501", "area": 14, "area_unit": "decimal", "survey_type": "CS", "jl_no": "45", "map_sheet_no": "2"},
+    {"key": "LP-12002", "scenario": "MOUZA_NAME_CLASH", "district": "Dhaka", "upazila": "Dhamrai", "mouza": "Ashulia", "dag_no": "101", "khatian_no": "501", "area": 11, "area_unit": "decimal", "survey_type": "RS", "jl_no": "17", "map_sheet_no": "1"},
+    {"key": "LP-12003", "scenario": "LEGACY_NO_SURVEY", "district": "Dhaka", "upazila": "Savar", "mouza": "Ashulia", "dag_no": "101", "khatian_no": "501", "area": 15, "area_unit": "decimal"}
   ],
   "deeds": [
     {"key": "d-10100-a", "land": "LP-10100", "deed_no": "D-2012-0100", "seller": "rahim", "buyer": "karim", "date": "2012-03-15", "area": 20, "area_unit": "decimal"},
