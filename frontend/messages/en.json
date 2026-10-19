@@ -990,11 +990,9 @@
       "cta": "All tools"
     },
     "help": {
-      "title": "Still stuck? Call us.",
-      "body": "The land services hotline answers questions about land records, mutation and fees.",
-      "note": "16122 is the government land services line. LandShield BD is a demonstration project and is not run by the ministry.",
-      "call": "Call the land services hotline",
-      "write": "Or write to us"
+      "title": "Still stuck? Write to us.",
+      "body": "Questions about land records, mutation or fees? Write to us and we will point you to the right place.",
+      "write": "Write to us"
     },
     "faq": {
       "title": "Common questions",
@@ -1588,7 +1586,6 @@
     "apps": "App download",
     "appsNote": "There is no separate app yet. Every service works in your phone's browser.",
     "contactTitle": "Get in touch",
-    "hotline": "Land services hotline",
     "techSupport": "Technical support"
   },
   "strip": {
@@ -1619,8 +1616,7 @@
       "faq": "Common questions",
       "guide": "Guide: how to use this site",
       "feedback": "Send feedback"
-    },
-    "call": "Call the land services hotline"
+    }
   },
   "mutation": {
     "title": "e-Mutation applications",

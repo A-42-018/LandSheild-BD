@@ -137,21 +137,19 @@ describe("landing sections (U5)", () => {
   });
 });
 
-describe("hotline strip (U1.6)", () => {
-  it("offers the hotline as a tap-to-call link with the number in the page language", () => {
+describe("help strip (U1.6)", () => {
+  it("points to the feedback form and shows no phone number", () => {
     render(wrap(<HelpStrip />, "en", null));
     expect(screen.getByRole("heading", { name: en.landing.help.title })).toBeInTheDocument();
-    expect(screen.getByTestId("hotline-link")).toHaveAttribute("href", "tel:16122");
-    expect(screen.getByTestId("hotline-link")).toHaveTextContent("16122");
     expect(screen.getByRole("link", { name: en.landing.help.write })).toHaveAttribute("href", "/feedback");
+    expect(document.querySelector('a[href^="tel:"]')).toBeNull();
   });
 
-  it("uses Bangla digits in Bangla, still dialling 16122, and says the ministry does not run the demo", () => {
+  it("reads in Bangla with no digits and no phone link", () => {
     render(wrap(<HelpStrip />, "bn", null));
-    expect(screen.getByTestId("hotline-link")).toHaveTextContent("১৬১২২");
-    expect(screen.getByTestId("hotline-link")).toHaveAttribute("href", "tel:16122");
-    expect(screen.getByText(bn.landing.help.note)).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: bn.landing.help.title }).textContent).not.toMatch(/[0-9]/);
+    expect(screen.getByRole("link", { name: bn.landing.help.write })).toHaveAttribute("href", "/feedback");
+    expect(screen.getByRole("region", { name: bn.landing.help.title }).textContent).not.toMatch(/[0-9০-৯]/);
+    expect(document.querySelector('a[href^="tel:"]')).toBeNull();
   });
 });
 
