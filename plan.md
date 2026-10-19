@@ -3,6 +3,7 @@
 > Phase cards (files to read/touch, steps, tests): `roadmap.md` §5 — find with `grep -n "^### " roadmap.md`, view only your card.
 > UI design spec: `roadmap.md` §4. Old build log: `docs/history/plan-v90.md`. Never read `prompt.md` whole.
 > Demo data only — not a government system.
+> **New track (2026-10-19): SJ1–SJ9 survey type + JL no. + map sheet** (mentor feedback). Cards, decisions, tracker and kickoff prompt: `docs/survey-jl-roadmap.md` — grep `^### ` there, read §2 + your card only. Next phase: **SJ1**.
 
 ## STATE
 ```text

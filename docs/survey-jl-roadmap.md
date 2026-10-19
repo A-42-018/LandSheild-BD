@@ -295,10 +295,16 @@ is time before the final round.
 
 ---
 
-## 5. Kickoff prompt (paste at the start of each session)
+## 5. Kickoff prompt (paste in a new chat with the latest zip attached)
 
-> You are working on LandShield BD. Do phase **SJ<n>** from `docs/survey-jl-roadmap.md`.
-> Read only §2 (decisions) and the SJ<n> card. Do not explore the repo beyond the card's **Read** list
-> unless a file there is missing. Keep to the card's **Touch** list. Run only the card's **Test** line.
-> When it is green, mark SJ<n> ✅ in §4 (or 🟡 with the remaining steps as SJ<n>-b) and commit on a
-> topic branch with a one-line `SJ<n>: …` subject. Do not push.
+Replace `SJ<n>` with the first ⬜ phase in §4 (start with SJ1).
+
+```text
+Unzip the attached LandShield BD project. Do phase SJ<n> from docs/survey-jl-roadmap.md.
+Do NOT read plan.md, roadmap.md or the whole roadmap file. Run `grep -n "^### \|^## " docs/survey-jl-roadmap.md`, then read only §2 (Decisions) and the SJ<n> card.
+Do exactly that card: read only its Read list, change only its Touch list, no other repo exploration. Run only its Test line (set up the backend/frontend as in roadmap.md §3 "Sandbox notes" only if the test needs it).
+If the session is running out: stop at a green state, mark SJ<n> 🟡 in §4 and write the remaining steps there as SJ<n>-b.
+When done: mark SJ<n> ✅ in §4 with a one-line note of what changed and what tests ran, then give me ONE zip of the whole project, made from the project root with:
+zip -qr ../landshield.zip . -x 'node_modules/*' '*/node_modules/*' '*/.venv/*' '*__pycache__*' '*/.next/*' '.git/*' '*/storage/*' '*/e2e-storage/*' '*.db' '*.env' '*/.env.local' '*.DS_Store'
+Finish with a short list of the files you changed and a suggested commit message "SJ<n>: <summary>".
+```
