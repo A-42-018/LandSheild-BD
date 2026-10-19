@@ -40,7 +40,7 @@ Structure the records, cross-check them automatically, and show every risk indic
 
 ## Features
 
-- Parcel search and verification (district, upazila, mouza, khatian, dag) with ownership history and transactions
+- Parcel search and verification (district, upazila, mouza, survey CS/SA/RS/BS, JL, khatian, dag; optional map sheet check) with ownership history and transactions; the same khatian/dag in two surveys or two same-named mouzas gives a chooser instead of a wrong record
 - Risk score 0-100 (LOW / MEDIUM / HIGH) with a per-rule evidence list
 - Document upload → OCR → field extraction with per-field confidence → human review → approve / reject → posting to ownership history
 - Possible double-sale detection, ownership graph (React Flow), parcel map (Leaflet, polygons are synthetic)

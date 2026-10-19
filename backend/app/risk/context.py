@@ -15,7 +15,13 @@ from app.models.deed import Deed
 from app.models.document import Document
 from app.models.document_record import DocumentRecord
 from app.models.encumbrance import LandEncumbrance
-from app.models.enums import DocumentStatus, OwnershipKind, RecordStatus, TransactionStatus
+from app.models.enums import (
+    DocumentStatus,
+    OwnershipKind,
+    RecordStatus,
+    SurveyType,
+    TransactionStatus,
+)
 from app.models.land_parcel import LandParcel
 from app.models.mutation import MutationRecord
 from app.models.owner import Owner
@@ -247,7 +253,7 @@ def _encumbrances(db: Session, land: LandParcel) -> tuple[EncRecord, ...]:
     return tuple(EncRecord(e.id, e.type, e.reference_no, e.status, e.authority) for e in rows)
 
 
-SURVEY_TYPES = ("CS", "SA", "RS", "BS")
+SURVEY_TYPES = tuple(s.value for s in SurveyType)
 
 
 def _survey_records(db: Session, land: LandParcel) -> tuple[SurveyRecord, ...]:
@@ -262,7 +268,7 @@ def _survey_records(db: Session, land: LandParcel) -> tuple[SurveyRecord, ...]:
     out: list[SurveyRecord] = []
     for d in docs:
         ex = d.extraction_json or {}
-        survey = ex.get("survey_type")
+        survey = ex.get("survey_type") or land.survey_type  # SJ4: the parcel's survey as fallback
         if survey not in SURVEY_TYPES:
             continue
         owners = (ex.get("extras") or {}).get("owners") or []

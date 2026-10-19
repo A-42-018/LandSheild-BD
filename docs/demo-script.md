@@ -87,6 +87,10 @@ Reading one page takes 10–20 s locally, longer on Render's free CPU, so pre-ru
 
 Fallback: if the upload stalls, use the document from the rehearsal run (My documents → My uploads) and start at step 7.
 
+## D. 20-second beat: same khatian, two surveys
+
+Public `/en` form: Dhaka → Savar → mouza **Ashulia**, survey **CS**, khatian **501**, dag **101**, **Verify**. The chooser appears ("This khatian and dag exist in more than one survey"): one plot number, several survey records, never a silent first match. Pick one → result with Survey · JL · Sheet. Optional: type a wrong sheet under *More details* → amber notice, record still shown. Spec: `e2e/verify-survey.spec.ts`.
+
 ## Pre-baked fallbacks (no upload needed)
 | Land ID | Shows | Expected (as seeded) |
 |---|---|---|

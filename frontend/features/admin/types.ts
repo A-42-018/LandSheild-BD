@@ -54,6 +54,8 @@ export interface AdminLandRecord {
   area_unit: string;
   status: string;
   updated_at: string;
+  survey_type?: string | null;
+  jl_no?: string | null;
 }
 export interface AdminDocument {
   id: string;

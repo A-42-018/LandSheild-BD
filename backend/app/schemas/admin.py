@@ -79,6 +79,8 @@ class AdminLandRecord(BaseModel):
     area_unit: str
     status: str
     updated_at: datetime
+    survey_type: str | None = None  # SJ7
+    jl_no: str | None = None  # SJ7
 
 
 class AdminLandRecordList(BaseModel):

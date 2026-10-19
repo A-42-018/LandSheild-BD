@@ -1,7 +1,9 @@
 "use client";
 import { useTranslations } from "next-intl";
+import { useQuery } from "@tanstack/react-query";
 import { Map as MapIcon } from "lucide-react";
 import { Card } from "@/components/ui";
+import { useAuth } from "@/features/auth/AuthContext";
 import BoundaryCompass from "./BoundaryCompass";
 import FieldValue, { FieldGrid } from "./FieldValue";
 import { AddItem, ContainerIssues, RemoveButton } from "./ListControls";
@@ -10,6 +12,25 @@ import { useEnumText } from "./useDeedLabels";
 import type { LhdrPlot, LhdrRecord } from "../types";
 
 const SURVEYS = ["CS", "SA", "RS", "BS", "DIARA", "OTHER"];
+
+/** SJ7: the survey and JL of the parcel this deed is linked to (read-only; fixed on the khatian, not here). */
+function ParcelSurvey({ landId }: { landId: string }) {
+  const t = useTranslations("review.deed");
+  const survey = useEnumText("surveys");
+  const { api } = useAuth();
+  const q = useQuery({
+    queryKey: ["land", landId, "survey"],
+    retry: false,
+    queryFn: () => api.get<{ survey_type?: string | null; jl_no?: string | null }>(`/lands/${encodeURIComponent(landId)}`),
+  });
+  if (!q.data) return null;
+  const { survey_type: s, jl_no: jl } = q.data;
+  return (
+    <p className="text-sm text-ink-muted" data-testid="deed-parcel-survey">
+      {t("parcelSurvey")}: {s ? survey(s) : t("none")} · {t("jlNo")}: {jl ?? t("none")}
+    </p>
+  );
+}
 
 function PlotCard({ plot, i, threshold }: { plot: LhdrPlot; i: number; threshold: number }) {
   const t = useTranslations("review.deed");
@@ -61,13 +82,14 @@ function PlotCard({ plot, i, threshold }: { plot: LhdrPlot; i: number; threshold
 }
 
 /** F. Schedule (তপশিল): one card per plot with dag list and boundary compass; plots can be added and removed (H6c). */
-export default function ScheduleSection({ record, threshold }: { record: LhdrRecord; threshold: number }) {
+export default function ScheduleSection({ record, threshold, landId }: { record: LhdrRecord; threshold: number; landId?: string | null }) {
   const t = useTranslations("review.deed");
   const plots = record.schedule ?? [];
   return (
     <Card title={t("sections.schedule")} icon={<MapIcon />} data-testid="deed-section-schedule">
       <div className="flex flex-col gap-3">
         <ContainerIssues paths={["/schedule"]} />
+        {landId && <ParcelSurvey landId={landId} />}
         {plots.length === 0 ? (
           <p className="text-sm text-ink-muted" data-testid="deed-schedule-empty">{t("none")}</p>
         ) : (

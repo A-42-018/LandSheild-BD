@@ -14,6 +14,13 @@ class LandStatus(StrEnum):
     REVIEW_REQUIRED = "REVIEW_REQUIRED"
 
 
+class SurveyType(StrEnum):  # SJ1 land_parcels.survey_type (the survey that issued the record)
+    CS = "CS"  # Cadastral Survey
+    SA = "SA"  # State Acquisition
+    RS = "RS"  # Revisional Survey
+    BS = "BS"  # Bangladesh (City) Survey
+
+
 class DocumentStatus(StrEnum):
     UPLOADED = "UPLOADED"
     PROCESSING = "PROCESSING"

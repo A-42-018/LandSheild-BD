@@ -250,3 +250,74 @@ def test_mouzas_without_union_are_listed_under_the_upazila(env, tmp_path, monkey
         assert hit["jl_no"] == "015" and hit["union_id"] is None
     finally:
         gis._read.cache_clear()
+
+
+# ---- SJ2: mouza / JL / sheet resolver ----
+@pytest.fixture
+def demo_on(monkeypatch):
+    monkeypatch.setenv("MOUZA_ENABLED_DIVISION_ID", "3")
+    get_settings.cache_clear()
+    from app.services import gis
+
+    gis._read.cache_clear()
+    yield gis
+    gis._read.cache_clear()
+
+
+def _resolve(env, **params):
+    return _get(env, "/mouzas/resolve", **params)
+
+
+def test_resolve_unique_mouza_returns_jl_and_sheets(env, demo_on):
+    r = _resolve(env, district="Gazipur", upazila="Sreepur", mouza="Barmi")
+    assert r.status_code == 200
+    b = r.json()
+    assert b["jl_no"] == "88" and b["name"] == "Barmi" and [s["sheet_no"] for s in b["sheets"]] == ["5"]
+    assert _resolve(env, district="gazipur", upazila="SREEPUR", mouza="বারমী").json()["id"] == b["id"]
+
+
+def test_resolve_name_clash_needs_jl(env, demo_on):
+    # "Ashulia" exists in Savar (JL 45) and Dhamrai (JL 17) — different upazilas, so each is unique there
+    assert _resolve(env, district="Dhaka", upazila="Savar", mouza="Ashulia").json()["jl_no"] == "45"
+    assert _resolve(env, district="Dhaka", upazila="Dhamrai", mouza="Ashulia").json()["jl_no"] == "17"
+
+
+def test_resolve_ambiguous_within_one_upazila(env, demo_on, tmp_path, monkeypatch):
+    up = "149"
+    data = _mouza_dir(tmp_path, {"mouzas": [
+        {"id": "a1", "upazila_id": up, "name": "Twin", "bn_name": "টুইন", "jl_no": "5"},
+        {"id": "a2", "upazila_id": up, "name": "Twin", "bn_name": "টুইন", "jl_no": "9"},
+    ]})
+    monkeypatch.setenv("GIS_DATA_DIR", str(data))
+    get_settings.cache_clear()
+    demo_on._read.cache_clear()
+    r = _resolve(env, district="Dhaka", upazila="Savar", mouza="Twin")
+    assert r.status_code == 409 and r.json()["code"] == "MOUZA_AMBIGUOUS"
+    assert {o["jl_no"] for o in r.json()["details"]["options"]} == {"5", "9"}
+    assert _resolve(env, district="Dhaka", upazila="Savar", mouza="Twin", jl_no="০০৯").json()["id"] == "a2"
+
+
+def test_resolve_wrong_jl_and_unknown_mouza(env, demo_on):
+    r = _resolve(env, district="Dhaka", upazila="Savar", mouza="Ashulia", jl_no="17")
+    assert r.status_code == 422 and r.json()["code"] == "JL_MISMATCH"
+    assert _resolve(env, district="Dhaka", upazila="Savar", mouza="Nowhere").status_code == 404
+    assert _resolve(env, district="Dhaka", upazila="Nowhere", mouza="Ashulia").status_code == 404
+
+
+def test_resolve_bangla_digits_and_leading_zeros(env, demo_on):
+    for jl in ("45", "045", "০৪৫", " 45 "):
+        assert _resolve(env, district="Dhaka", upazila="Savar", mouza="Ashulia", jl_no=jl).json()["jl_no"] == "45"
+    from app.services import gis
+
+    assert gis.norm_jl("০০১২") == "12" and gis.norm_jl("0") == "0" and gis.norm_jl(None) == ""
+
+
+def test_sheets_for_filters_by_survey(env, demo_on):
+    mid = _resolve(env, district="Dhaka", upazila="Savar", mouza="Ashulia").json()["id"]
+    assert [s.sheet_no for s in demo_on.sheets_for(mid, "RS")] == ["3", "4"]
+    assert [s.sheet_no for s in demo_on.sheets_for(mid, "cs")] == ["2"]
+    assert len(demo_on.sheets_for(mid)) == 3 and demo_on.sheets_for(mid, "BS") == []
+
+
+def test_resolve_off_when_demo_division_not_enabled(env):
+    assert _resolve(env, district="Gazipur", upazila="Sreepur", mouza="Barmi").status_code == 404

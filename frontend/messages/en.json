@@ -243,6 +243,17 @@
     "division": "Division",
     "upazila": "Upazila",
     "mouza": "Mouza",
+    "survey": "Survey",
+    "selectSurvey": "Select survey",
+    "surveyHint": "Printed at the top of your khatian, e.g. RS khatian (আর.এস. খতিয়ান)",
+    "jlNo": "JL No.",
+    "jlHint": "Filled in when you pick a mouza from the list.",
+    "jlEdit": "Edit",
+    "jlChoose": "Select JL",
+    "jlChoicesHint": "Several mouzas here are named {name}. Pick the JL printed on your record.",
+    "moreDetails": "More details (optional)",
+    "sheetNo": "Map sheet no.",
+    "sheetHint": "Optional. Only used to warn you if it looks wrong.",
     "khatian": "Khatian No.",
     "dag": "Dag No.",
     "selectDivision": "Select",
@@ -261,7 +272,10 @@
       "permission": "Your account is not allowed to do this. Sign in with another account.",
       "network": "No internet connection. Check your connection and try again.",
       "generic": "That did not work. Try again in a moment.",
-      "rateLimited": "Too many searches in a short time. Wait a minute, then try again."
+      "rateLimited": "Too many searches in a short time. Wait a minute, then try again.",
+      "surveyRequired": "Choose the survey of your record.",
+      "jlMismatch": "This JL does not belong to this mouza. Pick the mouza again or fix the JL.",
+      "jlNeeded": "Several mouzas share this name. Choose the JL."
     },
     "summary": {
       "title": "Parcel found: short summary",
@@ -274,6 +288,13 @@
       "maskNote": "Names are partly hidden for privacy. Father's name and NID number are never shown.",
       "loginForFull": "Sign in to see the full report",
       "noAccount": "No account? Register for free"
+    },
+    "chooser": {
+      "title": "More than one record matches",
+      "landIntro": "This khatian and dag exist in more than one survey. Which one is on your document?",
+      "mouzaIntro": "More than one mouza has this name. Which JL is printed on your record?",
+      "noSurvey": "Survey unknown",
+      "noJl": "No JL"
     }
   },
   "result": {
@@ -382,7 +403,11 @@
     },
     "notFound": "No land matches this ID.",
     "notFoundHint": "Check the ID and search again. Example: LP-10100.",
-    "tabDocuments": "Documents"
+    "tabDocuments": "Documents",
+    "survey": "Survey",
+    "jlNo": "JL no.",
+    "sheetNo": "Sheet no.",
+    "sheetMismatch": "The sheet number you gave does not match this plot. Check the document."
   },
   "report": {
     "title": "Land verification report",
@@ -586,7 +611,8 @@
       "UNKNOWN_FIELD": "Unknown field.",
       "DUPLICATE_FIELD": "Duplicate field.",
       "TOO_LONG": "Maximum {max} characters.",
-      "UNKNOWN": "This value is not valid."
+      "UNKNOWN": "This value is not valid.",
+      "INVALID": "Choose a survey from the list."
     },
     "actions": {
       "title": "Review decision",
@@ -880,7 +906,18 @@
       "candidates": {
         "title": "Other reading",
         "use": "Use this reading"
-      }
+      },
+      "parcelSurvey": "Parcel survey"
+    },
+    "surveyJl": {
+      "title": "Survey and JL",
+      "hint": "Check these against the paper record. The parcel is posted under this survey and JL when you approve.",
+      "survey": "Survey",
+      "pick": "Choose the survey",
+      "jl": "JL no.",
+      "surveyMissing": "Choose the survey of this record.",
+      "jlOk": "JL matches this mouza.",
+      "jlMismatch": "This JL does not belong to this mouza. Fix the JL or the mouza."
     }
   },
   "landing": {
@@ -1247,7 +1284,9 @@
           "dag": "Dag",
           "area": "Area",
           "status": "Status",
-          "updated": "Updated (UTC)"
+          "updated": "Updated (UTC)",
+          "jl": "JL no.",
+          "survey": "Survey"
         }
       },
       "documents": {
@@ -1714,7 +1753,9 @@
       "appealTitle": "Appeal the rejection",
       "appealLabel": "Grounds for the appeal",
       "appealConfirm": "File appeal"
-    }
+    },
+    "survey": "Survey",
+    "jlNo": "JL no."
   },
   "check": {
     "title": "Check Before You Buy",

@@ -32,6 +32,11 @@ export function useReviewActions(id: string) {
     mutationFn: (v) => api.patch<ExtractionOut>(`/documents/${id}/extraction`, { fields: [v] }),
     onSuccess: (data) => qc.setQueryData(["document", id, "extraction"], data),
   });
+  // SJ7: the officer's correction of a khatian / porcha's survey type and JL number
+  const saveSurvey = useMutation<ExtractionOut, ApiError, { survey_type?: string; jl_no?: string }>({
+    mutationFn: (body) => api.patch<ExtractionOut>(`/documents/${id}/extraction`, body),
+    onSuccess: (data) => qc.setQueryData(["document", id, "extraction"], data),
+  });
   // H6b: LHDR record ops by JSON pointer; the answer carries the record and the derived 13 fields again
   const saveRecord = useMutation<ExtractionOut, ApiError, RecordOp[]>({
     mutationFn: (record) => api.patch<ExtractionOut>(`/documents/${id}/extraction`, { record }),
@@ -58,7 +63,7 @@ export function useReviewActions(id: string) {
     mutationFn: () => api.post(`/documents/${id}/process`),
     onSuccess: refresh,
   });
-  return { save, saveRecord, approve, reject, reprocess, start };
+  return { save, saveRecord, saveSurvey, approve, reject, reprocess, start };
 }
 
 export function fieldErrorText(

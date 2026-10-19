@@ -1,4 +1,4 @@
-from sqlalchemy import Float, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Float, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import UUID_LEN, Base, IdMixin, JSONType, TimestampMixin
@@ -11,11 +11,14 @@ class LandParcel(IdMixin, TimestampMixin, Base):
         UniqueConstraint(
             "district",
             "upazila",
+            "jl_no",
             "mouza",
+            "survey_type",
             "khatian_no",
             "dag_no",
             name="uq_land_parcel_identifiers",
         ),
+        Index("ix_land_parcels_mouza_jl", "mouza", "jl_no"),
     )
 
     land_id: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
@@ -33,3 +36,8 @@ class LandParcel(IdMixin, TimestampMixin, Base):
         String(UUID_LEN), ForeignKey("land_offices.id"), index=True, nullable=True
     )
     union: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    # SJ1: khatian/dag numbers are renumbered by every survey, so they only mean something inside
+    # one survey. NULL on legacy rows (a lookup that matches several of them is ambiguous, SJ3).
+    survey_type: Mapped[str | None] = mapped_column(String(2), nullable=True)  # SurveyType
+    jl_no: Mapped[str | None] = mapped_column(String(20), nullable=True)  # no leading zeros
+    map_sheet_no: Mapped[str | None] = mapped_column(String(20), nullable=True)

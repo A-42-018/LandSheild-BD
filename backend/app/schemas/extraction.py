@@ -98,6 +98,8 @@ class ExtractionOut(BaseModel):
     profile_overridden: bool = False  # deed_profile was set by a reviewer, not detected
     record: dict[str, Any] | None = None  # H4: LHDR v1 record of a historical deed
     record_schema: str | None = None
+    survey_type: str | None = None  # SJ7: khatian / porcha survey (CS | SA | RS | BS), for the officer to fix
+    jl_no: str | None = None  # SJ7: khatian / porcha JL number
     record_validation: RecordValidation | None = None  # H5: only when there is a record
     file_hash: str  # SHA-256 of the original upload (kept forever, shown on every view)
     # H5: the digital record version this working copy is saved as (None = no version yet)
@@ -135,9 +137,11 @@ class ExtractionPatch(BaseModel):
 
     fields: list[FieldEdit] = Field(default_factory=list, max_length=len(EXTRACTION_FIELDS))
     record: list[RecordOp] = Field(default_factory=list, max_length=MAX_RECORD_OPS)
+    survey_type: str | None = Field(default=None, max_length=2)  # SJ4: CS | SA | RS | BS
+    jl_no: str | None = Field(default=None, max_length=20)  # SJ4: khatian / porcha JL number
 
     @model_validator(mode="after")
     def _not_empty(self) -> "ExtractionPatch":
-        if not self.fields and not self.record:
-            raise ValueError("give at least one field edit or record op")
+        if not self.fields and not self.record and self.survey_type is None and self.jl_no is None:
+            raise ValueError("give at least one field edit, record op, survey type or JL")
         return self

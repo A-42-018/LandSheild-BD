@@ -51,6 +51,8 @@ class MutationList(BaseModel):
 
 
 class MutationDetail(MutationQueueItem):
+    survey_type: str | None = None  # SJ7: the parcel's survey and JL
+    jl_no: str | None = None
     previous_khatian_no: str | None = None
     new_khatian_no: str | None = None
     ac_land_office: str | None = None

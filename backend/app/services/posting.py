@@ -23,6 +23,7 @@ from app.models.user import User
 from app.schemas.extraction import Extraction
 from app.services import audit, chain, ledger, mutation, party_nid, signing
 from app.services.extraction import _BN_DIGITS, _parse_area, _parse_date
+from app.services.gis import norm_jl
 from app.services.names import VARIANT_MIN, can_auto_merge, owner_similarity
 from app.services.risk import analyze_land
 
@@ -66,8 +67,52 @@ def _key(value: str | None) -> str | None:
     return n.casefold() if n is not None else None
 
 
+def _doc_survey(extraction: Extraction) -> tuple[str | None, str | None]:
+    """The survey and JL the reviewed document states (SJ4); deeds usually state neither."""
+    survey = (extraction.survey_type or "").strip().upper() or None
+    jl = norm_jl((extraction.extras or {}).get("jl_no")) or None
+    return survey, jl
+
+
+def _fits(parcel_value: str | None, doc_value: str | None) -> bool:
+    """NULL on either side is compatible (a legacy parcel / a deed without a survey)."""
+    return parcel_value is None or doc_value is None or parcel_value == doc_value
+
+
+def _check_survey(land: LandParcel, survey: str | None, jl: str | None) -> None:
+    if not _fits(land.survey_type, survey):
+        raise AppError(
+            "LAND_SURVEY_MISMATCH",
+            "The document belongs to a different survey than this land",
+            409,
+            {"land_id": land.land_id, "land_survey_type": land.survey_type,
+             "document_survey_type": survey},
+        )  # fmt: skip
+    if not _fits(norm_jl(land.jl_no) or None, jl):
+        raise AppError(
+            "LAND_SURVEY_MISMATCH",
+            "The document's JL number does not match this land",
+            409,
+            {"land_id": land.land_id, "land_jl_no": land.jl_no, "document_jl_no": jl},
+        )  # fmt: skip
+
+
+def _fill_survey(land: LandParcel, survey: str | None, jl: str | None) -> None:
+    """A legacy parcel (NULL survey / JL) is filled in from the document; never overwritten."""
+    if land.survey_type is None and survey:
+        land.survey_type = survey
+    if not land.jl_no and jl:
+        land.jl_no = jl
+
+
 def _resolve_land(
-    db: Session, doc: Document, v: dict[str, str | None], area: float, unit: str
+    db: Session,
+    doc: Document,
+    v: dict[str, str | None],
+    area: float,
+    unit: str,
+    survey: str | None = None,
+    jl: str | None = None,
 ) -> tuple[LandParcel, bool]:
     if doc.land_id is not None:
         land = db.get(LandParcel, doc.land_id)
@@ -83,6 +128,8 @@ def _resolve_land(
                 {"land_id": land.land_id},
             )
         _same_office(doc, land)
+        _check_survey(land, survey, jl)
+        _fill_survey(land, survey, jl)
         return land, False
     cands = db.scalars(
         select(LandParcel).where(
@@ -91,13 +138,31 @@ def _resolve_land(
             func.lower(LandParcel.mouza) == (_key(v["mouza"]) or ""),
         )
     ).all()
-    for land in cands:
-        if _key(land.khatian_no) == _key(v["khatian_no"]) and _key(land.dag_no) == _key(
-            v["dag_no"]
-        ):
-            _same_office(doc, land)
-            doc.land_id = land.id
-            return land, False
+    same = [
+        c
+        for c in cands
+        if _key(c.khatian_no) == _key(v["khatian_no"])
+        and _key(c.dag_no) == _key(v["dag_no"])
+        and _fits(c.survey_type, survey)
+        and _fits(norm_jl(c.jl_no) or None, jl)
+    ]
+    # a parcel that already carries the document's survey beats a legacy NULL one
+    exact = [c for c in same if survey and c.survey_type == survey]
+    pick = exact or same
+    if len(pick) > 1:
+        raise AppError(
+            "LAND_AMBIGUOUS",
+            "Several lands match this document; choose the land first",
+            409,
+            [{"land_id": c.land_id, "survey_type": c.survey_type, "jl_no": c.jl_no}
+             for c in pick],
+        )  # fmt: skip
+    if pick:
+        land = pick[0]
+        _same_office(doc, land)
+        _fill_survey(land, survey, jl)
+        doc.land_id = land.id
+        return land, False
     office = db.get(LandOffice, doc.office_id) if doc.office_id else None
     land = LandParcel(
         land_id=_next_land_code(db),
@@ -106,6 +171,8 @@ def _resolve_land(
         mouza=_norm(v["mouza"]),
         khatian_no=_norm(v["khatian_no"]),
         dag_no=_norm(v["dag_no"]),
+        survey_type=survey,
+        jl_no=jl,
         area=area,
         area_unit=unit,
         status=LandStatus.ACTIVE.value,
@@ -116,6 +183,12 @@ def _resolve_land(
     db.flush()
     doc.land_id = land.id
     return land, True
+
+
+def _inherit_survey(extraction: Extraction, land: LandParcel) -> None:
+    """A deed names no survey: it takes the one of the parcel the officer chose (frozen with it)."""
+    if not extraction.survey_type and land.survey_type:
+        extraction.survey_type = land.survey_type
 
 
 def _same_office(doc: Document, land: LandParcel) -> None:
@@ -187,7 +260,9 @@ def post_document(
     unit = (v["area_unit"] or "").lower()
     tx_date: date | None = _parse_date(v["deed_date"]) if v.get("deed_date") else None
 
-    land, created = _resolve_land(db, doc, v, area, unit)
+    survey, jl = _doc_survey(extraction)
+    land, created = _resolve_land(db, doc, v, area, unit, survey, jl)
+    _inherit_survey(extraction, land)
     nids = doc.party_nids or {}
     seller = _resolve_party(
         db, "seller", v["seller"], _father_for(v["seller"], v), nids.get("seller")

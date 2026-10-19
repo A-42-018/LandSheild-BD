@@ -18,11 +18,14 @@ export default function DeedView({
   record,
   threshold = 0.85,
   readOnly = false,
+  landId,
 }: {
   record: LhdrRecord;
   threshold?: number;
   /** H7d: no edit controls, whatever provider is above (a saved version is never edited here) */
   readOnly?: boolean;
+  /** SJ7: the linked parcel, so the schedule can show its survey and JL */
+  landId?: string | null;
 }) {
   const t = useTranslations("review.deed");
   const body = (
@@ -32,7 +35,7 @@ export default function DeedView({
       <DatesSection record={record} threshold={threshold} />
       <PartiesSection record={record} threshold={threshold} />
       <ConsiderationSection record={record} threshold={threshold} />
-      <ScheduleSection record={record} threshold={threshold} />
+      <ScheduleSection record={record} threshold={threshold} landId={landId} />
       <TitleRecitalSection record={record} threshold={threshold} />
       <ExecutionSection record={record} threshold={threshold} />
     </div>

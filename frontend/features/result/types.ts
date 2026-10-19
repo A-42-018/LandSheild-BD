@@ -17,6 +17,12 @@ export interface LandInfo {
   area_unit: string;
   status: string;
   current_owners: Person[];
+  /** survey this record belongs to (null on old rows) */
+  survey_type?: string | null;
+  jl_no?: string | null;
+  map_sheet_no?: string | null;
+  /** e.g. SHEET_MISMATCH (D6) */
+  warnings?: string[];
 }
 export interface OwnershipEntry {
   owner: Person;

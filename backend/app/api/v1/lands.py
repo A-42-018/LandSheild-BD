@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.core.rbac import ANY_AUTH, REVIEW_UP, require_roles
+from app.models.enums import SurveyType
 from app.models.user import User
 from app.schemas.document import LandDocuments
 from app.schemas.encumbrance import EncumbrancesResponse
@@ -28,11 +29,23 @@ def search_lands(
     mouza: str = Query(min_length=1, max_length=100),
     khatian: str = Query(min_length=1, max_length=50),
     dag: str = Query(min_length=1, max_length=50),
+    survey: SurveyType | None = Query(default=None),  # SJ3: omitted = 409 if it is ambiguous
+    jl_no: str | None = Query(default=None, max_length=20),
+    sheet_no: str | None = Query(default=None, max_length=20),
     user: User = Depends(require_roles(*ANY_AUTH)),
     db: Session = Depends(get_db),
 ) -> LandPublic:
     land = svc.search_land(
-        db, district=district, upazila=upazila, mouza=mouza, khatian=khatian, dag=dag, viewer=user
+        db,
+        district=district,
+        upazila=upazila,
+        mouza=mouza,
+        khatian=khatian,
+        dag=dag,
+        viewer=user,
+        survey_type=survey.value if survey else None,
+        jl_no=jl_no,
+        sheet_no=sheet_no,
     )
     me_svc.record_lookup(db, user, land.land_id)  # U3.2 "my searches" (citizens only)
     return land

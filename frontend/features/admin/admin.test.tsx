@@ -149,6 +149,15 @@ describe("admin records + documents", () => {
     expect(get.mock.calls.some((c: any[]) => c[0] === "/admin/land-records?sort=land_id&order=asc&limit=20&offset=0")).toBe(true);
   });
 
+  it("land records show the survey and JL columns (old rows show a dash)", async () => {
+    wrap({ get: vi.fn(async () => page([land({ survey_type: "RS", jl_no: "42" }), land({ land_id: "LP-10101" })])) }, en, "en", <RecordsView />);
+    const table = await screen.findByTestId("records-table");
+    expect(within(table).getByText("JL no.")).toBeInTheDocument();
+    expect(within(table).getByText("Survey")).toBeInTheDocument();
+    expect(within(table).getByText("RS (Revisional)")).toBeInTheDocument();
+    expect(within(table).getByText("42")).toBeInTheDocument();
+  });
+
   it("documents tab maps type/status, never shows a path, handles unassigned", async () => {
     wrap({ get: vi.fn(async (u: string) => (u.startsWith("/admin/documents") ? page([doc(), doc({ id: "d2", land_id: null, ocr_confidence: null, processing_status: "WEIRD" })]) : page([land()]))) }, en, "en", <RecordsView />);
     await screen.findByTestId("records-table");

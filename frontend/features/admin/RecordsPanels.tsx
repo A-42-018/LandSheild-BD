@@ -59,6 +59,7 @@ function useListState(sort: string, order: "asc" | "desc") {
 export function LandRecordsPanel() {
   const t = useTranslations("admin.console.records");
   const ts = useTranslations("status");
+  const ta = useTranslations("archive");
   const te = useTranslations("admin.console.errors");
   const locale = useLocale();
   const s = useListState("land_id", "asc");
@@ -70,6 +71,8 @@ export function LandRecordsPanel() {
     { key: "district", header: t("cols.district"), sortable: true },
     { key: "upazila", header: t("cols.upazila") },
     { key: "mouza", header: t("cols.mouza"), sortable: true },
+    { key: "jl_no", header: t("cols.jl"), render: (r) => r.jl_no ?? "—" },
+    { key: "survey_type", header: t("cols.survey"), render: (r) => (r.survey_type ? (ta.has(`surveys.${r.survey_type}`) ? ta(`surveys.${r.survey_type}`) : r.survey_type) : "—") },
     { key: "khatian_no", header: t("cols.khatian") },
     { key: "dag_no", header: t("cols.dag") },
     { key: "area", header: t("cols.area"), sortable: true, render: (r) => `${num.format(r.area)} ${r.area_unit}` },

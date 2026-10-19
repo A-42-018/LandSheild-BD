@@ -121,6 +121,7 @@ def test_all_scenario_lands_exist(db):
     assert ids == {
         "LP-10001", "LP-10100", "LP-10234", "LP-10240", "LP-10300", "LP-10400", "LP-10500",
         "LP-10600", "LP-10700", "LP-10800", "LP-10900", "LP-11000",
+        "LP-12001", "LP-12002", "LP-12003",  # SJ1 survey/JL demo lands
     }
 
 
