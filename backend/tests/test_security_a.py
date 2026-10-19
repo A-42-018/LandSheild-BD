@@ -124,12 +124,14 @@ def test_cors_allows_only_the_configured_origin_methods_and_headers(client):
     assert ok.headers["access-control-allow-origin"] == "http://localhost:3000"
     assert ok.headers["access-control-allow-credentials"] == "true"
     methods = ok.headers["access-control-allow-methods"]
-    assert "POST" in methods and "PUT" not in methods
+    assert "POST" in methods and "PUT" in methods  # PUT /documents/{id}/land (D7)
+    assert "TRACE" not in methods
     bad_origin = _preflight(client, "https://evil.example")
     assert bad_origin.status_code == 400
     assert "access-control-allow-origin" not in bad_origin.headers
     assert _preflight(client, "http://localhost:3000", headers="x-custom").status_code == 400
-    assert _preflight(client, "http://localhost:3000", method="PUT").status_code == 400
+    assert _preflight(client, "http://localhost:3000", method="PUT").status_code == 200
+    assert _preflight(client, "http://localhost:3000", method="TRACE").status_code == 400
 
 
 def test_wildcard_origin_is_never_echoed_with_credentials():

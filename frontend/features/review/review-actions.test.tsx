@@ -207,6 +207,16 @@ describe("approve / reject / reprocess", () => {
       expect(screen.getByTestId("ambiguous-chooser")).toBeInTheDocument();
       expect(screen.queryByTestId("land-attached")).toBeNull();
     });
+
+    it("asks to try again (not to choose another land) when the request itself failed", async () => {
+      const post = vi.fn().mockRejectedValue(ambiguous());
+      const put = vi.fn().mockRejectedValue(new ApiError(0, "NETWORK_ERROR", "Network error"));
+      setup({ post, put });
+      fireEvent.click(await screen.findByTestId("approve-btn"));
+      fireEvent.click((await screen.findAllByTestId("chooser-option"))[0]);
+      expect(await screen.findByTestId("land-attach-failed")).toHaveTextContent(en.review.actions.landAttachRetry);
+      expect(screen.getByTestId("ambiguous-chooser")).toBeInTheDocument();
+    });
   });
 
   it("reject needs a reason, then posts it", async () => {

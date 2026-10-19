@@ -128,7 +128,11 @@ export default function ReviewActions({
       )}
       {attachLand.isError && (
         <p role="alert" data-testid="land-attach-failed" className="text-sm text-critical">
-          {t("actions.landAttachFailed")}
+          {attachLand.error?.code === "DOCUMENT_NOT_REVIEWABLE"
+            ? t("actions.notReviewable")
+            : [404, 409, 422].includes(attachLand.error?.status ?? 0)
+              ? t("actions.landAttachFailed")
+              : t("actions.landAttachRetry")}
         </p>
       )}
       {attachLand.isSuccess && !approve.isError && attachLand.data?.land_id && (
