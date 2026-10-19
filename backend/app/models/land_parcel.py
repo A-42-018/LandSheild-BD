@@ -22,7 +22,8 @@ class LandParcel(IdMixin, TimestampMixin, Base):
             "dag_no",
             unique=True,
         ),
-        Index("ix_land_parcels_mouza_jl", func.lower(text("mouza")), "jl_no"),  # lookups use lower()
+        # lookups compare lower(mouza)
+        Index("ix_land_parcels_mouza_jl", func.lower(text("mouza")), "jl_no"),
     )
 
     land_id: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)

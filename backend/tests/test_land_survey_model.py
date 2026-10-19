@@ -126,7 +126,8 @@ def test_migration_0019_up_down_up_and_backfill(tmp_path, monkeypatch):
         c.execute(text(
             "INSERT INTO documents (id, land_id, document_type, file_path, file_hash,"
             " extraction_json, processing_status, created_at) VALUES"
-            " ('d2','a','PORCHA','p','h2','{\"survey_type\": \"rs\", \"extras\": {\"jl_no\": \"০৪৫\"}}',"
+            " ('d2','a','PORCHA','p','h2',"
+            "'{\"survey_type\": \"rs\", \"extras\": {\"jl_no\": \"০৪৫\"}}',"
             "'APPROVED','2026-02-01')"
         ))
     command.upgrade(cfg, "head")
@@ -147,8 +148,8 @@ def test_migration_0019_up_down_up_and_backfill(tmp_path, monkeypatch):
     with eng.begin() as c, pytest.raises(IntegrityError):
         for lid in ("x1", "x2"):  # identical legacy rows: rejected by the coalesce() key
             c.execute(text(
-                "INSERT INTO land_parcels (id, land_id, district, upazila, mouza, dag_no, khatian_no,"
-                " area, area_unit, status, created_at, updated_at) VALUES"
+                "INSERT INTO land_parcels (id, land_id, district, upazila, mouza, dag_no,"
+                " khatian_no, area, area_unit, status, created_at, updated_at) VALUES"
                 f" ('{lid}','L-{lid}','D','U','M','9','9',1,'decimal','ACTIVE',"
                 "'2026-01-01','2026-01-01')"
             ))
