@@ -354,5 +354,48 @@ export function EmptyArt({ className }: { className?: string }) {
   );
 }
 
-export const SERVICE_ART = { verify: PlotSearchArt, check: ChecklistArt, track: RouteArt, verifyDoc: DeedArt } as const;
+/** My land by NID: a national ID card in front of a plot marked with a location pin. */
+export function NidLandArt({ className }: { className?: string }) {
+  const digits = [0, 1, 2, 3, 4, 5, 6, 7];
+  return (
+    <Art className={className}>
+      <defs>
+        <Blur id="na-b" />
+        <linearGradient id="na-top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#9BDAB0" /><stop offset="1" stopColor="#3E9E6A" /></linearGradient>
+        <linearGradient id="na-card" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FFFFFF" /><stop offset="1" stopColor="#E3EEE8" /></linearGradient>
+        <linearGradient id="na-band" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#13865B" /><stop offset="1" stopColor="#00563F" /></linearGradient>
+        <linearGradient id="na-pin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#F1D88C" /><stop offset="1" stopColor="#C9952F" /></linearGradient>
+      </defs>
+      <Shadow id="na-b" cx={72} cy={104} rx={58} />
+      {/* plot slab */}
+      <path d="M60,80L96,96V103L60,87Z" fill="#245F3F" />
+      <path d="M96,96L134,78V85L96,103Z" fill="#2E7550" />
+      <path d="M60,80L98,63L134,78L96,96Z" fill="url(#na-top)" />
+      <path d="M98,63L116,70.5L98,79L80,71Z" fill="#D3EC97" opacity="0.85" />
+      <path d="M79,71.5L115,87.5M78,88L116,70.5" stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth="1" />
+      <g fill="#1E6B44"><circle cx="122" cy="80" r="2.4" /><circle cx="127" cy="77.5" r="2" /></g>
+      {/* pin */}
+      <ellipse cx="110" cy="80" rx="4" ry="1.6" fill="#0E1F36" opacity="0.25" />
+      <path d={pin(110, 80, 10)} fill="#8A6417" transform="translate(2 2)" opacity="0.55" />
+      <path d={pin(110, 80, 10)} fill="url(#na-pin)" />
+      <circle cx="110" cy="64" r="4" fill="#FFF8E0" />
+      {/* NID card */}
+      <rect x="11" y="27" width="76" height="52" rx="6" fill="#0E3A2A" opacity="0.35" />
+      <rect x="8" y="24" width="76" height="52" rx="6" fill="url(#na-card)" stroke="#B9DCCB" />
+      <path d="M14,24H78A6,6 0 0 1 84,30V36H8V30A6,6 0 0 1 14,24Z" fill="url(#na-band)" />
+      <circle cx="17" cy="30" r="3.2" fill="#E2343F" />
+      <rect x="24" y="27.5" width="34" height="2.2" rx="1.1" fill="#FFFFFF" opacity="0.9" />
+      <rect x="24" y="31.5" width="22" height="1.8" rx="0.9" fill="#FFFFFF" opacity="0.6" />
+      <rect x="14" y="41" width="20" height="28" rx="3" fill="#DCEBE3" stroke="#9CC5B0" />
+      <circle cx="24" cy="51" r="5" fill="#7FA893" />
+      <path d="M16,68C16.8,61 20,58.5 24,58.5S31.2,61 32,68Z" fill="#7FA893" />
+      <rect x="39" y="43" width="38" height="3" rx="1.5" fill="#C2CCD8" />
+      <rect x="39" y="49.5" width="27" height="2.4" rx="1.2" fill="#DCE2EA" />
+      {digits.map((i) => <rect key={i} x={39 + i * 4.6} y="57" width="3.2" height="5" rx="0.8" fill="#0F7F61" />)}
+      <rect x="39" y="66" width="31" height="2.4" rx="1.2" fill="#DCE2EA" />
+    </Art>
+  );
+}
+
+export const SERVICE_ART = { verify: PlotSearchArt, check: ChecklistArt, track: RouteArt, verifyDoc: DeedArt, myLands: NidLandArt } as const;
 export const TOOL_ART = { units: TapeMeasureArt, fees: FeeCalculatorArt, faraid: ScaleArt } as const;

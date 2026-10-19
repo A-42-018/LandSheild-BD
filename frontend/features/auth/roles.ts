@@ -50,6 +50,8 @@ export interface NavItem {
   roles?: Role[];
   /** true = shown in the header bar (Home, and the সেবাসমূহ dropdown); others live in the account menu (UD10) */
   primary?: boolean;
+  /** true = also shown to signed-out visitors, so they find the page and its RequireRole sends them to sign in */
+  guest?: boolean;
 }
 
 /** Add entries here as feature pages land (R4 matrix). */
@@ -60,6 +62,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/check", labelKey: "nav.check", roles: ROLES, primary: true },
   { href: "/track", labelKey: "nav.track", primary: true },
   { href: "/verify-document", labelKey: "nav.verifyDoc", primary: true },
+  { href: "/my/lands", labelKey: "nav.myLands", roles: ["CITIZEN"], primary: true, guest: true }, // NID lands: citizens; visitors are sent to sign in
   { href: "/map", labelKey: "nav.map", primary: true }, // U2.3: public (outlines + numbers)
   { href: "/my", labelKey: "nav.myArea", roles: ["CITIZEN"] },
   { href: "/officer", labelKey: "nav.dashboard", roles: REVIEW_UP },
@@ -68,7 +71,7 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export function navItemsFor(role: Role | null, items: NavItem[] = NAV_ITEMS): NavItem[] {
-  return items.filter((i) => !i.roles || (role !== null && i.roles.includes(role)));
+  return items.filter((i) => !i.roles || (role === null ? !!i.guest : i.roles.includes(role)));
 }
 
 export function hasRole(role: Role | null | undefined, allowed: Role[]): boolean {

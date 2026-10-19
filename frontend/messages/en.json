@@ -30,6 +30,7 @@
     "account": "Account menu",
     "check": "Check before you buy",
     "verifyDoc": "Verify a document copy",
+    "myLands": "Your land by NID",
     "track": "Track mutation",
     "profile": "Account",
     "signup": "Sign up",
@@ -600,7 +601,12 @@
       "reprocessFailed": "We could not ask for a new reading. Try again.",
       "rejectFailed": "We could not reject this document. Try again.",
       "saveFailed": "We could not save this change. Try again.",
-      "notReviewable": "This document is no longer waiting for review. Open the page again."
+      "notReviewable": "This document was already decided or sent back to be read again, so it cannot be approved now. The page shows its current state.",
+      "outsideArea": "This deed is for land in {place}, outside the area of {office}, the office it was filed under, so it cannot be approved there. Reject it with this reason, or ask an administrator to file it under the right office.",
+      "landMismatch": "The khatian or dag number on this deed does not match land {land}, which it was uploaded for. Correct them, or reject the deed.",
+      "landOtherOffice": "Land {land} is held by another land office, so this deed cannot be approved from here.",
+      "notReady": "This document has not been read yet. Wait until processing finishes.",
+      "outsideAreaShort": "Cannot be approved: the land is outside the area of the office this deed was filed under (see the note at the top)."
     },
     "decision": {
       "APPROVED": "This document has been approved.",
@@ -881,6 +887,21 @@
         "title": "Other reading",
         "use": "Use this reading"
       }
+    },
+    "focus": {
+      "title": "Check this deed",
+      "hint": "Compare each value with the deed. The target button shows where a value is on the page.",
+      "needs": "Need checking: {n}",
+      "fine": "Look fine: {n}",
+      "empty": "Not read: {n}",
+      "errors": "Errors: {n}",
+      "modeLabel": "Show",
+      "all": "All values",
+      "check": "Only what needs checking",
+      "jump": "Go to",
+      "allFine": "Nothing to check in this part.",
+      "readingInfo": "How this document was read",
+      "addValue": "Add {label}"
     }
   },
   "landing": {
@@ -958,6 +979,10 @@
       "verifyDoc": {
         "title": "Verify a document copy",
         "desc": "Check that a deed copy or QR code matches the signed record."
+      },
+      "myLands": {
+        "title": "Find your land by NID",
+        "desc": "Sign in, link your NID with your date of birth, and see every plot recorded in your name."
       }
     },
     "checks": {
@@ -2529,6 +2554,22 @@
           "n1": "Open Verify a document copy.",
           "n2": "Upload the file.",
           "n3": "Read whether it matches the signed record."
+        }
+      },
+      "myLands": {
+        "title": "Find your land by NID",
+        "who": "Signed-in citizens. Only you can see your own list.",
+        "need": {
+          "n1": "A citizen account on LandShield",
+          "n2": "Your NID number and date of birth, linked once in Profile"
+        },
+        "fee": "Free.",
+        "time": "The list appears as soon as your NID is linked. A new plot shows up after a land office records it under your NID.",
+        "office": "LandShield demo review team. The land office named in each record is shown when you open it.",
+        "apply": {
+          "n1": "Sign in as a citizen.",
+          "n2": "Open Find your land by NID and link your NID with your date of birth.",
+          "n3": "See the land you own now and owned before, and open any record."
         }
       }
     }

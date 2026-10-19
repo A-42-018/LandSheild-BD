@@ -131,7 +131,8 @@ export default function ReviewView({ id }: { id: string }) {
   } else body = <LoadingState />;
 
   return (
-    <div className="flex flex-col gap-4">
+    // a side-by-side workspace: on wide screens <main> drops its 75rem reading width for this page
+    <div className="flex flex-col gap-4" data-wide-page>
       <OfficerPageHeader
         title={t("title")}
         purpose={t("purpose")}
@@ -174,7 +175,7 @@ export default function ReviewView({ id }: { id: string }) {
           data-testid="review-columns"
         >
           <div
-            className={`min-w-0 xl:pr-4 ${pane === "doc" ? "" : "max-md:hidden"}`}
+            className={`min-w-0 xl:sticky xl:top-20 xl:self-start xl:pr-4 ${pane === "doc" ? "" : "max-md:hidden"}`}
           >
             <DocumentPreview id={id} fileType={d.file_type} />
           </div>
