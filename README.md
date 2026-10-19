@@ -9,7 +9,7 @@
 >
 > ল্যান্ডশিল্ড ডিজিটাল রেকর্ড সংগঠন, সামঞ্জস্য যাচাই ও ঝুঁকি-নির্দেশক প্রদান করে। এটি আইনগত মালিকানা প্রতিষ্ঠা করে না, স্বত্ব প্রত্যয়ন করে না, এবং সরকারি/আইনগত যাচাইয়ের বিকল্প নয়।
 
-**Live demo:** <https://landshield-bd.vercel.app> · **Team:** DEEDGUARD (Alif Mahmud, Ayesha Hamid Mithila) · **Concept note:** [docs/LandShield-BD-Concept-Note.pdf](docs/LandShield-BD-Concept-Note.pdf)
+**Live demo:** <https://landshield-bd.vercel.app> · **Demo video:** [youtu.be/ZzGZMmd4yT4](https://youtu.be/ZzGZMmd4yT4) · **Team:** DEEDGUARD (Alif Mahmud, Ayesha Hamid Mithila) · **Concept note:** [docs/LandShield-BD-Concept-Note.pdf](docs/LandShield-BD-Concept-Note.pdf)
 
 ![LandShield BD home page in Bangla](docs/screenshots/home-bn.jpg)
 

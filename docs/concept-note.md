@@ -1,7 +1,7 @@
 # LandShield BD — Concept Note
 
 **LandTech 2026 · Track: Digital Land Records, Verification & Digitization · Problem statement P3: Fraud & Double-Selling** (supporting: P1, P2, P4, P5)<br>
-Team: DEEDGUARD · Live demo: https://land-sheild-bd.netlify.app/en · Code: https://github.com/A-42-018/LandSheild-BD · Video: VIDEO_URL
+Team: DEEDGUARD · Live demo: https://land-sheild-bd.netlify.app/en · Code: https://github.com/A-42-018/LandSheild-BD · Video: https://youtu.be/ZzGZMmd4yT4
 
 > Demo prototype. All land, deed and person records are synthetic. LandShield gives risk *indicators* for a human to review; it does not establish ownership or replace official verification.
 

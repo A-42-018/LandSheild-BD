@@ -21,7 +21,7 @@ p > img[alt="Architecture"] { display: block; width: 100%; margin: 1mm 0; }
 .shots p::after { content: attr(data-cap); display: block; font-size: 8pt; color: #475569; margin-top: 0.8mm; }
 </style></head><body><h1>LandShield BD — Concept Note</h1>
 <p><strong>LandTech 2026 · Track: Digital Land Records, Verification &amp; Digitization · Problem statement P3: Fraud &amp; Double-Selling</strong> (supporting: P1, P2, P4, P5)<br>
-Team: DEEDGUARD · Live demo: https://land-sheild-bd.netlify.app/en · Code: https://github.com/A-42-018/LandSheild-BD · Video: VIDEO_URL</p>
+Team: DEEDGUARD · Live demo: https://land-sheild-bd.netlify.app/en · Code: https://github.com/A-42-018/LandSheild-BD · Video: https://youtu.be/ZzGZMmd4yT4</p>
 <blockquote>
 <p>Demo prototype. All land, deed and person records are synthetic. LandShield gives risk <em>indicators</em> for a human to review; it does not establish ownership or replace official verification.</p>
 </blockquote>
@@ -103,7 +103,7 @@ Team: DEEDGUARD · Live demo: https://land-sheild-bd.netlify.app/en · Code: htt
 </tr>
 </tbody>
 </table>
-<p><strong>Limitations (stated honestly).</strong> Every number comes from synthetic data. Bangla OCR accuracy has <strong>not</strong> been measured yet, and noisy scans currently fail extraction, which is why human review is mandatory. The anomaly score is not a probability. The ledger is only as strong as write access to the database (anchoring the chain head off-database comes next). The demo uses SQLite with no real registry integration. The free hosting tier sleeps, so the first request has a cold start.</p>
+<p><strong>Limitations (stated honestly).</strong> Every number comes from synthetic data. Bangla OCR was measured only on two synthetic khatian/porcha specimens (mean CER ≈ 17 %, parsed fields 77–90 %), and noisy scans still fail extraction most of the time, which is why human review is mandatory. The anomaly score is not a probability. The ledger is only as strong as write access to the database (anchoring the chain head off-database comes next). The demo uses SQLite with no real registry integration. The free hosting tier sleeps, so the first request has a cold start.</p>
 <h2>7. Countrywide implementation plan</h2>
 <table>
 <thead>
