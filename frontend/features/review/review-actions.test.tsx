@@ -61,6 +61,21 @@ beforeEach(() => {
   URL.revokeObjectURL = vi.fn();
 });
 
+describe("needs-checking filter", () => {
+  it("counts the values to check and hides the rest on request", async () => {
+    setup({ ext: extraction({ mouza: { confidence: 0.6, low_confidence: true }, dag_no: { confidence: 0.87 } }) });
+    expect(await screen.findByTestId("focus-check")).toHaveTextContent("Need checking: 2");
+    expect(screen.getByTestId("field-owner_name")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("focus-mode-check"));
+    expect(screen.getByTestId("focus-mode-check")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.queryByTestId("field-owner_name")).toBeNull();
+    expect(screen.getByTestId("field-mouza")).toBeInTheDocument();
+    expect(screen.getByTestId("field-dag_no")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("focus-mode-all"));
+    expect(screen.getByTestId("field-owner_name")).toBeInTheDocument();
+  });
+});
+
 describe("inline editing", () => {
   it("edits one field and sends a single-field PATCH, then shows the saved value", async () => {
     const saved = extraction({ khatian_no: { value: "777", edited_by_human: true } });
@@ -138,7 +153,48 @@ describe("approve / reject / reprocess", () => {
   it("shows an alert when approve is rejected by the server", async () => {
     setup({ post: vi.fn().mockRejectedValue(new ApiError(422, "EXTRACTION_INVALID", "x", [{ field: "seller", code: "REQUIRED" }])) });
     fireEvent.click(await screen.findByTestId("approve-btn"));
-    expect(await screen.findByText(en.review.actions.approveFailed)).toBeInTheDocument();
+    expect(await screen.findByText(en.review.actions.approveBlocked)).toBeInTheDocument();
+  });
+
+  // the bug: every 409 read "no longer waiting for review, open the page again", so a deed refused for
+  // lying outside the office's area looked like a stale page and stayed pending after every reload
+  it("names the area refusal instead of asking for a reload", async () => {
+    const area = { office: "LO-1", office_name_en: "AC Land Office, Savar", office_name_bn: "সহকারী কমিশনার (ভূমি) অফিস, সাভার", district: "Narayanganj", upazila: "Rupganj" };
+    setup({ post: vi.fn().mockRejectedValue(new ApiError(409, "RECORD_OUTSIDE_AREA", "x", area)) });
+    fireEvent.click(await screen.findByTestId("approve-btn"));
+    const alert = await screen.findByText(/outside the area of AC Land Office, Savar/);
+    expect(alert).toHaveTextContent("Narayanganj, Rupganj");
+    expect(screen.queryByText(en.review.actions.notReviewable)).toBeNull();
+  });
+
+  it("explains a khatian / dag mismatch with the land it was uploaded for", async () => {
+    setup({ post: vi.fn().mockRejectedValue(new ApiError(409, "LAND_IDENTIFIER_MISMATCH", "x", { land_id: "LP-10001" })) });
+    fireEvent.click(await screen.findByTestId("approve-btn"));
+    expect(await screen.findByText(/does not match land LP-10001/)).toBeInTheDocument();
+  });
+
+  it("says a document already decided elsewhere cannot be approved", async () => {
+    setup({ post: vi.fn().mockRejectedValue(new ApiError(409, "DOCUMENT_NOT_REVIEWABLE", "x", { status: "APPROVED" })) });
+    fireEvent.click(await screen.findByTestId("approve-btn"));
+    expect(await screen.findByText(en.review.actions.notReviewable)).toBeInTheDocument();
+  });
+
+  it("shows the code of an unexpected refusal", async () => {
+    setup({ post: vi.fn().mockRejectedValue(new ApiError(500, "POSTING_FAILED", "x")) });
+    fireEvent.click(await screen.findByTestId("approve-btn"));
+    expect(await screen.findByText(`${en.review.actions.approveFailed} (POSTING_FAILED)`)).toBeInTheDocument();
+  });
+
+  it("warns before any checking when the deed lies outside the office's area, and blocks approve", async () => {
+    const area_conflict = { office: "LO-1", office_name_en: "AC Land Office, Savar", district: "Narayanganj", upazila: "Rupganj" };
+    const { post } = setup({ ext: extraction({}, { area_conflict }) });
+    expect(await screen.findByTestId("area-conflict-banner")).toHaveTextContent("outside the area of AC Land Office, Savar");
+    const btn = screen.getByTestId("approve-btn");
+    expect(btn).toBeDisabled();
+    expect(btn).toHaveAttribute("aria-describedby", "approve-outside-area");
+    expect(screen.getByTestId("approve-outside-area")).toHaveTextContent(en.review.actions.outsideAreaShort);
+    fireEvent.click(btn);
+    expect(post).not.toHaveBeenCalled();
   });
 
   it("keeps approve disabled until the new owner's NID is entered, then saves it with PATCH", async () => {

@@ -68,7 +68,7 @@ function PlotCard({ plot, i, threshold }: { plot: LhdrPlot; i: number; threshold
         {dags.length === 0 && <p className="text-sm text-ink-muted">{t("none")}</p>}
         <FieldGrid>
           {dags.map((d, j) => (
-            <div key={j} className="flex min-w-0 items-start justify-between gap-2">
+            <div key={j} className="flex min-w-0 basis-full items-start justify-between gap-2">
               <FieldValue id={`${id}_dag${j}`} label={t("dagN", { n: j + 1 })} field={d} threshold={threshold} path={`${base}/dag_no/${j}`} />
               <RemoveButton id={`${id}_dag${j}`} path={`${base}/dag_no/${j}`} what={t("dagN", { n: j + 1 })} />
             </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Crosshair, Pencil } from "lucide-react";
 import { Badge, Button, Input, Select } from "@/components/ui";
@@ -7,6 +7,7 @@ import { useFocusFirstInvalid } from "@/lib/focus-first-invalid";
 import { BAND_TONE, bandFor, percent } from "../confidence";
 import { toRecordErrors } from "../useReviewActions";
 import { usableBbox, useHighlight } from "../highlight";
+import { useFocusEntry, useReviewFocus, type FocusState } from "../focus";
 import CandidatePicker, { FlagBadges } from "./CandidatePicker";
 import type { Leaf, RecordApiError } from "../types";
 import { asField } from "./asField";
@@ -141,14 +142,56 @@ export default function FieldValue({
           : o,
   }));
 
+  const inGrid = useContext(InGrid);
+  const hasCandidates = (f?.candidates ?? []).some(
+    (c) => c.value !== null && c.value !== undefined && c.value !== "",
+  );
+  const needsCheck =
+    (band !== null && band !== "high") || issues.length > 0 || !!unclear || !!f?.flags?.length;
+  const state: FocusState = needsCheck ? "check" : present ? "fine" : "empty";
+  const hidden = useFocusEntry(`deed-${id}`, state, editing || highlighted);
+  if (hidden) return null;
+  // a value the deed did not show, with nothing to say about it: a small chip after the read values
+  const chip = !editing && !present && !needsCheck && !hasCandidates;
+
+  const editButton = canEdit && (
+    <Button
+      size="sm"
+      variant="ghost"
+      icon={<Pencil />}
+      onClick={open}
+      aria-label={`${t("edit")}: ${label}`}
+      title={t("edit")}
+      className="!px-2 [@media(pointer:fine)]:!min-h-8"
+      data-testid={`deed-${id}-edit`}
+    />
+  );
+
+  if (chip) {
+    return (
+      <div
+        data-testid={`deed-${id}`}
+        data-empty="true"
+        className={`inline-flex min-w-0 items-center gap-1 rounded-full border border-dashed border-line py-0.5 pl-3 pr-1 text-xs text-ink-muted ${inGrid ? "order-last" : ""}`}
+      >
+        <dt className="font-medium">{label}</dt>
+        <dd className="flex items-center gap-1">
+          <span aria-hidden="true">·</span>
+          <span data-testid={`deed-${id}-value`}>{t("notRead")}</span>
+          {editButton}
+        </dd>
+      </div>
+    );
+  }
+
   return (
     <div
       data-testid={`deed-${id}`}
       data-band={band ?? undefined}
       data-edited={f?.edited_by_human ? "true" : undefined}
-      className="flex min-w-0 flex-col gap-1 border-l-4 border-l-line py-1.5 pl-3 data-[band=high]:border-l-verified data-[band=medium]:border-l-review data-[band=low]:border-l-critical"
+      className={`grid min-w-0 basis-full gap-x-3 gap-y-0.5 rounded-md border-l-4 border-l-line py-1.5 pl-3 pr-1 transition-colors hover:bg-primary-soft/40 data-[band=high]:border-l-verified data-[band=medium]:border-l-review data-[band=low]:border-l-critical ${inGrid ? "sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)]" : ""} ${highlighted ? "bg-primary-soft/60" : ""}`}
     >
-      <dt className="text-xs font-medium uppercase tracking-wide text-ink-muted">
+      <dt className="pt-1 text-xs font-medium text-ink-muted">
         {label}
       </dt>
       <dd className="flex min-w-0 flex-col gap-0.5">
@@ -207,14 +250,14 @@ export default function FieldValue({
           </form>
         ) : (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+            <div className="flex flex-wrap items-center justify-between gap-x-2">
               <span
-                className={present ? "break-words text-ink" : "text-ink-muted"}
+                className={present ? "break-words font-medium text-ink" : "text-ink-muted"}
                 data-testid={`deed-${id}-value`}
               >
                 {present ? text : t("notRead")}
               </span>
-              <span className="flex flex-wrap items-center gap-1">
+              <span className="flex flex-wrap items-center justify-end gap-1">
                 <FlagBadges id={id} flags={f?.flags} />
                 {f?.edited_by_human && (
                   <Badge tone="pending">{t("edited")}</Badge>
@@ -229,6 +272,7 @@ export default function FieldValue({
                     tone={BAND_TONE[band]}
                     data-band={band}
                     title={t("confidence")}
+                    className="!px-2 !py-0 font-medium"
                   >
                     {t(`band.${band}`)} · {percent(f.confidence)}%
                   </Badge>
@@ -241,23 +285,12 @@ export default function FieldValue({
                     onClick={locate}
                     aria-pressed={highlighted}
                     aria-label={`${t("locate")}: ${label}`}
+                    title={t("locate")}
+                    className="!px-2 aria-pressed:bg-primary-soft aria-pressed:text-primary [@media(pointer:fine)]:!min-h-8"
                     data-testid={`deed-${id}-locate`}
-                  >
-                    {t("locate")}
-                  </Button>
+                  />
                 )}
-                {canEdit && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    icon={<Pencil />}
-                    onClick={open}
-                    aria-label={`${t("edit")}: ${label}`}
-                    data-testid={`deed-${id}-edit`}
-                  >
-                    {t("edit")}
-                  </Button>
-                )}
+                {editButton}
               </span>
             </div>
             {verbatim && (
@@ -298,7 +331,22 @@ export default function FieldValue({
   );
 }
 
-/** Grid of FieldValue rows. */
+const InGrid = createContext(false);
+
+/**
+ * The values of one part of the deed: one compact row per read value (label | value, badges and
+ * buttons on the same line), then the values the deed did not show as small chips. In the "only
+ * what needs checking" filter a part with nothing left says so.
+ */
 export function FieldGrid({ children }: { children: React.ReactNode }) {
-  return <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-2">{children}</dl>;
+  const t = useTranslations("review.focus");
+  const filtered = useReviewFocus()?.mode === "check";
+  return (
+    <InGrid.Provider value={true}>
+      <dl className="peer flex flex-wrap items-center gap-1">{children}</dl>
+      {filtered && (
+        <p className="hidden text-xs text-ink-muted peer-empty:block">{t("allFine")}</p>
+      )}
+    </InGrid.Provider>
+  );
 }

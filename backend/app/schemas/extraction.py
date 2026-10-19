@@ -114,6 +114,9 @@ class ExtractionOut(BaseModel):
     original_fields: list[ExtractedField] | None = None
     # viewer uploaded this document and is not ADMIN: approve is refused (SELF_APPROVAL_FORBIDDEN)
     self_approval_blocked: bool = False
+    # the record lies outside the uploading office's area: approve is refused (RECORD_OUTSIDE_AREA)
+    # with these details ({office, district, upazila}); said before the reviewer checks every field
+    area_conflict: dict[str, Any] | None = None
 
 
 class FieldEdit(BaseModel):

@@ -256,7 +256,8 @@ def check_record_area(office: LandOffice | None, district: str | None, upazila: 
             "RECORD_OUTSIDE_AREA",
             "This record is outside your land office's area",
             409,
-            {"office": office.code, "district": district, "upazila": upazila},
+            {"office": office.code, "office_name_en": office.name_en,
+             "office_name_bn": office.name_bn, "district": district, "upazila": upazila},
         )
 
 
