@@ -2,12 +2,15 @@ import struct
 import zlib
 
 import pytest
+from ai.mock_fixtures import find_fixture
 from sqlalchemy import func, select
 
 from app.api.v1.documents import get_storage
 from app.core.db import get_db
 from app.models.audit import AuditLog
 from app.models.document import Document
+from app.models.land_office import LandOffice
+from app.services.offices import ensure_offices
 from app.services.storage import LocalStorage, StorageError
 from app.services.upload_validation import MAX_PDF_PAGES, MAX_UPLOAD_BYTES
 from tests.test_lands import FORBIDDEN_KEYS, _h, _keys, env  # noqa: F401
@@ -46,7 +49,26 @@ def store(env, tmp_path):
     return root
 
 
+def default_office(env, data: bytes = b"") -> str:
+    """Every upload names a land office (422 OFFICE_REQUIRED otherwise), and processing then checks
+    that the record lies in that office's area. The seeded role accounts have no office of their
+    own, so a test upload files under the district (DC) land office of the mock fixture's district
+    (Dhaka when the file matches none): a district office takes records from any of its upazilas."""
+    fields = (find_fixture(data) or {}).get("fields") or {}
+    district = (fields.get("district") or ["Dhaka"])[0]
+    with _db(env) as s:
+        ensure_offices(s)
+        return s.scalar(
+            select(LandOffice.id)
+            .where(LandOffice.office_type == "District Land Office",
+                   (LandOffice.district_en == district) | (LandOffice.district_bn == district))
+            .order_by(LandOffice.code)
+            .limit(1)
+        )  # fmt: skip
+
+
 def _up(env, name, data, role="OFFICER", **form):
+    form.setdefault("office_id", default_office(env, data))
     return env.post(
         URL,
         files={"file": (name, data, "application/octet-stream")},

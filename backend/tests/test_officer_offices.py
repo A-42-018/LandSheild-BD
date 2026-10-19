@@ -8,7 +8,7 @@ from app.models.document import Document
 from app.models.land_office import LandOffice, OfficerRequest
 from app.models.land_parcel import LandParcel
 from app.models.user import User
-from tests.test_documents import _db, _up, png, store  # noqa: F401
+from tests.test_documents import _db, _up, default_office, png, store  # noqa: F401
 from tests.test_extraction import _patch, _ready  # noqa: F401
 from tests.test_lands import PW, _h, env  # noqa: F401
 from tests.test_processing import jobs  # noqa: F401
@@ -140,9 +140,12 @@ RUPGANJ = {"office_type": "Union Land Office", "district_en": "Narayanganj", "up
 
 
 def _upload(env, hdr, name="a.png", **form):
+    data = png(salt=name.encode())
+    if not env.get("/api/v1/auth/me", headers=hdr).json().get("office"):  # no office of their own
+        form.setdefault("office_id", default_office(env, data))
     return env.post(
         "/api/v1/documents/upload",
-        files={"file": (name, png(salt=name.encode()), "application/octet-stream")},
+        files={"file": (name, data, "application/octet-stream")},
         data=form, headers=hdr,
     )
 
@@ -162,6 +165,11 @@ def test_upload_is_filed_under_the_officers_own_office(env, store):
 
 
 def test_admin_must_name_the_office_and_files_into_it(env, store):
+    for role in ("ADMIN", "OFFICER"):  # neither account has an office of its own
+        r = _upload(env, _h(env, role), f"none-{role}.png", office_id="")
+        assert r.status_code == 422 and r.json()["code"] == "OFFICE_REQUIRED", r.text
+    with _db(env) as s:
+        assert s.scalar(select(Document.id)) is None
     oid = _office(env, **RUPGANJ)
     r = _upload(env, _h(env, "ADMIN"), office_id=oid)
     assert r.status_code == 201 and r.json()["office"]["id"] == oid

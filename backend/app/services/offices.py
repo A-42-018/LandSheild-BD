@@ -221,9 +221,9 @@ def ensure_doc_access(
         raise AppError("DOCUMENT_NOT_FOUND", "Document not found", 404)
 
 
-def resolve_upload_office(db: Session, user: User, requested: str | None) -> LandOffice | None:
+def resolve_upload_office(db: Session, user: User, requested: str | None) -> LandOffice:
     """Office an upload is filed under. An office officer can only file into their own office;
-    an admin or unrestricted officer names one (or none, for legacy callers)."""
+    an admin or unrestricted officer must name one (422 OFFICE_REQUIRED otherwise)."""
     own = user_office(user)
     if own is not None:
         if requested and requested != own.id:
@@ -232,7 +232,7 @@ def resolve_upload_office(db: Session, user: User, requested: str | None) -> Lan
             )
         return own
     if not requested:
-        return None
+        raise AppError("OFFICE_REQUIRED", "Choose the land office this record belongs to", 422)
     office = db.get(LandOffice, requested)
     if office is None:
         raise AppError("OFFICE_NOT_FOUND", "Land office not found", 404)
