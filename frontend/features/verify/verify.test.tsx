@@ -202,7 +202,29 @@ describe("VerifyForm", () => {
     const url = request.mock.calls[1][0] as string;
     expect(url).toContain("survey=CS");
     expect(url).toContain("jl_no=12");
+    expect(url).toContain("land_id=LP-10001"); // reaches the picked row even when a legacy one also fits
     expect(screen.queryByTestId("ambiguous-chooser")).toBeNull();
+  });
+
+  it("a visitor's legacy pick (no survey, no JL) is sent once as land_id, not on the next search", async () => {
+    const cands = [
+      { land_id: "LP-10001", survey_type: "RS", jl_no: "12", mouza: "Barmi" },
+      { land_id: "LP-12003", survey_type: null, jl_no: null, mouza: "Barmi" },
+    ];
+    const request = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError(409, "LAND_AMBIGUOUS", "x", { candidates: cands }))
+      .mockResolvedValue(SUMMARY);
+    wrap(visitor(request as any));
+    fill();
+    fireEvent.click(await screen.findByRole("button", { name: en.verify.submit }));
+    const chooser = await screen.findByTestId("ambiguous-chooser");
+    fireEvent.click(within(chooser).getAllByTestId("chooser-option")[1]);
+    expect(await screen.findByTestId("public-summary")).toBeInTheDocument();
+    expect(request.mock.calls[1][0] as string).toContain("land_id=LP-12003");
+    fireEvent.click(screen.getByRole("button", { name: en.verify.submit }));
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(3));
+    expect(request.mock.calls[2][0] as string).not.toContain("land_id");
   });
 
   it("MOUZA_AMBIGUOUS lists the JL options in the chooser", async () => {

@@ -74,6 +74,22 @@ def test_exact_survey_beats_legacy_and_two_legacy_are_ambiguous(env):
         with pytest.raises(AppError) as e:
             posting._resolve_land(s, _doc(), V, 10.0, "decimal", None, None)
         assert e.value.code == "LAND_AMBIGUOUS"
+        cands = e.value.details["candidates"]  # same shape as the lookup's 409
+        assert {c["land_id"] for c in cands} == {"LP-90003", "LP-90004", "LP-90005"}
+        assert all(set(c) == {"land_id", "survey_type", "jl_no", "mouza"} for c in cands)
+
+
+def test_filling_a_legacy_parcel_into_a_taken_key_is_409(env):
+    with _db(env) as s:
+        legacy = _add(s, code="LP-90008")
+        _add(s, code="LP-90009", survey_type="RS", jl_no="12")
+        with pytest.raises(AppError) as e:
+            posting._resolve_land(s, _doc(legacy.id), V, 10.0, "decimal", "RS", "12")
+        assert (e.value.status_code, e.value.code) == (409, "LAND_SURVEY_TAKEN")
+        assert e.value.details["other_land_id"] == "LP-90009"
+        assert (legacy.survey_type, legacy.jl_no) == (None, None)  # nothing half-filled
+        land, _ = posting._resolve_land(s, _doc(legacy.id), V, 10.0, "decimal", "CS", "12")
+        assert (land.survey_type, land.jl_no) == ("CS", "12")
 
 
 def test_document_of_other_survey_cannot_attach(env):
@@ -109,3 +125,15 @@ def test_officer_can_correct_survey_and_jl_in_review():
     with pytest.raises(AppError) as e:
         apply_patch(ex, ExtractionPatch(survey_type="XX"))
     assert e.value.code == "EXTRACTION_INVALID"
+
+
+def test_officer_can_clear_the_survey_and_jl_must_be_digits():
+    ex = _ex("CS", "5")
+    out, old, new = apply_patch(ex, ExtractionPatch(survey_type=""))
+    assert out.survey_type is None and new == {"survey_type": None}
+    assert apply_patch(_ex(None, "5"), ExtractionPatch(survey_type="")) is None
+    with pytest.raises(AppError) as e:
+        apply_patch(ex, ExtractionPatch(jl_no="abc"))
+    assert e.value.details == [{"field": "jl_no", "code": "NOT_NUMERIC"}]
+    out, _, _ = apply_patch(ex, ExtractionPatch(jl_no=""))
+    assert out.extras["jl_no"] == ""

@@ -116,6 +116,7 @@ def search_land_summary(
     survey_type: str | None = None,
     jl_no: str | None = None,
     sheet_no: str | None = None,
+    land_id: str | None = None,
 ) -> tuple[LandParcel, PublicLandSummary]:
     """Same lookup as the signed-in search, answered with a masked summary (read-only)."""
     land = land_svc.find_by_location(
@@ -127,6 +128,7 @@ def search_land_summary(
         dag=dag,
         survey_type=survey_type,
         jl_no=jl_no,
+        land_id=land_id,
     )
     owners = land_svc.current_owners(db, land)
     open_case = _count(

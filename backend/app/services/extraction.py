@@ -350,9 +350,9 @@ def apply_patch(ex: Extraction, patch: ExtractionPatch) -> tuple[Extraction, dic
     if patch.survey_type is None and patch.jl_no is None:
         return res
     out, old, new = res if res is not None else (ex.model_copy(deep=True), {}, {})
-    if patch.survey_type is not None:
-        st = patch.survey_type.strip().upper()
-        if st != (out.survey_type or ""):
+    if patch.survey_type is not None:  # "" clears a wrongly read survey (back to unknown)
+        st = patch.survey_type.strip().upper() or None
+        if st != (out.survey_type or None):
             old["survey_type"], new["survey_type"] = out.survey_type, st
             out.survey_type = st
     if patch.jl_no is not None:
@@ -368,10 +368,17 @@ def apply_patch(ex: Extraction, patch: ExtractionPatch) -> tuple[Extraction, dic
 
 
 def _check_survey_meta(patch: ExtractionPatch) -> None:
-    if patch.survey_type is not None and patch.survey_type.strip().upper() not in SURVEY_CODES:
+    st = (patch.survey_type or "").strip().upper()
+    if st and st not in SURVEY_CODES:
         raise AppError(
             "EXTRACTION_INVALID", "Survey type must be CS, SA, RS or BS", 422,
             [{"field": "survey_type", "code": "INVALID"}],
+        )  # fmt: skip
+    jl = norm_jl(patch.jl_no)
+    if jl and not (jl.isascii() and jl.isdigit()):
+        raise AppError(
+            "EXTRACTION_INVALID", "JL number must be digits", 422,
+            [{"field": "jl_no", "code": "NOT_NUMERIC"}],
         )  # fmt: skip
 
 

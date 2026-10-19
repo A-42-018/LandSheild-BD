@@ -71,6 +71,14 @@ def test_legacy_null_rows_do_not_clash(db: Session):
     assert (p.survey_type, p.jl_no, p.map_sheet_no) == (None, None, None)
 
 
+def test_two_identical_legacy_rows_rejected(db: Session):
+    """NULL survey/JL count as one value in the key (a plain unique constraint would allow it)."""
+    legacy = dict(survey_type=None, jl_no=None, map_sheet_no=None)
+    db.add_all([_parcel(**legacy), _parcel(land_id="LS-0002", **legacy)])
+    with pytest.raises(IntegrityError):
+        db.commit()
+
+
 def test_seed_has_survey_examples(db: Session):
     loader.seed(db, demo_password="pw")
     db.commit()
@@ -118,7 +126,7 @@ def test_migration_0019_up_down_up_and_backfill(tmp_path, monkeypatch):
         c.execute(text(
             "INSERT INTO documents (id, land_id, document_type, file_path, file_hash,"
             " extraction_json, processing_status, created_at) VALUES"
-            " ('d2','a','PORCHA','p','h2','{\"survey_type\": \"RS\", \"extras\": {\"jl_no\": \"45\"}}',"
+            " ('d2','a','PORCHA','p','h2','{\"survey_type\": \"rs\", \"extras\": {\"jl_no\": \"০৪৫\"}}',"
             "'APPROVED','2026-02-01')"
         ))
     command.upgrade(cfg, "head")
@@ -132,7 +140,17 @@ def test_migration_0019_up_down_up_and_backfill(tmp_path, monkeypatch):
     command.downgrade(cfg, "-1")
     assert "jl_no" not in {c["name"] for c in inspect(eng).get_columns("land_parcels")}
     command.upgrade(cfg, "head")
-    uq = inspect(eng).get_unique_constraints("land_parcels")
-    assert any("jl_no" in u["column_names"] for u in uq)
+    with eng.connect() as c:
+        sql = c.execute(text(
+            "SELECT sql FROM sqlite_master WHERE name = 'uq_land_parcel_identifiers'")).scalar()
+    assert "UNIQUE" in sql and "coalesce(jl_no, '')" in sql
+    with eng.begin() as c, pytest.raises(IntegrityError):
+        for lid in ("x1", "x2"):  # identical legacy rows: rejected by the coalesce() key
+            c.execute(text(
+                "INSERT INTO land_parcels (id, land_id, district, upazila, mouza, dag_no, khatian_no,"
+                " area, area_unit, status, created_at, updated_at) VALUES"
+                f" ('{lid}','L-{lid}','D','U','M','9','9',1,'decimal','ACTIVE',"
+                "'2026-01-01','2026-01-01')"
+            ))
 
     get_settings.cache_clear()

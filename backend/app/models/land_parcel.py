@@ -1,4 +1,4 @@
-from sqlalchemy import Float, ForeignKey, Index, String, UniqueConstraint
+from sqlalchemy import Float, ForeignKey, Index, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import UUID_LEN, Base, IdMixin, JSONType, TimestampMixin
@@ -7,18 +7,22 @@ from app.models.enums import LandStatus
 
 class LandParcel(IdMixin, TimestampMixin, Base):
     __tablename__ = "land_parcels"
+    # SJ1 key (D3) as a unique INDEX: survey_type / jl_no are NULL on legacy rows, and a unique
+    # constraint treats NULLs as distinct, so two identical legacy rows would both be accepted.
+    # coalesce() makes NULL count as one value (SQLite + Postgres); migration 0019 builds the same.
     __table_args__ = (
-        UniqueConstraint(
+        Index(
+            "uq_land_parcel_identifiers",
             "district",
             "upazila",
-            "jl_no",
+            text("coalesce(jl_no, '')"),
             "mouza",
-            "survey_type",
+            text("coalesce(survey_type, '')"),
             "khatian_no",
             "dag_no",
-            name="uq_land_parcel_identifiers",
+            unique=True,
         ),
-        Index("ix_land_parcels_mouza_jl", "mouza", "jl_no"),
+        Index("ix_land_parcels_mouza_jl", func.lower(text("mouza")), "jl_no"),  # lookups use lower()
     )
 
     land_id: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)

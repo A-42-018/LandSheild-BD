@@ -32,6 +32,7 @@ def search_lands(
     survey: SurveyType | None = Query(default=None),  # SJ3: omitted = 409 if it is ambiguous
     jl_no: str | None = Query(default=None, max_length=20),
     sheet_no: str | None = Query(default=None, max_length=20),
+    land_id: str | None = Query(default=None, max_length=64),  # a pick from the 409 chooser
     user: User = Depends(require_roles(*ANY_AUTH)),
     db: Session = Depends(get_db),
 ) -> LandPublic:
@@ -46,6 +47,7 @@ def search_lands(
         survey_type=survey.value if survey else None,
         jl_no=jl_no,
         sheet_no=sheet_no,
+        land_id=land_id,
     )
     me_svc.record_lookup(db, user, land.land_id)  # U3.2 "my searches" (citizens only)
     return land

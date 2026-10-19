@@ -78,11 +78,14 @@ def find_by_location(
     dag: str,
     survey_type: str | None = None,
     jl_no: str | None = None,
+    land_id: str | None = None,
 ) -> LandParcel:
     """Exact parcel lookup: case-insensitive place names, Bangla digits accepted.
 
     404 none, 409 LAND_AMBIGUOUS when several parcels match (never picks the first one; the
-    candidates carry no owner data), 422 JL_MISMATCH. Old rows without survey/JL still match.
+    candidates carry no owner data), 422 JL_MISMATCH. Old rows without survey/JL still match,
+    but a row that carries the given survey / JL beats a legacy NULL one (same rule as posting).
+    `land_id` picks one candidate of a 409 (the chooser); the 5 place fields must still match.
     """
     d, u, m, k, g = (_norm(v) for v in (district, upazila, mouza, khatian, dag))
     jl = gis.norm_jl(_norm(jl_no)) if jl_no else ""
@@ -95,12 +98,18 @@ def find_by_location(
         LandParcel.khatian_no == k,
         LandParcel.dag_no == g,
     )
-    if survey_type:
-        st = survey_type.strip().upper()
+    st = survey_type.strip().upper() if survey_type else ""
+    if st:
         stmt = stmt.where(or_(LandParcel.survey_type == st, LandParcel.survey_type.is_(None)))
     if jl:
         stmt = stmt.where(or_(LandParcel.jl_no == jl, LandParcel.jl_no.is_(None)))
+    if land_id:
+        stmt = stmt.where(LandParcel.land_id == _norm(land_id))
     rows = list(db.scalars(stmt.order_by(LandParcel.land_id)))
+    if st:
+        rows = [r for r in rows if r.survey_type == st] or rows
+    if jl:
+        rows = [r for r in rows if r.jl_no == jl] or rows
     if not rows:
         raise _not_found()
     if len(rows) > 1:
@@ -132,7 +141,10 @@ def sheet_warnings(land: LandParcel, sheet_no: str | None) -> list[str]:
     own = (land.map_sheet_no or "").strip().lstrip("0")
     if own and own != given:
         return ["SHEET_MISMATCH"]
-    reg = _resolve_registry(land.district, land.upazila, land.mouza, land.jl_no)
+    try:  # the parcel's own JL may disagree with the registry: that must not turn a hit into a 422
+        reg = _resolve_registry(land.district, land.upazila, land.mouza, land.jl_no)
+    except AppError:
+        reg = None
     if reg is not None:
         known = {s.sheet_no.strip().lstrip("0") for s in gis.sheets_for(reg.id, land.survey_type)}
         if known and given not in known:
@@ -166,6 +178,7 @@ def search_land(
     survey_type: str | None = None,
     jl_no: str | None = None,
     sheet_no: str | None = None,
+    land_id: str | None = None,
 ) -> LandPublic:
     land = find_by_location(
         db,
@@ -176,5 +189,6 @@ def search_land(
         dag=dag,
         survey_type=survey_type,
         jl_no=jl_no,
+        land_id=land_id,
     )
     return _to_public(db, land, viewer, sheet_warnings(land, sheet_no))

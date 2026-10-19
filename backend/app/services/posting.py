@@ -97,12 +97,34 @@ def _check_survey(land: LandParcel, survey: str | None, jl: str | None) -> None:
         )  # fmt: skip
 
 
-def _fill_survey(land: LandParcel, survey: str | None, jl: str | None) -> None:
-    """A legacy parcel (NULL survey / JL) is filled in from the document; never overwritten."""
-    if land.survey_type is None and survey:
-        land.survey_type = survey
-    if not land.jl_no and jl:
-        land.jl_no = jl
+def _fill_survey(db: Session, land: LandParcel, survey: str | None, jl: str | None) -> None:
+    """A legacy parcel (NULL survey / JL) is filled in from the document; never overwritten.
+    409 LAND_SURVEY_TAKEN when another parcel already holds the filled-in key (the unique index
+    would otherwise fail as a 500 at flush)."""
+    new_survey = land.survey_type if land.survey_type is not None else survey
+    new_jl = land.jl_no if land.jl_no else jl
+    if (new_survey, new_jl) == (land.survey_type, land.jl_no):
+        return
+    other = db.scalar(
+        select(LandParcel).where(
+            LandParcel.id != land.id,
+            LandParcel.district == land.district,
+            LandParcel.upazila == land.upazila,
+            LandParcel.mouza == land.mouza,
+            LandParcel.khatian_no == land.khatian_no,
+            LandParcel.dag_no == land.dag_no,
+            func.coalesce(LandParcel.survey_type, "") == (new_survey or ""),
+            func.coalesce(LandParcel.jl_no, "") == (new_jl or ""),
+        )
+    )
+    if other is not None:
+        raise AppError(
+            "LAND_SURVEY_TAKEN",
+            "Another land already has this survey and JL number; attach the document to it",
+            409,
+            {"land_id": land.land_id, "other_land_id": other.land_id},
+        )  # fmt: skip
+    land.survey_type, land.jl_no = new_survey, new_jl
 
 
 def _resolve_land(
@@ -129,7 +151,7 @@ def _resolve_land(
             )
         _same_office(doc, land)
         _check_survey(land, survey, jl)
-        _fill_survey(land, survey, jl)
+        _fill_survey(db, land, survey, jl)
         return land, False
     cands = db.scalars(
         select(LandParcel).where(
@@ -154,13 +176,16 @@ def _resolve_land(
             "LAND_AMBIGUOUS",
             "Several lands match this document; choose the land first",
             409,
-            [{"land_id": c.land_id, "survey_type": c.survey_type, "jl_no": c.jl_no}
-             for c in pick],
+            {"candidates": [  # same shape as the lookup's LAND_AMBIGUOUS
+                {"land_id": c.land_id, "survey_type": c.survey_type, "jl_no": c.jl_no,
+                 "mouza": c.mouza}
+                for c in pick
+            ]},
         )  # fmt: skip
     if pick:
         land = pick[0]
         _same_office(doc, land)
-        _fill_survey(land, survey, jl)
+        _fill_survey(db, land, survey, jl)
         doc.land_id = land.id
         return land, False
     office = db.get(LandOffice, doc.office_id) if doc.office_id else None

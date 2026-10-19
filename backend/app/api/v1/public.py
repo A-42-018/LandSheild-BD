@@ -87,6 +87,7 @@ def public_land_search(
     survey: SurveyType | None = Query(default=None),  # SJ3: omitted = 409 if it is ambiguous
     jl_no: str | None = Query(default=None, max_length=20),
     sheet_no: str | None = Query(default=None, max_length=20),
+    land_id: str | None = Query(default=None, max_length=64),  # a pick from the 409 chooser
     db: Session = Depends(get_db),
     settings: Settings = Depends(get_settings_dep),
 ) -> PublicLandSummary:
@@ -103,6 +104,7 @@ def public_land_search(
         survey_type=survey.value if survey else None,
         jl_no=jl_no,
         sheet_no=sheet_no,
+        land_id=land_id,
     )
     audit.log(db, None, "PUBLIC_LAND_SEARCH", "land", land.id, ip=ip)
     db.commit()

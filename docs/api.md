@@ -121,17 +121,19 @@ curl -s -X POST $API/documents/upload -H "Authorization: Bearer $TOKEN" \
 
 | Param | Meaning |
 |---|---|
-| `survey` | `CS` / `SA` / `RS` / `BS`. A parcel matches when its survey equals it **or is NULL** (old rows). Omitted is accepted for one release, but gives 409 if that leaves more than one parcel. |
-| `jl_no` | Optional, leading zeros ignored. Checked against the mouza registry; a parcel matches when its JL equals it or is NULL. |
-| `sheet_no` | Optional check only, never a lookup key (D6). |
+| `survey` | `CS` / `SA` / `RS` / `BS`. A parcel matches when its survey equals it **or is NULL** (old rows); a parcel that carries this survey beats a NULL one. Omitted is accepted for one release, but gives 409 if that leaves more than one parcel. |
+| `jl_no` | Optional, leading zeros ignored. Checked against the mouza registry; a parcel matches when its JL equals it or is NULL (an exact JL beats NULL). |
+| `sheet_no` | Optional check only, never a lookup key (D6). A parcel JL that disagrees with the registry never turns the hit into a 422. |
+| `land_id` | Optional: the candidate the user picked from a 409 `LAND_AMBIGUOUS`. The other fields must still match, so it reveals nothing new. |
 
 Responses add `survey_type`, `jl_no`, `map_sheet_no`, `warnings` (`["SHEET_MISMATCH"]` when `sheet_no` differs from the parcel's sheet or is not a sheet of that mouza for that survey; the result is still 200).
 
 | Status | Code | When |
 |---|---|---|
 | 404 | `LAND_NOT_FOUND` | no parcel matches |
-| 409 | `LAND_AMBIGUOUS` | several parcels match; `details.candidates = [{land_id, survey_type, jl_no, mouza}]` (no owner data); the client asks the user to pick one and repeats the search with `survey`/`jl_no` |
+| 409 | `LAND_AMBIGUOUS` | several parcels match; `details.candidates = [{land_id, survey_type, jl_no, mouza}]` (no owner data); the client asks the user to pick one and repeats the search with `survey`/`jl_no` and `land_id`. Posting uses the same code and shape when a document matches several parcels |
 | 422 | `JL_MISMATCH` | `jl_no` does not belong to that mouza (`details.options` lists the right JLs) |
 | 409 | `MOUZA_AMBIGUOUS` | the mouza name exists under more than one JL in that upazila; `details.options` lists the JLs, the client repeats the search with `jl_no` |
-| 409 | `LAND_SURVEY_MISMATCH` | write path (posting a deed/extraction): the parcel found belongs to another survey or JL than the document; officer corrects `survey_type`/`jl_no` in review |
+| 409 | `LAND_SURVEY_MISMATCH` | write path (posting a deed/extraction): the parcel found belongs to another survey or JL than the document; officer corrects `survey_type`/`jl_no` in review (`survey_type: ""` clears it) |
+| 409 | `LAND_SURVEY_TAKEN` | write path: filling a legacy parcel's survey/JL would duplicate another parcel (`details.other_land_id`); attach the document to that one |
 | 422 | `VALIDATION_ERROR` | `survey` is not one of CS/SA/RS/BS |

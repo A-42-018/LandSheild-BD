@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { CheckCircle2, Layers, XCircle } from "lucide-react";
 import { ApiError } from "@/lib/api";
+import { normalizeDigits } from "@/lib/intl-locale";
 import { SURVEYS } from "@/lib/surveys";
 import { Button, Card, Input, Select } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -11,7 +12,8 @@ import { fieldErrorText, toFieldErrors, type useReviewActions } from "./useRevie
 import type { ExtractionOut } from "./types";
 
 const val = (data: ExtractionOut, f: string) => data.fields.find((x) => x.field === f)?.value?.trim() ?? "";
-const stripZeros = (s: string) => s.trim().replace(/^0+(?=\d)/, "");
+/** JL as the API stores it: Bangla digits converted, no leading zeros (same as gis.norm_jl). */
+const normJl = (s: string | null | undefined) => normalizeDigits(s ?? "").trim().replace(/^0+(?=\d)/, "");
 
 /** Check the JL against the mouza registry (GET /gis/mouzas/resolve): ok / wrong JL / cannot check. */
 function useJlCheck(data: ExtractionOut, jl: string) {
@@ -19,7 +21,7 @@ function useJlCheck(data: ExtractionOut, jl: string) {
   const district = val(data, "district");
   const upazila = val(data, "upazila");
   const mouza = val(data, "mouza");
-  const jlNo = stripZeros(jl);
+  const jlNo = normJl(jl);
   return useQuery<"ok" | "mismatch" | "unknown", ApiError>({
     queryKey: ["jl-check", district, upazila, mouza, jlNo],
     enabled: !!(district && upazila && mouza && jlNo),
@@ -57,14 +59,14 @@ export default function SurveyJlPanel({
     setJl(data.jl_no ?? "");
   }, [data.survey_type, data.jl_no]);
   const check = useJlCheck(data, jl);
-  const dirty = survey !== (data.survey_type ?? "") || stripZeros(jl) !== (data.jl_no ?? "");
+  const dirty = survey !== (data.survey_type ?? "") || normJl(jl) !== normJl(data.jl_no);
   const missing = data.validation.errors.some((e) => e.field === "survey_type") && !survey;
 
   const save = async () => {
     setErrors([]);
     const body: { survey_type?: string; jl_no?: string } = {};
-    if (survey !== (data.survey_type ?? "")) body.survey_type = survey;
-    if (stripZeros(jl) !== (data.jl_no ?? "")) body.jl_no = stripZeros(jl);
+    if (survey !== (data.survey_type ?? "")) body.survey_type = survey; // "" = back to unknown
+    if (normJl(jl) !== normJl(data.jl_no)) body.jl_no = normJl(jl); // "" clears it
     try {
       await actions.saveSurvey.mutateAsync(body);
     } catch (e) {
@@ -113,7 +115,7 @@ export default function SurveyJlPanel({
         )}
         {editable && (
           <div>
-            <Button size="sm" onClick={() => void save()} disabled={!dirty || !survey} loading={actions.saveSurvey.isPending} data-testid="save-survey_jl">
+            <Button size="sm" onClick={() => void save()} disabled={!dirty} loading={actions.saveSurvey.isPending} data-testid="save-survey_jl">
               {t("save")}
             </Button>
           </div>

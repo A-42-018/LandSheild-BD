@@ -107,3 +107,31 @@ def test_public_candidates_never_leak_owners(env):
     body = _get(env, PUB).text
     for word in ("owner", "name", "father", "nid"):
         assert word not in body.lower().replace("mouza", "")
+
+
+@pytest.mark.parametrize("path", [S, PUB])
+def test_exact_survey_beats_a_legacy_row(env, path):
+    _add(env, "SJ-RS")
+    _add(env, "SJ-CS", survey_type="CS", map_sheet_no="2")
+    _add(env, "SJ-OLD", survey_type=None, jl_no=None, map_sheet_no=None)
+    assert _get(env, path, survey="RS", jl_no="45").json()["land_id"] == "SJ-RS"
+    assert _get(env, path, survey="CS").json()["land_id"] == "SJ-CS"
+    assert _get(env, path, survey="SA").json()["land_id"] == "SJ-OLD"  # only the legacy row fits
+    r = _get(env, path)
+    assert r.status_code == 409 and len(r.json()["details"]["candidates"]) == 3
+
+
+@pytest.mark.parametrize("path", [S, PUB])
+def test_land_id_picks_a_candidate_but_must_still_match(env, path):
+    _add(env, "SJ-RS")
+    _add(env, "SJ-OLD", survey_type=None, jl_no=None, map_sheet_no=None)
+    ok = _get(env, path, survey="RS", land_id="SJ-OLD")  # the chooser's legacy pick
+    assert ok.status_code == 200 and ok.json()["land_id"] == "SJ-OLD"
+    _add(env, "SJ-ELSE", khatian_no="9002")
+    assert _get(env, path, survey="RS", land_id="SJ-ELSE").status_code == 404
+
+
+def test_sheet_check_never_turns_a_hit_into_422(env):
+    _add(env, "SJ-BADJL", jl_no="46")  # the parcel's own JL disagrees with the registry (45)
+    r = _get(env, S, survey="RS", sheet_no="3")
+    assert r.status_code == 200 and r.json()["land_id"] == "SJ-BADJL"

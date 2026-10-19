@@ -46,6 +46,8 @@ const FIELDS = ["district", "upazila", "mouza", "survey", "jl_no", "sheet_no", "
 /** The hero's query runs on its own only when these are all there (JL and sheet are optional). */
 const REQUIRED = ["district", "upazila", "mouza", "survey", "khatian", "dag"] as const;
 const stripZeros = (s: string) => s.replace(/^0+(?=\d)/, "");
+/** Form values plus the visitor's chooser pick (D7). */
+type SearchValues = VerifyValues & { land_id?: string };
 
 /** `compact` (U5): landing-page hero variant — no card, no intro/hints, fields in a responsive grid.
  *  U1.3: anonymous hero searches go to `/verify?district=…`; the full form fills itself from that query and searches
@@ -145,8 +147,11 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
   };
   const err = (k?: { message?: string }) => (k?.message ? t(`errors.${k.message}`) : undefined);
 
-  const query = (v: VerifyValues) => {
+  // D7: a visitor's pick from the chooser; sent once with the repeated search so a legacy row (no survey/JL) is reachable
+  const pickedLand = useRef<string | null>(null);
+  const query = (v: SearchValues) => {
     const q = new URLSearchParams({ district: v.district, upazila: v.upazila, mouza: v.mouza, survey: v.survey });
+    if (v.land_id) q.set("land_id", v.land_id);
     if (v.jl_no) q.set("jl_no", stripZeros(v.jl_no));
     if (v.sheet_no) q.set("sheet_no", v.sheet_no);
     q.set("khatian", v.khatian);
@@ -158,13 +163,14 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
     onSuccess: (land) => router.push(`/verify/result?land_id=${encodeURIComponent(land.land_id)}`),
   });
   const pub = useMutation({
-    mutationFn: (v: VerifyValues) => api.request<PublicLandSummary>(`/public/lands/search?${query(v)}`, { anonymous: true }),
+    mutationFn: (v: SearchValues) => api.request<PublicLandSummary>(`/public/lands/search?${query(v)}`, { anonymous: true }),
   });
   const onValid = (v: VerifyValues) => {
     if (status === "authenticated") return m.mutate(v);
     if (compact) return router.push(`/verify?${query(v)}`); // the hero hands over; /verify shows the summary
     pub.reset();
-    pub.mutate(v);
+    pub.mutate({ ...v, land_id: pickedLand.current ?? undefined });
+    pickedLand.current = null; // only the search the pick started carries it
   };
   // D7: the user picked one of several matches. Signed in with a land_id: open it; otherwise repeat the search with that survey/JL.
   const ambErr = (() => {
@@ -182,6 +188,7 @@ export default function VerifyForm({ compact = false }: { compact?: boolean }) {
     }
     if (c.mouza) setValue("mouza", c.mouza);
     if (c.land_id && status === "authenticated") return router.push(`/verify/result?land_id=${encodeURIComponent(c.land_id)}`);
+    pickedLand.current = c.land_id ?? null;
     void submit();
   };
   // U5.4: focus the first wrong field in screen order (district before mouza), so a screen reader starts at the top

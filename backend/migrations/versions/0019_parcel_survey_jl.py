@@ -5,6 +5,7 @@ Revises: 0018
 Create Date: 2026-10-19 00:00:00
 """
 import json
+import unicodedata
 
 from alembic import op
 import sqlalchemy as sa
@@ -16,7 +17,19 @@ branch_labels = None
 depends_on = None
 
 OLD_KEY = ('district', 'upazila', 'mouza', 'khatian_no', 'dag_no')
-NEW_KEY = ('district', 'upazila', 'jl_no', 'mouza', 'survey_type', 'khatian_no', 'dag_no')
+NEW_KEY_SQL = (
+    'district', 'upazila', "coalesce(jl_no, '')", 'mouza', "coalesce(survey_type, '')",
+    'khatian_no', 'dag_no',
+)
+
+
+_BN_DIGITS = str.maketrans('০১২৩৪৫৬৭৮৯', '0123456789')
+
+
+def _norm_jl(value) -> str | None:
+    """Same as app.services.gis.norm_jl (copied: a migration must not import app code)."""
+    raw = unicodedata.normalize('NFKC', str(value or '')).translate(_BN_DIGITS).strip()
+    return (raw.lstrip('0') or '0') if raw else None
 
 
 def _backfill() -> None:
@@ -46,10 +59,9 @@ def _backfill() -> None:
                 ex = None
         if not isinstance(ex, dict):
             continue
-        survey = ex.get('survey_type')
-        jl = (ex.get('extras') or {}).get('jl_no')
+        survey = str(ex.get('survey_type') or '').strip().upper()
         survey = survey if survey in ('CS', 'SA', 'RS', 'BS') else None
-        jl = str(jl).strip().lstrip('0') or None if jl not in (None, '') else None
+        jl = _norm_jl((ex.get('extras') or {}).get('jl_no'))
         if survey is None and jl is None:
             continue
         seen.add(land_id)
@@ -66,14 +78,16 @@ def upgrade() -> None:
     _backfill()
     with op.batch_alter_table('land_parcels') as batch:
         batch.drop_constraint('uq_land_parcel_identifiers', type_='unique')
-        batch.create_unique_constraint('uq_land_parcel_identifiers', list(NEW_KEY))
-        batch.create_index('ix_land_parcels_mouza_jl', ['mouza', 'jl_no'])
+    # Expression indexes go outside batch mode: SQLite batch rebuilds would drop them (no reflection).
+    # coalesce(): NULL survey/JL count as one value, so legacy duplicates are still rejected.
+    op.create_index('uq_land_parcel_identifiers', 'land_parcels', [sa.text(c) for c in NEW_KEY_SQL], unique=True)
+    op.create_index('ix_land_parcels_mouza_jl', 'land_parcels', [sa.text('lower(mouza)'), sa.text('jl_no')])
 
 
 def downgrade() -> None:
+    op.drop_index('ix_land_parcels_mouza_jl', table_name='land_parcels')
+    op.drop_index('uq_land_parcel_identifiers', table_name='land_parcels')
     with op.batch_alter_table('land_parcels') as batch:
-        batch.drop_index('ix_land_parcels_mouza_jl')
-        batch.drop_constraint('uq_land_parcel_identifiers', type_='unique')
         batch.create_unique_constraint('uq_land_parcel_identifiers', list(OLD_KEY))
         batch.drop_column('map_sheet_no')
         batch.drop_column('jl_no')

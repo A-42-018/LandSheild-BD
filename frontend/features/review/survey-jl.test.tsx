@@ -86,15 +86,30 @@ describe("survey and JL on a khatian review (SJ7)", () => {
     await waitFor(() => expect(patch).toHaveBeenCalledWith("/documents/d1/extraction", { survey_type: "CS", jl_no: "43" }));
   });
 
-  it("shows a refused survey and keeps save off while no survey is chosen", async () => {
-    const patch = vi.fn().mockRejectedValue(new ApiError(422, "EXTRACTION_INVALID", "bad", [{ field: "survey_type", code: "INVALID" }]));
+  it("shows a refused survey; clearing a wrong survey sends an empty one", async () => {
+    const patch = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError(422, "EXTRACTION_INVALID", "bad", [{ field: "survey_type", code: "INVALID" }]))
+      .mockResolvedValue(extraction());
     setup({ patch });
     await screen.findByTestId("survey-jl-panel");
     fireEvent.change(screen.getByTestId("input-survey_type"), { target: { value: "SA" } });
     fireEvent.click(screen.getByTestId("save-survey_jl"));
     expect(await screen.findByTestId("error-survey_jl")).toHaveTextContent(en.review.errors.INVALID);
     fireEvent.change(screen.getByTestId("input-survey_type"), { target: { value: "" } });
+    fireEvent.click(screen.getByTestId("save-survey_jl"));
+    await waitFor(() => expect(patch).toHaveBeenLastCalledWith("/documents/d1/extraction", { survey_type: "" }));
+  });
+
+  it("does not count a zero-padded or Bangla JL as a change", async () => {
+    const { patch } = setup({ ext: extraction({ jl_no: "042" }) });
+    await screen.findByTestId("survey-jl-panel");
     expect(screen.getByTestId("save-survey_jl")).toBeDisabled();
+    fireEvent.change(screen.getByTestId("input-jl_no"), { target: { value: "৪২" } });
+    expect(screen.getByTestId("save-survey_jl")).toBeDisabled();
+    fireEvent.change(screen.getByTestId("input-jl_no"), { target: { value: "৪৩" } });
+    fireEvent.click(screen.getByTestId("save-survey_jl"));
+    await waitFor(() => expect(patch).toHaveBeenCalledWith("/documents/d1/extraction", { jl_no: "43" }));
   });
 
   it("is not shown for a deed", async () => {
