@@ -1,5 +1,4 @@
-/** Help entry points (U1.6), shared by the home hotline strip and the floating help button. */
-export const HOTLINE = "16122";
+/** Help entry points (U1.6), shared by the home help strip and the floating help button. */
 
 /** Where the floating button leads. */
 export const HELP_LINKS = [

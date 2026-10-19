@@ -1,10 +1,9 @@
 "use client";
-import { CircleHelp, MessageSquareText, Phone, ScrollText, X } from "lucide-react";
+import { CircleHelp, MessageSquareText, ScrollText, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import { localDigits } from "@/lib/intl-locale";
-import { HELP_LINKS, HOTLINE } from "@/features/help/help";
+import { HELP_LINKS } from "@/features/help/help";
 
 const ICONS = { faq: CircleHelp, guide: ScrollText, feedback: MessageSquareText } as const;
 const ROW = "flex min-h-12 items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-ink hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
@@ -14,7 +13,6 @@ const ROW = "flex min-h-12 items-center gap-3 rounded-md px-3 py-2 text-sm font-
  *  so do a click outside, focus leaving and navigation. Above the page (z-40), below dialogs, toasts and the full-screen map. */
 export default function HelpButton() {
   const t = useTranslations("help");
-  const locale = useLocale();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -39,8 +37,6 @@ export default function HelpButton() {
       document.removeEventListener("mousedown", onDown);
     };
   }, [open]);
-
-  const number = localDigits(HOTLINE, locale);
 
   return (
     <div
@@ -72,12 +68,6 @@ export default function HelpButton() {
             );
           })}
         </ul>
-        <a href={`tel:${HOTLINE}`} className={`${ROW} mt-1 border-t border-line !rounded-t-none`}>
-          <Phone aria-hidden="true" className="h-5 w-5 shrink-0 text-primary" />
-          <span>
-            {t("call")} <strong className="text-primary">{number}</strong>
-          </span>
-        </a>
       </div>
       <button
         ref={button}

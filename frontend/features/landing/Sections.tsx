@@ -12,7 +12,6 @@ import {
   FlaskConical,
   Gavel,
   Landmark,
-  Phone,
   ListChecks,
   QrCode,
   Route,
@@ -36,7 +35,6 @@ import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import FaqList from "@/features/info/FaqList";
 import { HOME_FAQ_IDS } from "@/features/info/pages";
-import { HOTLINE } from "@/features/help/help";
 import { SERVICE_ART, TOOL_ART } from "./Illustrations";
 
 /** Services whose route is not built yet stay hidden until their F-phase lands (track = F2c, now live). */
@@ -238,10 +236,9 @@ export function HomeFaq() {
   );
 }
 
-/** Hotline strip (U1.6), last band on the home page: "still stuck?" with the number as a big tap-to-call link and a way to write instead. */
+/** Help strip (U1.6), last band on the home page: "still stuck?" with a way to write to us. */
 export function HelpStrip() {
   const t = useTranslations("landing.help");
-  const locale = useLocale();
   return (
     <section aria-labelledby="help-title" className="relative py-10 sm:py-14">
       <Reveal>
@@ -249,19 +246,9 @@ export function HelpStrip() {
           <div className="min-w-0">
             <h2 id="help-title" className={h2}>{t("title")}</h2>
             <p className="mt-2 max-w-xl text-ink-muted">{t("body")}</p>
-            <p className="mt-2 text-sm text-ink-muted">{t("note")}</p>
           </div>
           <div className="flex shrink-0 flex-col gap-3 sm:items-end">
-            <a
-              href={`tel:${HOTLINE}`}
-              data-testid="hotline-link"
-              aria-label={`${t("call")} ${localDigits(HOTLINE, locale)}`}
-              className={`btn-gold inline-flex min-h-touch items-center justify-center gap-3 rounded-lg px-6 py-2 text-2xl font-extrabold ${focus}`}
-            >
-              <Phone aria-hidden="true" className="h-6 w-6" />
-              {localDigits(HOTLINE, locale)}
-            </a>
-            <Link href="/feedback" className={`inline-flex min-h-touch items-center justify-center rounded-md px-2 font-semibold text-primary underline-offset-4 hover:underline ${focus}`}>
+            <Link href="/feedback" className={`btn-gold inline-flex min-h-touch items-center justify-center rounded-lg px-6 py-2 text-lg font-extrabold ${focus}`}>
               {t("write")}
             </Link>
           </div>

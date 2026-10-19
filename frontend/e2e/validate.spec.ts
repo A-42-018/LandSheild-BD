@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { expectNoHorizontalScroll, fillBuyerNid, signIn } from "./fixtures";
+import { expectNoHorizontalScroll, fillBuyerNid, pickOffice, signIn } from "./fixtures";
 
 /** U6 (Phase 6, Validate): the five usability tasks of docs/ui-ux-roadmap.md §7 driven as a Bangla-first, phone-sized,
  *  anonymous visitor. It does not replace sessions with real people (docs/usability.md). It records the shortest path
@@ -112,6 +112,7 @@ test("T5 reviewer: approve one document, reject one with a reason", async ({ pag
   const upload = async (file: string) => {
     await page.goto("/en/officer/upload");
     await page.locator('input[type="file"]').setInputFiles(SAMPLE(file));
+    await pickOffice(page, file);
     await fillBuyerNid(page, file);
     const up = page.waitForResponse((x) => x.url().endsWith("/documents/upload") && x.request().method() === "POST");
     await page.getByRole("button", { name: "Upload", exact: true }).click();

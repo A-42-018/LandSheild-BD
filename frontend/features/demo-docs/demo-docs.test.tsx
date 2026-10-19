@@ -12,7 +12,11 @@ import UploadForm from "@/features/upload/UploadForm";
 import VerifyDocumentView from "@/features/verify-document/VerifyDocumentView";
 import { DEMO_OWNERS, UPLOAD_DEMO_DOCS, VERIFY_DEMO_DOCS } from "./catalog";
 
-const officer = { id: "1", name: "O", email: "o@x.co", role: "OFFICER", preferred_language: "en" };
+// an office officer files into their own office, so the office step needs no input
+const officer = {
+  id: "1", name: "O", email: "o@x.co", role: "OFFICER", preferred_language: "en",
+  office: { id: "o0", code: "LO-0", office_type: "Union Land Office", name_en: "Test Office", name_bn: "টেস্ট অফিস", division_en: "Dhaka", division_bn: "ঢাকা", district_en: "Dhaka", district_bn: "ঢাকা", upazila_en: "Savar", upazila_bn: "সাভার" },
+};
 
 function wrap(ui: React.ReactNode, c: Partial<ApiClient>, messages: any = en, locale = "en") {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });

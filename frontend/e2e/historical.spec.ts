@@ -1,6 +1,6 @@
 import path from "node:path";
 import { expect, test } from "@playwright/test";
-import { API, apiToken, fillBuyerNid, signIn } from "./fixtures";
+import { API, apiToken, fillBuyerNid, pickOffice, signIn } from "./fixtures";
 
 // H6e: a reviewer corrects and approves the 1944 sample deed in the digital deed form, never touching the
 // flat fields. Needs real OCR (the deed has no mock fixture): `npm run e2e:historical`
@@ -21,6 +21,7 @@ test.describe("historical deed: digital deed form (real OCR, rules extractor)", 
       await page.goto("/en/officer/upload");
       await page.locator('input[type="file"]').setInputFiles(SAMPLE);
       await expect(page.getByTestId("selected-file")).toBeVisible();
+      await pickOffice(page, FILE);
       await fillBuyerNid(page, FILE);
       const uploaded = page.waitForResponse((r) => r.url().endsWith("/documents/upload") && r.request().method() === "POST");
       await page.getByRole("button", { name: "Upload", exact: true }).click();

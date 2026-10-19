@@ -320,8 +320,7 @@ describe("Footer (U1.7)", () => {
     expect(screen.getByTestId("footer-demo-note")).toHaveTextContent(m.footer.demoProject);
     expect(screen.getByText(m.footer.demoNote)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "support@landshield.demo" })).toHaveAttribute("href", "mailto:support@landshield.demo");
-    expect(screen.getByTestId("footer-hotline")).toHaveAttribute("href", "tel:16122");
-    expect(screen.getByTestId("footer-hotline")).toHaveTextContent(loc === "bn" ? "১৬১২২" : "16122");
+    expect(document.querySelector('a[href^="tel:"]')).toBeNull();
     expect(screen.getByRole("link", { name: m.nav.map })).toHaveAttribute("href", "/map");
     expect(screen.getByRole("link", { name: m.nav.track })).toHaveAttribute("href", "/track");
     expect(screen.getByText(m.landing.disclaimer)).toBeInTheDocument();
