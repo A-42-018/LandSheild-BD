@@ -217,9 +217,10 @@ def test_patch_noop_unknown_and_invalid(env):
 def test_land_records_search_sort_page_and_no_owner_data(env):
     h = _h(env, "ADMIN")
     r = env.get(P + "/land-records", headers=h).json()
-    assert r["total"] == 12
+    assert r["total"] == 15  # 12 + the SJ1 survey lands LP-12001..12003
     assert set(r["items"][0]) == {
-        "land_id", "district", "upazila", "mouza", "khatian_no", "dag_no", "area", "area_unit", "status", "updated_at"
+        "land_id", "district", "upazila", "mouza", "khatian_no", "dag_no", "area", "area_unit", "status", "updated_at",
+        "survey_type", "jl_no",
     }  # fmt: skip
     assert not ({"id", "geometry", "owners", "current_owners", "father_name"} & set(_keys(r)))
     assert [i["land_id"] for i in r["items"]] == sorted(i["land_id"] for i in r["items"])
@@ -230,7 +231,7 @@ def test_land_records_search_sort_page_and_no_owner_data(env):
     ]
     assert [i["area"] for i in desc] == sorted((i["area"] for i in desc), reverse=True)
     pg = env.get(P + "/land-records", params={"limit": 3, "offset": 9}, headers=h).json()
-    assert pg["total"] == 12 and len(pg["items"]) == 3
+    assert pg["total"] == 15 and len(pg["items"]) == 3
     assert env.get(P + "/land-records", params={"status": "ACTIVE"}, headers=h).json()["total"] >= 1
     assert env.get(P + "/land-records", params={"status": "NOPE"}, headers=h).status_code == 422
     assert env.get(P + "/land-records", params={"sort": "geometry"}, headers=h).status_code == 422
